@@ -1,0 +1,9 @@
+[submodule "modules/openmesh"]
+	path = modules/openmesh
+	url = https://github.com/Lawrencemm/openmesh.git
+[submodule "modules/openbabel"]
+	path = modules/openbabel
+	url = https://github.com/openbabel/openbabel.git
+[submodule "modules/yaml-cpp"]
+	path = modules/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
