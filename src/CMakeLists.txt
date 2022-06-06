@@ -1,3 +1,4 @@
+add_subdirectory(Math)
 add_subdirectory(Configurator)
 add_subdirectory(Data)
 add_subdirectory(Grid)

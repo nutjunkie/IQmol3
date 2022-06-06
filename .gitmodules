@@ -10,3 +10,6 @@
 [submodule "modules/libQGLViewer"]
 	path = modules/libQGLViewer
 	url = https://github.com/GillesDebunne/libQGLViewer.git
+[submodule "modules/libssh2"]
+	path = modules/libssh2
+	url = https://github.com/libssh2/libssh2.git

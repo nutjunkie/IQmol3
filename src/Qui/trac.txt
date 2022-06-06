@@ -1,0 +1,76 @@
+= How The QUI Works =
+
+Because of the large number of options available in QChem, it was desirable to make many of the tasks associated with adding options as automated as possible, in particular, connecting signals and slots and adding documention.  For example, when a control is changed on the left hand side of the input generator, the appropriate text appears on the right hand preview menu.  This behavior has been coded up so that it is automatically applied to new controls as long as the name of the control is the same as the rem variable.  Setting the default values and valid ranges is also automatically determined once the necessary details have been added to the option database.
+
+There are two key functions that implement this behavior, neither of which need to be altered when adding additional rems:
+{{{
+InputDialog::initializeControls();
+}}}
+
+* Searches the InputDialog class for all embedded widgets.  These are the ones you add using the Qt Designer when editing the InputDialog.ui file.
+* Uses the name of the widget (e.g. exchange, all lower case) to look up the database to determine the type of control widget (e.g. for exchange this is a QComboBox).
+*  Based on the widget type, it farms out the following tasks to the appropriate (overloaded) `InputDialog::initializeControl(_,_)' function:
+    * Add valid options to the control (e.g. HF, B3LYP....).  This information is obtained from the option database.
+    * Set the default value (for exchange this was chosen to be HF).  Also from the database.
+    * Add the ToolTip documentation which appears when the user hovers the mouse over the control.  Also from the database.
+    * Connect signals and slots to update the preview text when the control is control is changed.
+
+{{{
+InputDialog::initializeQuiLogic();
+}}}
+
+* This function is in the file InputDialogLogic.C and allows options to be coupled and have dependencies.  For basic options that are independent, nothing needs to be added here.  The format of the options is couched in terms of a logic system that was designed for the QUI and is explained below.
+
+== The QUI Logic System ==
+
+A rule-based logic system has been implemented in C++to add logic to the rem options.  In what follows the `monospaced` names refer to class names.
+
+Rem options are represented as `Node` objects that can have associated `Rule` objects attached to them.  These `Node` objects are obtained from the `OptionRegister` which is a singleton class that interacts with the `OptionDatabase` so you don't have to worry about SQL queries.
+
+{{{
+typedef boost::tuple<Condition, Action, Action> Rule;
+}}}
+A `Rule` is a tuple made up of a `Condition` and two `Actions`.  The first `Action` is executed if the `Condition` returns true, and the second is executed if the `Condition` returns false.  
+
+{{{
+typedef boost::function<bool()> Condition;
+}}}
+A `Condition` is simply a boost function prototype which means it can be //any// function, or functor, that takes zero arguments and returns a boolean.
+
+{{{
+typedef boost::function<void()> Action;
+}}}
+An `Action` is a boost function prototype, just like a `Condition` except that its return value is void.  Note that the `Action` can be as simple as the DoNothing() function which, as its name suggests, does nothing.
+
+=== An Example ===
+
+Let's take a look at a specific example from the InputDialogLogic.C file.  The behavior we are trying to implement is that when the correlation rem is set to RIMP2, then the widget associated with the auxilliary_basis should be made active so the user can interact with it (the default is to have this control disabled indicating the user doesn't need to worry about setting it).  Here is the code that does this (note the following is slightly edited for clarity here):
+
+{{{
+   QtNode* node;
+   OptionRegister& reg = OptionRegister::instance();
+   node = &reg.get("CORRELATION");
+   node->addRule(
+      If(*node == QString("RIMP2"),
+         Enable(m_ui.auxiliary_basis),
+         Disable(m_ui.auxiliary_basis)
+      )
+   );
+
+}}}
+
+Line by line we have:
+1. Declares a pointer to a `QtNode` object, which is simply a `Node` that has added signal/slot functionality.
+2. Obtains a reference to the `OptionRegister` singleton.  This should look familiar to anyone who has used singleton classes before.
+3. Uses the `OptionRegister::get(_)` function that either 
+     * creates a new logic `Node` and returns a pointer to it or
+     * return a pointer to an existing `Node` if it is already in the register.  
+ This gives us a handle on the node to which we can add `Rules`.  Note that not all rem variables will be in the `OptionRegister`, only those which require additional logic will be added.  The addition to the register is done automatically the first time the `get(_)` function is called with the option name.
+4.  Adds a rule to the node.  
+5. The rule is created by the convenience function If (note the uppercase I) which takes a `Condition` and two `Actions` and returns a `Rule`.  The ''=='' operator has been overloaded for `Node` objects to return a `Condition` rather than a boolean.  Normally overloading ''=='' is frowned upon, however, in this case it makes sense and shouldn't cause confusion.  Here we are creating a `Condition` that checks to see if the datum variable held by the `QtNode` (which is simply a QString) is set to RIMP2.  Note that the evaluation of the `Condition` does not occur immediately, rather it is delayed until the value of the node is changed via a call to `Node::setValue(v)`.  This function updates the value of  the node to v and then applies all the `Rules` that have been added to the node.  The application of the rules occurs every time `setValue(_)` is called so the `Condition` may evaluate to either true or false depending on the state of all the logic variables in the system.
+6. Creates an `Action` that is executed if the `Condition` evaluates to true using the `Enable(QWidget*)` function.  This function takes a pointer to a QWidget (in this case the auxiliary_basis combo box) and uses boost::bind to create a function on the fly which binds the QWidget::setEnabled function to the auxiliary_basis widget.  The function isn't named explicitly but if we had written
+{{{
+Action enableAuxiliaryBasis = Enable(m_ui.auxiliary_basis);
+}}}
+then every time we called `enableAuxiliaryBasis()` the control widget would be enabled.  We have effectively created an unnamed version of this function which will be stored in the `Node` associated with the correlation option.
+7. Creates an `Action` that is executed if the `Condition` evaluates to false.

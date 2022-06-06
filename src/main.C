@@ -37,8 +37,8 @@
 #include <QStringList>
 #include <QDir>
 #include <QSysInfo>
-#include "QsLog.h"
-#include "QsLogDest.h"
+#include "Util/QsLog.h"
+#include "Util/QsLogDest.h"
 #include "Main/version.h"
 
 #ifdef Q_OS_WIN32
