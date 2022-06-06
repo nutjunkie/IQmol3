@@ -7,3 +7,6 @@
 [submodule "modules/yaml-cpp"]
 	path = modules/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "modules/libQGLViewer"]
+	path = modules/libQGLViewer
+	url = https://github.com/GillesDebunne/libQGLViewer.git

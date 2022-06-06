@@ -1,6 +1,13 @@
-cmake_minimum_required(VERSION 3.4)
-
-set(SOURCES main.C)
-
-include_directories(${CMAKE_SOURCE_DIR}/modules/openmesh/src)
-
+add_subdirectory(Configurator)
+add_subdirectory(Data)
+add_subdirectory(Grid)
+add_subdirectory(Layer)
+add_subdirectory(Network)
+add_subdirectory(Old)
+add_subdirectory(Qui)
+add_subdirectory(Main)
+add_subdirectory(Parser)
+add_subdirectory(Plot)
+add_subdirectory(Process)
+add_subdirectory(Util)
+add_subdirectory(Viewer)
