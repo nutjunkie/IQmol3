@@ -529,7 +529,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
    bool setDefaultGeometry(false);
 
    list = deselected.indexes();
-qDebug() << "ViewerModel::selectionChanged  deselected" << list;
+//qDebug() << "ViewerModel::selectionChanged  deselected" << list;
    for (iter = list.begin(); iter != list.end(); ++iter) {
        base = QVariantPtr<Layer::Base>::toPointer((*iter).data(Qt::UserRole+1));
        if ( (glObject = qobject_cast<Layer::GLObject*>(base)) ) {

@@ -71,6 +71,7 @@
 #include "openbabel/generic.h"
 #include "openbabel/forcefield.h"
 #include "openbabel/plugin.h"
+#include "openbabel/obfunctions.h"
 
 #include <QFileDialog>
 #include <QDropEvent>
@@ -536,20 +537,29 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        position = (*atomIter)->getPosition();
        obAtom->SetAtomicNum((*atomIter)->getAtomicNumber());
        obAtom->SetVector(position.x, position.y, position.z);
+       OBAtomAssignTypicalImplicitHydrogens(obAtom);
    }
 
    BondList bonds(findLayers<Bond>(Children));
    BondList::iterator bondIter;
 
    for (bondIter = bonds.begin(); bondIter != bonds.end(); ++bondIter) {
+       unsigned hcount;
+       unsigned order((*bondIter)->getOrder());
+      
        obBond = obMol->NewBond();
        bondMap->insert(obBond, *bondIter);
+       obBond->SetBondOrder(order);
 
-       obBond->SetBondOrder((*bondIter)->getOrder());
        obAtom = atomMap->key((*bondIter)->beginAtom());
+       hcount = obAtom->GetImplicitHCount();
+       obAtom->SetImplicitHCount(order >= hcount ? 0 : hcount - order);
        obBond->SetBegin(obAtom);
        obAtom->AddBond(obBond);
+
        obAtom = atomMap->key((*bondIter)->endAtom());
+       hcount = obAtom->GetImplicitHCount();
+       obAtom->SetImplicitHCount(order >= hcount ? 0 : hcount - order);
        obBond->SetEnd(obAtom);
        obAtom->AddBond(obBond);
    }
@@ -982,6 +992,11 @@ void Molecule::applyConstraint(Constraint* constraint)
          QLOG_TRACE() << "Applying torsion constraint";
          msg += " torsion";
          applyTorsionConstraint(constraint);
+         break;
+      case Constraint::FrozenAtoms:
+         QLOG_TRACE() << "Applying frozen atoms constraint";
+         msg += " position";
+         applyPositionConstraint(constraint);
          break;
    }
 
@@ -1816,11 +1831,22 @@ void Molecule::addHydrogens()
    OBAtomTyper atomTyper;
    qDebug() << "OBAtomTyper::AssignImplicitvalence() deprecated";
    //atomTyper.AssignImplicitValence(*obMol);
+
    atomTyper.AssignHyb(*obMol);
+   atomTyper.AssignTypes(*obMol);
 
    AtomMap::iterator iter;
    for (iter = atomMap.begin(); iter != atomMap.end(); ++iter) {
        int hybrid(iter.value()->getHybridization());
+       qDebug() << "hybrid = " << hybrid;
+       qDebug() << "GetAtomicNum       = " << iter.key()->GetAtomicNum();
+       qDebug() << "GetImplicitHCount  = " << iter.key()->GetImplicitHCount();
+       qDebug() << "GetExplicitDegree  = " << iter.key()->GetExplicitDegree();
+       qDebug() << "GetTotalDegree     = " << iter.key()->GetTotalDegree();
+       qDebug() << "GetExplicitValence = " << iter.key()->GetExplicitValence();
+       qDebug() << "GetTotalValence    = " << iter.key()->GetTotalValence();
+       qDebug() << "GetHyb             = " << iter.key()->GetHyb();         
+       qDebug() << "ExplicitHydrogenCoun " << iter.key()->ExplicitHydrogenCount();
        if (hybrid > 0) {
           qDebug() << "OBAtom::SetImplicitValence() deprecated";
           //iter.key()->SetImplicitValence(iter.value()->getValency());

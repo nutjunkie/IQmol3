@@ -296,7 +296,7 @@ void Viewer::generatePovRay(QString const& filename)
 
 void Viewer::draw()
 {
-   qDebug() << "draw() called";
+  qDebug() << "draw() called";
    if (m_blockUpdate || !m_shaderLibrary) return;
 
    if (m_cameraDialog) m_cameraDialog->sync();
@@ -756,7 +756,7 @@ void Viewer::displayGeometricParameter(GLObjectList const& selection)
 
    // We cannot use displayMessage here as it triggers an update
    QString space(" ");
-   qDebug() << "Need to clear message in Viewer.C";
+   //qDebug() << "Need to clear message in Viewer.C";
    //clearMessage();
    //drawText(10, height()-10, space.repeated(message_.length()));
    drawText(10, height()-10, msg);
