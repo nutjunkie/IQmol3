@@ -625,7 +625,7 @@ static void KeyboardCallback(const char* /*name*/, int /*name_len*/,
     for (int i = 0; i < num_prompts; i++) {
         QString msg("Prompt from ");
         msg += CurrentServerName + ":\n";
-        std::string prompt(prompts[i].text, prompts[i].length);
+        std::string prompt(*prompts[i].text, prompts[i].length);
         msg += QString::fromStdString(prompt);
         password = QInputDialog::getText(0, "IQmol", msg, QLineEdit::Password, QString(), &ok);
         if (!ok) break;

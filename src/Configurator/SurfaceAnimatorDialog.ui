@@ -736,7 +736,7 @@ QToolTip {
   <tabstop>cancelButton</tabstop>
  </tabstops>
  <resources>
-  <include location="IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

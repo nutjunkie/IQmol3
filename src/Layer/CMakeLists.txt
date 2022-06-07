@@ -82,6 +82,12 @@ set( SOURCES
    SymmetryLayer.C
 )
 
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+
 include_directories(../ ../Data ../Util ../Viewer ../Old ../Grid ../Parser ../Process ../Configurator)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Grid)

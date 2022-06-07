@@ -41,7 +41,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="IQmol.qrc">:/resources/icons/iqmol.png</pixmap>
+        <pixmap resource="IQmol.qrc">:/icons/iqmol.png</pixmap>
        </property>
       </widget>
      </item>
@@ -272,7 +272,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections/>
 </ui>

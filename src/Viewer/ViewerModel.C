@@ -264,7 +264,7 @@ void ViewerModel::processParsedData(ParseJobFiles* parser)
    molecule->setCheckState(Qt::Unchecked);
    molecule->setText(name);
    molecule->appendData(bank);
-   if (addStar) molecule->setIcon(QIcon(":/resources/icons/Favourites.png"));
+   if (addStar) molecule->setIcon(QIcon(":/icons/Favourites.png"));
 
    QStandardItem* child;
    QStandardItem* root(invisibleRootItem());

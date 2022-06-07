@@ -22,7 +22,7 @@
 
 ********************************************************************************/
 
-#include "Configurator.h"
+#include "Configurator/Configurator.h"
 #include "QVariantPtr.h"
 #include <QStandardItem>
 #include <QObject>

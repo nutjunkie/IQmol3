@@ -82,13 +82,16 @@ set( UI_FILES
    VectorConstraintConfigurator.ui
 )
 
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOMOC ON)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(../ ../Data ../Util ../Layer ../Old ../Viewer ../Plot ../Grid)
 
 qt5_wrap_ui(SOURCES ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES} ${UI_FILES} )
 
 target_link_libraries(${LIB} PRIVATE 
    Qt5::Core 

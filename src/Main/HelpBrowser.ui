@@ -74,8 +74,8 @@ QTextBrowser#content {
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/Back.png</normaloff>:/resources/icons/Back.png</iconset>
+        <iconset resource="../../resources/IQmol.qrc">
+         <normaloff>:/icons/Back.png</normaloff>:/icons/Back.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -94,8 +94,8 @@ QTextBrowser#content {
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/Forward.png</normaloff>:/resources/icons/Forward.png</iconset>
+        <iconset resource="../../resources/IQmol.qrc">
+         <normaloff>:/icons/Forward.png</normaloff>:/icons/Forward.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -114,8 +114,8 @@ QTextBrowser#content {
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/Home.png</normaloff>:/resources/icons/Home.png</iconset>
+        <iconset resource="../../resources/IQmol.qrc">
+         <normaloff>:/icons/Home.png</normaloff>:/icons/Home.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -150,8 +150,8 @@ QTextBrowser#content {
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/Search.png</normaloff>:/resources/icons/Search.png</iconset>
+        <iconset resource="../../resources/IQmol.qrc">
+         <normaloff>:/icons/Search.png</normaloff>:/icons/Search.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -203,7 +203,7 @@ QTextBrowser#content {
   </layout>
  </widget>
  <resources>
-  <include location="IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -51,7 +51,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Old)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Qui)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Process)
-include_directories(../OpenMesh/src)
 
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )

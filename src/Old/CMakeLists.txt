@@ -34,6 +34,8 @@ set( UI_FILES
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
 
 include_directories(.. ../Util ../Data ../Parser ../Layer ../Configurator ../Viewer)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)

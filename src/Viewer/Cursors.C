@@ -55,7 +55,7 @@ Cursors::~Cursors() {
 
 
 QCursor* Cursors::load(QString const& name) {
-   QString file(":/resources/cursors/");
+   QString file(":/cursors/");
    file += name + ".png";
 
    QImage image;

@@ -243,7 +243,7 @@ QToolButton:pressed {
   </layout>
  </widget>
  <resources>
-  <include location="../Main/IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

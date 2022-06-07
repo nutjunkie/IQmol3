@@ -323,8 +323,8 @@ QToolButton:checked {
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="../Main/IQmol.qrc">
-                   <normaloff>:/resources/icons/Add.png</normaloff>:/resources/icons/Add.png</iconset>
+                  <iconset resource="../../resources/IQmol.qrc">
+                   <normaloff>:/icons/Add.png</normaloff>:/icons/Add.png</iconset>
                  </property>
                 </widget>
                </item>
@@ -374,8 +374,8 @@ QToolButton:checked {
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="../Main/IQmol.qrc">
-                   <normaloff>:/resources/icons/Remove.png</normaloff>:/resources/icons/Remove.png</iconset>
+                  <iconset resource="../../resources/IQmol.qrc">
+                   <normaloff>:/icons/Remove.png</normaloff>:/icons/Remove.png</iconset>
                  </property>
                 </widget>
                </item>
@@ -5834,7 +5834,7 @@ Eventually this should go.</string>
   <tabstop>qui_pcm_printlevel</tabstop>
  </tabstops>
  <resources>
-  <include location="../Main/IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

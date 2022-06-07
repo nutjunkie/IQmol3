@@ -123,8 +123,8 @@ QToolButton:checked {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Add.png</normaloff>:/resources/icons/Add.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Add.png</normaloff>:/icons/Add.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -143,8 +143,8 @@ QToolButton:checked {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Configure.png</normaloff>:/resources/icons/Configure.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Configure.png</normaloff>:/icons/Configure.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -163,8 +163,8 @@ QToolButton:checked {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Remove.png</normaloff>:/resources/icons/Remove.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Remove.png</normaloff>:/icons/Remove.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -183,8 +183,8 @@ QToolButton:checked {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Up.png</normaloff>:/resources/icons/Up.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Up.png</normaloff>:/icons/Up.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -203,8 +203,8 @@ QToolButton:checked {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Down.png</normaloff>:/resources/icons/Down.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Down.png</normaloff>:/icons/Down.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -258,7 +258,7 @@ QToolButton:checked {
   </layout>
  </widget>
  <resources>
-  <include location="../Main/IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -509,7 +509,7 @@ Use Web for HTTP/HTTPS servers</string>
   <tabstop>exportButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../Main/IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -132,7 +132,7 @@ QToolTip {
   </layout>
  </widget>
  <resources>
-  <include location="IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>

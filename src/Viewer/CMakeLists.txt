@@ -56,6 +56,9 @@ set( UI_FILES
    Snapshot.ui
 )
 
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -63,7 +66,6 @@ include_directories(../Layer ../Configurator ../Util .. ../Data ../Old ../Parser
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Process)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Old)
-include_directories(../OpenMesh/src)
 
 qt_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt_wrap_cpp(SOURCES ${HEADERS} )

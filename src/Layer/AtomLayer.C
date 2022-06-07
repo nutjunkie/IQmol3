@@ -165,7 +165,7 @@ void Atom::setAtomicNumber(unsigned int const Z)
    OpenBabel::OBElements::GetRGB(Z, &r, &g, &b);
    m_color[0] = r;
    m_color[1] = g;
-   m_color[0] = b;
+   m_color[2] = b;
    m_color[3] = m_alpha;
 }
 

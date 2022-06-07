@@ -93,8 +93,8 @@ QToolButton:checked {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/NewDocument.png</normaloff>:/resources/icons/NewDocument.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/NewDocument.png</normaloff>:/icons/NewDocument.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -116,8 +116,8 @@ QToolButton:checked {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Open.png</normaloff>:/resources/icons/Open.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Open.png</normaloff>:/icons/Open.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -139,8 +139,8 @@ QToolButton:checked {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Save.png</normaloff>:/resources/icons/Save.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Save.png</normaloff>:/icons/Save.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -169,8 +169,8 @@ QToolButton:checked {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Manipulate.png</normaloff>:/resources/icons/Manipulate.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Manipulate.png</normaloff>:/icons/Manipulate.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -202,8 +202,8 @@ QToolButton:checked {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Equipment.png</normaloff>:/resources/icons/Equipment.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Equipment.png</normaloff>:/icons/Equipment.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -277,8 +277,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/AddFragment.png</normaloff>:/resources/icons/AddFragment.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/AddFragment.png</normaloff>:/icons/AddFragment.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -305,8 +305,8 @@ QToolTip {
       <string>H</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/AddHydrogens.png</normaloff>:/resources/icons/AddHydrogens.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/AddHydrogens.png</normaloff>:/icons/AddHydrogens.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -337,8 +337,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Minimize.png</normaloff>:/resources/icons/Minimize.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Minimize.png</normaloff>:/icons/Minimize.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -367,8 +367,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/MagicWand.png</normaloff>:/resources/icons/MagicWand.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/MagicWand.png</normaloff>:/icons/MagicWand.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -393,8 +393,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Delete.png</normaloff>:/resources/icons/Delete.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Delete.png</normaloff>:/icons/Delete.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -423,8 +423,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Camera.png</normaloff>:/resources/icons/Camera.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Camera.png</normaloff>:/icons/Camera.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -446,8 +446,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Movie.png</normaloff>:/resources/icons/Movie.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Movie.png</normaloff>:/icons/Movie.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -472,8 +472,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Display.png</normaloff>:/resources/icons/Display.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Display.png</normaloff>:/icons/Display.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -502,8 +502,8 @@ QToolTip {
       <string>...</string>
      </property>
      <property name="icon">
-      <iconset resource="IQmol.qrc">
-       <normaloff>:/resources/icons/Help.png</normaloff>:/resources/icons/Help.png</iconset>
+      <iconset resource="../../resources/IQmol.qrc">
+       <normaloff>:/icons/Help.png</normaloff>:/icons/Help.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -529,7 +529,7 @@ QToolTip {
   </layout>
  </widget>
  <resources>
-  <include location="IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections/>
 </ui>

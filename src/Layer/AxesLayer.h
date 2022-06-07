@@ -23,14 +23,10 @@
 ********************************************************************************/
 
 #include "GlobalLayer.h"
-#include "AxesConfigurator.h"
+#include "Configurator/AxesConfigurator.h"
 
 
 namespace IQmol {
-
-namespace Configurator {
-   class Axes;
-}
 
 namespace Layer {
 

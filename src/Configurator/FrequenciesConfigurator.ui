@@ -148,8 +148,8 @@ QToolTip {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/GoBack.png</normaloff>:/resources/icons/GoBack.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/GoBack.png</normaloff>:/icons/GoBack.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -173,9 +173,9 @@ QToolTip {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/Play.png</normaloff>
-           <normalon>:/resources/icons/Stop.png</normalon>:/resources/icons/Play.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/Play.png</normaloff>
+           <normalon>:/icons/Stop.png</normalon>:/icons/Play.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -197,8 +197,8 @@ QToolTip {
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="../Main/IQmol.qrc">
-           <normaloff>:/resources/icons/GoForward.png</normaloff>:/resources/icons/GoForward.png</iconset>
+          <iconset resource="../../resources/IQmol.qrc">
+           <normaloff>:/icons/GoForward.png</normaloff>:/icons/GoForward.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -522,7 +522,7 @@ QToolTip {
   <zorder></zorder>
  </widget>
  <resources>
-  <include location="../Main/IQmol.qrc"/>
+  <include location="../../resources/IQmol.qrc"/>
  </resources>
  <connections>
   <connection>
