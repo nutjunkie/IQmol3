@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20.2)
 set(targetName IQmol)
 
-project(${targetName} VERSION 3.0.0 LANGUAGES CXX Fortran)
+project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,8 +11,10 @@ if(APPLE)
    set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
 endif(APPLE)
 
-#set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
+#find_package(HDF5 REQUIRED)
 #find_package(LibSSH2 REQUIRED)
+
 #message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
 #message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
 #message("LIBSSH2_LIBRARY=      " ${LIBSSH2_LIBRARY})
@@ -32,16 +34,25 @@ include_directories(modules/libssh2/include)
 include_directories(modules/openmesh/src)
 include_directories(modules/yaml-cpp/include)
 include_directories(modules/openbabel/include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 
+add_subdirectory(modules           EXCLUDE_FROM_ALL)  # CMakeLists.txt for libQGLViewer
 add_subdirectory(modules/libssh2   EXCLUDE_FROM_ALL)
 add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
-add_subdirectory(modules           EXCLUDE_FROM_ALL)  # no CMakeLists.txt for libQGLViewer
+add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
+
+if(QARCHIVE)
+   add_subdirectory(qarchive)
+else(QARCHIVE)
+   include_directories(modules/hdf5/src)
+   include_directories(modules/HighFive/include)
+   add_subdirectory(modules/hdf5      EXCLUDE_FROM_ALL)
+   add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
+endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
@@ -49,10 +60,8 @@ set(Boost_USE_STATIC_LIBS TRUE)
 find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-
 add_subdirectory(src)
 qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
-
 set(ICON_PATH resources/IQmol.icns)
 
 if (APPLE)
@@ -71,16 +80,20 @@ if (APPLE)
       copy_directory ${CMAKE_SOURCE_DIR}/modules/openbabel/data 
                      ${CMAKE_BINARY_DIR}/bin/${targetName}.app/Contents/share/openbabel
    )
+#   add_custom_command(TARGET ${targetName} POST_BUILD 
+#      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
 
 unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
 set_target_properties(${targetName} PROPERTIES LINKER_LANGUAGE "CXX"
   LINK_FLAGS "/opt/homebrew//Cellar/gcc/11.3.0/lib/gcc/11/libgfortran.a -lgcc"
-#    libquadmath.a -lm -lgcc"
-#  "/usr/local/Cellar/gcc/7.1.0/lib/gcc/7/
-#  /usr/local/Cellar/gcc/7.1.0/lib/gcc/7/
 )
 
+if(QARCHIVE)
+   target_link_libraries (${targetName} archive_impl)
+else(QARCHIVE)
+   target_link_libraries (${targetName} hdf5-static)
+endif(QARCHIVE)
 
 target_link_libraries (${targetName}
    Configurator

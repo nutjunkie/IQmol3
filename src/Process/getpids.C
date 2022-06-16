@@ -10,7 +10,7 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Copyright (C) 2003  Daniel 2015ibli                                ## */
+/* ##  Copyright (C) 2022 Andrew Gilbert
 /* ##                                                                     ## */
 /* ##  This program is free software; you can redistribute it and/or      ## */
 /* ##  modify it under the terms of the GNU General Public License        ## */

@@ -13,3 +13,9 @@
 [submodule "modules/libssh2"]
 	path = modules/libssh2
 	url = https://github.com/libssh2/libssh2.git
+[submodule "modules/hdf5"]
+	path = modules/hdf5
+	url = https://github.com/HDFGroup/hdf5.git
+[submodule "modules/HighFive"]
+	path = modules/HighFive
+	url = https://github.com/BlueBrain/HighFive.git
