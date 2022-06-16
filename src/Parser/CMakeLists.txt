@@ -2,6 +2,7 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml OpenGL REQUIRED)
 set(LIB Parser)
 
 set( SOURCES
+   ArchiveParser.C
    CartesianCoordinatesParser.C
    CubeParser.C
    EfpFragmentParser.C

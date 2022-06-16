@@ -35,15 +35,16 @@ namespace Parser {
          Base() { }
          virtual ~Base();
 
-	 /// The default implementation performs basic checks on the file
-	 /// bfore handing the work off to the parse() function. Returns
+         /// The default implementation performs basic checks on the file
+         /// bfore handing the work off to the parse() function. Returns
          /// true only if no errors were encountered.
-	 virtual bool parseFile(QString const& filePath);
+         virtual bool parseFile(QString const& filePath);
 
          /// This function does the actual work of parsing the file contents 
          /// and must be reimplemented for a specific file type.  Returns
-         /// true only if no errors were encountered.
-         virtual bool parse(TextStream&) = 0;
+         /// true only if no errors were encountered. 
+         // This assumes a text-based file format, which is not necessarily true
+         virtual bool parse(TextStream&) { return false; }
 
          QStringList const& errors() const { return m_errors; } 
          Data::Bank& data() { return m_dataBank; }

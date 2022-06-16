@@ -27,7 +27,7 @@
 #include "Data/Energy.h"
 #include "Data/GeometryList.h"
 #include <QRegularExpression>
-#include "OpenBabel/obiter.h"
+#include "openbabel/obiter.h"
 
 #include <QtDebug>
 

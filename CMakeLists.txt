@@ -27,31 +27,40 @@ find_package(OpenGL  REQUIRED)
   
 # This does not appear to be working, need cmake -DBUILD_SHARED=OFF ../
 add_definitions(-DGL_SILENCE_DEPRECATION -DBUILD_SHARED=OFF)
+set(HDF5_USE_STATIC_LIBRARIES 1)
 
-# External modules
+# No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
-include_directories(modules/libssh2/include)
-include_directories(modules/openmesh/src)
-include_directories(modules/yaml-cpp/include)
-include_directories(modules/openbabel/include)
+add_subdirectory(modules  EXCLUDE_FROM_ALL)
 
+include_directories(modules/libssh2/include)
+add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
+
+include_directories(modules/openmesh/src)
+add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+
+include_directories(modules/yaml-cpp/include)
+add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
+
+include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
+add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
 
-add_subdirectory(modules           EXCLUDE_FROM_ALL)  # CMakeLists.txt for libQGLViewer
-add_subdirectory(modules/libssh2   EXCLUDE_FROM_ALL)
-add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
-add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
+include_directories(modules/hdf5/src)
+add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
+
+include_directories(modules/HighFive/include)
+add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
 if(QARCHIVE)
+   include_directories(qarchive/libarchive)
+   include_directories(qarchive/libstore)
+   include_directories(qarchive/libaview)
+   include_directories(qarchive/ctx/src)
+   include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
    add_subdirectory(qarchive)
-else(QARCHIVE)
-   include_directories(modules/hdf5/src)
-   include_directories(modules/HighFive/include)
-   add_subdirectory(modules/hdf5      EXCLUDE_FROM_ALL)
-   add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
@@ -90,7 +99,7 @@ set_target_properties(${targetName} PROPERTIES LINKER_LANGUAGE "CXX"
 )
 
 if(QARCHIVE)
-   target_link_libraries (${targetName} archive_impl)
+   target_link_libraries (${targetName} archive_impl armadillo)
 else(QARCHIVE)
    target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)
