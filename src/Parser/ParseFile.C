@@ -38,8 +38,11 @@
 #include "ExternalChargesParser.h"
 #include "FormattedCheckpointParser.h"
 #include "OpenBabelParser.h"
-#include "ArchiveParser.h"
 #include "YamlParser.h"
+
+#ifdef QARCHIVE
+#include "ArchiveParser.h"
+#endif
 
 #include <QFileInfo>
 #include <QDir>
@@ -227,10 +230,12 @@ qDebug() << msg;
       parser = new Yaml;
    }
 
+#ifdef QARCHIVE
    if (extension == "h5") {
       QLOG_DEBUG() << "Using Archive parser";
       parser = new Archive;
    }
+#endif
  
    if (extension == "inc" || extension == "pov") {
       addToFileList = false;

@@ -76,6 +76,7 @@ namespace Data {
 
          void setCharge(int const charge);
          void setMultiplicity(unsigned const multiplicity);
+
          void setChargeAndMultiplicity(int const charge, unsigned const multiplicity);
          int  charge() const { return m_charge; }
          unsigned multiplicity() const { return m_multiplicity; }
@@ -153,6 +154,14 @@ namespace Data {
 
          void dump() const;
 
+         // These are currently only used in the Parser::Archive, but should be
+         // set more generally.
+         void setNAlpha(unsigned nAlpha) { m_nAlpha = nAlpha; }
+         void setNBeta(unsigned nBeta) { m_nBeta = nBeta; }
+
+         unsigned getNAlpha() const { return m_nAlpha; }
+         unsigned getNBeta()  const { return m_nBeta; }
+
       private:
          template <class Archive>
          void privateSerialize(Archive& ar, unsigned const /* version */) {
@@ -160,6 +169,8 @@ namespace Data {
             ar & m_coordinates;
             ar & m_charge;
             ar & m_multiplicity;
+            ar & m_nAlpha;
+            ar & m_nBeta;
             m_properties.serialize(ar);
          }
 
@@ -169,6 +180,8 @@ namespace Data {
          QList<qglviewer::Vec> m_coordinates;
          int m_charge;
          unsigned m_multiplicity;
+         unsigned m_nAlpha;
+         unsigned m_nBeta;
          Bank m_properties;
    };
 

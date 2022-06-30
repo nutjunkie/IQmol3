@@ -32,6 +32,9 @@ namespace IQmol {
 
 namespace Data {
    class Geometry;
+   class ShellData;
+   class OrbitalData;
+   class DensityList;
 }
 
 namespace Parser {
@@ -46,19 +49,9 @@ namespace Parser {
 
       private:
          Data::Geometry* readGeometry(schema::job::sp&);
-         bool readShellData(schema::job::sp&);
-
-         struct OrbitalData {
-            int stateIndex;
-            QString label;
-
-            QStringList   labels;
-            QList<double> alphaCoefficients;
-            QList<double> betaCoefficients;
-            QList<double> alphaEnergies;
-            QList<double> betaEnergies;
-         };
-
+         void readShellData(schema::job::sp&, Data::ShellData&);
+         void readOrbitalData(schema::job::sp&, Data::OrbitalData&);
+         void readDensityMatrix(schema::job::sp&, Data::DensityList&);
    };
 
 } } // end namespace IQmol::Parser

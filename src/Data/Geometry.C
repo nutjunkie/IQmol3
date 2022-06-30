@@ -34,7 +34,7 @@ namespace IQmol {
 namespace Data {
 
 
-Geometry::Geometry() : m_charge(0), m_multiplicity(1) { }
+Geometry::Geometry() : m_charge(0), m_multiplicity(1), m_nAlpha(0), m_nBeta(0)  { }
 
 Geometry::Geometry(Geometry const& that) : Base()
 {

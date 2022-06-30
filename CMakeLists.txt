@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.20.2)
 set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
 
-#include(FortranCInterface)
-#FortranCInterface_VERIFY(CXX)
+include(FortranCInterface)
+FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,10 +29,6 @@ find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(Armadillo REQUIRED)
   
-# This does not appear to be working, need cmake -DBUILD_SHARED=OFF ../
-add_definitions(-DGL_SILENCE_DEPRECATION -DBUILD_SHARED=OFF)
-set(HDF5_USE_STATIC_LIBRARIES 1)
-
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
 add_subdirectory(modules  EXCLUDE_FROM_ALL)
@@ -46,12 +42,19 @@ add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
+
+# There seems to be a scoping problem with the following variables, so they need to be set
+# on the command line in order for them to take effect.
+# cmake -DBUILD_SHARED=OFF  ../ 
+#set(BUILD_SHARED OFF)
+#set(GL_SILENCE_DEPRECATION ON)
 include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
-add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
+add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
+set(HDF5_USE_STATIC_LIBRARIES 1)
 #include_directories(modules/hdf5/src)
 #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
 include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
@@ -60,10 +63,11 @@ include_directories(modules/HighFive/include)
 add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
 if(QARCHIVE)
-   include_directories(qarchive/libarchive)
-   include_directories(qarchive/libstore)
-   include_directories(qarchive/libaview)
+   add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
+   include_directories(qarchive/libaview)
+   include_directories(qarchive/libstore)
+   include_directories(qarchive/libarchive)
    include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
    add_subdirectory(qarchive)
 endif(QARCHIVE)
@@ -142,5 +146,5 @@ target_link_libraries (${targetName}
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
-   target_link_libraries (${targetName} hdf5-static)
+#   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)

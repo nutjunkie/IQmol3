@@ -131,7 +131,6 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
       key = key.trimmed();
       QString tmp(line.mid(43, 37));
 
-
       QStringList list(TextStream::tokenize(tmp));
 
       if (key == "Number of alpha electrons") {            // This should only appear once
