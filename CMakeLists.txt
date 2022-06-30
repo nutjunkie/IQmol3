@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.20.2)
-set(targetName IQmol)
 
+set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
+
+#include(FortranCInterface)
+#FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,6 +27,7 @@ find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 find_package(ZLIB    REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
+find_package(Armadillo REQUIRED)
   
 # This does not appear to be working, need cmake -DBUILD_SHARED=OFF ../
 add_definitions(-DGL_SILENCE_DEPRECATION -DBUILD_SHARED=OFF)
@@ -48,8 +52,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
 
-include_directories(modules/hdf5/src)
-add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
+#include_directories(modules/hdf5/src)
+#add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
+include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
 
 include_directories(modules/HighFive/include)
 add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
@@ -58,7 +63,7 @@ if(QARCHIVE)
    include_directories(qarchive/libarchive)
    include_directories(qarchive/libstore)
    include_directories(qarchive/libaview)
-   include_directories(qarchive/ctx/src)
+   include_directories(qarchive/libctx)
    include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
    add_subdirectory(qarchive)
 endif(QARCHIVE)
@@ -93,16 +98,14 @@ if (APPLE)
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
 
-unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
-set_target_properties(${targetName} PROPERTIES LINKER_LANGUAGE "CXX"
-  LINK_FLAGS "/opt/homebrew//Cellar/gcc/11.3.0/lib/gcc/11/libgfortran.a -lgcc"
-)
-
-if(QARCHIVE)
-   target_link_libraries (${targetName} archive_impl armadillo)
-else(QARCHIVE)
-   target_link_libraries (${targetName} hdf5-static)
-endif(QARCHIVE)
+# The following is required to link gfortran statically, and was working before
+# the compiler update.
+#unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
+#SET_TARGET_PROPERTIES(${targetName} PROPERTIES LINKER_LANGUAGE "CXX"
+#  LINK_FLAGS
+#  "/opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libgfortran.a 
+#   /opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libquadmath.a  
+#)
 
 target_link_libraries (${targetName}
    Configurator
@@ -135,3 +138,9 @@ target_link_libraries (${targetName}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
 )
+
+if(QARCHIVE)
+   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
+else(QARCHIVE)
+   target_link_libraries (${targetName} hdf5-static)
+endif(QARCHIVE)

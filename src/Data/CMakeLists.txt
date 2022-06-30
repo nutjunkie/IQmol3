@@ -38,6 +38,7 @@ set( HEADERS
    NmrReferenceLibrary.h
    OrbitalSymmetries.h
    Orbitals.h
+   OrbitalFactory.h
    OrbitalsList.h
    PointCharge.h
    PointGroup.h
@@ -86,6 +87,7 @@ set( SOURCES
    NmrReferenceLibrary.C
    OrbitalSymmetries.C
    Orbitals.C
+   OrbitalFactory.C
    OrbitalsList.C
    PointCharge.C
    PointGroup.C

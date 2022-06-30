@@ -61,7 +61,6 @@ namespace Parser {
          Data::Geometry* makeGeometry(GeomData const&);
 
          bool dataAreConsistent(Data::ShellData const&, unsigned const nAtoms);
-         Data::ShellList* makeShellList(Data::ShellData const&, Data::Geometry const& geometry);
 
          struct OrbitalData {
             Data::Orbitals::OrbitalType orbitalType;

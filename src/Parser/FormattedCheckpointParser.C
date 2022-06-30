@@ -627,8 +627,6 @@ Data::Orbitals* FormattedCheckpoint::makeOrbitals(unsigned const nAlpha,
    Data::Geometry const& geometry, Data::DensityList densityList)
 {
    if (orbitalData.alphaCoefficients.isEmpty()) return 0;
-   // TODO: This needs to move to avoid duplication 
-   //Data::ShellList* shellList = makeShellList(shellData, geometry);
    Data::ShellList* shellList = new Data::ShellList(shellData, geometry);
    if (!shellList) return 0;
 
@@ -699,7 +697,7 @@ Data::GeminalOrbitals* FormattedCheckpoint::makeGeminalOrbitals(unsigned const n
    // This needs fixing.  Newer versions of QChem only print the orbitals for the
    // final geometry, so the first ones are just for the geometries
    if (gmoData.geminalEnergies.isEmpty()) return 0;
-   Data::ShellList* shellList = makeShellList(shellData, geometry);
+   Data::ShellList* shellList = new Data::ShellList(shellData, geometry);
    if (!shellList) return 0;
    Data::GeminalOrbitals* gmos = new Data::GeminalOrbitals(
       nAlpha, 
@@ -723,89 +721,6 @@ Data::GeminalOrbitals* FormattedCheckpoint::makeGeminalOrbitals(unsigned const n
    return gmos;
 }
 
-
-// This has been moved to Data::ShellList so Parser::QChemOutputFile can use it.
-// To be removed
-Data::ShellList* FormattedCheckpoint::makeShellList(Data::ShellData const& shellData, 
-   Data::Geometry const& geometry)
-{
-   if (!dataAreConsistent(shellData, geometry.nAtoms())) return 0;
-
-   static double const convExponents(std::pow(Constants::BohrToAngstrom, -2.0));
-   Data::ShellList* shellList(new Data::ShellList);
-   unsigned nShells(shellData.shellTypes.size());
-   unsigned cnt(0);
-
-   for (unsigned shell = 0; shell < nShells; ++shell) {
-
-       QList<double> expts;
-       QList<double> coefs;
-       QList<double> coefsSP;
-
-       unsigned atom(shellData.shellToAtom.at(shell)-1);
-       qglviewer::Vec pos(geometry.position(atom));
-
-       for (unsigned i = 0; i < shellData.shellPrimitives.at(shell); ++i, ++cnt) {
-		   // Convert exponents from bohr to angstrom.  The conversion factor
-		   // for the coefficients depends on the angular momentum and the 
-           // conversion is effectively done in the  Shell constructor
-           expts.append(shellData.exponents.at(cnt)*convExponents);
-
-           coefs.append(shellData.contractionCoefficients.at(cnt));
-           if (!shellData.contractionCoefficientsSP.isEmpty()) {
-              coefsSP.append(shellData.contractionCoefficientsSP.at(cnt));
-           }
-       }
-
-       switch (shellData.shellTypes.at(shell)) {
-          case 0:
-             shellList->append( new Data::Shell(Data::Shell::S, atom, pos, expts, coefs) );
-             break;
-          case -1:
-             shellList->append( new Data::Shell(Data::Shell::S, atom, pos, expts, coefs) );
-             shellList->append( new Data::Shell(Data::Shell::P, atom, pos, expts, coefsSP) );
-             break;
-          case 1:
-             shellList->append( new Data::Shell(Data::Shell::P, atom, pos, expts, coefs) );
-             break;
-          case -2:
-             shellList->append( new Data::Shell(Data::Shell::D5, atom, pos, expts, coefs) );
-             break;
-          case 2:
-             shellList->append( new Data::Shell(Data::Shell::D6, atom, pos, expts, coefs) );
-             break;
-          case -3:
-             shellList->append( new Data::Shell(Data::Shell::F7, atom, pos, expts, coefs) );
-             break;
-          case 3:
-             shellList->append( new Data::Shell(Data::Shell::F10, atom, pos, expts, coefs) );
-             break;
-          case -4:
-             shellList->append( new Data::Shell(Data::Shell::G9, atom, pos, expts, coefs) );
-             break;
-          case 4:
-             shellList->append( new Data::Shell(Data::Shell::G15, atom, pos, expts, coefs) );
-             break;
-
-          default:
-             delete shellList;
-             QString msg("Unknown Shell type found at position ");
-             msg += QString::number(shell);
-             msg += ", type: "+ QString::number(shellData.shellTypes.at(shell));
-             m_errors.append(msg);
-             return 0;
-             break;
-       }
-   }
-
-   unsigned nBasis(shellList->nBasis());
-   if (shellData.overlapMatrix.size() == (nBasis+1)*nBasis/2) {
-      shellList->setOverlapMatrix(shellData.overlapMatrix);
-   }
-
-   shellList->resize();
-   return shellList;
-}
 
 bool FormattedCheckpoint::installExcitedStates(unsigned const nAlpha, unsigned const nBeta,
    ExtData &extData, OrbitalData const& moData)

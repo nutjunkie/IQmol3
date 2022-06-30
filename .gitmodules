@@ -19,3 +19,9 @@
 [submodule "modules/HighFive"]
 	path = modules/HighFive
 	url = https://github.com/BlueBrain/HighFive.git
+[submodule "modules/FFmpeg"]
+	path = modules/FFmpeg
+	url = https://github.com/FFmpeg/FFmpeg.git
+[submodule "modules/libYafaRay"]
+	path = modules/libYafaRay
+	url = https://github.com/YafaRay/libYafaRay.git

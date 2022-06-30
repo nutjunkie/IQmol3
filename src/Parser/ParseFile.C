@@ -227,7 +227,7 @@ qDebug() << msg;
       parser = new Yaml;
    }
 
-   if (extension == ".h5") {
+   if (extension == "h5") {
       QLOG_DEBUG() << "Using Archive parser";
       parser = new Archive;
    }

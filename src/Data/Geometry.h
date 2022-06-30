@@ -24,6 +24,7 @@
 
 #include "Atom.h"
 #include <QtDebug>
+#include <vector>
 
 
 namespace IQmol {
@@ -39,7 +40,11 @@ namespace Data {
 		 // numbers and positions.  Atom and Geometry properties are not copied.
          Geometry();
          Geometry(Geometry const&);
+
          Geometry(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
+         Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates);
+
+         void set(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
 
          Type::ID typeID() const { return Type::Geometry; }
          

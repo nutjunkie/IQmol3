@@ -112,7 +112,6 @@ namespace Data {
          //   m_surfaceList.append(surfaceData);
          //}
 
-
       protected:
          // Reorders the coefficients from QChem to FChk order.  
          void reorderFromQChem(Matrix&);

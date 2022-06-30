@@ -23,9 +23,17 @@
 ********************************************************************************/
 
 #include "Parser.h"
+#include <libarchive/api/impl/qarchive.h>
+
+using namespace libarchive::impl;
 
 
 namespace IQmol {
+
+namespace Data {
+   class Geometry;
+}
+
 namespace Parser {
 
    /// Parser for YAML files.
@@ -35,6 +43,22 @@ namespace Parser {
          bool parseFile(QString const& filePath);
          // This should inherit the base-class definition.
          bool parse(TextStream&) { return false; } 
+
+      private:
+         Data::Geometry* readGeometry(schema::job::sp&);
+         bool readShellData(schema::job::sp&);
+
+         struct OrbitalData {
+            int stateIndex;
+            QString label;
+
+            QStringList   labels;
+            QList<double> alphaCoefficients;
+            QList<double> betaCoefficients;
+            QList<double> alphaEnergies;
+            QList<double> betaEnergies;
+         };
+
    };
 
 } } // end namespace IQmol::Parser

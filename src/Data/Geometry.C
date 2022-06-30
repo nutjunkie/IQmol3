@@ -48,7 +48,21 @@ Geometry::Geometry(Geometry const& that) : Base()
 }
 
 
+Geometry::Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates)
+{
+    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
+    QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+    set(nuclei, coords);
+}
+
+
 Geometry::Geometry(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates)
+{
+   set(atomicNumbers, coordinates);
+}
+
+
+void Geometry::set(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates)
 {
    unsigned n(atomicNumbers.size());
    if (3*n > (unsigned)coordinates.size()) {
@@ -67,6 +81,7 @@ Geometry::Geometry(QList<unsigned> const& atomicNumbers, QList<double> const& co
    m_charge = 0;
    m_multiplicity = 1;
 }
+
 
 
 QString Geometry::atomicSymbol(unsigned const i) const
