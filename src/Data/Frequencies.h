@@ -39,7 +39,7 @@ namespace Data {
 
          void append(VibrationalMode* mode) { m_modes.append(mode); }
          void setThermochemicalData(double const zpve, double const enthalpy, 
-            double const entropy);
+            double const entropy, double const temperature = 298.15, double const pressure = 1.0);
 
          void haveRaman(bool tf) { m_haveRaman = tf; }
          bool haveRaman() const { return m_haveRaman; }
@@ -66,6 +66,8 @@ namespace Data {
             ar & m_zpve;
             ar & m_entropy;
             ar & m_enthalpy;
+            ar & m_temperature;
+            ar & m_pressure;
             ar & m_haveRaman;
             ar & m_modes;
          }
@@ -73,6 +75,8 @@ namespace Data {
          double m_zpve;
          double m_entropy;
          double m_enthalpy;
+         double m_temperature;
+         double m_pressure;
          bool   m_haveRaman; 
          VibrationalModeList m_modes;
    };

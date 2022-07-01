@@ -69,11 +69,13 @@ double Frequencies::maxRamanIntensity() const
 
 
 void Frequencies::setThermochemicalData(double const zpve, double const enthalpy, 
-   double const entropy)
+   double const entropy, double const temperature, double const pressure)
 {
    m_zpve     = zpve; 
    m_enthalpy = enthalpy;
    m_entropy  = entropy;
+   m_temperature = temperature;
+   m_pressure = pressure;
 }
 
 void Frequencies::dump() const

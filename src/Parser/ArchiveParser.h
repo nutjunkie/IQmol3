@@ -35,6 +35,7 @@ namespace Data {
    class ShellData;
    class OrbitalData;
    class DensityList;
+   class Frequencies;
 }
 
 namespace Parser {
@@ -49,9 +50,11 @@ namespace Parser {
 
       private:
          Data::Geometry* readGeometry(schema::job::sp&);
+         Data::Frequencies* readVibrationalData(schema::job::sp&);
          void readShellData(schema::job::sp&, Data::ShellData&);
          void readOrbitalData(schema::job::sp&, Data::OrbitalData&);
          void readDensityMatrix(schema::job::sp&, Data::DensityList&);
+         void readAtomicCharges(schema::job::sp&, Data::Geometry&&);
    };
 
 } } // end namespace IQmol::Parser

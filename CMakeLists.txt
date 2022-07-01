@@ -62,6 +62,8 @@ include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
 include_directories(modules/HighFive/include)
 add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
+enable_testing()
+
 if(QARCHIVE)
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)

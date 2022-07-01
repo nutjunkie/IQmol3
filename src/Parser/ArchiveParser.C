@@ -25,6 +25,9 @@
 #include "Util/Constants.h"
 #include "Data/GeometryList.h"
 #include "Data/OrbitalFactory.h"
+#include "Data/OrbitalsList.h"
+#include "Data/Frequencies.h"
+#include "Data/VibrationalMode.h"
 
 #include <QFile>
 #include <QDebug>
@@ -47,8 +50,6 @@ QList<T> toQList(T const* start, size_t const n)
 {
    return QList<T>(start, start+n);
 }
-
-
 
 
 namespace IQmol {
@@ -158,18 +159,23 @@ void Archive::readDensityMatrix(schema::job::sp& sp, Data::DensityList& densityL
       new Data::Density(Data::SurfaceType::BetaDensity, betaData, "Beta Density", square);
    densityList.append(alphaDensity);
    densityList.append(betaDensity);
- 
 }
 
 
 void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalData)
 {
    typedef schema::job::sp::energy_function::method::scf::molecular_orbitals mos;
-   auto orbs = sp.add_layer<mos>();
+   auto ef   = sp.get_iter_layers<schema::job::sp::energy_function>();
+
+   auto meth = ef[0].add_layer<schema::job::sp::energy_function::method>();
+
+   auto scf  = meth.add_layer<schema::job::sp::energy_function::method::scf>();
+   auto orbs = scf.add_layer<mos>();
 
    schema::molecular_orbital_type orbitalType;
 
    orbs.read(mos::kind, orbitalType);
+
    // This should be taken from the HDF5 file directly
    switch (orbitalType) {
       case schema::molecular_orbital_type::scf: 
@@ -231,6 +237,74 @@ void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalDat
 }
 
 
+Data::Frequencies* readVibrationalData(schema::job::sp& sp)
+{
+   typedef schema::job::sp::energy_function::analysis::vibrational vib;
+   auto vibData = sp.add_layer<vib>();
+
+   std::vector<double> frequencies;
+   vibData.read(vib::frequencies, frequencies);
+
+   std::vector<double> ir_intensities;
+   vibData.read(vib::ir_intensities, ir_intensities);
+
+   std::vector<double> raman_intensities;
+   vibData.read(vib::raman_intensities, raman_intensities);
+   
+   size_t natoms,nmodes;
+   vibData.read(vib::natoms, natoms);
+   vibData.read(vib::nmodes, nmodes);
+
+   std::vector<double> modes(nmodes*natoms*3);
+   libaview::array_view<double> av_modes(&modes[0],nmodes*natoms*3);
+   libaview::tens3<double> tens_modes(av_modes, nmodes, natoms, 3);
+   vibData.read(vib::modes, tens_modes);
+
+   Data::Frequencies* freqs  = new Data::Frequencies;
+   for (size_t i = 0; i < frequencies.size(); ++i) {
+       Data::VibrationalMode* mode = new Data::VibrationalMode(frequencies[i]);
+       mode->setIntensity(ir_intensities[i]);
+       mode->setRamanIntensity(raman_intensities[i]);
+       for (size_t j = 0; j < natoms; ++j) {
+           mode->appendDirectionVector(
+              qglviewer::Vec(tens_modes(i,j,0),tens_modes(i,j,1),tens_modes(i,j,2))
+           );
+       }
+       freqs->append(mode); 
+   }
+
+   auto thermoData = sp.add_layer<vib::thermodynamics>();
+   double zpve(0), temperature(0), pressure(0), entropy(0), enthalpy(0);
+
+   thermoData.read(vib::thermodynamics::zpve, zpve);
+   thermoData.read(vib::thermodynamics::temperature, temperature);
+   thermoData.read(vib::thermodynamics::pressure, pressure);
+   thermoData.read(vib::thermodynamics::entropy, entropy);
+
+   freqs->setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
+
+   return freqs;
+}
+
+
+void readAtomicCharges(schema::job::sp& sp, Data::Geometry& geom)
+{
+/*
+   typedef schema::job::sp::energy_function::analysis::atomic_charges chgs;
+   auto chargeData = sp.add_layer<chgs>();
+
+   auto charges = get_iter_layers
+*/
+
+
+   //std::vector<double> mulliken;
+   //chargeData.read(chgs::mulliken, mulliken);
+   //allOk = geom.setAtomicProperty<Data::MullikenCharge>(toQList(mulliken));
+}
+
+
+
+
 bool Archive::parseFile(QString const& filePath)
 {
    bool ok(true);
@@ -242,21 +316,30 @@ bool Archive::parseFile(QString const& filePath)
       typedef std::vector<schema::is_jobtype> JobList;
       typedef std::vector<schema::job::sp> SPList;
 
+      std::vector<std::string> job_paths = archive.get_job_paths();
+      QLOG_INFO() << "Found" << job_paths.size() << "job paths in archive file" << filePath;
+
       JobList jobList = archive.get_jobs();
       JobList::iterator jobIter;
 
+      QLOG_INFO() << "Found" << jobList.size() << "jobs in archive file" << filePath;
       for (size_t j(0); j < jobList.size(); ++j) {
 
           QString label("Job " + QString::number(j));
           Data::GeometryList* geometryList(new Data::GeometryList(label));
+          Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
           SPList spList = archive.get_single_points(jobList[j]);
 
           SPList::iterator sp;
+          qDebug() << "Number of single points" << spList.size();
           for (sp = spList.begin(); sp != spList.end(); ++sp) {
 
               Data::Geometry* geometry = readGeometry(*sp);
-              if (!geometry) continue;
+              if (!geometry) {
+                 QLOG_WARN() << "Unable to get geometry";
+                 continue;
+              }
               geometryList->append(geometry);
 
               Data::ShellData shellData;
@@ -266,22 +349,19 @@ bool Archive::parseFile(QString const& filePath)
               readOrbitalData(*sp, orbitalData);
 
               Data::DensityList densityList;
-              readDensityMatrix(*sp, densityList);
+//              readDensityMatrix(*sp, densityList);
 
               size_t nalpha(geometry->getNAlpha());
               size_t nbeta(geometry->getNBeta());
 
               Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
                  orbitalData, shellData, *geometry, densityList);
-              if (! orbitals) continue;
-
               // This needs proper data hierarchy organization
-              m_dataBank.append(orbitals);
+              if (orbitals) orbitalsList->append(orbitals);
           }
 
           if (!geometryList->isEmpty()) m_dataBank.append(geometryList);
-
-         
+          if (!orbitalsList->isEmpty()) m_dataBank.append(orbitalsList);
       }
 
    } catch (std::exception& e) {

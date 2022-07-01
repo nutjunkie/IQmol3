@@ -1241,7 +1241,6 @@ void QChemOutput::readVibrationalModes(TextStream& textStream, Data::Geometry& g
             if (v1) v1->appendDirectionVector(Vec(0,0,0)); 
             if (v2) v2->appendDirectionVector(Vec(0,0,0)); 
             if (v3) v3->appendDirectionVector(Vec(0,0,0)); 
-            
          }
       }
 
