@@ -22,3 +22,9 @@
 [submodule "modules/FFmpeg"]
 	path = modules/FFmpeg
 	url = https://github.com/FFmpeg/FFmpeg.git
+[submodule "modules/zlib"]
+	path = modules/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "modules/openssl"]
+	path = modules/openssl
+	url = https://github.com/openssl/openssl.git
