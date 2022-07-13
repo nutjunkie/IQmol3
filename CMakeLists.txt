@@ -9,7 +9,7 @@ if(WIN32)
    set(CMAKE_PREFIX_PATH      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5")
    set(OPENSSL_ROOT_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/modules/openssl")
    set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
-   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/bin/libz.a")
+   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a")
    set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
 endif()
 

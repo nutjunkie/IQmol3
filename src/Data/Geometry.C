@@ -50,8 +50,10 @@ Geometry::Geometry(Geometry const& that) : Base()
 
 Geometry::Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates)
 {
-    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
-    QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+    //QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
+    //QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>::fromStdVector(atomicNumbers));
+    QList<double>   coords = QList<double>::fromVector(QVector<double>::fromStdVector(coordinates));
     set(nuclei, coords);
 }
 
