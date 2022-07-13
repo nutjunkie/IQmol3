@@ -275,7 +275,7 @@ QList<unsigned int> GetMatchingProcessIds(QString const& pattern)
    for (int i = 0; i < processes.count(); ++i) {
        if (processes[i].contains(pattern, Qt::CaseInsensitive)) {
 qDebug() << "MATCHED!" << processes[i];
-          tokens = processes[i].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+          tokens = processes[i].split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
           pids.append(tokens[1].toUInt());
        }
    }
@@ -303,7 +303,7 @@ QList<unsigned int> GetParentProcessChain(unsigned int const pid)
    bool isUInt0, isUInt1;
 
    for (int i = 0; i < lines.size(); ++i) {
-       tokens = lines[i].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = lines[i].split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
        if (tokens.count() == 2) {
           child  = tokens[0].toUInt(&isUInt0);
           parent = tokens[1].toUInt(&isUInt1);

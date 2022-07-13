@@ -1,14 +1,22 @@
 cmake_minimum_required(VERSION 3.20.2)
 
 if(WIN32)
-   set(CMAKE_C_COMPILER       "C:/mingw64/bin/x86_64-w64-mingw32-gcc.exe")
-   set(CMAKE_CXX_COMPILER     "C:/mingw64/bin/x86_64-w64-mingw32-g++.exe")
-   set(CMAKE_Fortran_COMPILER "C:/mingw64/bin/x86_64-w64-mingw32-gfortran.exe")
+   set(BOOST_ROOT             "C:/boost")
+   set(MINGW_ROOT             "C:/mingw64")
+   set(CMAKE_C_COMPILER       "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe")
+   set(CMAKE_CXX_COMPILER     "${MINGW_ROOT}/bin/x86_64-w64-mingw32-g++.exe")
+   set(CMAKE_Fortran_COMPILER "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gfortran.exe")
    set(CMAKE_PREFIX_PATH      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5")
-
-   set(BOOST_ROOT "C:/boost")
-
+   set(OPENSSL_ROOT_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/modules/openssl")
+   set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
+   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/bin/libz.a")
+   set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
 endif()
+
+if(APPLE)
+   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
+endif(APPLE)
+
 
 set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
@@ -20,9 +28,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
-if(APPLE)
-   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
-endif(APPLE)
 
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 #find_package(HDF5 REQUIRED)
@@ -34,12 +39,12 @@ set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 
-#find_package(ZLIB    REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
-  
-include_directories(modules/zlib)
-add_subdirectory(modules/zlib  EXCLUDE_FROM_ALL)
+find_package(ZLIB    REQUIRED)
+if(ZLIB_FOUND)
+   include_directories(${ZLIB_INCLUDE_DIRS})
+endif()
 
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
@@ -54,7 +59,8 @@ add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
-
+#include_directories(modules/libxml2/include)
+#add_subdirectory(modules/libxml2  EXCLUDE_FROM_ALL)
 
 
 # There seems to be a scoping problem with the following variables, so they need to be set
@@ -98,10 +104,10 @@ find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_subdirectory(src)
-qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
 set(ICON_PATH resources/IQmol.icns)
 
 if (APPLE)
+   qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
    add_executable(${targetName} 
       MACOSX_BUNDLE
       ${ICON_PATH}
@@ -120,6 +126,12 @@ if (APPLE)
 #   add_custom_command(TARGET ${targetName} POST_BUILD 
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
+
+if(WIN32)
+   add_executable(${targetName} 
+      src/main.C
+   )
+endif()
 
 # The following is required to link gfortran statically, and was working before
 # the compiler update.
@@ -160,6 +172,7 @@ target_link_libraries (${targetName}
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
+   ${ZLIB_LIBRARIES}
 )
 
 if(QARCHIVE)

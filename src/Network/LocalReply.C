@@ -61,11 +61,11 @@ void LocalExecute::run()
 {
    m_status = Error;
    QStringList arguments;
-   QStringList list(m_command.split("\"", Qt::SkipEmptyParts));
+   QStringList list(m_command.split("\"", QString::SkipEmptyParts));
 
    for (int i = 0; i < list.size(); ++i) {
        if (i % 2 == 0) {
-          arguments << list[i].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+          arguments << list[i].split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
        }else {
           arguments << list[i];
        }   
@@ -160,7 +160,7 @@ void LocalExecute::runFinished(int /* exitCode */, QProcess::ExitStatus status)
 void LocalExecute::runError(QProcess::ProcessError error)
 {
    m_timer.stop();
-   QStringList list(m_command.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts));
+   QStringList list(m_command.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
    m_message = list.isEmpty() ? "Program" : list.first();
 
    switch(error) {

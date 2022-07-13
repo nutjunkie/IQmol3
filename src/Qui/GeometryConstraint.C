@@ -205,7 +205,7 @@ Constraint* Dialog::getConstraint(int row) {
       value.remove("id=");
 
       if (type == Type::Connect) {
-         QStringList list = value.split(QRegularExpression(",\\s+"),Qt::SkipEmptyParts);
+         QStringList list = value.split(QRegularExpression(",\\s+"),QString::SkipEmptyParts);
          QList<QVariant> ints;
          for (int i = 0; i < list.size(); ++i) {
              ints.push_back(QVariant(list[i]));
@@ -447,7 +447,7 @@ QString Constraint::formatAtomList() const {
 Constraint* Constraint::fromString(QString const& s) {
    Constraint* constraint(0);
 
-   QStringList tokens(s.trimmed().split(QRegularExpression("\\s+"), Qt::SkipEmptyParts));
+   QStringList tokens(s.trimmed().split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
    QString id(tokens[0].toLower());
    int count(tokens.count());
    QList<int> ints;

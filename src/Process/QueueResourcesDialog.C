@@ -72,10 +72,10 @@ void QueueResourcesDialog::verify()
    }
 
    QueueResources* currentQueue((*m_queueResourcesList)[m_dialog.queue->currentIndex()]);
-   QStringList requestedTime(time.split(":", Qt::SkipEmptyParts));
+   QStringList requestedTime(time.split(":", QString::SkipEmptyParts));
 
    time = currentQueue->m_maxWallTime;
-   QStringList maxTime(time.split(":", Qt::SkipEmptyParts));
+   QStringList maxTime(time.split(":", QString::SkipEmptyParts));
 
    if (requestedTime.size() < 3 || maxTime.size() < 3) {
       QMsgBox::warning(this, "IQmol", "Validated wall time not in the format h:mm:ss");

@@ -68,7 +68,7 @@ void QueueResourcesList::fromPbsQueueInfoString(QString const& queueInfo)
 {
    QueueResources* queue(0);
 
-   QStringList lines(queueInfo.split(QRegularExpression("\\n"), Qt::SkipEmptyParts));
+   QStringList lines(queueInfo.split(QRegularExpression("\\n"), QString::SkipEmptyParts));
    QStringList tokens;
    QString line;
    bool ok;
@@ -77,7 +77,7 @@ void QueueResourcesList::fromPbsQueueInfoString(QString const& queueInfo)
    QStringList::iterator iter;
    for (iter = lines.begin(); iter != lines.end(); ++iter) {
        line = *iter; 
-       tokens = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = line.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
    
        if (line.contains("Queue: ")) {
           queue = new QueueResources(tokens[1]);
