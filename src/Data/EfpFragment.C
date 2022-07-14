@@ -41,7 +41,7 @@ EfpFragment::EfpFragment(QString const& name, Vec const& position, double const 
 
 void EfpFragment::setEulerAngles(double const alpha, double const beta, double const gamma)
 { 
-   m_orientation = Util::EulerAngles::toQuaternion(alpha, beta, gamma);
+   m_orientation = Math::EulerAngles::toQuaternion(alpha, beta, gamma);
 }
 
 
@@ -59,7 +59,7 @@ bool EfpFragment::align(QList<Vec> const& coordinates)
        weights.append(OpenBabel::OBElements::GetMass(geometry.atomicNumber(i))); 
    }
 
-   Util::Align align(geometry.coordinates(), coordinates, weights);
+   Math::Align align(geometry.coordinates(), coordinates, weights);
    if (!align.computeAlignment()) return false;
 
    m_position = align.translation();

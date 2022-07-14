@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_ALIGN_H
-#define IQMOL_UTIL_ALIGN_H
+#ifndef IQMOL_MATH_ALIGN_H
+#define IQMOL_MATH_ALIGN_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -27,7 +27,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
    /// Wrapper class to the QCPRotation package
    class Align {
@@ -57,6 +57,6 @@ namespace Util {
    };
 
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math
 
 #endif

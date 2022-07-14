@@ -28,7 +28,6 @@
 #include "QuiMolecule.h"
 
 #define RIGHT right
-#define FIXED fixed
 
 
 using namespace OpenBabel;
@@ -180,6 +179,7 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
    QTextStream mol(&buffer);
 
    mol.setNumberFlags(mol.numberFlags()|QTextStream::ForcePoint);
+   mol.setRealNumberNotation(QTextStream::FixedNotation);
 
    switch (coords) {
 
@@ -190,7 +190,7 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
             mol << qSetFieldWidth(3) << RIGHT 
                 << QString(OpenBabel::OBElements::GetSymbol(atom->GetAtomicNum()))
                 << qSetFieldWidth(12) << qSetRealNumberPrecision(6)
-                << Qt::fixed << RIGHT << atom->GetX() << atom->GetY() << atom->GetZ()
+                << RIGHT << atom->GetX() << atom->GetY() << atom->GetZ()
                 << qSetFieldWidth(0) << "\n";
          }
       } break;
@@ -249,22 +249,22 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
 
          if (w < 0.0) w += 360.0;
          if (t < 0.0) t += 360.0;
-          
+
          if (atom->GetIdx() > 1) {
             mol << "   r" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT
+                << qSetRealNumberPrecision(5) << RIGHT
                 << r << qSetFieldWidth(0) << "\n";
          }
 
          if (atom->GetIdx() > 2) {
             mol << "   a" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT
+                << qSetRealNumberPrecision(5) << RIGHT
                 << w << qSetFieldWidth(0) << "\n";
          }
 
          if (atom->GetIdx() > 3) {
              mol << "   d" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                 << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT
+                 << qSetRealNumberPrecision(5) << RIGHT
                  << t << qSetFieldWidth(0) << "\n";
          }
       }
@@ -306,21 +306,21 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
             mol << qSetFieldWidth(6) << RIGHT
                 << QString(OpenBabel::OBElements::GetSymbol(a->GetAtomicNum())
                         + QString::number(a->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT << r;
+                << qSetRealNumberPrecision(5) << RIGHT << r;
          }
 
          if (atom->GetIdx() > 2) {
             mol << qSetFieldWidth(6) << RIGHT
                 << QString(OpenBabel::OBElements::GetSymbol(b->GetAtomicNum())
                     + QString::number(b->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT << w;
+                << qSetRealNumberPrecision(5) << RIGHT << w;
          }
 
          if (atom->GetIdx() > 3) {
             mol << qSetFieldWidth(6) << RIGHT
                 << QString(OpenBabel::OBElements::GetSymbol(c->GetAtomicNum())
                     + QString::number(c->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << Qt::fixed << RIGHT << t;
+                << qSetRealNumberPrecision(5) << RIGHT << t;
          }
 
          mol << qSetFieldWidth(0) << "\n";

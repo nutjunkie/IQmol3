@@ -88,7 +88,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
 double
 InnerProduct(double *A, double **coords1, double **coords2, const int len, const double *weight)
@@ -408,4 +408,4 @@ CalcRMSDRotationalMatrix(double **coords1, double **coords2, const int len, doub
     return rmsd;
 }
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math

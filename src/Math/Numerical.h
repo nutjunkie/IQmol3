@@ -26,7 +26,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
    inline int round(double d) {
       return (int)floor(d+0.5);
@@ -40,6 +40,6 @@ namespace Util {
       return ( (i % 2) == 1);
    }
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math
 
 #endif

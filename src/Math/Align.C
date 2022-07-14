@@ -28,7 +28,7 @@
 using namespace qglviewer;
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
 Align::Align(QList<Vec> const& reference, QList<Vec> const& current, 
    QList<double> const& weights) : m_aligned(false)
@@ -172,4 +172,4 @@ Vec Align::centerCoords(double **coords)
     return offset;
 }
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math

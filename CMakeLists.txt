@@ -54,7 +54,7 @@ include_directories(modules/libssh2/include)
 add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 
 include_directories(modules/openmesh/src)
-add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+add_subdirectory(modules/openmesh EXCLUDE_FROM_ALL)
 
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
@@ -143,25 +143,23 @@ endif()
 #)
 
 target_link_libraries (${targetName}
+   Main
+   Process
+   Parser
+   Network
+   Qui 
+   Viewer
+   Layer
+   Old 
    Configurator
    Data
    Grid
-   Layer
-   Main
-   Network
-   Old 
-   Parser
-   Plot
-   Process
-   Qui 
    Util
    Math
-   Viewer
+   Plot
    openbabel
    libssh2
    yaml-cpp
-   OpenMeshCoreStatic
-   OpenMeshToolsStatic
    QGLViewer
    Qt5::Core
    Qt5::Gui
@@ -169,6 +167,7 @@ target_link_libraries (${targetName}
    Qt5::PrintSupport
    Qt5::Widgets
    Qt5::OpenGL
+   ${OPENMESH_LIBRARIES}
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}

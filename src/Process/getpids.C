@@ -178,7 +178,8 @@ int queryprocess( ULONG pid, ULONG *ppid, LONGLONG *createtime ) {
 	// TODO: Do function lookup only once.
 	
 	typedef LONG ( __stdcall *FPTR_NtQueryInformationProcess ) ( HANDLE, INT, PVOID, ULONG, PULONG );
-    WCHAR* tmp = L"ntdll";
+    const char* tmp = "ntdll";
+    //WCHAR* tmp = L"ntdll";
 	FPTR_NtQueryInformationProcess NtQueryInformationProcess = ( FPTR_NtQueryInformationProcess ) GetProcAddress( GetModuleHandle( tmp ), "NtQueryInformationProcess" );
 
 

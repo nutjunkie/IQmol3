@@ -1616,7 +1616,7 @@ void QChemOutput::readNBO(TextStream& textStream, Data::Geometry& geometry,
    if (allOk) {
       double q(0.0);
       for (int i = 0; i < charges.size(); ++i) q += charges[i];
-      geometry.setCharge(Util::round(q));
+      geometry.setCharge(Math::round(q));
    }else {
       m_errors.append("Problem setting atomic charges");
    }
@@ -1686,7 +1686,7 @@ void QChemOutput::readCharges(TextStream& textStream, Data::Geometry& geometry,
    if (allOk) {
       double q(0.0);
       for (int i = 0; i < charges.size(); ++i) q += charges[i];
-      geometry.setCharge(Util::round(q));
+      geometry.setCharge(Math::round(q));
    }else {
       m_errors.append("Problem setting atomic charges");
    }

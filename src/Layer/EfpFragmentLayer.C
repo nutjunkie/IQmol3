@@ -100,7 +100,7 @@ QString EfpFragment::format(Mode const mode)
 
    if (mode == Frame || mode == NameAndFrame) {
       Vec position(getPosition());
-      Vec euler(Util::EulerAngles::fromQuaternion(getOrientation()));
+      Vec euler(Math::EulerAngles::fromQuaternion(getOrientation()));
       format += " " + QString::number(position.x, 'f', 6);
       format += " " + QString::number(position.y, 'f', 6);
       format += " " + QString::number(position.z, 'f', 6);
