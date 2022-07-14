@@ -26,25 +26,19 @@ FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Debug)
-
-
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
-#find_package(HDF5 REQUIRED)
-#find_package(LibSSH2 REQUIRED)
-
-#message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
-#message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
-#message("LIBSSH2_LIBRARY=      " ${LIBSSH2_LIBRARY})
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
-
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(ZLIB    REQUIRED)
 if(ZLIB_FOUND)
    include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
+
+#add_compile_definitions(BUILD_SHARED_LIBS=OFF)
 
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
@@ -54,7 +48,7 @@ include_directories(modules/libssh2/include)
 add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 
 include_directories(modules/openmesh/src)
-add_subdirectory(modules/openmesh EXCLUDE_FROM_ALL)
+add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
@@ -74,9 +68,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
-enable_testing()
-
 if(QARCHIVE)
+   enable_testing()
+   find_package(HDF5 REQUIRED)
    include_directories(modules/HighFive/include)
    add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
@@ -106,8 +100,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_subdirectory(src)
 set(ICON_PATH resources/IQmol.icns)
 
+qt5_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
+
 if (APPLE)
-   qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
    add_executable(${targetName} 
       MACOSX_BUNDLE
       ${ICON_PATH}
@@ -130,7 +125,9 @@ endif(APPLE)
 if(WIN32)
    add_executable(${targetName} 
       src/main.C
+      ${IQmol_RESOURCES_RCC}
    )
+   set_target_properties(${targetName} PROPERTIES WIN32_EXECUTABLE ON)
 endif()
 
 # The following is required to link gfortran statically, and was working before
@@ -142,6 +139,7 @@ endif()
 #   /opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libquadmath.a  
 #)
 
+# Note the Windows build is sensitive to the order of the IQmol libs 
 target_link_libraries (${targetName}
    Main
    Process
@@ -157,6 +155,7 @@ target_link_libraries (${targetName}
    Util
    Math
    Plot
+   Fort 
    openbabel
    libssh2
    yaml-cpp
