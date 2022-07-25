@@ -23,11 +23,14 @@
 #include "ArchiveParser.h"
 #include "Util/QsLog.h"
 #include "Util/Constants.h"
+#include "Data/AtomicProperty.h"
+#include "Data/DipoleMoment.h"
 #include "Data/GeometryList.h"
 #include "Data/OrbitalFactory.h"
 #include "Data/OrbitalsList.h"
 #include "Data/Frequencies.h"
 #include "Data/VibrationalMode.h"
+#include "Data/PointCharge.h"
 
 #include <QFile>
 #include <QDebug>
@@ -55,7 +58,9 @@ QList<T> toQList(T const* start, size_t const n)
 namespace IQmol {
 namespace Parser {
 
-Data::Geometry* Archive::readGeometry(schema::job::sp& sp)
+
+
+Data::Geometry* Archive::readStructure(schema::job::sp& sp)
 {
    Data::Geometry* geometry(0);
    typedef schema::job::sp::structure geom;
@@ -64,28 +69,27 @@ Data::Geometry* Archive::readGeometry(schema::job::sp& sp)
    size_t natoms, nalpha, nbeta;
    int charge;
    structure.read(geom::natoms, natoms);
+   structure.read(geom::charge, charge);
    structure.read(geom::nalpha, nalpha);
    structure.read(geom::nbeta,  nbeta);
-   structure.read(geom::charge, charge);
 
-   unsigned multiplicity = nalpha >= nbeta ? nalpha - nbeta + 1 : nbeta - nalpha + 1;
-
-   std::vector<int> nuclei(natoms);
+   // cordinates
    std::vector<double> coords(3*natoms);
-
    libaview::array_view<double> av_coords(&coords[0],3*natoms);
    libaview::tens2<double> tens_coords(av_coords, 3, natoms);
-
-   structure.read(geom::nuclei, nuclei);
    structure.read(geom::coordinates, tens_coords);
 
-   qDebug() << "number of atoms in structure" << natoms;
-
+   // nuclei
+   std::vector<int> nuclei(natoms);
+   structure.read(geom::nuclei, nuclei);
    std::vector<unsigned> nuclei_std(natoms);
    for (size_t i = 0; i < natoms; ++i) {
-       qDebug() << "Coordinates" << nuclei[i] << coords[3*i+0] << coords[3*i+1] << coords[3*i+2];
        nuclei_std[i] = nuclei[i];
    }
+
+   // point_group_symmetry (ignored for now)
+
+   unsigned multiplicity = nalpha >= nbeta ? nalpha - nbeta + 1 : nbeta - nalpha + 1;
 
    geometry = new Data::Geometry(nuclei_std, coords);
    geometry->scaleCoordinates(Constants::BohrToAngstrom);
@@ -97,13 +101,49 @@ Data::Geometry* Archive::readGeometry(schema::job::sp& sp)
 }
 
 
+Data::PointChargeList* Archive::readExternalCharges(schema::job::sp& sp)
+{
+   typedef schema::job::sp::structure::external_charges point_charges;
+   auto structure = sp.add_layer<schema::job::sp::structure>();
+   auto charges   = structure.add_layer<point_charges>();
+
+   if (! charges.contains(point_charges::ncharges)) return 0;
+
+   size_t ncharges(0);
+   charges.read(point_charges::ncharges, ncharges);
+   if (ncharges == 0) return 0;
+
+   Data::PointChargeList* pointChargeList = new Data::PointChargeList();
+
+   std::vector<double> pcCoords(3*ncharges);
+   libaview::array_view<double> av_pcCoords(&pcCoords[0],3*ncharges);
+   libaview::tens2<double> tens_pcCoords(av_pcCoords, 3, ncharges);
+   charges.read(point_charges::coordinates, tens_pcCoords);
+
+   std::vector<double> pcCharges(ncharges);
+   charges.read(point_charges::charges, pcCharges);
+
+   for (size_t i = 0; i < ncharges; ++i) {
+       qglviewer::Vec pos(tens_pcCoords(0,i), tens_pcCoords(1,i), tens_pcCoords(2,i)); 
+       pos *= Constants::BohrToAngstrom;
+       pointChargeList->append(new Data::PointCharge(pcCharges[i],pos));
+
+   }
+
+   return pointChargeList; 
+}
+
+
 void Archive::readShellData(schema::job::sp& sp, Data::ShellData& shellData)
 {
-   typedef schema::job::sp::aobasis basis;
-   auto aobasis = sp.add_layer<basis>();
-
-   std::vector<int> shell_types;
+   typedef schema::job::sp::aobasis basis; auto aobasis = sp.add_layer<basis>(); std::vector<int> shell_types;
    aobasis.read(basis::shell_types, shell_types);
+   bool invertedShellTypes(true); // this needs to depend on the schema version number
+   if (invertedShellTypes) {
+      for (size_t i(0); i < shell_types.size(); ++i) {
+          if (std::abs(shell_types[i]) >= 2) shell_types[i] = -shell_types[i];
+      }
+   }
    shellData.shellTypes = toQList(shell_types);
 
    std::vector<size_t> shell_to_atom_map;
@@ -132,14 +172,11 @@ void Archive::readShellData(schema::job::sp& sp, Data::ShellData& shellData)
 }
 
 
-void Archive::readDensityMatrix(schema::job::sp& sp, Data::DensityList& densityList)
+void Archive::readDensityMatrix(schema::job::sp::energy_function& ef, size_t nbasis, 
+   Data::DensityList& densityList)
 {
    typedef schema::job::sp::energy_function::density_matrix dms;
-   auto densities = sp.add_layer<dms>();
-
-   size_t nbasis;
-   auto aobasis = sp.add_layer<schema::job::sp::aobasis>();
-   aobasis.read(schema::job::sp::aobasis::nbasis, nbasis);
+   auto densities = ef.add_layer<dms>();
 
    size_t nsets(2);
    densities.read(dms::nsets, nsets);
@@ -162,13 +199,162 @@ void Archive::readDensityMatrix(schema::job::sp& sp, Data::DensityList& densityL
 }
 
 
-void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalData)
+void Archive::readObservables(Schema::Observables& observables, Data::Geometry& geometry)
+{
+   try {
+      auto mm = observables.add_layer<Schema::MultipoleMoments>();
+      std::vector<double> dipole(3);
+      mm.read(Schema::MultipoleMoments::dipole, dipole);
+      geometry.getProperty<Data::DipoleMoment>().setValue(dipole[0],dipole[1],dipole[2]);
+   }catch (...) { }
+
+   try {
+      auto nmr = observables.add_layer<Schema::NmrShieldings>();
+      auto list = nmr.get_iter_layers<Schema::NmrShieldings::centers>();
+      QList<double> shieldings;
+
+      for (auto iter = list.begin(); iter != list.end(); ++iter) {
+          std::vector<double> s(9);
+          iter->read(Schema::NmrShieldings::centers::total, s);
+          double trace = s[0] + s[4] + s[8];
+          shieldings.push_back(trace);
+      }
+      geometry.setAtomicProperty<Data::NmrShielding>(shieldings); 
+   }catch (...) { }
+}
+
+
+void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
+{
+   try {
+      Schema::FrequenciesList vibList = 
+         analysis.get_iter_layers<schema::job::sp::energy_function::analysis::vibrational>(); 
+      Schema::FrequenciesList::iterator va;
+      for (va = vibList.begin(); va != vibList.end(); ++va) {
+          Data::Frequencies* frequencies = readVibrationalData(*va);
+          if (frequencies) m_dataBank.append(frequencies);
+      }
+   }catch (...) { }
+
+   // loop over atomic charges
+   try {
+      Schema::AtomicChargesList atomicChargesList = 
+         analysis.get_iter_layers<schema::job::sp::energy_function::analysis::atomic_charges>();
+      Schema::AtomicChargesList::iterator ac;
+      for (ac = atomicChargesList.begin(); ac != atomicChargesList.end(); ++ac) {
+          readAtomicCharges(*ac, geometry);
+      }
+   }catch (...) { }
+}
+
+
+Data::Frequencies* Archive::readVibrationalData(
+   schema::job::sp::energy_function::analysis::vibrational& vibData)
+{
+   typedef schema::job::sp::energy_function::analysis::vibrational vib;
+
+   std::vector<double> frequencies;
+   vibData.read(vib::frequencies, frequencies);
+
+   std::vector<double> ir_intensities;
+   vibData.read(vib::ir_intensities, ir_intensities);
+
+   std::vector<double> raman_intensities;
+
+   bool hasRaman(vibData.contains(vib::raman_intensities));
+   if (hasRaman) vibData.read(vib::raman_intensities, raman_intensities);
+   
+   size_t natoms,nmodes;
+   vibData.read(vib::natoms, natoms);
+   vibData.read(vib::nmodes, nmodes);
+
+   std::vector<double> modes(nmodes*natoms*3);
+   libaview::array_view<double> av_modes(&modes[0],nmodes*natoms*3);
+   libaview::tens3<double> tens_modes(av_modes, nmodes, natoms, 3);
+   vibData.read(vib::modes, tens_modes);
+
+   Data::Frequencies* freqs  = new Data::Frequencies;
+   for (size_t i = 0; i < frequencies.size(); ++i) {
+       Data::VibrationalMode* mode = new Data::VibrationalMode(frequencies[i]);
+       mode->setIntensity(ir_intensities[i]);
+       if (hasRaman) mode->setRamanIntensity(raman_intensities[i]);
+       for (size_t j = 0; j < natoms; ++j) {
+           mode->appendDirectionVector(
+              qglviewer::Vec(tens_modes(i,j,0),tens_modes(i,j,1),tens_modes(i,j,2))
+           );
+       }
+       freqs->append(mode); 
+   }
+    
+   auto thermo = vibData.add_layer<vib::thermodynamics>();
+   bool hasThermo(thermo.contains(vib::thermodynamics::zpve));
+
+   if (hasThermo) {
+      auto thermoData = vibData.add_layer<vib::thermodynamics>();
+      double zpve(0), temperature(0), pressure(0), entropy(0), enthalpy(0);
+
+      thermoData.read(vib::thermodynamics::zpve, zpve);
+      thermoData.read(vib::thermodynamics::temperature, temperature);
+      thermoData.read(vib::thermodynamics::pressure, pressure);
+      thermoData.read(vib::thermodynamics::entropy, entropy);
+
+      freqs->setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
+   }
+
+   return freqs;
+}
+
+
+void Archive::readAtomicCharges(schema::job::sp::energy_function::analysis::atomic_charges& ac, 
+   Data::Geometry& geom)
+{
+   typedef schema::job::sp::energy_function::analysis::atomic_charges chgs;
+   schema::atomic_charges_theory theory;
+   ac.read(chgs::theory, theory);
+
+   std::vector<double> charges;
+   ac.read(chgs::charges, charges);
+
+   switch (theory) {
+      case schema::atomic_charges_theory::mulliken:
+         geom.setAtomicProperty<Data::MullikenCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::lowdin:
+         geom.setAtomicProperty<Data::LowdinCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::chelpg:
+         geom.setAtomicProperty<Data::ChelpgCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::hirshfeld:
+         geom.setAtomicProperty<Data::HirshfeldCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::cm5:
+         geom.setAtomicProperty<Data::Cm5Charge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::stewart:
+         geom.setAtomicProperty<Data::MultipoleDerivedCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::nbo:
+         geom.setAtomicProperty<Data::NaturalCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::merz_kollman_esp:
+         geom.setAtomicProperty<Data::MerzKollmanEspCharge>(toQList(charges));
+         break;
+      case schema::atomic_charges_theory::merz_kollman_resp:
+         geom.setAtomicProperty<Data::MerzKollmanRespCharge>(toQList(charges));
+         break;
+      default:
+         QLOG_WARN() << "Unknown atomic_charge_theory encountered";;
+         break;
+   }
+}
+
+
+void Archive::readOrbitalData(schema::job::sp::energy_function& ef, size_t nbasis,
+   Data::OrbitalData& orbitalData)
 {
    typedef schema::job::sp::energy_function::method::scf::molecular_orbitals mos;
-   auto ef   = sp.get_iter_layers<schema::job::sp::energy_function>();
-
-   auto meth = ef[0].add_layer<schema::job::sp::energy_function::method>();
-
+   auto meth = ef.add_layer<schema::job::sp::energy_function::method>();
    auto scf  = meth.add_layer<schema::job::sp::energy_function::method::scf>();
    auto orbs = scf.add_layer<mos>();
 
@@ -190,6 +376,10 @@ void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalDat
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (Boys)";
          break;
+      case schema::molecular_orbital_type::pipek_mezey: 
+         orbitalData.orbitalType = Data::Orbitals::Localized; 
+         orbitalData.label = "Localized MOs (Pipek Mezey)";
+         break;
       case schema::molecular_orbital_type::oslo: 
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (OSLO)";
@@ -210,12 +400,9 @@ void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalDat
 
    orbitalData.stateIndex = 0;
 
-   size_t nsets, norb, nbasis;
+   size_t nsets, norb;
    orbs.read(mos::nsets, nsets);
    orbs.read(mos::norb,  norb);
-   
-   auto aobasis = sp.add_layer<schema::job::sp::aobasis>();
-   aobasis.read(schema::job::sp::aobasis::nbasis, nbasis);
    
    // Coefficients
    std::vector<double> coeffs(nsets*nbasis*norb);
@@ -237,74 +424,6 @@ void Archive::readOrbitalData(schema::job::sp& sp, Data::OrbitalData& orbitalDat
 }
 
 
-Data::Frequencies* readVibrationalData(schema::job::sp& sp)
-{
-   typedef schema::job::sp::energy_function::analysis::vibrational vib;
-   auto vibData = sp.add_layer<vib>();
-
-   std::vector<double> frequencies;
-   vibData.read(vib::frequencies, frequencies);
-
-   std::vector<double> ir_intensities;
-   vibData.read(vib::ir_intensities, ir_intensities);
-
-   std::vector<double> raman_intensities;
-   vibData.read(vib::raman_intensities, raman_intensities);
-   
-   size_t natoms,nmodes;
-   vibData.read(vib::natoms, natoms);
-   vibData.read(vib::nmodes, nmodes);
-
-   std::vector<double> modes(nmodes*natoms*3);
-   libaview::array_view<double> av_modes(&modes[0],nmodes*natoms*3);
-   libaview::tens3<double> tens_modes(av_modes, nmodes, natoms, 3);
-   vibData.read(vib::modes, tens_modes);
-
-   Data::Frequencies* freqs  = new Data::Frequencies;
-   for (size_t i = 0; i < frequencies.size(); ++i) {
-       Data::VibrationalMode* mode = new Data::VibrationalMode(frequencies[i]);
-       mode->setIntensity(ir_intensities[i]);
-       mode->setRamanIntensity(raman_intensities[i]);
-       for (size_t j = 0; j < natoms; ++j) {
-           mode->appendDirectionVector(
-              qglviewer::Vec(tens_modes(i,j,0),tens_modes(i,j,1),tens_modes(i,j,2))
-           );
-       }
-       freqs->append(mode); 
-   }
-
-   auto thermoData = sp.add_layer<vib::thermodynamics>();
-   double zpve(0), temperature(0), pressure(0), entropy(0), enthalpy(0);
-
-   thermoData.read(vib::thermodynamics::zpve, zpve);
-   thermoData.read(vib::thermodynamics::temperature, temperature);
-   thermoData.read(vib::thermodynamics::pressure, pressure);
-   thermoData.read(vib::thermodynamics::entropy, entropy);
-
-   freqs->setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
-
-   return freqs;
-}
-
-
-void readAtomicCharges(schema::job::sp& sp, Data::Geometry& geom)
-{
-/*
-   typedef schema::job::sp::energy_function::analysis::atomic_charges chgs;
-   auto chargeData = sp.add_layer<chgs>();
-
-   auto charges = get_iter_layers
-*/
-
-
-   //std::vector<double> mulliken;
-   //chargeData.read(chgs::mulliken, mulliken);
-   //allOk = geom.setAtomicProperty<Data::MullikenCharge>(toQList(mulliken));
-}
-
-
-
-
 bool Archive::parseFile(QString const& filePath)
 {
    bool ok(true);
@@ -313,14 +432,11 @@ bool Archive::parseFile(QString const& filePath)
 
       libarchive::impl::QArchive archive(filePath.toStdString(), libstore::FileMode::ReadOnly);
 
-      typedef std::vector<schema::is_jobtype> JobList;
-      typedef std::vector<schema::job::sp> SPList;
+      typedef std::vector<schema::job::sp> SinglePointList;
+      typedef std::vector<schema::job::sp::energy_function> EnergyFunctionList;
 
-      std::vector<std::string> job_paths = archive.get_job_paths();
-      QLOG_INFO() << "Found" << job_paths.size() << "job paths in archive file" << filePath;
-
-      JobList jobList = archive.get_jobs();
-      JobList::iterator jobIter;
+      Schema::JobList jobList = archive.get_jobs();
+      Schema::JobList::iterator jobIter;
 
       QLOG_INFO() << "Found" << jobList.size() << "jobs in archive file" << filePath;
       for (size_t j(0); j < jobList.size(); ++j) {
@@ -329,35 +445,49 @@ bool Archive::parseFile(QString const& filePath)
           Data::GeometryList* geometryList(new Data::GeometryList(label));
           Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
-          SPList spList = archive.get_single_points(jobList[j]);
+          SinglePointList spList = archive.get_single_points(jobList[j]);
 
-          SPList::iterator sp;
+          SinglePointList::iterator sp;
           qDebug() << "Number of single points" << spList.size();
           for (sp = spList.begin(); sp != spList.end(); ++sp) {
 
-              Data::Geometry* geometry = readGeometry(*sp);
+              Data::Geometry* geometry = readStructure(*sp);
               if (!geometry) {
                  QLOG_WARN() << "Unable to get geometry";
                  continue;
               }
               geometryList->append(geometry);
 
+              Data::PointChargeList* pointCharges = readExternalCharges(*sp);
+              if (pointCharges) m_dataBank.append(pointCharges);
+
               Data::ShellData shellData;
               readShellData(*sp, shellData);
-
-              Data::OrbitalData orbitalData;
-              readOrbitalData(*sp, orbitalData);
-
-              Data::DensityList densityList;
-//              readDensityMatrix(*sp, densityList);
 
               size_t nalpha(geometry->getNAlpha());
               size_t nbeta(geometry->getNBeta());
 
-              Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
-                 orbitalData, shellData, *geometry, densityList);
-              // This needs proper data hierarchy organization
-              if (orbitals) orbitalsList->append(orbitals);
+              // need to loop over energy functions
+              EnergyFunctionList efList = sp->get_iter_layers<schema::job::sp::energy_function>();
+              EnergyFunctionList::iterator ef;
+
+              for (ef = efList.begin(); ef != efList.end(); ++ef) {
+                  Data::OrbitalData orbitalData;
+                  readOrbitalData(*ef, shellData.nBasis, orbitalData);
+
+                  Data::DensityList densityList;
+                  readDensityMatrix(*ef, shellData.nBasis, densityList);
+
+                  Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
+                     orbitalData, shellData, *geometry, densityList);
+                  if (orbitals) orbitalsList->append(orbitals);
+
+                  auto analysis = ef->add_layer<Schema::Analysis>();
+                  readAnalysis(analysis, *geometry);
+                  
+                  auto observables = ef->add_layer<Schema::Observables>();
+                  readObservables(observables, *geometry);
+              }
           }
 
           if (!geometryList->isEmpty()) m_dataBank.append(geometryList);

@@ -36,6 +36,23 @@ namespace Data {
    class OrbitalData;
    class DensityList;
    class Frequencies;
+   class PointChargeList;
+}
+
+namespace Schema {
+   typedef std::vector<libarchive::impl::schema::is_jobtype> JobList;
+   typedef libarchive::impl::schema::job::sp::energy_function EnergyFunction;
+
+
+   typedef EnergyFunction::observables Observables;
+   typedef EnergyFunction::analysis    Analysis;
+
+   typedef Observables::multipole_moments MultipoleMoments;
+   typedef Observables::nmr_shieldings NmrShieldings;
+
+   typedef Analysis::vibrational Vibrational;
+   typedef std::vector<Vibrational> FrequenciesList;
+   typedef std::vector<Analysis::atomic_charges> AtomicChargesList;
 }
 
 namespace Parser {
@@ -49,12 +66,21 @@ namespace Parser {
          bool parse(TextStream&) { return false; } 
 
       private:
-         Data::Geometry* readGeometry(schema::job::sp&);
-         Data::Frequencies* readVibrationalData(schema::job::sp&);
+         Data::Geometry* readStructure(schema::job::sp&);
+         Data::PointChargeList* readExternalCharges(schema::job::sp&);
+
+         Data::Frequencies* readVibrationalData(Schema::Vibrational&);
+
          void readShellData(schema::job::sp&, Data::ShellData&);
-         void readOrbitalData(schema::job::sp&, Data::OrbitalData&);
-         void readDensityMatrix(schema::job::sp&, Data::DensityList&);
-         void readAtomicCharges(schema::job::sp&, Data::Geometry&&);
+         void readOrbitalData(schema::job::sp::energy_function&, size_t nbasis, 
+            Data::OrbitalData&);
+         void readDensityMatrix(schema::job::sp::energy_function&, size_t nbasis,
+            Data::DensityList&);
+         void readAtomicCharges(schema::job::sp::energy_function::analysis::atomic_charges&, 
+            Data::Geometry&);
+
+         void readObservables(Schema::Observables&, Data::Geometry&);
+         void readAnalysis(Schema::Analysis&, Data::Geometry&);
    };
 
 } } // end namespace IQmol::Parser

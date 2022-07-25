@@ -71,6 +71,7 @@ namespace Data {
                 MultipoleExpansion,     MullikenCharge,         MultipoleDerivedCharge, 
                 AtomicCharge,           GasteigerCharge,        ChelpgCharge,
                 HirshfeldCharge,        LowdinCharge,           NaturalCharge,
+                MerzKollmanRespCharge,  MerzKollmanEspCharge,   Cm5Charge,
                 SpinDensity,            VdwRadius,              MultipoleExpansionList,
                 NmrReference,           NmrReferenceList,       Nmr,
                 ExcitedStates,          ElectronicTransition,   ElectronicTransitionList, 

@@ -184,9 +184,27 @@ namespace Data {
    };
 
 
+   class Cm5Charge : public AtomicCharge {
+      public:
+         Type::ID typeID() const { return Type::Cm5Charge; }
+   };
+
+
    class NaturalCharge : public AtomicCharge {
       public:
          Type::ID typeID() const { return Type::NaturalCharge; }
+   };
+
+
+   class MerzKollmanEspCharge : public AtomicCharge {
+      public:
+         Type::ID typeID() const { return Type::MerzKollmanEspCharge; }
+   };
+
+
+   class MerzKollmanRespCharge : public AtomicCharge {
+      public:
+         Type::ID typeID() const { return Type::MerzKollmanRespCharge; }
    };
 
 
