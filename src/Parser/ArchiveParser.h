@@ -87,6 +87,7 @@ namespace Parser {
          Data::PointChargeList* readExternalCharges(Schema::SinglePoint&);
          Data::Frequencies* readVibrationalData(Schema::Vibrational&);
 
+         void readVibrationalData(Schema::Vibrational&, Data::Frequencies&);
          void readObservables(Schema::Observables&, Data::Geometry&);
          void readAnalysis(Schema::Analysis&, Data::Geometry&);
 

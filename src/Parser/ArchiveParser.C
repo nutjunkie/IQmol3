@@ -230,8 +230,13 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
       Schema::FrequenciesList vibList = analysis.get_iter_layers<Schema::Vibrational>(); 
       Schema::FrequenciesList::iterator va;
       for (va = vibList.begin(); va != vibList.end(); ++va) {
-          Data::Frequencies* frequencies = readVibrationalData(*va);
-          if (frequencies) m_dataBank.append(frequencies);
+          Data::Frequencies* frequencies = new Data::Frequencies;
+          readVibrationalData(*va,*frequencies);
+          if (frequencies->nModes() >0) {
+             m_dataBank.append(frequencies);
+          }else {
+             delete frequencies;
+          }
       }
    }catch (...) { }
 
@@ -245,7 +250,7 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 }
 
 
-Data::Frequencies* Archive::readVibrationalData(Schema::Vibrational& vibData)
+Archive::readVibrationalData(Schema::Vibrational& vibData, Data::Frequencies& freqs)
 {
    std::vector<double> frequencies;
    vibData.read(Schema::Vibrational::frequencies, frequencies);
@@ -267,7 +272,6 @@ Data::Frequencies* Archive::readVibrationalData(Schema::Vibrational& vibData)
    libaview::tens3<double> tens_modes(av_modes, nmodes, natoms, 3);
    vibData.read(Schema::Vibrational::modes, tens_modes);
 
-   Data::Frequencies* freqs  = new Data::Frequencies;
    for (size_t i = 0; i < frequencies.size(); ++i) {
        Data::VibrationalMode* mode = new Data::VibrationalMode(frequencies[i]);
        mode->setIntensity(ir_intensities[i]);
@@ -277,7 +281,7 @@ Data::Frequencies* Archive::readVibrationalData(Schema::Vibrational& vibData)
               qglviewer::Vec(tens_modes(i,j,0),tens_modes(i,j,1),tens_modes(i,j,2))
            );
        }
-       freqs->append(mode); 
+       freqs.append(mode); 
    }
     
    auto thermo = vibData.add_layer<Schema::Vibrational::thermodynamics>();
@@ -292,10 +296,8 @@ Data::Frequencies* Archive::readVibrationalData(Schema::Vibrational& vibData)
       thermoData.read(Schema::Vibrational::thermodynamics::pressure, pressure);
       thermoData.read(Schema::Vibrational::thermodynamics::entropy, entropy);
 
-      freqs->setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
+      freqs.setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
    }
-
-   return freqs;
 }
 
 
