@@ -64,7 +64,6 @@ namespace Schema {
    typedef Observables::nmr_shieldings NmrShieldings;
 
    typedef Analysis::vibrational Vibrational;
-   typedef std::vector<Vibrational> FrequenciesList;
    typedef Vibrational::thermodynamics Thermodynamics;
 
    typedef Analysis::atomic_charges AtomicCharges;
@@ -85,7 +84,6 @@ namespace Parser {
       private:
          Data::Geometry* readStructure(Schema::SinglePoint&);
          Data::PointChargeList* readExternalCharges(Schema::SinglePoint&);
-         Data::Frequencies* readVibrationalData(Schema::Vibrational&);
 
          void readVibrationalData(Schema::Vibrational&, Data::Frequencies&);
          void readObservables(Schema::Observables&, Data::Geometry&);

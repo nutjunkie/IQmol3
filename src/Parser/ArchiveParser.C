@@ -227,9 +227,8 @@ void Archive::readObservables(Schema::Observables& observables, Data::Geometry& 
 void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 {
    try {
-      Schema::FrequenciesList vibList = analysis.get_iter_layers<Schema::Vibrational>(); 
-      Schema::FrequenciesList::iterator va;
-      for (va = vibList.begin(); va != vibList.end(); ++va) {
+      std::vector<Schema::Vibrational> vibList = analysis.get_iter_layers<Schema::Vibrational>(); 
+      for (auto va = vibList.begin(); va != vibList.end(); ++va) {
           Data::Frequencies* frequencies = new Data::Frequencies;
           readVibrationalData(*va,*frequencies);
           if (frequencies->nModes() >0) {
@@ -250,7 +249,7 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 }
 
 
-Archive::readVibrationalData(Schema::Vibrational& vibData, Data::Frequencies& freqs)
+void Archive::readVibrationalData(Schema::Vibrational& vibData, Data::Frequencies& freqs)
 {
    std::vector<double> frequencies;
    vibData.read(Schema::Vibrational::frequencies, frequencies);
