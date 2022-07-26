@@ -25,7 +25,7 @@
 #include "Parser.h"
 #include <libarchive/api/impl/qarchive.h>
 
-using namespace libarchive::impl;
+//using namespace libarchive::impl;
 
 
 namespace IQmol {
@@ -39,21 +39,38 @@ namespace Data {
    class PointChargeList;
 }
 
-namespace Schema {
-   typedef std::vector<libarchive::impl::schema::is_jobtype> JobList;
-   typedef libarchive::impl::schema::job::sp::energy_function EnergyFunction;
 
+namespace Schema {
+   typedef libarchive::impl::schema::is_jobtype Job;
+   typedef std::vector<Job> JobList;
+
+   typedef libarchive::impl::schema::job::sp SinglePoint;
+   typedef std::vector<SinglePoint> SinglePointList;
+
+   typedef libarchive::impl::schema::atomic_charges_theory AtomicChargesTheory;
+   typedef libarchive::impl::schema::molecular_orbital_type MolecularOrbitalType;
+
+   typedef SinglePoint::structure Structure;
+   typedef SinglePoint::aobasis   AOBasis;
+
+   typedef SinglePoint::energy_function EnergyFunction;
+   typedef std::vector<EnergyFunction> EnergyFunctionList;
 
    typedef EnergyFunction::observables Observables;
    typedef EnergyFunction::analysis    Analysis;
+   typedef EnergyFunction::method::scf::molecular_orbitals MolecularOrbitals;
 
    typedef Observables::multipole_moments MultipoleMoments;
    typedef Observables::nmr_shieldings NmrShieldings;
 
    typedef Analysis::vibrational Vibrational;
    typedef std::vector<Vibrational> FrequenciesList;
-   typedef std::vector<Analysis::atomic_charges> AtomicChargesList;
+   typedef Vibrational::thermodynamics Thermodynamics;
+
+   typedef Analysis::atomic_charges AtomicCharges;
+   typedef std::vector<AtomicCharges> AtomicChargesList;
 }
+
 
 namespace Parser {
 
@@ -66,21 +83,18 @@ namespace Parser {
          bool parse(TextStream&) { return false; } 
 
       private:
-         Data::Geometry* readStructure(schema::job::sp&);
-         Data::PointChargeList* readExternalCharges(schema::job::sp&);
-
+         Data::Geometry* readStructure(Schema::SinglePoint&);
+         Data::PointChargeList* readExternalCharges(Schema::SinglePoint&);
          Data::Frequencies* readVibrationalData(Schema::Vibrational&);
-
-         void readShellData(schema::job::sp&, Data::ShellData&);
-         void readOrbitalData(schema::job::sp::energy_function&, size_t nbasis, 
-            Data::OrbitalData&);
-         void readDensityMatrix(schema::job::sp::energy_function&, size_t nbasis,
-            Data::DensityList&);
-         void readAtomicCharges(schema::job::sp::energy_function::analysis::atomic_charges&, 
-            Data::Geometry&);
 
          void readObservables(Schema::Observables&, Data::Geometry&);
          void readAnalysis(Schema::Analysis&, Data::Geometry&);
+
+         void readShellData(Schema::SinglePoint&, Data::ShellData&);
+         void readOrbitalData(Schema::EnergyFunction&, size_t nbasis, Data::OrbitalData&);
+         void readDensityMatrix(Schema::EnergyFunction&, size_t nbasis, Data::DensityList&);
+
+         void readAtomicCharges(Schema::AtomicCharges&, Data::Geometry&);
    };
 
 } } // end namespace IQmol::Parser

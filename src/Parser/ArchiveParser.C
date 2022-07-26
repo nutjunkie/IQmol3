@@ -60,10 +60,10 @@ namespace Parser {
 
 
 
-Data::Geometry* Archive::readStructure(schema::job::sp& sp)
+Data::Geometry* Archive::readStructure(Schema::SinglePoint& sp)
 {
    Data::Geometry* geometry(0);
-   typedef schema::job::sp::structure geom;
+   typedef Schema::SinglePoint::structure geom;
    auto structure = sp.add_layer<geom>();
 
    size_t natoms, nalpha, nbeta;
@@ -101,10 +101,10 @@ Data::Geometry* Archive::readStructure(schema::job::sp& sp)
 }
 
 
-Data::PointChargeList* Archive::readExternalCharges(schema::job::sp& sp)
+Data::PointChargeList* Archive::readExternalCharges(Schema::SinglePoint& sp)
 {
-   typedef schema::job::sp::structure::external_charges point_charges;
-   auto structure = sp.add_layer<schema::job::sp::structure>();
+   typedef Schema::Structure::external_charges point_charges;
+   auto structure = sp.add_layer<Schema::Structure>();
    auto charges   = structure.add_layer<point_charges>();
 
    if (! charges.contains(point_charges::ncharges)) return 0;
@@ -134,10 +134,11 @@ Data::PointChargeList* Archive::readExternalCharges(schema::job::sp& sp)
 }
 
 
-void Archive::readShellData(schema::job::sp& sp, Data::ShellData& shellData)
+void Archive::readShellData(Schema::SinglePoint& sp, Data::ShellData& shellData)
 {
-   typedef schema::job::sp::aobasis basis; auto aobasis = sp.add_layer<basis>(); std::vector<int> shell_types;
-   aobasis.read(basis::shell_types, shell_types);
+   auto aobasis = sp.add_layer<Schema::AOBasis>(); 
+   std::vector<int> shell_types;
+   aobasis.read(Schema::AOBasis::shell_types, shell_types);
    bool invertedShellTypes(true); // this needs to depend on the schema version number
    if (invertedShellTypes) {
       for (size_t i(0); i < shell_types.size(); ++i) {
@@ -147,35 +148,34 @@ void Archive::readShellData(schema::job::sp& sp, Data::ShellData& shellData)
    shellData.shellTypes = toQList(shell_types);
 
    std::vector<size_t> shell_to_atom_map;
-   aobasis.read(basis::shell_to_atom_map, shell_to_atom_map);
+   aobasis.read(Schema::AOBasis::shell_to_atom_map, shell_to_atom_map);
    shellData.shellToAtom = toQList(shell_to_atom_map);
    
    std::vector<size_t> primitives_per_shell;
-   aobasis.read(basis::primitives_per_shell, primitives_per_shell);
+   aobasis.read(Schema::AOBasis::primitives_per_shell, primitives_per_shell);
    shellData.shellPrimitives = toQList(primitives_per_shell);
 
    std::vector<double> primitive_exponents;
-   aobasis.read(basis::primitive_exponents, primitive_exponents);
+   aobasis.read(Schema::AOBasis::primitive_exponents, primitive_exponents);
    shellData.exponents = toQList(primitive_exponents);
 
    std::vector<double> contraction_coefficients;
-   aobasis.read(basis::contraction_coefficients, contraction_coefficients);
+   aobasis.read(Schema::AOBasis::contraction_coefficients, contraction_coefficients);
    shellData.contractionCoefficients = toQList(contraction_coefficients);
 
    std::vector<double> sp_contraction_coefficients;
-   aobasis.read(basis::sp_contraction_coefficients, sp_contraction_coefficients);
+   aobasis.read(Schema::AOBasis::sp_contraction_coefficients, sp_contraction_coefficients);
    shellData.contractionCoefficientsSP = toQList(sp_contraction_coefficients);
 
    size_t nbasis;
-   aobasis.read(basis::nbasis, nbasis);
+   aobasis.read(Schema::AOBasis::nbasis, nbasis);
    shellData.nBasis = nbasis;
 }
 
 
-void Archive::readDensityMatrix(schema::job::sp::energy_function& ef, size_t nbasis, 
-   Data::DensityList& densityList)
+void Archive::readDensityMatrix(Schema::EnergyFunction& ef, size_t nbasis, Data::DensityList& densityList)
 {
-   typedef schema::job::sp::energy_function::density_matrix dms;
+   typedef Schema::EnergyFunction::density_matrix dms;
    auto densities = ef.add_layer<dms>();
 
    size_t nsets(2);
@@ -227,8 +227,7 @@ void Archive::readObservables(Schema::Observables& observables, Data::Geometry& 
 void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 {
    try {
-      Schema::FrequenciesList vibList = 
-         analysis.get_iter_layers<schema::job::sp::energy_function::analysis::vibrational>(); 
+      Schema::FrequenciesList vibList = analysis.get_iter_layers<Schema::Vibrational>(); 
       Schema::FrequenciesList::iterator va;
       for (va = vibList.begin(); va != vibList.end(); ++va) {
           Data::Frequencies* frequencies = readVibrationalData(*va);
@@ -238,40 +237,35 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 
    // loop over atomic charges
    try {
-      Schema::AtomicChargesList atomicChargesList = 
-         analysis.get_iter_layers<schema::job::sp::energy_function::analysis::atomic_charges>();
-      Schema::AtomicChargesList::iterator ac;
-      for (ac = atomicChargesList.begin(); ac != atomicChargesList.end(); ++ac) {
+      Schema::AtomicChargesList atomicChargesList = analysis.get_iter_layers<Schema::AtomicCharges>();
+      for (auto ac = atomicChargesList.begin(); ac != atomicChargesList.end(); ++ac) {
           readAtomicCharges(*ac, geometry);
       }
    }catch (...) { }
 }
 
 
-Data::Frequencies* Archive::readVibrationalData(
-   schema::job::sp::energy_function::analysis::vibrational& vibData)
+Data::Frequencies* Archive::readVibrationalData(Schema::Vibrational& vibData)
 {
-   typedef schema::job::sp::energy_function::analysis::vibrational vib;
-
    std::vector<double> frequencies;
-   vibData.read(vib::frequencies, frequencies);
+   vibData.read(Schema::Vibrational::frequencies, frequencies);
 
    std::vector<double> ir_intensities;
-   vibData.read(vib::ir_intensities, ir_intensities);
+   vibData.read(Schema::Vibrational::ir_intensities, ir_intensities);
 
    std::vector<double> raman_intensities;
 
-   bool hasRaman(vibData.contains(vib::raman_intensities));
-   if (hasRaman) vibData.read(vib::raman_intensities, raman_intensities);
+   bool hasRaman(vibData.contains(Schema::Vibrational::raman_intensities));
+   if (hasRaman) vibData.read(Schema::Vibrational::raman_intensities, raman_intensities);
    
    size_t natoms,nmodes;
-   vibData.read(vib::natoms, natoms);
-   vibData.read(vib::nmodes, nmodes);
+   vibData.read(Schema::Vibrational::natoms, natoms);
+   vibData.read(Schema::Vibrational::nmodes, nmodes);
 
    std::vector<double> modes(nmodes*natoms*3);
    libaview::array_view<double> av_modes(&modes[0],nmodes*natoms*3);
    libaview::tens3<double> tens_modes(av_modes, nmodes, natoms, 3);
-   vibData.read(vib::modes, tens_modes);
+   vibData.read(Schema::Vibrational::modes, tens_modes);
 
    Data::Frequencies* freqs  = new Data::Frequencies;
    for (size_t i = 0; i < frequencies.size(); ++i) {
@@ -286,17 +280,17 @@ Data::Frequencies* Archive::readVibrationalData(
        freqs->append(mode); 
    }
     
-   auto thermo = vibData.add_layer<vib::thermodynamics>();
-   bool hasThermo(thermo.contains(vib::thermodynamics::zpve));
+   auto thermo = vibData.add_layer<Schema::Vibrational::thermodynamics>();
+   bool hasThermo(thermo.contains(Schema::Vibrational::thermodynamics::zpve));
 
    if (hasThermo) {
-      auto thermoData = vibData.add_layer<vib::thermodynamics>();
+      auto thermoData = vibData.add_layer<Schema::Vibrational::thermodynamics>();
       double zpve(0), temperature(0), pressure(0), entropy(0), enthalpy(0);
 
-      thermoData.read(vib::thermodynamics::zpve, zpve);
-      thermoData.read(vib::thermodynamics::temperature, temperature);
-      thermoData.read(vib::thermodynamics::pressure, pressure);
-      thermoData.read(vib::thermodynamics::entropy, entropy);
+      thermoData.read(Schema::Vibrational::thermodynamics::zpve, zpve);
+      thermoData.read(Schema::Vibrational::thermodynamics::temperature, temperature);
+      thermoData.read(Schema::Vibrational::thermodynamics::pressure, pressure);
+      thermoData.read(Schema::Vibrational::thermodynamics::entropy, entropy);
 
       freqs->setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
    }
@@ -305,42 +299,40 @@ Data::Frequencies* Archive::readVibrationalData(
 }
 
 
-void Archive::readAtomicCharges(schema::job::sp::energy_function::analysis::atomic_charges& ac, 
-   Data::Geometry& geom)
+void Archive::readAtomicCharges(Schema::AtomicCharges& ac, Data::Geometry& geom)
 {
-   typedef schema::job::sp::energy_function::analysis::atomic_charges chgs;
-   schema::atomic_charges_theory theory;
-   ac.read(chgs::theory, theory);
+   Schema::AtomicChargesTheory theory;
+   ac.read(Schema::AtomicCharges::theory, theory);
 
    std::vector<double> charges;
-   ac.read(chgs::charges, charges);
+   ac.read(Schema::AtomicCharges::charges, charges);
 
    switch (theory) {
-      case schema::atomic_charges_theory::mulliken:
+      case Schema::AtomicChargesTheory::mulliken:
          geom.setAtomicProperty<Data::MullikenCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::lowdin:
+      case Schema::AtomicChargesTheory::lowdin:
          geom.setAtomicProperty<Data::LowdinCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::chelpg:
+      case Schema::AtomicChargesTheory::chelpg:
          geom.setAtomicProperty<Data::ChelpgCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::hirshfeld:
+      case Schema::AtomicChargesTheory::hirshfeld:
          geom.setAtomicProperty<Data::HirshfeldCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::cm5:
+      case Schema::AtomicChargesTheory::cm5:
          geom.setAtomicProperty<Data::Cm5Charge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::stewart:
+      case Schema::AtomicChargesTheory::stewart:
          geom.setAtomicProperty<Data::MultipoleDerivedCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::nbo:
+      case Schema::AtomicChargesTheory::nbo:
          geom.setAtomicProperty<Data::NaturalCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::merz_kollman_esp:
+      case Schema::AtomicChargesTheory::merz_kollman_esp:
          geom.setAtomicProperty<Data::MerzKollmanEspCharge>(toQList(charges));
          break;
-      case schema::atomic_charges_theory::merz_kollman_resp:
+      case Schema::AtomicChargesTheory::merz_kollman_resp:
          geom.setAtomicProperty<Data::MerzKollmanRespCharge>(toQList(charges));
          break;
       default:
@@ -350,49 +342,46 @@ void Archive::readAtomicCharges(schema::job::sp::energy_function::analysis::atom
 }
 
 
-void Archive::readOrbitalData(schema::job::sp::energy_function& ef, size_t nbasis,
-   Data::OrbitalData& orbitalData)
+void Archive::readOrbitalData(Schema::EnergyFunction& ef, size_t nbasis, Data::OrbitalData& orbitalData)
 {
-   typedef schema::job::sp::energy_function::method::scf::molecular_orbitals mos;
-   auto meth = ef.add_layer<schema::job::sp::energy_function::method>();
-   auto scf  = meth.add_layer<schema::job::sp::energy_function::method::scf>();
-   auto orbs = scf.add_layer<mos>();
+   auto meth = ef.add_layer<Schema::EnergyFunction::method>();
+   auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
+   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
 
-   schema::molecular_orbital_type orbitalType;
-
-   orbs.read(mos::kind, orbitalType);
+   Schema::MolecularOrbitalType orbitalType;
+   orbs.read(Schema::MolecularOrbitals::kind, orbitalType);
 
    // This should be taken from the HDF5 file directly
    switch (orbitalType) {
-      case schema::molecular_orbital_type::scf: 
+      case Schema::MolecularOrbitalType::scf: 
          orbitalData.orbitalType = Data::Orbitals::Canonical; 
          orbitalData.label = "Canonical Orbitals"; 
          break;
-      case schema::molecular_orbital_type::edmiston_ruedenberg: 
+      case Schema::MolecularOrbitalType::edmiston_ruedenberg: 
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (ER)";
          break; 
-      case schema::molecular_orbital_type::boys: 
+      case Schema::MolecularOrbitalType::boys: 
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (Boys)";
          break;
-      case schema::molecular_orbital_type::pipek_mezey: 
+      case Schema::MolecularOrbitalType::pipek_mezey: 
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (Pipek Mezey)";
          break;
-      case schema::molecular_orbital_type::oslo: 
+      case Schema::MolecularOrbitalType::oslo: 
          orbitalData.orbitalType = Data::Orbitals::Localized; 
          orbitalData.label = "Localized MOs (OSLO)";
          break;
-      case schema::molecular_orbital_type::dyson: 
+      case Schema::MolecularOrbitalType::dyson: 
          orbitalData.orbitalType = Data::Orbitals::Dyson;
          orbitalData.label = "Dyson Orbitals";
          break;
-      case schema::molecular_orbital_type::sdhg2005: 
+      case Schema::MolecularOrbitalType::sdhg2005: 
          orbitalData.orbitalType = Data::Orbitals::Generic;   
          orbitalData.label = "SDGH (2005) Orbitals";
          break; 
-      case schema::molecular_orbital_type::ibo: 
+      case Schema::MolecularOrbitalType::ibo: 
          orbitalData.orbitalType = Data::Orbitals::Generic;
          orbitalData.label = "IBO Orbitals";
          break; 
@@ -401,14 +390,14 @@ void Archive::readOrbitalData(schema::job::sp::energy_function& ef, size_t nbasi
    orbitalData.stateIndex = 0;
 
    size_t nsets, norb;
-   orbs.read(mos::nsets, nsets);
-   orbs.read(mos::norb,  norb);
+   orbs.read(Schema::MolecularOrbitals::nsets, nsets);
+   orbs.read(Schema::MolecularOrbitals::norb,  norb);
    
    // Coefficients
    std::vector<double> coeffs(nsets*nbasis*norb);
    libaview::array_view<double> av_coeffs(&coeffs[0],nsets*nbasis*norb);
    libaview::tens3<double> tens_coeffs(av_coeffs, nsets, nbasis, norb);
-   orbs.read(mos::mo_coefficients, tens_coeffs);
+   orbs.read(Schema::MolecularOrbitals::mo_coefficients, tens_coeffs);
 
    orbitalData.alphaCoefficients = toQList(&tens_coeffs(0,0,0),nbasis*norb);
    orbitalData.betaCoefficients  = toQList(&tens_coeffs(nsets-1,0,0), nbasis*norb);
@@ -417,7 +406,7 @@ void Archive::readOrbitalData(schema::job::sp::energy_function& ef, size_t nbasi
    std::vector<double> energies(nsets*norb);
    libaview::array_view<double> av_energies(&energies[0],nsets*norb);
    libaview::tens2<double> tens_energies(av_energies, nsets, norb);
-   orbs.read(mos::mo_energies, tens_energies);
+   orbs.read(Schema::MolecularOrbitals::mo_energies, tens_energies);
 
    orbitalData.alphaEnergies = toQList(&tens_energies(0,0), norb);
    orbitalData.betaEnergies = toQList(&tens_energies(nsets-1,0), norb);
@@ -429,14 +418,8 @@ bool Archive::parseFile(QString const& filePath)
    bool ok(true);
 
    try {
-
       libarchive::impl::QArchive archive(filePath.toStdString(), libstore::FileMode::ReadOnly);
-
-      typedef std::vector<schema::job::sp> SinglePointList;
-      typedef std::vector<schema::job::sp::energy_function> EnergyFunctionList;
-
       Schema::JobList jobList = archive.get_jobs();
-      Schema::JobList::iterator jobIter;
 
       QLOG_INFO() << "Found" << jobList.size() << "jobs in archive file" << filePath;
       for (size_t j(0); j < jobList.size(); ++j) {
@@ -445,9 +428,9 @@ bool Archive::parseFile(QString const& filePath)
           Data::GeometryList* geometryList(new Data::GeometryList(label));
           Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
-          SinglePointList spList = archive.get_single_points(jobList[j]);
+          Schema::SinglePointList spList = archive.get_single_points(jobList[j]);
 
-          SinglePointList::iterator sp;
+          Schema::SinglePointList::iterator sp;
           qDebug() << "Number of single points" << spList.size();
           for (sp = spList.begin(); sp != spList.end(); ++sp) {
 
@@ -468,8 +451,8 @@ bool Archive::parseFile(QString const& filePath)
               size_t nbeta(geometry->getNBeta());
 
               // need to loop over energy functions
-              EnergyFunctionList efList = sp->get_iter_layers<schema::job::sp::energy_function>();
-              EnergyFunctionList::iterator ef;
+              Schema::EnergyFunctionList efList = sp->get_iter_layers<Schema::EnergyFunction>();
+              Schema::EnergyFunctionList::iterator ef;
 
               for (ef = efList.begin(); ef != efList.end(); ++ef) {
                   Data::OrbitalData orbitalData;
