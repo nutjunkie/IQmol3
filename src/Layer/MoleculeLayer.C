@@ -2719,6 +2719,32 @@ void Molecule::initProperties()
         << new PointChargePotential(Data::Type::LowdinCharge, "ESP (Natural)", this);
    }
 
+   // Merz Kollman RESP
+   if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
+      action = menu->addAction("Merz Kollman RESP");
+      action->setCheckable(true);
+      action->setData(Data::Type::MerzKollmanRespCharge);
+      chargeTypes->addAction(action);
+      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
+      m_properties 
+        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
+   }
+
+   // Merz Kollman RESP
+   if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
+      action = menu->addAction("Merz Kollman RESP");
+      action->setCheckable(true);
+      action->setData(Data::Type::MerzKollmanRespCharge);
+      chargeTypes->addAction(action);
+      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
+      m_properties 
+        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
+   }
+
+
+
+
+
 
 
    if (m_currentGeometry->hasProperty<Data::MultipoleExpansionList>()) {

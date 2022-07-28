@@ -49,6 +49,8 @@ namespace Data {
          double maxIntensity() const;
          double maxRamanIntensity() const;
 
+         unsigned nModes() const { return m_modes.size(); }
+
          void dump() const;
          VibrationalModeList const& modes() const { return m_modes; }
 

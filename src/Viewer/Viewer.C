@@ -296,7 +296,7 @@ void Viewer::generatePovRay(QString const& filename)
 
 void Viewer::draw()
 {
-  qDebug() << "draw() called";
+  //qDebug() << "draw() called";
    if (m_blockUpdate || !m_shaderLibrary) return;
 
    if (m_cameraDialog) m_cameraDialog->sync();
