@@ -100,5 +100,3 @@ Orbitals* OrbitalFactory(unsigned const nAlpha, unsigned const nBeta,
 }
 
 } } // end namespace IQmol::Data
-
-

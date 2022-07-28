@@ -59,29 +59,24 @@ namespace IQmol {
 namespace Parser {
 
 
-
-Data::Geometry* Archive::readStructure(Schema::SinglePoint& sp)
+void Archive::readGeometry(Schema::Structure& structure, Data::Geometry& geometry)
 {
-   Data::Geometry* geometry(0);
-   typedef Schema::SinglePoint::structure geom;
-   auto structure = sp.add_layer<geom>();
-
    size_t natoms, nalpha, nbeta;
    int charge;
-   structure.read(geom::natoms, natoms);
-   structure.read(geom::charge, charge);
-   structure.read(geom::nalpha, nalpha);
-   structure.read(geom::nbeta,  nbeta);
+   structure.read(Schema::Structure::natoms, natoms);
+   structure.read(Schema::Structure::charge, charge);
+   structure.read(Schema::Structure::nalpha, nalpha);
+   structure.read(Schema::Structure::nbeta,  nbeta);
 
    // cordinates
    std::vector<double> coords(3*natoms);
    libaview::array_view<double> av_coords(&coords[0],3*natoms);
    libaview::tens2<double> tens_coords(av_coords, 3, natoms);
-   structure.read(geom::coordinates, tens_coords);
+   structure.read(Schema::Structure::coordinates, tens_coords);
 
    // nuclei
    std::vector<int> nuclei(natoms);
-   structure.read(geom::nuclei, nuclei);
+   structure.read(Schema::Structure::nuclei, nuclei);
    std::vector<unsigned> nuclei_std(natoms);
    for (size_t i = 0; i < natoms; ++i) {
        nuclei_std[i] = nuclei[i];
@@ -91,46 +86,37 @@ Data::Geometry* Archive::readStructure(Schema::SinglePoint& sp)
 
    unsigned multiplicity = nalpha >= nbeta ? nalpha - nbeta + 1 : nbeta - nalpha + 1;
 
-   geometry = new Data::Geometry(nuclei_std, coords);
-   geometry->scaleCoordinates(Constants::BohrToAngstrom);
-   geometry->setChargeAndMultiplicity(charge, multiplicity);
-   geometry->setNAlpha(nalpha);
-   geometry->setNBeta(nbeta);
-
-   return geometry;
+   geometry.set(toQList(nuclei_std), toQList(coords));
+   geometry.scaleCoordinates(Constants::BohrToAngstrom);
+   geometry.setChargeAndMultiplicity(charge, multiplicity);
+   geometry.setNAlpha(nalpha);
+   geometry.setNBeta(nbeta);
 }
 
 
-Data::PointChargeList* Archive::readExternalCharges(Schema::SinglePoint& sp)
+void Archive::readExternalCharges(Schema::Structure& structure, Data::PointChargeList& pointChargeList)
 {
-   typedef Schema::Structure::external_charges point_charges;
-   auto structure = sp.add_layer<Schema::Structure>();
-   auto charges   = structure.add_layer<point_charges>();
+   Schema::ExternalCharges charges = structure.add_layer<Schema::ExternalCharges>();
 
-   if (! charges.contains(point_charges::ncharges)) return 0;
-
+   if (! charges.contains(Schema::ExternalCharges::ncharges)) return;
    size_t ncharges(0);
-   charges.read(point_charges::ncharges, ncharges);
-   if (ncharges == 0) return 0;
-
-   Data::PointChargeList* pointChargeList = new Data::PointChargeList();
+   charges.read(Schema::ExternalCharges::ncharges, ncharges);
+   if (ncharges == 0) return;
 
    std::vector<double> pcCoords(3*ncharges);
    libaview::array_view<double> av_pcCoords(&pcCoords[0],3*ncharges);
    libaview::tens2<double> tens_pcCoords(av_pcCoords, 3, ncharges);
-   charges.read(point_charges::coordinates, tens_pcCoords);
+   charges.read(Schema::ExternalCharges::coordinates, tens_pcCoords);
 
    std::vector<double> pcCharges(ncharges);
-   charges.read(point_charges::charges, pcCharges);
+   charges.read(Schema::ExternalCharges::charges, pcCharges);
 
    for (size_t i = 0; i < ncharges; ++i) {
        qglviewer::Vec pos(tens_pcCoords(0,i), tens_pcCoords(1,i), tens_pcCoords(2,i)); 
        pos *= Constants::BohrToAngstrom;
-       pointChargeList->append(new Data::PointCharge(pcCharges[i],pos));
+       pointChargeList.append(new Data::PointCharge(pcCharges[i],pos));
 
    }
-
-   return pointChargeList; 
 }
 
 
@@ -139,7 +125,9 @@ void Archive::readShellData(Schema::SinglePoint& sp, Data::ShellData& shellData)
    auto aobasis = sp.add_layer<Schema::AOBasis>(); 
    std::vector<int> shell_types;
    aobasis.read(Schema::AOBasis::shell_types, shell_types);
-   bool invertedShellTypes(true); // this needs to depend on the schema version number
+   // this needs to depend on the schema version number
+   // if (invertedShellTypes) Negative L => cartesian for L >= 2
+   bool invertedShellTypes(true); 
    if (invertedShellTypes) {
       for (size_t i(0); i < shell_types.size(); ++i) {
           if (std::abs(shell_types[i]) >= 2) shell_types[i] = -shell_types[i];
@@ -239,11 +227,37 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
       }
    }catch (...) { }
 
-   // loop over atomic charges
    try {
-      Schema::AtomicChargesList atomicChargesList = analysis.get_iter_layers<Schema::AtomicCharges>();
-      for (auto ac = atomicChargesList.begin(); ac != atomicChargesList.end(); ++ac) {
-          readAtomicCharges(*ac, geometry);
+      std::vector<Schema::AtomicCharges> list = analysis.get_iter_layers<Schema::AtomicCharges>();
+      for (auto atomicCharges = list.begin(); atomicCharges != list.end(); ++atomicCharges) {
+          readAtomicCharges(*atomicCharges, geometry);
+      }
+   }catch (...) { }
+}
+
+
+void Archive::readLocalizedOrbitals(Schema::Analysis& analysis, Data::ShellData& shellData, 
+   Data::Geometry& geometry,  Data::OrbitalsList& orbitalsList)
+{
+   try {
+      size_t nalpha(geometry.getNAlpha());
+      size_t nbeta(geometry.getNBeta());
+
+      std::vector<Schema::Analysis::localized_orbitals> 
+         list = analysis.get_iter_layers<Schema::Analysis::localized_orbitals>();
+      QLOG_INFO() << "Found" << list.size() << "sets of localized orbitals";
+      for (auto mos = list.begin(); mos != list.end(); ++mos) {
+
+          auto loc_mos = mos->add_layer<Schema::LocalizedOrbitals>();
+
+          Data::OrbitalData orbitalData;
+          readOrbitalData(loc_mos, shellData.nBasis, orbitalData);
+
+          Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
+             orbitalData, shellData, geometry);
+          if (orbitals) orbitalsList.append(orbitals);
+          QLOG_INFO() << "Localized orbitals made:" << orbitals;
+
       }
    }catch (...) { }
 }
@@ -283,17 +297,18 @@ void Archive::readVibrationalData(Schema::Vibrational& vibData, Data::Frequencie
        freqs.append(mode); 
    }
     
-   auto thermo = vibData.add_layer<Schema::Vibrational::thermodynamics>();
-   bool hasThermo(thermo.contains(Schema::Vibrational::thermodynamics::zpve));
+   auto thermo = vibData.add_layer<Schema::Thermodynamics>();
+   bool hasThermo(thermo.contains(Schema::Thermodynamics::zpve));
 
+   QLOG_INFO() << "Do we have HDF5 thermo data: " << hasThermo;
    if (hasThermo) {
-      auto thermoData = vibData.add_layer<Schema::Vibrational::thermodynamics>();
+      auto thermoData = vibData.add_layer<Schema::Thermodynamics>();
       double zpve(0), temperature(0), pressure(0), entropy(0), enthalpy(0);
 
-      thermoData.read(Schema::Vibrational::thermodynamics::zpve, zpve);
-      thermoData.read(Schema::Vibrational::thermodynamics::temperature, temperature);
-      thermoData.read(Schema::Vibrational::thermodynamics::pressure, pressure);
-      thermoData.read(Schema::Vibrational::thermodynamics::entropy, entropy);
+      thermoData.read(Schema::Thermodynamics::zpve, zpve);
+      thermoData.read(Schema::Thermodynamics::temperature, temperature);
+      thermoData.read(Schema::Thermodynamics::pressure, pressure);
+      thermoData.read(Schema::Thermodynamics::entropy, entropy);
 
       freqs.setThermochemicalData(zpve, enthalpy, entropy, temperature, pressure);
    }
@@ -343,12 +358,71 @@ void Archive::readAtomicCharges(Schema::AtomicCharges& ac, Data::Geometry& geom)
 }
 
 
-void Archive::readOrbitalData(Schema::EnergyFunction& ef, size_t nbasis, Data::OrbitalData& orbitalData)
+void Archive::readOrbitalData(Schema::LocalizedOrbitals& orbs, size_t nbasis, Data::OrbitalData& orbitalData)
 {
-   auto meth = ef.add_layer<Schema::EnergyFunction::method>();
-   auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
-   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
+   Schema::MolecularOrbitalType orbitalType;
+   orbs.read(Schema::LocalizedOrbitals::molecular_orbitals::kind, orbitalType);
 
+   // This should be taken from the HDF5 file directly
+   switch (orbitalType) {
+      case Schema::MolecularOrbitalType::scf: 
+         orbitalData.orbitalType = Data::Orbitals::Canonical; 
+         orbitalData.label = "Canonical Orbitals"; 
+         break;
+      case Schema::MolecularOrbitalType::edmiston_ruedenberg: 
+         orbitalData.orbitalType = Data::Orbitals::Localized; 
+         orbitalData.label = "Localized MOs (ER)";
+         break; 
+      case Schema::MolecularOrbitalType::boys: 
+         orbitalData.orbitalType = Data::Orbitals::Localized; 
+         orbitalData.label = "Localized MOs (Boys)";
+         break;
+      case Schema::MolecularOrbitalType::pipek_mezey: 
+         orbitalData.orbitalType = Data::Orbitals::Localized; 
+         orbitalData.label = "Localized MOs (Pipek Mezey)";
+         break;
+      case Schema::MolecularOrbitalType::oslo: 
+         orbitalData.orbitalType = Data::Orbitals::Localized; 
+         orbitalData.label = "Localized MOs (OSLO)";
+         break;
+      case Schema::MolecularOrbitalType::dyson: 
+         orbitalData.orbitalType = Data::Orbitals::Dyson;
+         orbitalData.label = "Dyson Orbitals";
+         break;
+      case Schema::MolecularOrbitalType::sdhg2005: 
+         orbitalData.orbitalType = Data::Orbitals::Generic;   
+         orbitalData.label = "SDGH (2005) Orbitals";
+         break; 
+      case Schema::MolecularOrbitalType::ibo: 
+         orbitalData.orbitalType = Data::Orbitals::Generic;
+         orbitalData.label = "IBO Orbitals";
+         break; 
+   }
+
+   QLOG_INFO() << "Reading data for localized orbitals:" << orbitalData.label;
+
+   orbitalData.stateIndex = 0;
+
+   size_t nsets, norb;
+   orbs.read(Schema::LocalizedOrbitals::nsets, nsets);
+   orbs.read(Schema::LocalizedOrbitals::norb,  norb);
+   
+   QLOG_INFO() << "Reading data for localized orbitals:" << nsets;
+   QLOG_INFO() << "Reading data for localized orbitals:" << norb;
+   // Coefficients
+   std::vector<double> coeffs(nsets*nbasis*norb);
+   libaview::array_view<double> av_coeffs(&coeffs[0],nsets*nbasis*norb);
+   libaview::tens3<double> tens_coeffs(av_coeffs, nsets, nbasis, norb);
+   orbs.read(Schema::LocalizedOrbitals::mo_coefficients, tens_coeffs);
+   QLOG_INFO() << "Reading data for localized orbitals coeffs";
+
+   orbitalData.alphaCoefficients = toQList(&tens_coeffs(0,0,0),nbasis*norb);
+   orbitalData.betaCoefficients  = toQList(&tens_coeffs(nsets-1,0,0), nbasis*norb);
+}
+
+
+void Archive::readOrbitalData(Schema::MolecularOrbitals& orbs, size_t nbasis, Data::OrbitalData& orbitalData)
+{
    Schema::MolecularOrbitalType orbitalType;
    orbs.read(Schema::MolecularOrbitals::kind, orbitalType);
 
@@ -400,17 +474,47 @@ void Archive::readOrbitalData(Schema::EnergyFunction& ef, size_t nbasis, Data::O
    libaview::tens3<double> tens_coeffs(av_coeffs, nsets, nbasis, norb);
    orbs.read(Schema::MolecularOrbitals::mo_coefficients, tens_coeffs);
 
+   size_t k(0);
+   for (size_t j = 0; j < nsets; ++j) {
+       for (size_t mu = 0; mu < nbasis; ++mu) {
+           for (size_t i = 0; i < norb; ++i, ++k) {
+               qDebug() << "***************** " << j << i << mu << "  : : " << k  << coeffs[k] 
+                        << tens_coeffs(j,mu,i);
+           }
+       }
+   }
+
+
+
+   for (size_t i = 0; i < 2; ++i) {
+       for (size_t mu = 0; mu < nbasis; ++mu) {
+           qDebug() << "**** alpha ****** " << i << mu << tens_coeffs(0,mu,i);
+       }
+   }
+
+   for (size_t i = 0; i < 2; ++i) {
+       for (size_t mu = 0; mu < nbasis; ++mu) {
+           qDebug() << "**** beta  ****** " << i << mu << tens_coeffs(nsets-1,mu,i);
+       }
+   }
+
    orbitalData.alphaCoefficients = toQList(&tens_coeffs(0,0,0),nbasis*norb);
    orbitalData.betaCoefficients  = toQList(&tens_coeffs(nsets-1,0,0), nbasis*norb);
    
-   // Energies
+
+   // Energies - checked
    std::vector<double> energies(nsets*norb);
    libaview::array_view<double> av_energies(&energies[0],nsets*norb);
-   libaview::tens2<double> tens_energies(av_energies, nsets, norb);
+   libaview::tens2<double> tens_energies(av_energies, norb, nsets);
    orbs.read(Schema::MolecularOrbitals::mo_energies, tens_energies);
 
-   orbitalData.alphaEnergies = toQList(&tens_energies(0,0), norb);
-   orbitalData.betaEnergies = toQList(&tens_energies(nsets-1,0), norb);
+   orbitalData.alphaEnergies.clear();
+   orbitalData.betaEnergies.clear();
+
+   for (size_t i = 0; i < norb; ++i){
+       orbitalData.alphaEnergies.append(tens_energies(i,0));
+       orbitalData.betaEnergies.append(tens_energies(i,nsets-1));
+   }
 }
 
 
@@ -420,30 +524,39 @@ bool Archive::parseFile(QString const& filePath)
 
    try {
       libarchive::impl::QArchive archive(filePath.toStdString(), libstore::FileMode::ReadOnly);
-      Schema::JobList jobList = archive.get_jobs();
-
+      std::vector<Schema::Job>  jobList = archive.get_jobs();
       QLOG_INFO() << "Found" << jobList.size() << "jobs in archive file" << filePath;
+
       for (size_t j(0); j < jobList.size(); ++j) {
 
           QString label("Job " + QString::number(j));
           Data::GeometryList* geometryList(new Data::GeometryList(label));
           Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
-          Schema::SinglePointList spList = archive.get_single_points(jobList[j]);
+          std::vector<Schema::SinglePoint> spList = archive.get_single_points(jobList[j]);
+          qDebug() << "Number of single points:" << spList.size();
 
-          Schema::SinglePointList::iterator sp;
-          qDebug() << "Number of single points" << spList.size();
-          for (sp = spList.begin(); sp != spList.end(); ++sp) {
+          for (auto sp = spList.begin(); sp != spList.end(); ++sp) {
 
-              Data::Geometry* geometry = readStructure(*sp);
-              if (!geometry) {
+              Schema::Structure structure = sp->add_layer<Schema::Structure>();
+   
+              Data::Geometry* geometry = new Data::Geometry;
+              readGeometry(structure, *geometry);
+
+              if (geometry->nAtoms() == 0) {
                  QLOG_WARN() << "Unable to get geometry";
+                 delete geometry;
                  continue;
               }
               geometryList->append(geometry);
 
-              Data::PointChargeList* pointCharges = readExternalCharges(*sp);
-              if (pointCharges) m_dataBank.append(pointCharges);
+              Data::PointChargeList* pointCharges = new Data::PointChargeList;
+              readExternalCharges(structure, *pointCharges);
+              if (pointCharges->size() > 0) {
+                 m_dataBank.append(pointCharges);
+              }else {
+                 delete pointCharges;
+              }
 
               Data::ShellData shellData;
               readShellData(*sp, shellData);
@@ -452,12 +565,16 @@ bool Archive::parseFile(QString const& filePath)
               size_t nbeta(geometry->getNBeta());
 
               // need to loop over energy functions
-              Schema::EnergyFunctionList efList = sp->get_iter_layers<Schema::EnergyFunction>();
-              Schema::EnergyFunctionList::iterator ef;
+              std::vector<Schema::EnergyFunction> efList = sp->get_iter_layers<Schema::EnergyFunction>();
 
-              for (ef = efList.begin(); ef != efList.end(); ++ef) {
+              for (auto ef = efList.begin(); ef != efList.end(); ++ef) {
+
+                  auto meth = ef->add_layer<Schema::EnergyFunction::method>();
+                  auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
+                  auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
+
                   Data::OrbitalData orbitalData;
-                  readOrbitalData(*ef, shellData.nBasis, orbitalData);
+                  readOrbitalData(orbs, shellData.nBasis, orbitalData);
 
                   Data::DensityList densityList;
                   readDensityMatrix(*ef, shellData.nBasis, densityList);
@@ -468,6 +585,7 @@ bool Archive::parseFile(QString const& filePath)
 
                   auto analysis = ef->add_layer<Schema::Analysis>();
                   readAnalysis(analysis, *geometry);
+                  readLocalizedOrbitals(analysis, shellData, *geometry, *orbitalsList);
                   
                   auto observables = ef->add_layer<Schema::Observables>();
                   readObservables(observables, *geometry);

@@ -25,8 +25,6 @@
 #include "Parser.h"
 #include <libarchive/api/impl/qarchive.h>
 
-//using namespace libarchive::impl;
-
 
 namespace IQmol {
 
@@ -34,27 +32,25 @@ namespace Data {
    class Geometry;
    class ShellData;
    class OrbitalData;
+   class OrbitalsList;
    class DensityList;
    class Frequencies;
    class PointChargeList;
 }
 
 
+
 namespace Schema {
    typedef libarchive::impl::schema::is_jobtype Job;
-   typedef std::vector<Job> JobList;
-
    typedef libarchive::impl::schema::job::sp SinglePoint;
-   typedef std::vector<SinglePoint> SinglePointList;
-
    typedef libarchive::impl::schema::atomic_charges_theory AtomicChargesTheory;
    typedef libarchive::impl::schema::molecular_orbital_type MolecularOrbitalType;
 
    typedef SinglePoint::structure Structure;
    typedef SinglePoint::aobasis   AOBasis;
-
    typedef SinglePoint::energy_function EnergyFunction;
-   typedef std::vector<EnergyFunction> EnergyFunctionList;
+
+   typedef Structure::external_charges ExternalCharges;
 
    typedef EnergyFunction::observables Observables;
    typedef EnergyFunction::analysis    Analysis;
@@ -64,16 +60,15 @@ namespace Schema {
    typedef Observables::nmr_shieldings NmrShieldings;
 
    typedef Analysis::vibrational Vibrational;
-   typedef Vibrational::thermodynamics Thermodynamics;
-
    typedef Analysis::atomic_charges AtomicCharges;
-   typedef std::vector<AtomicCharges> AtomicChargesList;
+   typedef Analysis::localized_orbitals::molecular_orbitals  LocalizedOrbitals;
+
+   typedef Vibrational::thermodynamics Thermodynamics;
 }
 
 
 namespace Parser {
 
-   /// Parser for YAML files.
    class Archive : public Base {
 
       public:
@@ -82,18 +77,21 @@ namespace Parser {
          bool parse(TextStream&) { return false; } 
 
       private:
-         Data::Geometry* readStructure(Schema::SinglePoint&);
-         Data::PointChargeList* readExternalCharges(Schema::SinglePoint&);
+         void readGeometry(Schema::Structure&, Data::Geometry&);
+         void readExternalCharges(Schema::Structure&, Data::PointChargeList&);
 
          void readVibrationalData(Schema::Vibrational&, Data::Frequencies&);
          void readObservables(Schema::Observables&, Data::Geometry&);
          void readAnalysis(Schema::Analysis&, Data::Geometry&);
-
          void readShellData(Schema::SinglePoint&, Data::ShellData&);
-         void readOrbitalData(Schema::EnergyFunction&, size_t nbasis, Data::OrbitalData&);
-         void readDensityMatrix(Schema::EnergyFunction&, size_t nbasis, Data::DensityList&);
 
+         void readOrbitalData(Schema::MolecularOrbitals&, size_t nbasis, Data::OrbitalData&);
+
+         void readOrbitalData(Schema::LocalizedOrbitals&, size_t nbasis, Data::OrbitalData&);
+
+         void readDensityMatrix(Schema::EnergyFunction&, size_t nbasis, Data::DensityList&);
          void readAtomicCharges(Schema::AtomicCharges&, Data::Geometry&);
+         void readLocalizedOrbitals(Schema::Analysis&, Data::ShellData&, Data::Geometry&, Data::OrbitalsList&);
    };
 
 } } // end namespace IQmol::Parser
