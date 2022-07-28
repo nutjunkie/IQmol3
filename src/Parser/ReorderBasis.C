@@ -25,13 +25,14 @@
 
 
 namespace IQmol {
+namespace Parser {
 
 // In-place reordering of
 void ReorderMOs(double *C, QList<unsigned> const& map, unsigned nBasis, unsigned nOrb)
 {
    double *tmp = new double[nBasis*nOrb];
 
-   memcpy(tmp,C,nBasis*nOrb*sizeof(double))
+   memcpy(tmp,C,nBasis*nOrb*sizeof(double));
 
    for (size_t mu=0; mu < nBasis; ++mu) {
        for (size_t i=0; i < nOrb; ++i) {
@@ -48,7 +49,7 @@ void ReorderMatrix(double *M, QList<unsigned> const& map)
    size_t n(map.size());
    double *tmp = new double[n*n];
 
-   memcpy(tmp,M,n*n*sizeof(double))
+   memcpy(tmp,M,n*n*sizeof(double));
 
    for (size_t i = 0; i < n; ++i) {
        for (size_t j = 0; j < n; ++j) {
@@ -192,4 +193,4 @@ QList<unsigned> ReorderQChemToFchk(QList<int> const& shellTypes)
    return index;
 }
 
-} // namespace IQmol
+} } // namespace IQmol

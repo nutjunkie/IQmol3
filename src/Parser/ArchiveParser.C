@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 #include "ArchiveParser.h"
+#include "ReorderBasis.h"
 #include "Util/QsLog.h"
 #include "Util/Constants.h"
 #include "Data/AtomicProperty.h"
@@ -137,6 +138,9 @@ void Archive::readShellData(Schema::SinglePoint& sp, Data::ShellData& shellData)
 
    std::vector<size_t> shell_to_atom_map;
    aobasis.read(Schema::AOBasis::shell_to_atom_map, shell_to_atom_map);
+   for (size_t i(0); i < shell_to_atom_map.size(); ++i) {
+       ++shell_to_atom_map[i]; // Convert to 1-indexed values
+   }
    shellData.shellToAtom = toQList(shell_to_atom_map);
    
    std::vector<size_t> primitives_per_shell;
@@ -161,7 +165,8 @@ void Archive::readShellData(Schema::SinglePoint& sp, Data::ShellData& shellData)
 }
 
 
-void Archive::readDensityMatrix(Schema::EnergyFunction& ef, size_t nbasis, Data::DensityList& densityList)
+void Archive::readDensityMatrix(Schema::EnergyFunction& ef, Data::ShellData const& shellData, 
+   Data::DensityList& densityList)
 {
    typedef Schema::EnergyFunction::density_matrix dms;
    auto densities = ef.add_layer<dms>();
@@ -169,6 +174,7 @@ void Archive::readDensityMatrix(Schema::EnergyFunction& ef, size_t nbasis, Data:
    size_t nsets(2);
    densities.read(dms::nsets, nsets);
 
+   size_t nbasis(shellData.nBasis);
    std::vector<double> data(nsets*nbasis*nbasis);
    libaview::array_view<double> av_data(&data[0],nsets*nbasis*nbasis);
    libaview::tens3<double> tens_data(av_data, nsets, nbasis, nbasis);
@@ -236,8 +242,8 @@ void Archive::readAnalysis(Schema::Analysis& analysis, Data::Geometry& geometry)
 }
 
 
-void Archive::readLocalizedOrbitals(Schema::Analysis& analysis, Data::ShellData& shellData, 
-   Data::Geometry& geometry,  Data::OrbitalsList& orbitalsList)
+void Archive::readLocalizedOrbitals(Schema::Analysis& analysis, Data::ShellData const& shellData, 
+   Data::Geometry const& geometry,  Data::OrbitalsList& orbitalsList)
 {
    try {
       size_t nalpha(geometry.getNAlpha());
@@ -251,7 +257,7 @@ void Archive::readLocalizedOrbitals(Schema::Analysis& analysis, Data::ShellData&
           auto loc_mos = mos->add_layer<Schema::LocalizedOrbitals>();
 
           Data::OrbitalData orbitalData;
-          readOrbitalData(loc_mos, shellData.nBasis, orbitalData);
+          readOrbitalData(loc_mos, shellData, orbitalData);
 
           Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
              orbitalData, shellData, geometry);
@@ -358,7 +364,8 @@ void Archive::readAtomicCharges(Schema::AtomicCharges& ac, Data::Geometry& geom)
 }
 
 
-void Archive::readOrbitalData(Schema::LocalizedOrbitals& orbs, size_t nbasis, Data::OrbitalData& orbitalData)
+void Archive::readOrbitalData(Schema::LocalizedOrbitals& orbs, Data::ShellData const& shellData, 
+   Data::OrbitalData& orbitalData)
 {
    Schema::MolecularOrbitalType orbitalType;
    orbs.read(Schema::LocalizedOrbitals::molecular_orbitals::kind, orbitalType);
@@ -403,25 +410,36 @@ void Archive::readOrbitalData(Schema::LocalizedOrbitals& orbs, size_t nbasis, Da
 
    orbitalData.stateIndex = 0;
 
+   size_t nbasis(shellData.nBasis);
    size_t nsets, norb;
    orbs.read(Schema::LocalizedOrbitals::nsets, nsets);
    orbs.read(Schema::LocalizedOrbitals::norb,  norb);
    
-   QLOG_INFO() << "Reading data for localized orbitals:" << nsets;
-   QLOG_INFO() << "Reading data for localized orbitals:" << norb;
+
    // Coefficients
    std::vector<double> coeffs(nsets*nbasis*norb);
    libaview::array_view<double> av_coeffs(&coeffs[0],nsets*nbasis*norb);
    libaview::tens3<double> tens_coeffs(av_coeffs, nsets, nbasis, norb);
    orbs.read(Schema::LocalizedOrbitals::mo_coefficients, tens_coeffs);
-   QLOG_INFO() << "Reading data for localized orbitals coeffs";
 
-   orbitalData.alphaCoefficients = toQList(&tens_coeffs(0,0,0),nbasis*norb);
-   orbitalData.betaCoefficients  = toQList(&tens_coeffs(nsets-1,0,0), nbasis*norb);
+   orbitalData.alphaCoefficients.clear();
+   orbitalData.betaCoefficients.clear();
+
+   for (size_t i = 0; i < norb; ++i) {
+       for (size_t mu = 0; mu < nbasis; ++mu) {
+           orbitalData.alphaCoefficients.append(tens_coeffs(0,      mu,i));
+           orbitalData.betaCoefficients.append( tens_coeffs(nsets-1,mu,i));
+       }
+   }
+
+   QList<unsigned> map(ReorderQChemToFchk(shellData.shellTypes));
+   ReorderMOs(&orbitalData.alphaCoefficients[0], map, nbasis, norb);
+   ReorderMOs(&orbitalData.betaCoefficients[0], map, nbasis, norb);
 }
 
 
-void Archive::readOrbitalData(Schema::MolecularOrbitals& orbs, size_t nbasis, Data::OrbitalData& orbitalData)
+void Archive::readOrbitalData(Schema::MolecularOrbitals& orbs, Data::ShellData const& shellData, 
+   Data::OrbitalData& orbitalData)
 {
    Schema::MolecularOrbitalType orbitalType;
    orbs.read(Schema::MolecularOrbitals::kind, orbitalType);
@@ -464,6 +482,7 @@ void Archive::readOrbitalData(Schema::MolecularOrbitals& orbs, size_t nbasis, Da
 
    orbitalData.stateIndex = 0;
 
+   size_t nbasis(shellData.nBasis);
    size_t nsets, norb;
    orbs.read(Schema::MolecularOrbitals::nsets, nsets);
    orbs.read(Schema::MolecularOrbitals::norb,  norb);
@@ -474,33 +493,19 @@ void Archive::readOrbitalData(Schema::MolecularOrbitals& orbs, size_t nbasis, Da
    libaview::tens3<double> tens_coeffs(av_coeffs, nsets, nbasis, norb);
    orbs.read(Schema::MolecularOrbitals::mo_coefficients, tens_coeffs);
 
-   size_t k(0);
-   for (size_t j = 0; j < nsets; ++j) {
+   orbitalData.alphaCoefficients.clear();
+   orbitalData.betaCoefficients.clear();
+
+   for (size_t i = 0; i < norb; ++i) {
        for (size_t mu = 0; mu < nbasis; ++mu) {
-           for (size_t i = 0; i < norb; ++i, ++k) {
-               qDebug() << "***************** " << j << i << mu << "  : : " << k  << coeffs[k] 
-                        << tens_coeffs(j,mu,i);
-           }
+           orbitalData.alphaCoefficients.append(tens_coeffs(0,      mu,i));
+           orbitalData.betaCoefficients.append( tens_coeffs(nsets-1,mu,i));
        }
    }
 
-
-
-   for (size_t i = 0; i < 2; ++i) {
-       for (size_t mu = 0; mu < nbasis; ++mu) {
-           qDebug() << "**** alpha ****** " << i << mu << tens_coeffs(0,mu,i);
-       }
-   }
-
-   for (size_t i = 0; i < 2; ++i) {
-       for (size_t mu = 0; mu < nbasis; ++mu) {
-           qDebug() << "**** beta  ****** " << i << mu << tens_coeffs(nsets-1,mu,i);
-       }
-   }
-
-   orbitalData.alphaCoefficients = toQList(&tens_coeffs(0,0,0),nbasis*norb);
-   orbitalData.betaCoefficients  = toQList(&tens_coeffs(nsets-1,0,0), nbasis*norb);
-   
+   QList<unsigned> map(ReorderQChemToFchk(shellData.shellTypes));
+   ReorderMOs(&orbitalData.alphaCoefficients[0], map, nbasis, norb);
+   ReorderMOs(&orbitalData.betaCoefficients[0], map, nbasis, norb);
 
    // Energies - checked
    std::vector<double> energies(nsets*norb);
@@ -574,10 +579,10 @@ bool Archive::parseFile(QString const& filePath)
                   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
 
                   Data::OrbitalData orbitalData;
-                  readOrbitalData(orbs, shellData.nBasis, orbitalData);
+                  readOrbitalData(orbs, shellData, orbitalData);
 
                   Data::DensityList densityList;
-                  readDensityMatrix(*ef, shellData.nBasis, densityList);
+                  readDensityMatrix(*ef, shellData, densityList);
 
                   Data::Orbitals* orbitals = Data::OrbitalFactory(nalpha, nbeta, 
                      orbitalData, shellData, *geometry, densityList);
@@ -585,6 +590,7 @@ bool Archive::parseFile(QString const& filePath)
 
                   auto analysis = ef->add_layer<Schema::Analysis>();
                   readAnalysis(analysis, *geometry);
+
                   readLocalizedOrbitals(analysis, shellData, *geometry, *orbitalsList);
                   
                   auto observables = ef->add_layer<Schema::Observables>();

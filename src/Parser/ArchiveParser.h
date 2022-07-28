@@ -85,13 +85,13 @@ namespace Parser {
          void readAnalysis(Schema::Analysis&, Data::Geometry&);
          void readShellData(Schema::SinglePoint&, Data::ShellData&);
 
-         void readOrbitalData(Schema::MolecularOrbitals&, size_t nbasis, Data::OrbitalData&);
+         void readOrbitalData(Schema::MolecularOrbitals&, Data::ShellData const&, Data::OrbitalData&);
+         void readOrbitalData(Schema::LocalizedOrbitals&, Data::ShellData const&, Data::OrbitalData&);
+         void readDensityMatrix(Schema::EnergyFunction&, Data::ShellData const&, Data::DensityList&);
+         void readLocalizedOrbitals(Schema::Analysis&, Data::ShellData const&, Data::Geometry const&, 
+            Data::OrbitalsList&);
 
-         void readOrbitalData(Schema::LocalizedOrbitals&, size_t nbasis, Data::OrbitalData&);
-
-         void readDensityMatrix(Schema::EnergyFunction&, size_t nbasis, Data::DensityList&);
          void readAtomicCharges(Schema::AtomicCharges&, Data::Geometry&);
-         void readLocalizedOrbitals(Schema::Analysis&, Data::ShellData&, Data::Geometry&, Data::OrbitalsList&);
    };
 
 } } // end namespace IQmol::Parser
