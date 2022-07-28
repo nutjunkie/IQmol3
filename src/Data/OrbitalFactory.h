@@ -43,7 +43,7 @@ struct OrbitalData {
 
 Orbitals* OrbitalFactory(unsigned const nAlpha, unsigned const nBeta, 
    OrbitalData const& orbitalData, ShellData const& shellData, 
-   Geometry const& geometry, DensityList densityList);
+   Geometry const& geometry, DensityList densityList = DensityList());
 
 } } // end namespace IQmol::Data
 
