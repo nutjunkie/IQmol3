@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20.2)
 
 if(WIN32)
+	# cmake -DBUILD_SHARED=ON -G "MinGW Makefiles" ../
+	# -DYAML_STATIC_DEFINE
    set(BOOST_ROOT             "C:/boost")
    set(MINGW_ROOT             "C:/mingw64")
    set(CMAKE_C_COMPILER       "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe")
@@ -69,26 +71,37 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
 if(QARCHIVE)
-   enable_testing()
-   find_package(HDF5 REQUIRED)
-   include_directories(modules/HighFive/include)
-   add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
-   set(HDF5_USE_STATIC_LIBRARIES 1)
-   #include_directories(modules/hdf5/src)
+   #enable_testing()
+
    if(APPLE)
       #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
       include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
+   else()
+      set(HDF5_ROOT          "C:/Users/andre/Development/hdf5")
+      find_package(HDF5 REQUIRED)
+      #message("HDF5 libraries: " ${HDF5_LIBRARIES})
+      include_directories(${HDF5_INCLUDE_DIRS})
    endif()
 
-   find_package(Armadillo REQUIRED)
+   add_subdirectory(qarchive/HighFive  EXCLUDE_FROM_ALL)
+   include_directories(qarchive/HighFive/include)
+
+   set(ARMADILLO_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/qarchive/armadillo/include)
+   include_directories(${ARMADILLO_INCLUDE_DIR})
+   #find_package(Armadillo REQUIRED)
+
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
    include_directories(qarchive/libstore)
    include_directories(qarchive/libarchive)
-   include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
+   #include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
+   include_directories(${CMAKE_SOURCE_DIR}/qarchive/build/libarchive/autogen_impl)
+
    add_subdirectory(qarchive)
+
+
 endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
@@ -174,7 +187,15 @@ target_link_libraries (${targetName}
 )
 
 if(QARCHIVE)
-   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
+	#   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
+
+   target_link_libraries (${targetName}
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libarchive/libarchive/api/impl/libarchive_impl.a
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libstore/libstore/libstore.a
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libctx/libctx/libctx.a
+      hdf5-static
+      #${HDF5_LIBRARIES}
+   )
 else(QARCHIVE)
 #   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)

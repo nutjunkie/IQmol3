@@ -35,20 +35,35 @@
 template<typename T>
 QList<T> toQList(std::vector<T> vec)
 {
-   return QList<T>::fromVector(QVector<T>(vec.begin(), vec.end()));
+   return QList<T>::fromVector(QVector<T>::fromStdVector(vec));
 }
 
 
-QList<unsigned> toQList(std::vector<unsigned long> vec)
+QList<unsigned> toQList(std::vector<unsigned long long> vec)
 {
-   return QList<unsigned>::fromVector(QVector<unsigned>(vec.begin(), vec.end()));
+   QList<unsigned> out;
+
+   std::vector<unsigned long long>::const_iterator iter;
+
+   for (iter = vec.begin(); iter != vec.end(); ++iter) {
+       out.push_back(unsigned(*iter));
+   }
+
+   return out;
 }
 
 
 template<typename T>
 QList<T> toQList(T const* start, size_t const n)
 {
-   return QList<T>(start, start+n);
+   QList<T> out;
+   T const* iter(start);
+
+   for (size_t i = 0; i  < n; ++i, ++iter) {
+       out.push_back(*iter);
+   }
+
+   return out;
 }
 
 
