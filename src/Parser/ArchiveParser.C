@@ -592,6 +592,12 @@ bool Archive::parseFile(QString const& filePath)
                   auto meth = ef->add_layer<Schema::EnergyFunction::method>();
                   auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
                   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
+		  auto nrg  = ef->add_layer<Schema::EnergyFunction::energy>();
+
+		  double energy(0);
+                  ef.read(nrg, energy);
+		  Data::TotalEnergy& total(geometry->getProperty<Data::TotalEnergy>());
+		  total.setValue(energy);
 
                   Data::OrbitalData orbitalData;
                   readOrbitalData(orbs, shellData, orbitalData);
