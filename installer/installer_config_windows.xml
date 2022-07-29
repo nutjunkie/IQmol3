@@ -1,12 +1,12 @@
 <project>
     <shortName>IQmol</shortName>
     <fullName>IQmol</fullName>
-    <version>2.15.2</version>
-    <readmeFile>C:/Users/agilbert/Development/IQmol/README</readmeFile>
-    <licenseFile>C:/Users/agilbert/Development/IQmol/LICENSE</licenseFile>
-    <leftImage>C:/Users/agilbert/Development/IQmol/src/Main/resources/Installer-lhs.png</leftImage>
-    <logoImage>C:/Users/agilbert/Development/IQmol/src/Main/resources/Installer-header.png</logoImage>
-    <splashImage>C:/Users/agilbert/Development/IQmol/src/Main/resources/Installer-splash-windows.png</splashImage>
+    <version>3.0.0</version>
+    <readmeFile>C:\Users\andre\Development\IQmol3\README.md</readmeFile>
+    <licenseFile>C:\Users\andre\Development\IQmol3\LICENSE</licenseFile>
+    <leftImage>C:\Users\andre\Development\IQmol3\resources\Installer-lhs.png</leftImage>
+    <logoImage>C:\Users\andre\Development\IQmol3\resources\Installer-header.png</logoImage>
+    <splashImage>C:\Users\andre\Development\IQmol3\resources\installer-splash-windows.png</splashImage>
     <componentList>
         <component>
             <name>default</name>
@@ -66,20 +66,17 @@
                     <platforms>windows</platforms>
                     <distributionFileList>
                         <distributionDirectory>
-                            <origin>C:/Users/agilbert/Development/IQmol/deploy/bin</origin>
+                            <origin>C:/Users/andre/Development/IQmol3/deploy/bin</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>C:/Users/agilbert/Development/IQmol/deploy/share</origin>
+                            <origin>C:/Users/andre/Development/IQmol3/deploy/doc</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>C:/Users/agilbert/Development/IQmol/samples</origin>
+                            <origin>C:/Users/andre/Development/IQmol3/deploy/samples</origin>
                         </distributionDirectory>
                         <distributionDirectory>
-                            <origin>C:/Users/agilbert/Development/IQmol/deploy/lib</origin>
+                            <origin>C:/Users/andre/Development/IQmol3/deploy/share</origin>
                         </distributionDirectory>
-                        <distributionFile>
-                            <origin>C:/Users/agilbert/Development/IQmol/doc/IQmolUserGuide.pdf</origin>
-                        </distributionFile>
                     </distributionFileList>
                 </folder>
                 <folder>
