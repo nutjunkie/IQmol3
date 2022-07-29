@@ -26,10 +26,11 @@
 #include "Util/Constants.h"
 #include "Data/AtomicProperty.h"
 #include "Data/DipoleMoment.h"
+#include "Data/Energy.h"
+#include "Data/Frequencies.h"
 #include "Data/GeometryList.h"
 #include "Data/OrbitalFactory.h"
 #include "Data/OrbitalsList.h"
-#include "Data/Frequencies.h"
 #include "Data/VibrationalMode.h"
 #include "Data/PointCharge.h"
 
@@ -549,7 +550,7 @@ bool Archive::parseFile(QString const& filePath)
 
       for (size_t j(0); j < jobList.size(); ++j) {
 
-          QString label("Job " + QString::number(j));
+          QString label("Job " + QString::number(j+1));
           Data::GeometryList* geometryList(new Data::GeometryList(label));
           Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
@@ -592,12 +593,11 @@ bool Archive::parseFile(QString const& filePath)
                   auto meth = ef->add_layer<Schema::EnergyFunction::method>();
                   auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
                   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
-		  auto nrg  = ef->add_layer<Schema::EnergyFunction::energy>();
 
 		  double energy(0);
-                  ef.read(nrg, energy);
+                  ef->read(Schema::EnergyFunction::energy, energy);
 		  Data::TotalEnergy& total(geometry->getProperty<Data::TotalEnergy>());
-		  total.setValue(energy);
+		  total.setValue(energy, Data::Energy::Hartree);
 
                   Data::OrbitalData orbitalData;
                   readOrbitalData(orbs, shellData, orbitalData);

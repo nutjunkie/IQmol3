@@ -13,6 +13,9 @@ if(WIN32)
    set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
    set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a")
    set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
+
+   enable_language("RC")
+   set(WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/windows.rc)
 endif()
 
 if(APPLE)
@@ -139,6 +142,7 @@ if(WIN32)
    add_executable(${targetName} 
       src/main.C
       ${IQmol_RESOURCES_RCC}
+      ${WIN32_RESOURCES}
    )
    set_target_properties(${targetName} PROPERTIES WIN32_EXECUTABLE ON)
 endif()
