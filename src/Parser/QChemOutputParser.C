@@ -187,6 +187,7 @@ bool QChemOutput::parse(TextStream& textStream)
    // This is a hack as the FSM jobs print out the wrong format for the SCF
    // energy.
    bool isFSM(false);
+   bool isLibopt3(false);
 
    // Another hack.  We need a petite list of atoms for partial hessian calculations
    QList<unsigned> partialHessianAtomList;
@@ -268,6 +269,9 @@ bool QChemOutput::parse(TextStream& textStream)
 
       }else if (line.contains("Starting FSM Calculation")) {
          isFSM = true;
+
+      }else if (line.contains("STARTING GEOMETRY OPTIMIZER USING LIBOPT3")) {
+         isLibopt3 = true;
 
       }else if (line.contains("Final energy is")) {
          tokens = TextStream::tokenize(line);
@@ -511,6 +515,18 @@ bool QChemOutput::parse(TextStream& textStream)
       if (geometryList->isEmpty()) {
          delete geometryList;
       }else {
+         if (isLibopt3 && geometryList->size() > 2) {
+            Data::TotalEnergy energy;
+            // Trim out the first and last geometries as they are duplicates
+            energy = geometryList->first()->getProperty<Data::TotalEnergy>();
+            if (std::abs(energy.value()) < 0.000001) {
+               geometryList->removeFirst();
+            }
+            energy = geometryList->last()->getProperty<Data::TotalEnergy>();
+            if (std::abs(energy.value()) < 0.000001) {
+               geometryList->removeLast();
+            }
+         }
          geometryList->setDefaultIndex(-1);
          m_dataBank.append(geometryList);
       }
