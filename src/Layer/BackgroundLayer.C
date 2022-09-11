@@ -44,8 +44,8 @@ void Background::draw()
 {
    if (checkState() == Qt::Checked) {
       backgroundColorChanged(m_backgroundColor);
-//      glClearColor(m_backgroundColor.redF(), m_backgroundColor.greenF(), 
-//         m_backgroundColor.blueF(), m_backgroundColor.alphaF());
+      glClearColor(m_backgroundColor.redF(), m_backgroundColor.greenF(), 
+         m_backgroundColor.blueF(), 1.0);
    } else {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

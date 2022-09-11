@@ -2,11 +2,11 @@
     <shortName>IQmol</shortName>
     <fullName>IQmol</fullName>
     <version>3.0.0</version>
-    <readmeFile>C:\Users\andre\Development\IQmol3\README.md</readmeFile>
-    <licenseFile>C:\Users\andre\Development\IQmol3\LICENSE</licenseFile>
-    <leftImage>C:\Users\andre\Development\IQmol3\resources\Installer-lhs.png</leftImage>
-    <logoImage>C:\Users\andre\Development\IQmol3\resources\Installer-header.png</logoImage>
-    <splashImage>C:\Users\andre\Development\IQmol3\resources\installer-splash-windows.png</splashImage>
+    <readmeFile>C:/Users/andre/Development/IQmol3/README.md</readmeFile>
+    <licenseFile>C:/Users/andre/Development/IQmol3/LICENSE</licenseFile>
+    <leftImage>C:/Users/andre/Development/IQmol3/resources/Installer-lhs.png</leftImage>
+    <logoImage>C:/Users/andre/Development/IQmol3/resources/Installer-header.png</logoImage>
+    <splashImage>C:/Users/andre/Development/IQmol3/resources/installer-splash-windows.png</splashImage>
     <componentList>
         <component>
             <name>default</name>
@@ -76,6 +76,9 @@
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>C:/Users/andre/Development/IQmol3/deploy/share</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>C:/Users/andre/Development/IQmol3/deploy/lib</origin>
                         </distributionDirectory>
                     </distributionFileList>
                 </folder>
