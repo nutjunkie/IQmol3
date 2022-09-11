@@ -86,7 +86,7 @@ QToolTip {
        </property>
        <property name="icon">
         <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/T24.png</normaloff>:/resources/icons/T24.png</iconset>
+         <normaloff>:/icons/T24.png</normaloff>:/icons/T24.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -111,7 +111,7 @@ QToolTip {
        </property>
        <property name="icon">
         <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/T14.png</normaloff>:/resources/icons/T14.png</iconset>
+         <normaloff>:/icons/T14.png</normaloff>:/icons/T14.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -134,7 +134,7 @@ QToolTip {
        </property>
        <property name="icon">
         <iconset resource="IQmol.qrc">
-         <normaloff>:/resources/icons/Search.png</normaloff>:/resources/icons/Search.png</iconset>
+         <normaloff>:/icons/Search.png</normaloff>:/icons/Search.png</iconset>
        </property>
        <property name="iconSize">
         <size>

@@ -269,6 +269,20 @@ bool QChemOutput::parse(TextStream& textStream)
       }else if (line.contains("Starting FSM Calculation")) {
          isFSM = true;
 
+      }else if (line.contains("STARTING GEOMETRY OPTIMIZER USING LIBOPT3")) {
+         // Ditch the last geometry as it will be repeated.
+         if (!geometryList->isEmpty()) {
+            Data::TotalEnergy energy(geometryList->last()->getProperty<Data::TotalEnergy>());
+            if (std::abs(energy.value()) < 0.000001) geometryList->removeLast();
+         }
+
+      }else if (line.contains("END OF GEOMETRY OPTIMIZER USING LIBOPT3")) {
+         // Ditch the last geometry as it was repeated.
+         if (!geometryList->isEmpty()) {
+            Data::TotalEnergy energy(geometryList->last()->getProperty<Data::TotalEnergy>());
+            if (std::abs(energy.value()) < 0.000001) geometryList->removeLast();
+         }
+         
       }else if (line.contains("Final energy is")) {
          tokens = TextStream::tokenize(line);
          if (tokens.size() > 3) {

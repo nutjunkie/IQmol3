@@ -864,8 +864,13 @@ void Server::listFinished()
       }
 
       QStringList fileList(parseListMessage(job, reply->message()));
+      qDebug() << "File list from server:" << fileList;
       // Remove unwanted files
       fileList.removeAll("batch");
+      // This one is for the IQmol server, whcih can't handle directories.  This is the name
+      // of the directory that holds the FSM files.
+      unsigned pos(fileList.indexOf(QRegularExpression(".*input.files")));
+      if (pos >= 0) fileList.removeAt(pos);
       QString destination(job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory));
       //reply->deleteLater();
 
