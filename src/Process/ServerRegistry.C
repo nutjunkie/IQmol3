@@ -129,7 +129,8 @@ void ServerRegistry::remove(Server* server)
 void ServerRegistry::moveUp(QString const& serverName)
 {
    int index(indexOf(serverName));
-   if (index > 0) s_servers.swapItemsAt(index, index-1);
+   if (index > 0) s_servers.swap(index, index-1);
+   //if (index > 0) s_servers.swapItemsAt(index, index-1);
    save();
 }
 
@@ -137,7 +138,8 @@ void ServerRegistry::moveUp(QString const& serverName)
 void ServerRegistry::moveDown(QString const& serverName)
 {
    int index(indexOf(serverName));
-   if (index < s_servers.size() -1) s_servers.swapItemsAt(index, index+1);
+   if (index < s_servers.size() -1) s_servers.swap(index, index+1);
+   //if (index < s_servers.size() -1) s_servers.swapItemsAt(index, index+1);
    save();
 }
 

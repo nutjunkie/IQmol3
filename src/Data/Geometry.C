@@ -50,8 +50,10 @@ Geometry::Geometry(Geometry const& that) : Base()
 
 Geometry::Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates)
 {
-    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
-    QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+    //QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
+    //QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>::fromStdVector(atomicNumbers));
+    QList<double>   coords = QList<double>::fromVector(QVector<double>::fromStdVector(coordinates));
     set(nuclei, coords);
 }
 
@@ -220,12 +222,12 @@ void Geometry::setCharge(int const charge)
 {
    m_charge = charge;
    int numberOfElectrons(totalNuclearCharge()-m_charge);
-   if (Util::isEven(numberOfElectrons)) {
-      if (Util::isEven(m_multiplicity)) {
+   if (Math::isEven(numberOfElectrons)) {
+      if (Math::isEven(m_multiplicity)) {
          m_multiplicity -= 1;
       }
    }else {
-      if (Util::isOdd(m_multiplicity)) {
+      if (Math::isOdd(m_multiplicity)) {
           m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
       }
    }
@@ -243,12 +245,12 @@ void Geometry::setMultiplicity(unsigned const multiplicity)
 {
    m_multiplicity = multiplicity;
    int numberOfElectrons(totalNuclearCharge()-m_charge);
-   if (Util::isEven(m_multiplicity)) {
-      if (Util::isEven(numberOfElectrons)) {
+   if (Math::isEven(m_multiplicity)) {
+      if (Math::isEven(numberOfElectrons)) {
          m_charge += m_charge > 0 ? -1 : 1;
       }
    }else {
-      if (Util::isOdd(numberOfElectrons)) {
+      if (Math::isOdd(numberOfElectrons)) {
          m_charge += (numberOfElectrons == 1) ? -1 : 1;
       }
    }

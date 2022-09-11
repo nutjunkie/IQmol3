@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_EULERANGLES_H
-#define IQMOL_UTIL_EULERANGLES_H
+#ifndef IQMOL_MATH_EULERANGLES_H
+#define IQMOL_MATH_EULERANGLES_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -27,7 +27,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 namespace EulerAngles {
 
    qglviewer::Quaternion toQuaternion(double const alpha, double const beta, 
@@ -35,6 +35,6 @@ namespace EulerAngles {
 
    qglviewer::Vec fromQuaternion(qglviewer::Quaternion const& q);
    
-} } } // end namespace IQmol::Util::EulerAngles
+} } } // end namespace IQmol::Math::EulerAngles
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_FUNCTION_H
-#define IQMOL_UTIL_FUNCTION_H
+#ifndef IQMOL_MATH_FUNCTION_H
+#define IQMOL_MATH_FUNCTION_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert

@@ -54,7 +54,7 @@ void LJParametersSection::generateData(QString const& geometry)
    QString notFound;
 
    for (int i = 0; i < lines.size(); ++i) {
-       tokens = lines[i].split( QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = lines[i].split( QRegularExpression("\\s+"), QString::SkipEmptyParts);
        if (tokens.count() > 1) {
           atom = tokens[0];
           iter = s_parameters.find(atom.toUpper());

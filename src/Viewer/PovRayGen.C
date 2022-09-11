@@ -582,7 +582,7 @@ void PovRayGen::setCamera(qglviewer::Camera* camera)
    m_stream << "   location " << formatVector(pos) << "\n";
    m_stream << "   sky      " << formatVector(y)   << "\n";
    m_stream << "   look_at  <0, 0, 0>\n";
-   m_stream << "   angle " << Util::round(angle) <<  "\n";
+   m_stream << "   angle " << Math::round(angle) <<  "\n";
    m_stream << "}\n\n";
 
    r *= 100.0;

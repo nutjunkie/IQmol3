@@ -271,7 +271,7 @@ in_addr_t HostLookup(QString const& hostname)
    // inet_ntop is unavailable.
    QString octet("(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])");
    QRegularExpressionValidator ipv4Validator(0);
-   ipv4Validator.setRegExp(QRegularExpression(
+   ipv4Validator.setRegularExpression(QRegularExpression(
       "^" + octet + "\\." + octet + "\\." + octet + "\\." + octet + "$"));
 
    int pos;

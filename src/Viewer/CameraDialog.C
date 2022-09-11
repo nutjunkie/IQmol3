@@ -69,12 +69,12 @@ void CameraDialog::sync()
    phi   *= 180.0/M_PI;
 
    double fov(m_camera.fieldOfView());
-   m_dialog.fieldOfView->setValue(Util::round(fov*180.0/M_PI));
+   m_dialog.fieldOfView->setValue(Math::round(fov*180.0/M_PI));
 
    m_emitSignals = false;
    m_dialog.rValue->setValue(r);
-   m_dialog.thetaValue->setValue(Util::round(theta));
-   m_dialog.phiValue->setValue(Util::round(phi));
+   m_dialog.thetaValue->setValue(Math::round(theta));
+   m_dialog.phiValue->setValue(Math::round(phi));
    m_emitSignals = true;
 }
 

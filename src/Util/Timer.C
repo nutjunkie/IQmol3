@@ -44,8 +44,8 @@ unsigned Timer::toSeconds(QString const& s)
 {
    if (s.isEmpty()) return -1;
    // Remove any partial seconds
-   QString t = s.split(".", Qt::SkipEmptyParts).first();
-   QStringList tokens(t.split(":",Qt::SkipEmptyParts));
+   QString t = s.split(".", QString::SkipEmptyParts).first();
+   QStringList tokens(t.split(":",QString::SkipEmptyParts));
 
    unsigned hours(0), minutes(0), seconds(0);
    bool okH(true), okM(true), okS(true);

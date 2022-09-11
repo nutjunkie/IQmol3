@@ -165,7 +165,7 @@ void Group::align(QList<Vec> const& current)
        weights.append((*atom)->getMass());
    }
 
-   Util::Align align(reference, current, weights);
+   Math::Align align(reference, current, weights);
    if (!align.computeAlignment()) {
       QMsgBox::warning(0, "IQmol", "Alignment failed in Group::align");
       return;

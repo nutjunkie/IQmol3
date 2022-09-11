@@ -29,7 +29,7 @@ void MoleculeSection::read(QString const& input)
 
    if (lines.count() > 0) {
       QString first(lines[0].replace(QChar(','),QChar(' ')));
-      QStringList tokens(first.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts));
+      QStringList tokens(first.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
       lines.removeFirst();
 
       if (tokens.count() == 1) {

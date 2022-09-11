@@ -1,5 +1,28 @@
 cmake_minimum_required(VERSION 3.20.2)
 
+if(WIN32)
+	# cmake -DBUILD_SHARED=ON -G "MinGW Makefiles" ../
+	# -DYAML_STATIC_DEFINE
+   set(BOOST_ROOT             "C:/boost")
+   set(MINGW_ROOT             "C:/mingw64")
+   set(CMAKE_C_COMPILER       "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe")
+   set(CMAKE_CXX_COMPILER     "${MINGW_ROOT}/bin/x86_64-w64-mingw32-g++.exe")
+   set(CMAKE_Fortran_COMPILER "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gfortran.exe")
+   set(CMAKE_PREFIX_PATH      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5")
+   set(OPENSSL_ROOT_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/modules/openssl")
+   set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
+   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a")
+   set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
+
+   enable_language("RC")
+   set(WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/windows.rc)
+endif()
+
+if(APPLE)
+   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
+endif(APPLE)
+
+
 set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
 
@@ -8,27 +31,20 @@ FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Debug)
-
-if(APPLE)
-   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
-endif(APPLE)
-
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
-#find_package(HDF5 REQUIRED)
-#find_package(LibSSH2 REQUIRED)
-
-#message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
-#message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
-#message("LIBSSH2_LIBRARY=      " ${LIBSSH2_LIBRARY})
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
-
-find_package(ZLIB    REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
-find_package(Armadillo REQUIRED)
-  
+find_package(ZLIB    REQUIRED)
+if(ZLIB_FOUND)
+   include_directories(${ZLIB_INCLUDE_DIRS})
+endif()
+
+#add_compile_definitions(BUILD_SHARED_LIBS=OFF)
+
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
 add_subdirectory(modules  EXCLUDE_FROM_ALL)
@@ -42,6 +58,9 @@ add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
+#include_directories(modules/libxml2/include)
+#add_subdirectory(modules/libxml2  EXCLUDE_FROM_ALL)
+
 
 # There seems to be a scoping problem with the following variables, so they need to be set
 # on the command line in order for them to take effect.
@@ -54,24 +73,38 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
-set(HDF5_USE_STATIC_LIBRARIES 1)
-#include_directories(modules/hdf5/src)
-#add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
-include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
-
-include_directories(modules/HighFive/include)
-add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
-
-enable_testing()
-
 if(QARCHIVE)
+
+   #enable_testing()
+
+   if(APPLE)
+      #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
+      include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
+   else()
+      set(HDF5_ROOT          "C:/Users/andre/Development/hdf5")
+      find_package(HDF5 REQUIRED)
+      #message("HDF5 libraries: " ${HDF5_LIBRARIES})
+      include_directories(${HDF5_INCLUDE_DIRS})
+   endif()
+
+   add_subdirectory(qarchive/HighFive  EXCLUDE_FROM_ALL)
+   include_directories(qarchive/HighFive/include)
+
+   set(ARMADILLO_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/qarchive/armadillo/include)
+   include_directories(${ARMADILLO_INCLUDE_DIR})
+   #find_package(Armadillo REQUIRED)
+
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
    include_directories(qarchive/libstore)
    include_directories(qarchive/libarchive)
-   include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
+   #include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
+   include_directories(${CMAKE_SOURCE_DIR}/qarchive/build/libarchive/autogen_impl)
+
    add_subdirectory(qarchive)
+
+
 endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
@@ -81,8 +114,9 @@ find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_subdirectory(src)
-qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
 set(ICON_PATH resources/IQmol.icns)
+
+qt5_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
 
 if (APPLE)
    add_executable(${targetName} 
@@ -104,6 +138,15 @@ if (APPLE)
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
 
+if(WIN32)
+   add_executable(${targetName} 
+      src/main.C
+      ${IQmol_RESOURCES_RCC}
+      ${WIN32_RESOURCES}
+   )
+   set_target_properties(${targetName} PROPERTIES WIN32_EXECUTABLE ON)
+endif()
+
 # The following is required to link gfortran statically, and was working before
 # the compiler update.
 #unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
@@ -113,26 +156,26 @@ endif(APPLE)
 #   /opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libquadmath.a  
 #)
 
+# Note the Windows build is sensitive to the order of the IQmol libs 
 target_link_libraries (${targetName}
+   Main
+   Process
+   Parser
+   Network
+   Qui 
+   Viewer
+   Layer
+   Old 
    Configurator
    Data
    Grid
-   Layer
-   Main
-   Network
-   Old 
-   Parser
-   Plot
-   Process
-   Qui 
    Util
    Math
-   Viewer
+   Plot
+   Fort 
    openbabel
    libssh2
    yaml-cpp
-   OpenMeshCoreStatic
-   OpenMeshToolsStatic
    QGLViewer
    Qt5::Core
    Qt5::Gui
@@ -140,13 +183,23 @@ target_link_libraries (${targetName}
    Qt5::PrintSupport
    Qt5::Widgets
    Qt5::OpenGL
+   ${OPENMESH_LIBRARIES}
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
+   ${ZLIB_LIBRARIES}
 )
 
 if(QARCHIVE)
-   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
+	#   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
+
+   target_link_libraries (${targetName}
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libarchive/libarchive/api/impl/libarchive_impl.a
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libstore/libstore/libstore.a
+      ${CMAKE_SOURCE_DIR}/qarchive/build/libctx/libctx/libctx.a
+      hdf5-static
+      #${HDF5_LIBRARIES}
+   )
 else(QARCHIVE)
 #   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)

@@ -76,7 +76,7 @@ void LogMessageDialog::update(QString const& filePath)
          // Get rid of file names and line numbers
          QRegularExpression rx("^.*@\\s\\d+\\s",QRegularExpression::InvertedGreedinessOption);
          //rx.setMinimal(true);
-         QStringList lines(text.split(QRegularExpression("\\n"), Qt::SkipEmptyParts));
+         QStringList lines(text.split(QRegularExpression("\\n"), QString::SkipEmptyParts));
          for (int i = 0; i < lines.size(); ++i) {
              text = lines[i].trimmed();
              if (messageLevel(text) >= m_filter) {

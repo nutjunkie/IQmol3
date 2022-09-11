@@ -80,7 +80,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
 /* Calculate the RMSD & rotational matrix.
 
@@ -157,5 +157,5 @@ int FastCalcRMSDAndRotation(double *rot, double *A, double *rmsd, double E0, int
 double InnerProduct(double *A, double **coords1, double **coords2, const int len, 
    const double *weight);
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math
 

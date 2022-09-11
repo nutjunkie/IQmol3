@@ -79,7 +79,7 @@ void OptSection::read(QString const& input) {
    deleteConstraints();
    Constraint* constraint;
    QStringList lines( input.trimmed().split(
-      QRegularExpression("\\n"), Qt::SkipEmptyParts) );
+      QRegularExpression("\\n"), QString::SkipEmptyParts) );
 
    for (int i = 0; i < lines.count(); ++i) {
        constraint = Constraint::fromString(lines[i]);

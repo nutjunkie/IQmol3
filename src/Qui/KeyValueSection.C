@@ -129,12 +129,12 @@ QString KeyValueSection::dump() const
 
 void KeyValueSection::read(QString const& data) 
 {
-   QStringList lines( data.trimmed().split("\n", Qt::SkipEmptyParts) );
+   QStringList lines( data.trimmed().split("\n", QString::SkipEmptyParts) );
    QStringList tokens;
    QString     line;
 
    for (int i = 0; i < lines.count(); ++i) {
-       tokens = lines[i].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = lines[i].split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
 
        if (tokens.count() == 1) {
           QString key(tokens[0].toUpper());

@@ -1,7 +1,7 @@
 find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml OpenGL REQUIRED)
 set(LIB Process)
 
-set( SOURCES
+set(SOURCES
    Job.C
    JobInfo.C
    JobMonitor.C
@@ -20,7 +20,7 @@ set( SOURCES
 )
 
 if (WIN32)
-   set( SOURCES "${SOURCES} getpids.C")
+   LIST(APPEND SOURCES getpids.C)
 endif()
 
 set( UI_FILES

@@ -42,7 +42,7 @@ void Option::copy(Option const& that) {
 
 
 void Option::optionArray(QString const& options) {
-   m_options = options.split(":",Qt::SkipEmptyParts);
+   m_options = options.split(":",QString::SkipEmptyParts);
 }
 
 
