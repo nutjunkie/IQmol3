@@ -1,4 +1,5 @@
 set(LIB Configurator)
+
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 find_package(Qt5 COMPONENTS Xml OpenGL REQUIRED)
 

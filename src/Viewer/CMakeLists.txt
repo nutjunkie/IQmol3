@@ -1,5 +1,6 @@
-find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 set(LIB Viewer)
+
+find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 
 set( HEADERS
    Animator.h

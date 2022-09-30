@@ -4,7 +4,7 @@ set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
 
 include(FortranCInterface)
-FortranCInterface_VERIFY(CXX)
+#FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -112,6 +112,10 @@ endif(APPLE)
 #  "/opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libgfortran.a 
 #   /opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libquadmath.a  
 #)
+
+add_dependencies(Old Configurator)
+add_dependencies(Process Configurator)
+add_dependencies(Viewer Old Process)
 
 target_link_libraries (${targetName}
    Configurator
