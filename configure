@@ -1,0 +1,23 @@
+#! /bin/bash
+
+TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+CONFIGURE_ARGS=$*
+
+
+echo "IQmol configured by `whoami`@`hostname`" > configure.log
+date >> configure.log
+echo "" >> configure.log
+echo "$0 $CONFIGURE_ARGS" >> configure.log
+echo "" >> configure.log
+echo "CXX = $CXX" >> configure.log
+
+mkdir -p $TOPDIR/build
+cd $TOPDIR/build
+
+if [ -e CMakeCache.txt ]; then
+    rm CMakeCache.txt
+fi
+
+cmake -DBUILD_SHARED=OFF  $TOPDIR 2>&1 | tee -a ../configure.log
+exit ${PIPESTATUS[0]}
