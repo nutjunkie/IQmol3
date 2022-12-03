@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.14.4)
 set(targetName IQmol)
 project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
 
+if (UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
+
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
@@ -15,8 +19,6 @@ set(CMAKE_BUILD_TYPE Debug)
 #endif(APPLE)
 
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
-#find_package(HDF5 REQUIRED)
-#find_package(LibSSH2 REQUIRED)
 
 #message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
 #message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
@@ -24,10 +26,10 @@ set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 
+
 find_package(ZLIB      REQUIRED)
 find_package(Threads   REQUIRED)
 find_package(OpenGL    REQUIRED)
-#find_package(Armadillo REQUIRED)
   
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
@@ -65,6 +67,8 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 enable_testing()
 
 if(QARCHIVE)
+   find_package(HDF5 REQUIRED)
+   find_package(Armadillo REQUIRED)
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
@@ -81,7 +85,12 @@ find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_subdirectory(src)
-qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
+if (${Qt5Core_VERSION_STRING} VERSION_GREATER_EQUAL 5.15 )
+   qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
+else ()
+   qt5_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
+endif ()
+
 set(ICON_PATH resources/IQmol.icns)
 
 if (APPLE)
@@ -104,12 +113,12 @@ if (APPLE)
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
 
-if (UNIX)
+if (LINUX)
    add_executable(${targetName} 
       src/main.C
       ${IQmol_RESOURCES_RCC}
    )
-endif (UNIX)
+endif (LINUX)
 
 # The following is required to link gfortran statically, and was working before
 # the compiler update.
