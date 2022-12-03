@@ -10,9 +10,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
-if(APPLE)
-   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.3/lib/cmake/Qt5)
-endif(APPLE)
+#if(APPLE)
+#   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.6/lib/cmake/Qt5)
+#endif(APPLE)
 
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 #find_package(HDF5 REQUIRED)
@@ -103,6 +103,13 @@ if (APPLE)
 #   add_custom_command(TARGET ${targetName} POST_BUILD 
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
+
+if (UNIX)
+   add_executable(${targetName} 
+      src/main.C
+      ${IQmol_RESOURCES_RCC}
+   )
+endif (UNIX)
 
 # The following is required to link gfortran statically, and was working before
 # the compiler update.

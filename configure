@@ -4,13 +4,29 @@ TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 CONFIGURE_ARGS=$*
 
-
 echo "IQmol configured by `whoami`@`hostname`" > configure.log
 date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "" >> configure.log
-echo "CXX = $CXX" >> configure.log
+
+
+ARCH=$(uname)
+echo "Configuring build for $ARCH" >> configure.log
+
+if [ $ARCH == 'Darwin' ]; then
+   echo "Mac OS" >> configure.log
+   QT=/opt/homebrew/Cellar/qt@5/5.15.6/lib/cmake/Qt5
+elif [ $ARCH == 'Linux' ]; then
+   echo "Something else"  >> configure.log
+   QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
+else 
+   echo "No configure on Windows" 
+   exit 1
+fi
+
+
+echo "QT  = $QT" >> configure.log
 
 mkdir -p $TOPDIR/build
 cd $TOPDIR/build
@@ -19,5 +35,5 @@ if [ -e CMakeCache.txt ]; then
     rm CMakeCache.txt
 fi
 
-cmake -DBUILD_SHARED=OFF  $TOPDIR 2>&1 | tee -a ../configure.log
+cmake -DBUILD_SHARED=OFF -DCMAKE_PREFIX_PATH=$QT  $TOPDIR 2>&1 | tee -a ../configure.log
 exit ${PIPESTATUS[0]}
