@@ -68,8 +68,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Process)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Old)
 
-qt_wrap_ui( UI_HEADERS ${UI_FILES} )
-qt_wrap_cpp(SOURCES ${HEADERS} )
+qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
+qt5_wrap_cpp(SOURCES ${HEADERS} )
 add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
 
 target_link_libraries(${LIB} PRIVATE 
