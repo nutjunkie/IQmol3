@@ -24,10 +24,10 @@ set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 
-find_package(ZLIB    REQUIRED)
-find_package(Threads REQUIRED)
-find_package(OpenGL  REQUIRED)
-find_package(Armadillo REQUIRED)
+find_package(ZLIB      REQUIRED)
+find_package(Threads   REQUIRED)
+find_package(OpenGL    REQUIRED)
+#find_package(Armadillo REQUIRED)
   
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
@@ -159,5 +159,5 @@ target_link_libraries (${targetName}
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
-#   target_link_libraries (${targetName} hdf5-static)
+   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)
