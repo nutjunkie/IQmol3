@@ -10,6 +10,8 @@ echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "" >> configure.log
 
+DEFINES="-DBUILD_SHARED=OFF -DGL_SILENCE_DEPRECATION=ON"
+
 
 ARCH=$(uname)
 echo "Configuring build for $ARCH" >> configure.log
@@ -35,5 +37,5 @@ if [ -e CMakeCache.txt ]; then
     rm CMakeCache.txt
 fi
 
-cmake -DBUILD_SHARED=OFF -DCMAKE_PREFIX_PATH=$QT  $TOPDIR 2>&1 | tee -a ../configure.log
+cmake $DEFINES  -DCMAKE_PREFIX_PATH=$QT  $TOPDIR 2>&1 | tee -a ../configure.log
 exit ${PIPESTATUS[0]}

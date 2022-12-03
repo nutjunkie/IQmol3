@@ -10,13 +10,10 @@ endif()
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
-#if(APPLE)
-#   set(CMAKE_PREFIX_PATH /opt/homebrew//Cellar/qt@5/5.15.6/lib/cmake/Qt5)
-#endif(APPLE)
 
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
