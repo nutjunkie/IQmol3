@@ -54,13 +54,13 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
-set(HDF5_USE_STATIC_LIBRARIES 1)
+#set(HDF5_USE_STATIC_LIBRARIES 1)
 #include_directories(modules/hdf5/src)
 #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
-include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
+#include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
 
-include_directories(modules/HighFive/include)
-add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
+#include_directories(modules/HighFive/include)
+#add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
 enable_testing()
 
@@ -159,5 +159,6 @@ target_link_libraries (${targetName}
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
-   target_link_libraries (${targetName} hdf5-static)
+#   target_link_libraries (${targetName} hdf5-static)
+   target_link_libraries (${targetName} )
 endif(QARCHIVE)
