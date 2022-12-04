@@ -33,9 +33,9 @@ set( UI_FILES
    SymmetryToleranceDialog.ui
 )
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(.. ../Util ../Data ../Parser ../Layer ../Configurator ../Viewer)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
