@@ -24,6 +24,7 @@
 #define IQMOL_UTIL_QTVERSION_HACKS
 
 #include <QString>
+#include <QtGlobal>
 
 namespace IQmol {
 
