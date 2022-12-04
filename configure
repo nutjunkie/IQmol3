@@ -22,6 +22,7 @@ if [ $ARCH == 'Darwin' ]; then
 elif [ $ARCH == 'Linux' ]; then
    echo "Something else"  >> configure.log
    QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
+   BOOST=/sw/boost/1.72.0/serial/gcc72
 else 
    echo "No configure on Windows" 
    exit 1
@@ -37,5 +38,5 @@ if [ -e CMakeCache.txt ]; then
     rm CMakeCache.txt
 fi
 
-cmake $DEFINES  -DCMAKE_PREFIX_PATH=$QT  $TOPDIR 2>&1 | tee -a ../configure.log
+cmake $DEFINES  -DCMAKE_PREFIX_PATH=$QT  -DBOOST_ROOT=$BOOST $TOPDIR 2>&1 | tee -a ../configure.log
 exit ${PIPESTATUS[0]}
