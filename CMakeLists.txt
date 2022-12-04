@@ -8,64 +8,26 @@ if (UNIX AND NOT APPLE)
 endif()
 
 include(FortranCInterface)
-#FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Debug)
 
-
-set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
-
-#message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
-#message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
-#message("LIBSSH2_LIBRARY=      " ${LIBSSH2_LIBRARY})
+list(APPEND CMAKE_MODULE_PATH "${${targetName}_SOURCE_DIR}/cmake")
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
-
-
-find_package(ZLIB      REQUIRED)
 find_package(Threads   REQUIRED)
 find_package(OpenGL    REQUIRED)
-  
-# No CMakeLists.txt for libQGLViewer
-include_directories(modules/libQGLViewer)
-add_subdirectory(modules  EXCLUDE_FROM_ALL)
-
-include_directories(modules/libssh2/include)
-add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
-
-include_directories(modules/openmesh/src)
-add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-
-include_directories(modules/yaml-cpp/include)
-add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
-
-
-# There seems to be a scoping problem with the following variables, so they need to be set
-# on the command line in order for them to take effect.
-# cmake -DBUILD_SHARED=OFF  ../ 
-#set(BUILD_SHARED OFF)
-#set(GL_SILENCE_DEPRECATION ON)
-include_directories(modules/openbabel/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
-add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
-
-#set(HDF5_USE_STATIC_LIBRARIES 1)
-#include_directories(modules/hdf5/src)
-#add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
-#include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
-
-#include_directories(modules/HighFive/include)
-#add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
-
-enable_testing()
+include(FetchContent)
+include(cmake/AddZlib.cmake)
+include(cmake/AddQGLViewer.cmake)
+include(cmake/AddLibSsh2.cmake)
+include(cmake/AddOpenMesh.cmake)
+include(cmake/AddYamlCpp.cmake)
+include(cmake/AddOpenBabel3.cmake)
 
 if(QARCHIVE)
-   find_package(HDF5 REQUIRED)
-   find_package(Armadillo REQUIRED)
+   include(cmake/AddHDF5.cmake)
+   include(cmake/AddHighFive.cmake)
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
@@ -80,6 +42,8 @@ endif(QARCHIVE)
 set(Boost_USE_STATIC_LIBS TRUE)
 find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
+enable_testing()
 
 add_subdirectory(src)
 if (${Qt5Core_VERSION_STRING} VERSION_GREATER_EQUAL 5.15 )
