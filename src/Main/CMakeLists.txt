@@ -40,23 +40,19 @@ set( UI_FILES
    ../Process/ServerConfigurationListDialog.ui
 )
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC_SEARCH_PATHS ../Process)
-
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(.. ../Viewer ../Layer ../Configurator ../Util ../Data ../Old ../Process ../Network)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Old)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Qui)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Process)
-
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
-
-target_link_libraries(${LIB} PRIVATE 
+add_library(${LIB} ${SOURCES} ${UI_FILES})
+target_include_directories(${LIB} PUBLIC
+   "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
+)
+target_link_libraries(${LIB} PUBLIC
+   Old
+   Viewer
+)
+target_link_libraries(${LIB} PRIVATE
+   Process
+   Qui
    Qt5::Core 
    Qt5::Gui 
    Qt5::Widgets

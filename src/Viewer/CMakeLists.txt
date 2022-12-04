@@ -57,24 +57,19 @@ set( UI_FILES
    Snapshot.ui
 )
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(../Layer ../Configurator ../Util .. ../Data ../Old ../Parser ../Yaml ../Process ../Network)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Process)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Old)
-
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
-   Qt5::Gui 
+add_library(${LIB} ${SOURCES} ${UI_HEADERS})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+target_link_libraries(${LIB} PUBLIC
+   Configurator
+)
+target_link_libraries(${LIB} PRIVATE
+   Old
+   Parser # TextStream
+   Process # ServerConfiguration
+   Qt5::Core
+   Qt5::Gui
    Qt5::Widgets
    Qt5::Xml
    Qt5::OpenGL
