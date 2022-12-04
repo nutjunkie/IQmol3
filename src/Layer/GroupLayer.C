@@ -20,11 +20,11 @@
 
 ********************************************************************************/
 
-#include "Layer/GroupLayer.h"
-#include "Layer/AtomLayer.h"
-#include "Layer/BondLayer.h"
+#include "GroupLayer.h"
+#include "AtomLayer.h"
+#include "BondLayer.h"
 #include "Parser/ParseFile.h"
-#include "Layer/LayerFactory.h"
+#include "LayerFactory.h"
 #include "Math/Align.h"
 #include "Util/QMsgBox.h"
 #include <QFileInfo>

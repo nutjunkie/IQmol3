@@ -26,7 +26,7 @@
 #include "MoleculeLayer.h"
 #include "MarchingCubes.h"
 #include "MeshDecimator.h"
-#include "SpatialProperty.h"
+#include "SpatialProperty.h" // GridBased
 #include "CubeData.h"
 #include "QsLog.h"
 
@@ -116,4 +116,4 @@ Surface* CubeData::calculateSurface(Data::SurfaceInfo const& surfaceInfo)
    return surfaceLayer;
 }
 
-} } // end namespace IQmol:;Layer
+} } // end namespace IQmol::Layer

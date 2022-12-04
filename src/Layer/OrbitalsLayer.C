@@ -20,15 +20,15 @@
 
 ********************************************************************************/
 
-#include "Layer/OrbitalsLayer.h"
-#include "Layer/MoleculeLayer.h"
+#include "OrbitalsLayer.h"
+#include "MoleculeLayer.h"
 #include "GridInfoDialog.h"
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Grid/BoundingBoxDialog.h"
 #include "Data/SurfaceType.h"
 #include "Data/SurfaceInfo.h"
-#include "Layer/SurfaceLayer.h"
+#include "SurfaceLayer.h"
 #include "Util/QMsgBox.h"
 #include "Data/Density.h"
 #include "QGLViewer/vec.h"

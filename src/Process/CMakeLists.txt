@@ -20,7 +20,7 @@ set( SOURCES
 )
 
 if (WIN32)
-   set( SOURCES "${SOURCES} getpids.C")
+   list(APPEND SOURCES getpids.C)
 endif()
 
 set( UI_FILES
@@ -32,22 +32,20 @@ set( UI_FILES
    SshFileDialog.ui
 )
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_BINARY_DIR})
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(.. ../Util ../Yaml ../Data ../Network ../Parser ../Layer ../Configurator)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
-
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
-   Qt5::Gui 
+add_library(${LIB} ${SOURCES} ${UI_HEADERS})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
+target_link_libraries(${LIB} PUBLIC
+   Network
+)
+target_link_libraries(${LIB} PRIVATE
+   Data
+   Layer # FileLayer for JobMonitor::viewOutput
+   Parser
+   Util
+   Qt5::Core
+   Qt5::Gui
    Qt5::Widgets
    Qt5::Xml
    Qt5::Network

@@ -22,7 +22,7 @@
 
 ********************************************************************************/
 
-#include "ParseFile.h"
+#include "Parser/ParseFile.h"
 
 
 namespace IQmol {

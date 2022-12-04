@@ -27,13 +27,14 @@ if (QARCHIVE)
    list(APPEND SOURCES ArchiveParser.C)
 endif()
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
+add_library(${LIB} ${SOURCES})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
+target_include_directories(${LIB} PRIVATE
+   "${OpenBabel3_INCLUDE_DIRS}"
+)
+target_link_libraries(${LIB} PRIVATE
+   ${OpenBabel3_LIBRARIES}
+   Qt5::Core
    Qt5::Gui
    Qt5::Widgets
    Qt5::Network

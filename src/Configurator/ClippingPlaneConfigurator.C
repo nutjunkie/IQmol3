@@ -20,7 +20,7 @@
 
 ********************************************************************************/
 
-#include "Configurator/ClippingPlaneConfigurator.h"
+#include "ClippingPlaneConfigurator.h"
 #include "Layer/ClippingPlaneLayer.h"
 #include "Math/Numerical.h"
 #include "Util/OpenGL.h"

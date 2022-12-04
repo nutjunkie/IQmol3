@@ -1,6 +1,5 @@
 set(LIB Qui)
-find_package(Qt5 COMPONENTS Core Gui Widgets Sql REQUIRED)
-find_package(Qt5 COMPONENTS Xml OpenGL REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets Sql Xml OpenGL REQUIRED)
 
 set( HEADERS
    Actions.h
@@ -84,20 +83,25 @@ set( UI_FILES
    TransitionStateTab.ui
 )
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-include_directories(../Process ../Util ../Data ../ ../Parser)
-
-qt5_wrap_ui( SOURCES ${UI_FILES} )
-qt5_wrap_cpp( SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
-   Qt5::Gui 
+qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
+qt5_wrap_cpp(SOURCES ${HEADERS} )
+add_library(${LIB} ${SOURCES} ${UI_HEADERS})
+target_include_directories(${LIB} PUBLIC
+   "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
+   "${OpenBabel3_INCLUDE_DIRS}"
+)
+target_link_libraries(${LIB} PUBLIC
+   Process
+)
+target_link_libraries(${LIB} PRIVATE
+   Data
+   Parser
+   Util
+   Qt5::Core
+   Qt5::Gui
    Qt5::Widgets
    Qt5::Xml
    Qt5::Sql
    Qt5::OpenGL
+   ${OpenBabel3_LIBRARIES}
 )
-

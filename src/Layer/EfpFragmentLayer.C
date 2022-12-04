@@ -20,10 +20,10 @@
 
 ********************************************************************************/
 
-#include "Layer/EfpFragmentLayer.h"
+#include "EfpFragmentLayer.h"
 #include "Data/EfpFragmentLibrary.h"
 #include "Data/EfpFragment.h"
-#include "Layer/LayerFactory.h"
+#include "LayerFactory.h"
 #include "Util/Preferences.h"
 #include "Math/EulerAngles.h"
 #include "QMsgBox.h"

@@ -78,4 +78,4 @@ void Axes::on_okButton_clicked(bool)
    accept();
 }
 
-} } // end namespace IQmol::Layer
+} } // end namespace IQmol::Configurator

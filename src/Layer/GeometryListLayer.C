@@ -29,7 +29,7 @@
 #include "InfoLayer.h"
 #include "AtomLayer.h"
 #include "QsLog.h"
-
+#include "Animator.h"
 #include <QDebug>
 
 

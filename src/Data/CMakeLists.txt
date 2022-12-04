@@ -103,11 +103,21 @@ set( SOURCES
 )
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
+add_library(${LIB} ${SOURCES})
+target_include_directories(${LIB} PUBLIC
+   "${${LIB}_SOURCE_DIR}"
+)
+target_include_directories(${LIB} PRIVATE
+   # This is only because the OpenMeshCore target doesn't properly set the
+   # interface headers
+   "${OPENMESH_INCLUDE_DIR}"
+   "${OpenBabel3_INCLUDE_DIRS}"
+)
+target_link_libraries(${LIB} PRIVATE
+   Math
+   ${OpenBabel3_LIBRARIES}
+   OpenMeshCore
+   Qt5::Core
    Qt5::Xml
    Qt5::OpenGL
 )
-
