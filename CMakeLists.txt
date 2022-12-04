@@ -133,6 +133,7 @@ add_dependencies(Viewer Old Process)
 target_link_libraries (${targetName}
    Configurator
    Data
+   Util
    Grid
    Layer
    Main
@@ -142,7 +143,6 @@ target_link_libraries (${targetName}
    Plot
    Process
    Qui 
-   Util
    Math
    Viewer
    openbabel
