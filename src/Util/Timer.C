@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 #include "Timer.h"
+#include "QtVersionHacks.h"
 #include "QsLog.h"
 #include <QStringList>
 #include <QTime>
@@ -44,8 +45,8 @@ unsigned Timer::toSeconds(QString const& s)
 {
    if (s.isEmpty()) return -1;
    // Remove any partial seconds
-   QString t = s.split(".", Qt::SkipEmptyParts).first();
-   QStringList tokens(t.split(":",Qt::SkipEmptyParts));
+   QString t = s.split(".", IQmolSkipEmptyParts).first();
+   QStringList tokens(t.split(":",IQmolSkipEmptyParts));
 
    unsigned hours(0), minutes(0), seconds(0);
    bool okH(true), okM(true), okS(true);

@@ -25,6 +25,7 @@
 #include "openbabel/forcefield.h"
 #include "openbabel/internalcoord.h"
 
+#include "QtVersionHacks.h"
 #include "QuiMolecule.h"
 
 
@@ -51,7 +52,7 @@ bool Molecule::setCoordinates(QString const& input) {
    if (lines.count() < 1) return false;
 
    QString first(lines[0].replace(QChar(','),QChar(' ')));
-   QStringList tokens(first.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts));
+   QStringList tokens(first.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
 
    // Molecule read from previous job
    if (lines.count() == 1 && tokens[0].toLower() == "read") {
@@ -72,7 +73,7 @@ bool Molecule::setCoordinates(QString const& input) {
    // We take a peek at the first line of coordinates.  If there is only one
    // token then we assume a z-matrix format, otherwise we assume an XYZ.
    tokens.clear();
-   tokens = lines[1].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+   tokens = lines[1].split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
 
    Clear();  // Clear the current OBMol data
    OBConversion conv;

@@ -22,6 +22,7 @@
 
 ********************************************************************************/
 
+#include "Util/QtVersionHacks.h"
 #include <QStringList>
 #include <QTextStream>
 #include <QIODevice>
@@ -125,7 +126,7 @@ namespace Parser {
          void setOffset(int const offset) { m_lineCount = offset; }
 
          static QStringList tokenize(QString const& str) {
-            return str.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+            return str.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
          }
 
          QString const& nextBlock(QChar const open = '{', QChar const close = '}') 

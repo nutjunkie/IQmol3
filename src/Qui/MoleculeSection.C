@@ -8,6 +8,7 @@
  *  \date February 2008
  */
 
+#include "QtVersionHacks.h"
 #include "MoleculeSection.h"
 #include "QuiMolecule.h"
 
@@ -29,7 +30,7 @@ void MoleculeSection::read(QString const& input)
 
    if (lines.count() > 0) {
       QString first(lines[0].replace(QChar(','),QChar(' ')));
-      QStringList tokens(first.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts));
+      QStringList tokens(first.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
       lines.removeFirst();
 
       if (tokens.count() == 1) {

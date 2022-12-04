@@ -20,6 +20,7 @@
    
 ********************************************************************************/
 
+#include "QtVersionHacks.h"
 #include "QueueResourcesList.h"
 #include "QsLog.h"
 #include "TextStream.h"
@@ -68,7 +69,7 @@ void QueueResourcesList::fromPbsQueueInfoString(QString const& queueInfo)
 {
    QueueResources* queue(0);
 
-   QStringList lines(queueInfo.split(QRegularExpression("\\n"), Qt::SkipEmptyParts));
+   QStringList lines(queueInfo.split(QRegularExpression("\\n"), IQmolSkipEmptyParts));
    QStringList tokens;
    QString line;
    bool ok;
@@ -77,7 +78,7 @@ void QueueResourcesList::fromPbsQueueInfoString(QString const& queueInfo)
    QStringList::iterator iter;
    for (iter = lines.begin(); iter != lines.end(); ++iter) {
        line = *iter; 
-       tokens = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = line.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
    
        if (line.contains("Queue: ")) {
           queue = new QueueResources(tokens[1]);

@@ -7,6 +7,7 @@
  *  \date January 2008
  */
 
+#include "QtVersionHacks.h"
 #include "RemSection.h"
 #include "Option.h"
 #include "OptionDatabase.h"
@@ -94,14 +95,14 @@ void RemSection::read(QString const& input) {
    printOption("GUI",false);  
    m_options["GUI"] = "0";
 
-   QStringList lines( input.trimmed().split("\n", Qt::SkipEmptyParts) );
+   QStringList lines( input.trimmed().split("\n", IQmolSkipEmptyParts) );
    QStringList invalidLines;
    QStringList tokens;
    QString line;
 
    for (int i = 0; i < lines.count(); ++i) {
        line = lines[i].replace(QChar('='),QChar(' '));
-       tokens = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+       tokens = line.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
 
        if (tokens.count() >= 2) {
           QString rem(tokens[0].toUpper());
