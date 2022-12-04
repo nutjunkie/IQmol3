@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "Configurator/ConstraintConfigurator.h"
-#include "Layer/ConstraintLayer.h"
+#include "ConstraintLayer.h"
 #include "Data/Constraint.h"
 #include "Util/GLShape.h"
 #include "Math/Axes.h"

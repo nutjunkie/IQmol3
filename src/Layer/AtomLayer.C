@@ -20,7 +20,7 @@
 
 ********************************************************************************/
 
-#include "Layer/AtomLayer.h"
+#include "AtomLayer.h"
 #include "Util/Preferences.h"
 #include "Viewer/Viewer.h"
 #include "PovRayGen.h"

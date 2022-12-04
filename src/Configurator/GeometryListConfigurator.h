@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "ui_GeometryListConfigurator.h"
-#include "Configurator/Configurator.h"
+#include "Configurator.h"
 #include "Layer/MoleculeLayer.h"
 #include <QPen>
 #include <QBrush>

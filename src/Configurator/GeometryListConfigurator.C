@@ -20,9 +20,9 @@
    
 ********************************************************************************/
 
-#include "MoleculeLayer.h"
-#include "GeometryLayer.h"
-#include "GeometryListLayer.h"
+#include "Layer/MoleculeLayer.h"
+#include "Layer/GeometryLayer.h"
+#include "Layer/GeometryListLayer.h"
 #include "GeometryListConfigurator.h"
 #include "Constraint.h"
 #include <QHeaderView>
