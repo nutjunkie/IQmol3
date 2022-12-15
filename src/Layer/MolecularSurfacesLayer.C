@@ -23,7 +23,7 @@
 #include "MolecularSurfacesLayer.h"
 #include "MoleculeLayer.h"
 #include "SurfaceLayer.h"
-#include "Old/AtomicDensity.h"
+#include "Data/AtomicDensity.h"
 #include "Old/SpatialProperty.h"
 #include "Data/SurfaceInfo.h"
 #include "Grid/SurfaceGenerator.h"

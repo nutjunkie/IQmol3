@@ -7,6 +7,7 @@ set( HEADERS
 set( SOURCES
    Atom.C
    AtomicProperty.C
+   AtomicDensity.C
    Bank.C
    CanonicalOrbitals.C
    ChargeMultiplicity.C

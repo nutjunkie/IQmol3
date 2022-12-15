@@ -148,7 +148,16 @@ void ShaderLibrary::loadShaders()
                 QLOG_DEBUG() << "Shader compilation successful:" << name;
                 m_shaders.insert(name, program);
                 QVariantMap uniforms(parseUniformVariables(vertex.filePath()));
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
+                QVariantMap tmp(parseUniformVariables(fragment.filePath()));
+                QMap<QString, QVariant>::const_iterator i = tmp.constBegin();
+                while (i != tmp.constEnd()) {
+                   uniforms.insert(i.key(), i.value());
+                   ++i;
+                }
+#else
                 uniforms.insert(parseUniformVariables(fragment.filePath()));
+#endif
                 setUniformVariables(name, uniforms);
              }
           }

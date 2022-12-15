@@ -31,6 +31,7 @@ set( SOURCES
    ShaderDialog.C
    ShaderLibrary.C
    Snapshot.C
+   UndoCommands.C
    Viewer.C
    ViewerModel.C
    ViewerModelView.C

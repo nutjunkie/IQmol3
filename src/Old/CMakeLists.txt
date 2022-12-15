@@ -9,19 +9,16 @@ set( HEADERS
 )
 
 set( SOURCES
-   AtomicDensity.C
    ColorGrid.C
    LogMessageDialog.C
    ParseJobFiles.C
    ProgressDialog.C
    SpatialProperty.C
    SymmetryToleranceDialog.C
-   UndoCommands.C
    gl2ps.C
 )
 
 set( UI_FILES
-   GetVaultKeyDialog.ui
    LogMessageDialog.ui
    ProgressDialog.ui
    SymmetryToleranceDialog.ui

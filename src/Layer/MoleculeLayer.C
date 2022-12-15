@@ -54,7 +54,7 @@
 
 
 #include "Old/SpatialProperty.h"
-#include "Old/UndoCommands.h"
+#include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"
 #include "Util/QMsgBox.h"

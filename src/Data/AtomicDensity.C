@@ -20,7 +20,7 @@
    
 ********************************************************************************/
 
-#include "Constants.h"
+#include "Util/Constants.h"
 #include "AtomicDensity.h"
 #include "AtomicDensityData.h"
 #include <openbabel/elements.h>
