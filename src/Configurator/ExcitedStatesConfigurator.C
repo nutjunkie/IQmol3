@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "ExcitedStatesConfigurator.h"
-#include "ExcitedStatesLayer.h"
+#include "Layer/ExcitedStatesLayer.h"
 #include "ElectronicTransition.h"
 #include "ExcitedStates.h"
 #include "CustomPlot.h"

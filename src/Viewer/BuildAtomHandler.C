@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "ViewerModel.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "BuildAtomHandler.h"
 #include "UndoCommands.h"
 #include "QGLViewer/camera.h"

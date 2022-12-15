@@ -22,10 +22,10 @@
    
 ********************************************************************************/
 
-#include "ui_MullikenDecompositionsDialog.h"
+#include "Configurator/ui_MullikenDecompositionsDialog.h"
 #include "QGLViewer/vec.h"
-#include "Density.h"
-#include "ShellList.h"
+#include "Data/Density.h"
+#include "Data/ShellList.h"
 
 
 namespace IQmol {

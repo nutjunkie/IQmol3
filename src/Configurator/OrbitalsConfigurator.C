@@ -21,10 +21,10 @@
 ********************************************************************************/
 
 #include "OrbitalsConfigurator.h"
-#include "CanonicalOrbitalsLayer.h"
+#include "Layer/CanonicalOrbitalsLayer.h"
 #include "MullikenDecompositionsDialog.h"
 #include "Preferences.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "CustomPlot.h"
 #include "Constants.h"
 #include "QsLog.h"

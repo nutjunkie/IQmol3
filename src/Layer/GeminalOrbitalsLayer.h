@@ -22,9 +22,9 @@
 
 ********************************************************************************/
 
+#include "SurfaceLayer.h"
 #include "Data/Surface.h"
 #include "Data/SurfaceInfo.h"
-#include "Layer/SurfaceLayer.h"
 #include "Configurator/GeminalOrbitalsConfigurator.h"
 #include "Data/GridData.h"
 #include "Math/Matrix.h"

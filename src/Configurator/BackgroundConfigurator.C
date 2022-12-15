@@ -22,7 +22,7 @@
 
 #include "SetButtonColor.h"
 #include "BackgroundConfigurator.h"
-#include "BackgroundLayer.h"
+#include "Layer/BackgroundLayer.h"
 #include "Preferences.h"
 #include <QColorDialog>
 

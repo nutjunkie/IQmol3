@@ -21,8 +21,8 @@
 ********************************************************************************/
 
 #include "ViewerModelView.h"
-#include "MoleculeLayer.h"
-#include "AtomLayer.h"
+#include "Layer/MoleculeLayer.h"
+#include "Layer/AtomLayer.h"
 #include "QVariantPtr.h"
 #include <QContextMenuEvent>
 #include <QModelIndex>

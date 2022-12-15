@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "File.h"
-#include "FileConfigurator.h"
+#include "Data/File.h"
+#include "Configurator/FileConfigurator.h"
 
 
 namespace IQmol {

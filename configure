@@ -4,27 +4,36 @@ TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 CONFIGURE_ARGS=$*
 
-echo "IQmol configured by `whoami`@`hostname`" > configure.log
 date >> configure.log
+echo "IQmol configured by `whoami`@`hostname`:" > configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "" >> configure.log
 
-DEFINES="-DBUILD_SHARED=OFF -DGL_SILENCE_DEPRECATION=ON"
-
+DEFINES="-DBUILD_SHARED=OFF"
+#DEFINES="-DBUILD_SHARED=OFF -DGL_SILENCE_DEPRECATION=ON"
 
 ARCH=$(uname)
 echo "Configuring build for $ARCH" >> configure.log
 
 if [ $ARCH == 'Darwin' ]; then
-   echo "Mac OS" >> configure.log
-   QT=/opt/homebrew/Cellar/qt@5/5.15.6/lib/cmake/Qt5
+   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
+      QT=/opt/homebrew/Cellar/qt@5/5.15.6/lib/cmake/Qt5
+   else 
+      QT=${CMAKE_PREFIX_PATH}
+   fi
+
 elif [ $ARCH == 'Linux' ]; then
-   echo "Something else"  >> configure.log
-   QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
    BOOST=/sw/boost/1.72.0/serial/gcc72
+
+   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
+      QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
+   else 
+      QT=${CMAKE_PREFIX_PATH}
+   fi
+
 else 
-   echo "No configure on Windows" 
+   echo "Windows configure, go figure"
    exit 1
 fi
 

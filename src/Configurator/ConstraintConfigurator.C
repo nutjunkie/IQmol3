@@ -20,7 +20,7 @@
 
 ********************************************************************************/
 
-#include "Configurator/ConstraintConfigurator.h"
+#include "ConstraintConfigurator.h"
 #include "Layer/ConstraintLayer.h"
 #include "QGLViewer/vec.h"
 #include "Math/Axes.h"

@@ -21,10 +21,10 @@
 ********************************************************************************/
 
 #include "GeometryLayer.h"
-#include "DipoleMoment.h"
-#include "AtomicProperty.h"
-#include "Geometry.h"
-#include "Energy.h"
+#include "Data/DipoleMoment.h"
+#include "Data/AtomicProperty.h"
+#include "Data/Geometry.h"
+#include "Data/Energy.h"
 
 
 namespace IQmol {

@@ -1,7 +1,6 @@
 set(LIB Configurator)
 
-find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
-find_package(Qt5 COMPONENTS Xml OpenGL REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 
 set( HEADERS
    AxesConfigurator.h
@@ -83,18 +82,28 @@ set( UI_FILES
    VectorConstraintConfigurator.ui
 )
 
-#set(CMAKE_AUTOUIC ON)
-#set(CMAKE_AUTOMOC ON)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-include_directories(../ ../Data ../Util ../Layer ../Old ../Viewer ../Plot ../Grid)
-
-qt5_wrap_ui(SOURCES ${UI_FILES} )
+qt5_wrap_ui(UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES} )
+add_library(${LIB} ${SOURCES} ${UI_HEADERS})
 
-target_link_libraries(${LIB} PRIVATE 
+target_include_directories(${LIB} PUBLIC
+   "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
+   "${OpenBabel3_INCLUDE_DIRS}"
+)
+
+target_link_libraries(${LIB} PUBLIC
+   Data
+   #Layer
+   Util
+   ${OpenBabel3_LIBRARIES}
+)
+
+target_link_libraries(${LIB} PRIVATE
+   Grid
+   # Old
+   Plot
+   # Process # QChemJobInfo
+   # Viewer
    Qt5::Core 
    Qt5::Gui 
    Qt5::Widgets

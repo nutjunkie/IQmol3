@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "ReindexAtomsHandler.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "Viewer.h"
 
 

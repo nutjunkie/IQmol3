@@ -22,8 +22,8 @@
 
 ********************************************************************************/
 
-#include "ui_MoleculeConfigurator.h"
-#include "Configurator/Configurator.h"
+#include "Configurator/ui_MoleculeConfigurator.h"
+#include "Configurator.h"
 #include "Layer/PrimitiveLayer.h"
 
 

@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_MolecularSurfacesConfigurator.h"
+#include "Configurator/ui_MolecularSurfacesConfigurator.h"
 
 
 namespace IQmol {

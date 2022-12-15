@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "File.h"
+#include "Data/File.h"
 
 namespace IQmol {
 

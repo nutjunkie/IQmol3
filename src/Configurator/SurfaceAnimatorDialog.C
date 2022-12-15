@@ -22,8 +22,8 @@
 
 #include "SurfaceAnimatorDialog.h"
 #include "Preferences.h"
-#include "MoleculeLayer.h"
-#include "CubeDataLayer.h"
+#include "Layer/MoleculeLayer.h"
+#include "Layer/CubeDataLayer.h"
 #include "QVariantPtr.h"
 #include "MarchingCubes.h"
 #include "MeshDecimator.h"

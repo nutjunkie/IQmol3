@@ -193,7 +193,7 @@
   <connection>
    <sender>okButton</sender>
    <signal>clicked()</signal>
-   <receiver>MeshConfigurator</receiver>
+   <receiver>AxesMeshConfigurator</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

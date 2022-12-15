@@ -22,7 +22,7 @@
    
 ********************************************************************************/
 
-#include "Bank.h"
+#include "Data/Bank.h"
 #include "InfoLayer.h"
 #include "FileLayer.h"
 #include "AtomLayer.h"
@@ -30,10 +30,10 @@
 #include "ChargeLayer.h"
 #include "ContainerLayer.h"
 #include "EfpFragmentListLayer.h"
-#include "MoleculeConfigurator.h"
+#include "Configurator/MoleculeConfigurator.h"
 #include "MolecularSurfacesLayer.h"
-#include "SurfaceAnimatorDialog.h"
-#include "Animator.h"
+#include "Configurator/SurfaceAnimatorDialog.h"
+#include "Viewer/Animator.h"
 #include <QFileInfo>
 #include <QMap>
 #include <QItemSelectionModel>

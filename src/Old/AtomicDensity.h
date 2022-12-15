@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "QGLViewer/vec.h"
-#include "Mesh.h"
+#include "Data/Mesh.h"
 
 
 namespace IQmol {

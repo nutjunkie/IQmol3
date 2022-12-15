@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_ExcitedStatesConfigurator.h"
+#include "Configurator/ui_ExcitedStatesConfigurator.h"
 #include <QPen>
 
 

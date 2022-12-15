@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "OrbitalsLayer.h"
-#include "NaturalTransitionOrbitals.h"
+#include "Data/NaturalTransitionOrbitals.h"
 
 
 namespace IQmol {

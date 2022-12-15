@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "Animator.h"
-#include "FrequenciesConfigurator.h"
+#include "Viewer/Animator.h"
+#include "Configurator/FrequenciesConfigurator.h"
 #include "QGLViewer/vec.h"
 #include "openbabel/math/vector3.h"
 #include <vector>

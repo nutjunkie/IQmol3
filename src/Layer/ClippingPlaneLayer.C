@@ -22,7 +22,7 @@
 
 #include "ClippingPlaneLayer.h"
 #include "OpenGL.h"
-#include "Preferences.h"
+#include "Util/Preferences.h"
 
 
 namespace IQmol {

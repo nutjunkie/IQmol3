@@ -1,12 +1,6 @@
 find_package(Qt5 COMPONENTS Core Gui Widgets Network REQUIRED)
 set(LIB Network)
 
-if (APPLE)
-   # brew puts things in a non-standard location
-   set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
-endif()
-find_package(OpenSSL REQUIRED)
-
 set(HEADERS
    Connection.h
    HttpConnection.h
@@ -31,17 +25,14 @@ set( SOURCES
    SshReply.C
 )
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-include_directories(../Util)
-include_directories(${OPENSSL_INCLUDE_DIR})
-
 qt5_wrap_cpp( SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES})
-
-target_link_libraries(${LIB} PRIVATE 
-   Qt5::Core 
+add_library(${LIB} ${SOURCES})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
+target_link_libraries(${LIB} PRIVATE
+   Util
+   Qt5::Core
    Qt5::Gui
    Qt5::Widgets
    Qt5::Network
+   OpenSSL::SSL
 )

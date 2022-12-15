@@ -24,7 +24,6 @@
 #include "EfpFragmentLayer.h"
 #include "BondLayer.h"
 #include "AtomLayer.h"
-#include "Viewer.h"
 
 
 namespace IQmol {

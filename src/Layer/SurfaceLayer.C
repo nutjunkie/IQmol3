@@ -21,14 +21,14 @@
 ********************************************************************************/
 
 #include "SurfaceLayer.h"
-#include "SurfaceType.h"
 #include "MoleculeLayer.h"
-#include "Preferences.h"
-#include "PovRayGen.h"
-#include "QsLog.h"
+#include "Data/SurfaceType.h"
+#include "Util/Preferences.h"
+#include "Viewer/PovRayGen.h"
+#include "Util/QsLog.h"
 #include "QGLViewer/vec.h"
-#include "MeshDecimator.h"
-#include "QMsgBox.h"
+#include "Grid/MeshDecimator.h"
+#include "Util/QMsgBox.h"
 #include <QColorDialog>
 #include <cmath>
 #include <QFile>

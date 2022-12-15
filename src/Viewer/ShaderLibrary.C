@@ -24,11 +24,11 @@
 #define _USE_MATH_DEFINES
 #include "ShaderLibrary.h"
 #include "Preferences.h"
-#include "TextStream.h"
+#include "Parser/TextStream.h"
 #include "Exception.h"
 #include "QsLog.h"
 #include "GLSLmath.h"
-#include "ParseFile.h"
+#include "Parser/ParseFile.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QOpenGLFramebufferObject>

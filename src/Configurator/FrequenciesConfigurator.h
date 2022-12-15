@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_FrequenciesConfigurator.h"
+#include "Configurator/ui_FrequenciesConfigurator.h"
 #include <QPen>
 #include <QBrush>
 

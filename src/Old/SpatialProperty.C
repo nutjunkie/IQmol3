@@ -24,7 +24,7 @@
 #include "Constants.h"
 #include "SpatialProperty.h"
 #include "AtomicDensity.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "boost/bind/bind.hpp"
 
 #include <QDebug>

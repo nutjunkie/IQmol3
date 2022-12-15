@@ -3471,7 +3471,7 @@ widgets.</string>
           <widget class="QWidget" name="AdvancedSurfaceCrossing">
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
-             <layout class="QGridLayout" name="gridLayout">
+             <layout class="QGridLayout" name="gridLayout_50">
               <item row="0" column="0">
                <widget class="QLabel" name="label_33">
                 <property name="text">

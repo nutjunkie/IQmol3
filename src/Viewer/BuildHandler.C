@@ -22,7 +22,7 @@
 
 #include "ViewerModel.h"
 #include "BuildHandler.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "UndoCommands.h"
 #include "QMsgBox.h"
 

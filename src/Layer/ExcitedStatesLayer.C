@@ -21,8 +21,8 @@
 ********************************************************************************/
 
 #include "ExcitedStatesLayer.h"
-#include "ExcitedStatesConfigurator.h"
-#include "ExcitedStates.h"
+#include "Configurator/ExcitedStatesConfigurator.h"
+#include "Data/ExcitedStates.h"
 
 
 namespace IQmol {

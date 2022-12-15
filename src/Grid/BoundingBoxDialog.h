@@ -22,7 +22,7 @@
    
 ********************************************************************************/
 
-#include "ui_BoundingBoxDialog.h"
+#include "Grid/ui_BoundingBoxDialog.h"
 #include "QGLViewer/vec.h"
 
 

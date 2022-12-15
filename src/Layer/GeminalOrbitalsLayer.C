@@ -21,17 +21,18 @@
 ********************************************************************************/
 
 #include "GeminalOrbitalsLayer.h"
-#include "GeminalOrbitals.h"
+#include "Data/GeminalOrbitals.h"
 #include "MoleculeLayer.h"
-#include "GridInfoDialog.h"
-#include "MarchingCubes.h"
-#include "MeshDecimator.h"
-#include "BoundingBoxDialog.h"
-#include "SurfaceType.h"
-#include "SurfaceInfo.h"
-#include "QMsgBox.h"
+#include "Grid/GridInfoDialog.h"
+#include "Grid/MarchingCubes.h"
+#include "Grid/MeshDecimator.h"
+#include "Grid/BoundingBoxDialog.h"
+#include "Data/SurfaceType.h"
+#include "Data/SurfaceInfo.h"
+#include "Util/QMsgBox.h"
+#include "Util/QsLog.h"
+
 #include "QGLViewer/vec.h"
-#include "QsLog.h"
 #include <QElapsedTimer>
 #include <QProgressDialog>
 #include <cmath>

@@ -22,8 +22,8 @@
 
 #include <QProgressDialog>
 #include "CanonicalOrbitalsLayer.h"
-#include "GridProduct.h"
-#include "QsLog.h"
+#include "Grid/GridProduct.h"
+#include "Util/QsLog.h"
 
 
 using namespace qglviewer;

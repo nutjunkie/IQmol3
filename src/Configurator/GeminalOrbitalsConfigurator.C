@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "GeminalOrbitalsConfigurator.h"
-#include "GeminalOrbitalsLayer.h"
+#include "Layer/GeminalOrbitalsLayer.h"
 #include "Preferences.h"
 #include "CustomPlot.h"
 #include <QColorDialog>

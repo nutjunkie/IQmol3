@@ -21,9 +21,9 @@
 ********************************************************************************/
 
 #include "IsotopesConfigurator.h"
-#include "IsotopesLayer.h"
+#include "Layer/IsotopesLayer.h"
 #include "openbabel/elements.h"
-#include "AtomLayer.h"
+#include "Layer/AtomLayer.h"
 #include <QComboBox>
 #include <QSpinBox>
 #include <QHeaderView>

@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "EfpFragmentListConfigurator.h"
-#include "EfpFragmentListLayer.h"
+#include "Layer/EfpFragmentListLayer.h"
 
 
 namespace IQmol {

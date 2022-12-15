@@ -22,8 +22,8 @@
 
 #include "QsLog.h"
 #include "SurfaceConfigurator.h"
-#include "SurfaceLayer.h"
-#include "MoleculeLayer.h"
+#include "Layer/SurfaceLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include <openbabel/elements.h> 
 #include <QColorDialog>
 

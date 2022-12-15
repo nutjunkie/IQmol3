@@ -19,11 +19,10 @@ set( SOURCES
    qcprot.C
 )
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-add_library(${LIB} STATIC ${SOURCES})
-
-target_link_libraries(${LIB} PRIVATE 
+add_library(${LIB} ${SOURCES})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
+target_link_libraries(${LIB} PRIVATE
+   QGLViewer
    Qt5::Xml
    Qt5::OpenGL
 )

@@ -27,7 +27,7 @@
 
 
 class QFontMetrics;
-class QColor;;
+class QColor;
 
 namespace OpenBabel {
    class OBAtom;

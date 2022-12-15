@@ -22,7 +22,7 @@
    
 ********************************************************************************/
 
-#include "ui_SurfaceAnimatorDialog.h"
+#include "Configurator/ui_SurfaceAnimatorDialog.h"
 #include "Layer/SurfaceLayer.h"
 #include "Viewer/Animator.h"
 

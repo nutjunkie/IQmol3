@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "OrbitalsLayer.h"
-#include "DysonOrbitals.h"
+#include "Data/DysonOrbitals.h"
 
 
 namespace IQmol {

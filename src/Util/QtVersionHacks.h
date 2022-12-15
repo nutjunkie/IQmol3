@@ -28,7 +28,7 @@
 
 namespace IQmol {
 
-#if QT_VERSION < 0x051500
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
 #define IQmolSkipEmptyParts  QString::SkipEmptyParts
 #else
 #define IQmolSkipEmptyParts  Qt::SkipEmptyParts

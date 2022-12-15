@@ -21,12 +21,12 @@
 ********************************************************************************/
 
 #include "UndoCommands.h"
-#include "MoleculeLayer.h"
-#include "AtomLayer.h"
-#include "BondLayer.h"
-#include "GroupLayer.h"
+#include "Layer/MoleculeLayer.h"
+#include "Layer/AtomLayer.h"
+#include "Layer/BondLayer.h"
+#include "Layer/GroupLayer.h"
 #include "QsLog.h"
-#include "ConstraintLayer.h"
+#include "Layer/ConstraintLayer.h"
 #include "QVariantPtr.h"
 
 

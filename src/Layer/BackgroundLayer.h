@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "GlobalLayer.h"
-#include "BackgroundConfigurator.h"
+#include "Configurator/BackgroundConfigurator.h"
 
 
 namespace IQmol {

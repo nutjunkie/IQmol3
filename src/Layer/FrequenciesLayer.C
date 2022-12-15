@@ -23,9 +23,8 @@
 #include "FrequenciesLayer.h"
 #include "MoleculeLayer.h"
 #include "openbabel/generic.h"
-#include "Animator.h"
-
-#include "Frequencies.h"
+#include "Viewer/Animator.h"
+#include "Data/Frequencies.h"
 
 
 using namespace qglviewer;

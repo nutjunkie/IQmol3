@@ -15,18 +15,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 
+set(NO_WARNING "-Wno-deprecated")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${NO_WARNING}")
+
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
-#message("LIBSSH2_FOUND =       " ${LIBSSH2_FOUND})
-#message("LIBSSH2_INCLUDE_DIR = " ${LIBSSH2_INCLUDE_DIR})
-#message("LIBSSH2_LIBRARY=      " ${LIBSSH2_LIBRARY})
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
-
 
 find_package(ZLIB      REQUIRED)
 find_package(Threads   REQUIRED)
 find_package(OpenGL    REQUIRED)
+find_package(OpenSSL   REQUIRED)
+
   
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
@@ -41,12 +42,6 @@ add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
-
-# There seems to be a scoping problem with the following variables, so they need to be set
-# on the command line in order for them to take effect.
-# cmake -DBUILD_SHARED=OFF  ../ 
-#set(BUILD_SHARED OFF)
-#set(GL_SILENCE_DEPRECATION ON)
 include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -80,6 +75,9 @@ endif(QARCHIVE)
 set(Boost_USE_STATIC_LIBS TRUE)
 find_package(Boost COMPONENTS iostreams serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
 
 add_subdirectory(src)
 if (${Qt5Core_VERSION_STRING} VERSION_GREATER_EQUAL 5.15 )

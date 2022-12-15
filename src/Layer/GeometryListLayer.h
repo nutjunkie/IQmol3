@@ -23,8 +23,7 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "GeometryList.h"
-#include "Animator.h"
+#include "Data/GeometryList.h"
 
 
 namespace IQmol {
@@ -32,6 +31,11 @@ namespace IQmol {
 namespace Configurator {
    class GeometryList;
 }
+
+   namespace Animator {
+      class Base;
+   }
+   typedef QList<Animator::Base*> AnimatorList;
 
 namespace Layer {
 

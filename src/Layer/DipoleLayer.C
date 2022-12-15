@@ -22,7 +22,7 @@
 
 #include "DipoleLayer.h"
 #include "MoleculeLayer.h"
-#include "Preferences.h"
+#include "Util/Preferences.h"
 #include <cmath>
 
 #include <QDebug>

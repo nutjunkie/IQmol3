@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
-#include "DipoleConfigurator.h"
+#include "Configurator/DipoleConfigurator.h"
 #include "OpenGL.h"
 #include <QColor>
 

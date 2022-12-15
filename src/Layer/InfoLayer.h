@@ -22,11 +22,11 @@
    
 ********************************************************************************/
 
-#include "InfoConfigurator.h"
+#include "Configurator/InfoConfigurator.h"
 #include "AtomLayer.h"
 #include "DipoleLayer.h"
 #include "SymmetryLayer.h"
-#include "PointGroup.h"
+#include "Data/PointGroup.h"
 #include <QMap>
 #include <QRect>
 

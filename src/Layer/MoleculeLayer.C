@@ -21,17 +21,17 @@
 ********************************************************************************/
 
 // Data
-#include "AtomicProperty.h"
-#include "Bank.h"
-#include "DipoleMoment.h"
-#include "Energy.h"
-#include "File.h"
-#include "Frequencies.h"
-#include "Geometry.h"
-#include "GeometryList.h"
-#include "MultipoleExpansion.h"
-#include "PointGroup.h"
-#include "SurfaceInfo.h"
+#include "Data/AtomicProperty.h"
+#include "Data/Bank.h"
+#include "Data/DipoleMoment.h"
+#include "Data/Energy.h"
+#include "Data/File.h"
+#include "Data/Frequencies.h"
+#include "Data/Geometry.h"
+#include "Data/GeometryList.h"
+#include "Data/MultipoleExpansion.h"
+#include "Data/PointGroup.h"
+#include "Data/SurfaceInfo.h"
 
 
 // Layers
@@ -53,14 +53,15 @@
 #include "SurfaceLayer.h"
 
 
-#include "UndoCommands.h"
-#include "SpatialProperty.h"
-#include "Constants.h"
-#include "QsLog.h"
-#include "QMsgBox.h"
-#include "QChemJobInfo.h" 
-#include "Preferences.h"
-#include "IQmolParser.h"
+#include "Old/SpatialProperty.h"
+#include "Old/UndoCommands.h"
+
+#include "Util/QsLog.h"
+#include "Util/QMsgBox.h"
+#include "Util/Constants.h"
+#include "Process/QChemJobInfo.h" 
+#include "Util/Preferences.h"
+#include "Parser/IQmolParser.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"

@@ -22,13 +22,13 @@
 
 #include "MolecularSurfacesLayer.h"
 #include "MoleculeLayer.h"
-#include "AtomicDensity.h"
-#include "SpatialProperty.h"
-#include "SurfaceInfo.h"
 #include "SurfaceLayer.h"
-#include "SurfaceGenerator.h"
-#include "GridEvaluator.h"
-#include "QsLog.h"
+#include "Old/AtomicDensity.h"
+#include "Old/SpatialProperty.h"
+#include "Data/SurfaceInfo.h"
+#include "Grid/SurfaceGenerator.h"
+#include "Grid/GridEvaluator.h"
+#include "Util/QsLog.h"
 
 #include <QDebug>
 

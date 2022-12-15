@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_CubeDataConfigurator.h"
+#include "Configurator/ui_CubeDataConfigurator.h"
 
 
 namespace IQmol {

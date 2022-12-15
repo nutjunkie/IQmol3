@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "Geometry.h"
-#include "CubeDataConfigurator.h"
+#include "Data/Geometry.h"
+#include "Configurator/CubeDataConfigurator.h"
 
 
 namespace IQmol {

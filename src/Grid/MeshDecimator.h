@@ -22,8 +22,8 @@
 
 ********************************************************************************/
 
-#include "Task.h"
-#include "Mesh.h"
+#include "Util/Task.h"
+#include "Data/Mesh.h"
 
 
 namespace IQmol {

@@ -22,7 +22,7 @@
 
 #include "SetButtonColor.h"
 #include "DipoleConfigurator.h"
-#include "DipoleLayer.h"
+#include "Layer/DipoleLayer.h"
 #include <QColorDialog>
 
 

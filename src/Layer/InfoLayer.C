@@ -20,12 +20,13 @@
    
 ********************************************************************************/
 
-#include "Layer/InfoLayer.h"
-#include "Layer/DipoleLayer.h"
-#include "Layer/MoleculeLayer.h"
-#include "Layer/SymmetryLayer.h"
+#include "InfoLayer.h"
+#include "DipoleLayer.h"
+#include "MoleculeLayer.h"
+#include "SymmetryLayer.h"
 #include "Math/Numerical.h"
 #include "Util/StringFormat.h"
+#include <QDebug>
 #include <algorithm>
 
 
