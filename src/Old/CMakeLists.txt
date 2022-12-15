@@ -2,16 +2,10 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 set(LIB Old)
 
 set( HEADERS
-   AtomicDensity.h
-   AtomicDensityData.h
-   ColorGrid.h
    LogMessageDialog.h
    ParseJobFiles.h
    ProgressDialog.h
-   SpatialProperty.h
    SymmetryToleranceDialog.h
-   UndoCommands.h
-   gl2ps.h
 )
 
 set( SOURCES

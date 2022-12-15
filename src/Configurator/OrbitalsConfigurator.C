@@ -679,6 +679,10 @@ void Orbitals::on_addToQueueButton_clicked(bool)
          info.type().setLabel(m_configurator.surfaceType->currentText());
          queueSurface(info);
       } break;
+
+      default:
+        QLOG_WARN() << "Surface type not handled in Orbitals Configurator " << type.kind();
+        break;
    }
 }
 
