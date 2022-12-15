@@ -129,7 +129,11 @@ void ServerRegistry::remove(Server* server)
 void ServerRegistry::moveUp(QString const& serverName)
 {
    int index(indexOf(serverName));
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
+   if (index > 0) s_servers.swap(index, index-1);
+#else
    if (index > 0) s_servers.swapItemsAt(index, index-1);
+#endif
    save();
 }
 
@@ -137,7 +141,11 @@ void ServerRegistry::moveUp(QString const& serverName)
 void ServerRegistry::moveDown(QString const& serverName)
 {
    int index(indexOf(serverName));
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
+   if (index < s_servers.size() -1) s_servers.swap(index, index+1);
+#else
    if (index < s_servers.size() -1) s_servers.swapItemsAt(index, index+1);
+#endif
    save();
 }
 
