@@ -124,9 +124,8 @@ endif (LINUX)
 #   /opt/homebrew/Cellar/gcc/11.3.0_2/lib/gcc/11/libquadmath.a  
 #)
 
-add_dependencies(Old Configurator)
 add_dependencies(Process Configurator)
-add_dependencies(Viewer Old Process)
+add_dependencies(Viewer Process)
 
 target_link_libraries (${targetName}
    Configurator
@@ -136,7 +135,6 @@ target_link_libraries (${targetName}
    Layer
    Main
    Network
-   Old 
    Parser
    Plot
    Process

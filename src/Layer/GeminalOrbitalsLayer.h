@@ -28,7 +28,7 @@
 #include "Configurator/GeminalOrbitalsConfigurator.h"
 #include "Data/GridData.h"
 #include "Math/Matrix.h"
-#include "Old/SpatialProperty.h"
+#include "Grid/SpatialProperty.h"
 #include <QPair>
 
 

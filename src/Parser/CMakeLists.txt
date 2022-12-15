@@ -2,27 +2,8 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml OpenGL REQUIRED)
 set(LIB Parser)
 
 set( HEADERS
-#  ArchiveParser.h
-#  CartesianCoordinatesParser.h
-#  CubeParser.h
-#  EfpFragmentParser.h
-#  ExternalChargesParser.h
-#  FormattedCheckpointParser.h
-#  GdmaParser.h
-#  IQmolParser.h
-#  MeshParser.h
-#  OpenBabelParser.h
    ParseFile.h
-#  Parser.h
-#  PovRayParser.h
-#  QChemInputParser.h
-#  QChemOutputParser.h
-#  QChemPlotParser.h
-#  ReorderBasis.h
-#  TextStream.h
-#  XyzParser.h
-#  YamlParser.h
-#  ZMatrixCoordinatesParser.h
+   ParseJobFiles.h
 )
 
 set( SOURCES
@@ -36,6 +17,7 @@ set( SOURCES
    MeshParser.C
    OpenBabelParser.C
    ParseFile.C
+   ParseJobFiles.C
    Parser.C
    PovRayParser.C
    QChemInputParser.C

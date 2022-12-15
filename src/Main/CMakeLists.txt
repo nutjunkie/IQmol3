@@ -46,7 +46,6 @@ target_include_directories(${LIB} PUBLIC
    "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
 )
 target_link_libraries(${LIB} PUBLIC
-   Old
    Viewer
 )
 target_link_libraries(${LIB} PRIVATE

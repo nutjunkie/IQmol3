@@ -53,7 +53,7 @@
 #include "SurfaceLayer.h"
 
 
-#include "Old/SpatialProperty.h"
+#include "Grid/SpatialProperty.h"
 #include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"

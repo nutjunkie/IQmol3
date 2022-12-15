@@ -24,7 +24,7 @@
 #include "MoleculeLayer.h"
 #include "SurfaceLayer.h"
 #include "Data/AtomicDensity.h"
-#include "Old/SpatialProperty.h"
+#include "Grid/SpatialProperty.h"
 #include "Data/SurfaceInfo.h"
 #include "Grid/SurfaceGenerator.h"
 #include "Grid/GridEvaluator.h"

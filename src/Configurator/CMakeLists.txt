@@ -100,7 +100,6 @@ target_link_libraries(${LIB} PUBLIC
 
 target_link_libraries(${LIB} PRIVATE
    Grid
-   # Old
    Plot
    # Process # QChemJobInfo
    # Viewer

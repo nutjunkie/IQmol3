@@ -7,6 +7,7 @@ set( HEADERS
    CameraDialog.h
    ShaderDialog.h
    Snapshot.h
+   SymmetryToleranceDialog.h
    Viewer.h
    ViewerModel.h
    ViewerModelView.h
@@ -22,6 +23,7 @@ set( SOURCES
    CameraDialog.C
    Cursors.C
    GLSLmath.C
+   gl2ps.C
    ManipulateHandler.C
    ManipulateSelectionHandler.C
    ManipulatedFrameSetConstraint.C
@@ -31,6 +33,7 @@ set( SOURCES
    ShaderDialog.C
    ShaderLibrary.C
    Snapshot.C
+   SymmetryToleranceDialog.C
    UndoCommands.C
    Viewer.C
    ViewerModel.C
@@ -40,6 +43,7 @@ set( SOURCES
 set( UI_FILES
    CameraDialog.ui
    ShaderDialog.ui
+   SymmetryToleranceDialog.ui
    Snapshot.ui
 )
 
@@ -53,7 +57,6 @@ target_link_libraries(${LIB} PUBLIC
 )
 
 target_link_libraries(${LIB} PRIVATE
-   Old
    Parser # TextStream
    Process # ServerConfiguration
    Qt5::Core

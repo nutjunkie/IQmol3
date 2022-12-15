@@ -28,6 +28,7 @@ set( SOURCES
    MeshDecimator.C
    MolecularGridEvaluator.C
    OrbitalEvaluator.C
+   SpatialProperty.C
    Spline.C
    SurfaceGenerator.C
 )

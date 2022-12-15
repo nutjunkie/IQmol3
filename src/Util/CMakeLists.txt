@@ -4,6 +4,8 @@ set(LIB Util)
 set(HEADERS
    ColorGradientDialog.h
    QMsgBox.h
+   LogMessageDialog.h
+   ProgressDialog.h
    Task.h
    Timer.h
 )
@@ -13,7 +15,9 @@ set( SOURCES
    ColorGradientDialog.C
    GLShape.C
    GLShapeLibrary.C
+   LogMessageDialog.C
    Preferences.C
+   ProgressDialog.C
    QMsgBox.C
    QsDebugOutput.C
    QsLog.C
@@ -28,6 +32,8 @@ set( SOURCES
 
 set( UI_FILES
    ColorGradientDialog.ui
+   LogMessageDialog.ui
+   ProgressDialog.ui
 )
 
 qt5_wrap_ui(UI_HEADERS ${UI_FILES} )
