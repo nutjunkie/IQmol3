@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_EULERANGLES_H
-#define IQMOL_UTIL_EULERANGLES_H
+#ifndef IQMOL_MATH_EULERANGLES_H
+#define IQMOL_MATH_EULERANGLES_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert

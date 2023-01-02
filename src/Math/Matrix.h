@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_MATRIX_H
-#define IQMOL_UTIL_MATRIX_H
+#ifndef IQMOL_MATH_MATRIX_H
+#define IQMOL_MATH_MATRIX_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert

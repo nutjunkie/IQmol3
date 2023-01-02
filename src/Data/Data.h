@@ -75,7 +75,8 @@ namespace Data {
                 SpinDensity,            VdwRadius,              MultipoleExpansionList,
                 NmrReference,           NmrReferenceList,       Nmr,
                 ExcitedStates,          ElectronicTransition,   ElectronicTransitionList, 
-                OrbitalSymmetries,
+                OrbitalSymmetries,      VibronicData,           VibronicSpectrum,
+                VibronicSpectrumList,
                /*---------------------  *---------------------  *--------------------- */
                 YamlNode,               PovRay,                 GeminalOrbitals
       };

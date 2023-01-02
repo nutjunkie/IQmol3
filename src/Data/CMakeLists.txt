@@ -49,6 +49,7 @@ set( SOURCES
    SurfaceInfo.C
    SurfaceType.C
    VibrationalMode.C
+   Vibronic.C
    YamlNode.C
 )
 

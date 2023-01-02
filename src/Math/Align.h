@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_ALIGN_H
-#define IQMOL_UTIL_ALIGN_H
+#ifndef IQMOL_MATH_ALIGN_H
+#define IQMOL_MATH_ALIGN_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert

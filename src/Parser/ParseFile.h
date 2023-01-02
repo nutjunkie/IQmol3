@@ -25,6 +25,7 @@
 #include "Util/Task.h"
 #include "Data/Bank.h"
 #include <QStringList>
+#include <QFileInfo>
 
 
 namespace IQmol {

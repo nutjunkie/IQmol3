@@ -24,6 +24,7 @@ set( SOURCES
    QChemOutputParser.C
    QChemPlotParser.C
    ReorderBasis.C
+   VibronicParser.C
    XyzParser.C
    YamlParser.C
    ZMatrixCoordinatesParser.C
