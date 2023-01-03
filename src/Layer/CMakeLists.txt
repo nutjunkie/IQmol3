@@ -40,6 +40,7 @@ set( HEADERS
    RemLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
+   VibronicLayer.h
 )
 
 set( SOURCES
@@ -79,6 +80,7 @@ set( SOURCES
    RemLayer.C
    SurfaceLayer.C
    SymmetryLayer.C
+   VibronicLayer.C
 )
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )

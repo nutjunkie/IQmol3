@@ -52,7 +52,7 @@ QString toString(ID const id)
       case Frequencies:                s = "Data::Frequencies";               break;
       case VibrationalMode:            s = "Data::VibrationalMode";           break;
       case VibrationalModeList:        s = "Data::VibrationalModeList";       break;
-      case VibronicData:               s = "Data::VibronicData";              break;
+      case Vibronic:                   s = "Data::Vibronic";                  break;
       case VibronicSpectrum:           s = "Data::VibronicSpectrum";          break;
 
       case Orbitals:                   s = "Data::Orbitals";                  break;

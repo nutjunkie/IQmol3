@@ -27,7 +27,7 @@
 namespace IQmol {
 namespace Data {
 
-void VibronicData::dump() const 
+void Vibronic::dump() const 
 {
    qDebug() << "Freqency domain: " << m_fmin << m_fmax << m_fdelta;
    qDebug() << "Temperature:     " << m_temperature;
@@ -35,22 +35,28 @@ void VibronicData::dump() const
 }
 
 
-void VibronicData::setTemperature(double const t) 
+void Vibronic::setTemperature(double const t) 
 {
    m_temperature = t;
 }
 
-void VibronicData::setFrequencyDomain(double const min, double const max, double const delta) 
+void Vibronic::setFrequencyDomain(double const min, double const max, double const delta) 
 {
    m_fmin = min;
    m_fmax = max;
    m_fdelta = delta;
 }
 
-void VibronicData::setElectronicDipole(Vec3 const& mu) 
+void Vibronic::setElectronicDipole(Vec3 const& mu) 
 {
    m_electronicDipole = mu;
    m_electronicDipole.dump(); 
+}
+
+
+void Vibronic::addSpectrum(VibronicSpectrum* spectrum)
+{
+   m_spectra.append(spectrum);
 }
 
 
@@ -59,13 +65,6 @@ void VibronicData::setElectronicDipole(Vec3 const& mu)
 void VibronicSpectrum::dump() const 
 {
 }
-
-
-void VibronicSpectrum::setData(VibronicData const& data)
-{
-   m_vibronic = data;
-}
-
 
 
 void VibronicSpectrum::setData(QList<double> const& data)

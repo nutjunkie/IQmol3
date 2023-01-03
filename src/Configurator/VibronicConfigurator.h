@@ -1,5 +1,5 @@
-#ifndef IQMOL_PARSER_VIBRONIC_H
-#define IQMOL_PARSER_VIBRONIC_H
+#ifndef IQMOL_CONFIGURATOR_VIBRONIC_H
+#define IQMOL_CONFIGURATOR_VIBRONIC_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -22,31 +22,58 @@
    
 ********************************************************************************/
 
-#include "Parser.h"
-#include "Data/Vibronic.h"
+#include "Configurator.h"
+#include "Configurator/ui_VibronicConfigurator.h"
+#include <QPen>
+#include <QBrush>
 
 
 namespace IQmol {
 
-namespace Parser {
+class CustomPlot;
 
-   class TextStream;
+namespace Layer {
+   class Vibronic;
+}
 
-   class VibronicDir : public Base {
+namespace Configurator {
+
+   class Vibronic : public Base {
+
+      Q_OBJECT
+
+      friend class Layer::Vibronic;
 
       public:
-         VibronicDir() : Base() { }
-         bool parseFile(QString const& path);
+         explicit Vibronic(Layer::Vibronic&);
+         ~Vibronic();
+      
+      Q_SIGNALS:
+         void update();
+
+      public Q_SLOTS:
+         void reset();
+
+      protected:
+         void load();
+
+      private Q_SLOTS:
+         void plotSelectionChanged(bool);
+         void updatePlot();
 
       private:
-         bool parseLogFile(TextStream&);
-         bool parseDatFile(TextStream&);
-         bool parseSpectrumFile(TextStream&, QString const& title);
+         Ui::VibronicConfigurator m_configurator;
+         Layer::Vibronic& m_vibronic;
+         CustomPlot* m_spectrum;
 
-         Data::Vibronic* m_vibronic;
+         QPen m_pen;
+         QPen m_selectPen;
+
+         void initSpectrum();
+         void plotImpulse(double const scaleFactor);
+         void plotSpectrum(double const scaleFactor, double const width);
    };
 
-
-} } // end namespace IQmol::Parser
+} } // end namespace IQmol::Configurator
 
 #endif

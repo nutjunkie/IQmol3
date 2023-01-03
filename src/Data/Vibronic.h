@@ -30,52 +30,6 @@
 namespace IQmol {
 namespace Data {
 
-
-   class VibronicData: public Base {
-
-      friend class boost::serialization::access;
-
-      public:
-         Type::ID typeID() const { return Type::VibronicData; }
-
-         void setTemperature(double const t);
-
-         void setElectronicEnergy(double const t);
-
-         void setFrequencyDomain(double const min, double const max, double const delta); 
-
-         void setElectronicDipole(Vec3 const& mu);
-
-         void dump() const;
-
-         void serialize(InputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_temperature;
-            ar & m_electronicEnergy;
-            //ar & m_electronicDipole;
-            ar & m_fmin;
-            ar & m_fmax;
-            ar & m_fdelta;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_temperature;
-            ar & m_electronicEnergy;
-            //ar & m_electronicDipole;
-            ar & m_fmin;
-            ar & m_fmax;
-            ar & m_fdelta;
-         }
-
-      private:
-         double m_temperature;
-         double m_electronicEnergy;
-         double m_fmin, m_fmax, m_fdelta;
-         Vec3   m_electronicDipole;
-   };
-
-
    class VibronicSpectrum: public Base {
 
       friend class boost::serialization::access;
@@ -83,26 +37,29 @@ namespace Data {
       public:
          Type::ID typeID() const { return Type::VibronicSpectrum; }
 
-         void setData(QList<double> const&);
+         VibronicSpectrum(QString const& title = QString(), 
+            QList<double> const& data = QList<double>()) : m_title(title), m_data(data) { }
 
-         void setData(VibronicData const&);
+         void setData(QList<double> const&);
 
          void dump() const;
 
+         QString const& title() const { return m_title; }
+
          void serialize(InputArchive& ar, unsigned int const /*version*/) 
          {
-            ar & m_vibronic;
+            ar & m_title;
             ar & m_data;
          }
 
          void serialize(OutputArchive& ar, unsigned int const /*version*/) 
          {
-            ar & m_vibronic;
+            ar & m_title;
             ar & m_data;
          }
 
       private:
-         VibronicData m_vibronic;
+         QString m_title;
          QList<double> m_data;
    };
 
@@ -112,6 +69,56 @@ namespace Data {
       public:
         // Why is a fully qualified namespace required for Type with Qt >= 6.0
         IQmol::Data::Type::ID typeID() const { return IQmol::Data::Type::VibronicSpectrumList; }
+   };
+
+
+   class Vibronic: public Base {
+
+      friend class boost::serialization::access;
+
+      public:
+         Type::ID typeID() const { return Type::Vibronic; }
+
+         void setTemperature(double const t);
+
+         void setElectronicEnergy(double const t);
+
+         void setFrequencyDomain(double const min, double const max, double const delta); 
+
+         void setElectronicDipole(Vec3 const& mu);
+
+         void addSpectrum(VibronicSpectrum* spectrum);
+
+         void dump() const;
+
+         void serialize(InputArchive& ar, unsigned int const /*version*/) 
+         {
+            ar & m_temperature;
+            ar & m_electronicEnergy;
+            //ar & m_electronicDipole;
+            ar & m_fmin;
+            ar & m_fmax;
+            ar & m_fdelta;
+         }
+
+         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
+         {
+            ar & m_temperature;
+            ar & m_electronicEnergy;
+            //ar & m_electronicDipole;
+            ar & m_fmin;
+            ar & m_fmax;
+            ar & m_fdelta;
+         }
+
+         VibronicSpectrumList const& spectra() const { return m_spectra; }
+
+      private:
+         double m_temperature;
+         double m_electronicEnergy;
+         double m_fmin, m_fmax, m_fdelta;
+         Vec3   m_electronicDipole;
+         VibronicSpectrumList m_spectra;
    };
 
 } } // end namespace IQmol::Data

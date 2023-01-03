@@ -35,6 +35,8 @@ bool VibronicDir::parseFile(QString const& path)
    QDir dir(path);
    QFileInfoList fileList(dir.entryInfoList(QDir::Files | QDir::Readable));
 
+   m_vibronic = new Data::Vibronic;
+
    QFileInfoList::iterator iter;
    for (iter = fileList.begin(); iter != fileList.end(); ++iter) {
 
@@ -47,10 +49,13 @@ bool VibronicDir::parseFile(QString const& path)
           qDebug() << "===> fileName: " << fileName;
 
           if (fileName.startsWith("Spec")) {
-             parseSpectrumFile(textStream);
+             parseSpectrumFile(textStream, fileName);
 
           }else if (fileName == "vibronic_spectra.log") {
              parseLogFile(textStream);
+
+          }else if (fileName == "abs_spectra.dat") {
+             parseDatFile(textStream);
           }
 
        }else {
@@ -61,19 +66,15 @@ bool VibronicDir::parseFile(QString const& path)
    }
 
    // Need to check vibronic data is valid
-   Data::List<Data::VibronicSpectrum>::iterator spectrum;
-   for (spectrum = m_spectra.begin(); spectrum != m_spectra.end(); ++spectrum) {
-       (*spectrum)->setData(m_vibronicData);
-       m_dataBank.append(*spectrum);
-   }
+   m_dataBank.append(m_vibronic);
 
    return true;
 }
 
 
-bool VibronicDir::parseSpectrumFile(TextStream& textStream)
+bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title)
 {
-   Data::VibronicSpectrum* vibronicSpectrum(new Data::VibronicSpectrum);
+   Data::VibronicSpectrum* vibronicSpectrum(new Data::VibronicSpectrum(title));
    QList<double> data;
 
    while (!textStream.atEnd()) {
@@ -88,12 +89,43 @@ bool VibronicDir::parseSpectrumFile(TextStream& textStream)
 
    vibronicSpectrum->setData(data);
 
-   m_spectra.append(vibronicSpectrum);
+   m_vibronic->addSpectrum(vibronicSpectrum);
    return true;
 
    error:
       delete vibronicSpectrum;
-      QString msg("Problem parsing spectrum file, line number ");
+      QString msg("Problem parsing vibronic spectrum file, line number ");
+      m_errors.append(msg + QString::number(textStream.lineNumber()));
+      return false;
+}
+
+
+bool VibronicDir::parseDatFile(TextStream& textStream)
+{
+   QList<double> fc, ht, fcht;
+   double x;
+   bool ok;
+
+   // First line is a header
+   QStringList tokens(textStream.nextLineAsTokens());
+   if (tokens[0] != '#' || tokens.size() != 6) goto error;
+
+   while (!textStream.atEnd()) {
+      tokens = textStream.nextLineAsTokens();
+      if (tokens.size() != 5) goto error;
+      fc.append(  tokens[2].toDouble(&ok)); if (!ok) goto error;
+      ht.append(  tokens[3].toDouble(&ok)); if (!ok) goto error;
+      fcht.append(tokens[4].toDouble(&ok)); if (!ok) goto error;
+   }
+
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FC",   fc));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("HT",   ht));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FCHT", fcht));
+
+   return true;
+
+   error:
+      QString msg("Problem parsing abs_spectra.dat file, line number ");
       m_errors.append(msg + QString::number(textStream.lineNumber()));
       return false;
 }
@@ -111,7 +143,7 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
          tokens = TextStream::tokenize(line); 
          if (tokens.size() == 3) {
             double t = tokens[2].toDouble(&ok);  if (!ok) goto error;
-            m_vibronicData.setTemperature(t);
+            m_vibronic->setTemperature(t);
          }
       }
 
@@ -122,7 +154,7 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
             double min   = tokens[7].toDouble(&ok);  if (!ok) goto error;
             double max   = tokens[8].toDouble(&ok);  if (!ok) goto error;
             double delta = tokens[9].toDouble(&ok);  if (!ok) goto error;
-            m_vibronicData.setFrequencyDomain(min, max, delta);
+            m_vibronic->setFrequencyDomain(min, max, delta);
          }
       }
 
@@ -132,7 +164,7 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
             double x = tokens[4].toDouble(&ok);  if (!ok) goto error;
             double y = tokens[5].toDouble(&ok);  if (!ok) goto error;
             double z = tokens[6].toDouble(&ok);  if (!ok) goto error;
-            m_vibronicData.setElectronicDipole(Vec3(x,y,z));
+            m_vibronic->setElectronicDipole(Vec3(x,y,z));
          }
       }
 

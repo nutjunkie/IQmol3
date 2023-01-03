@@ -27,6 +27,7 @@ set( HEADERS
    SurfaceAnimatorDialog.h
    SurfaceConfigurator.h
    SymmetryConfigurator.h
+   VibronicConfigurator.h
 )
 
 set( SOURCES
@@ -53,6 +54,7 @@ set( SOURCES
    SurfaceAnimatorDialog.C
    SurfaceConfigurator.C
    SymmetryConfigurator.C
+   VibronicConfigurator.C
 )
 
 set( UI_FILES
@@ -80,6 +82,7 @@ set( UI_FILES
    SurfaceConfigurator.ui
    SymmetryConfigurator.ui
    VectorConstraintConfigurator.ui
+   VibronicConfigurator.ui
 )
 
 qt5_wrap_ui(UI_HEADERS ${UI_FILES} )

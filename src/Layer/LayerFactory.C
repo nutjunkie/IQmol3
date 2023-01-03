@@ -33,6 +33,7 @@
 #include "Data/Frequencies.h"
 #include "Data/OrbitalsList.h"
 #include "Data/GeminalOrbitals.h"
+#include "Data/Vibronic.h"
 
 #include "LayerFactory.h"
 #include "AtomLayer.h"
@@ -56,7 +57,10 @@
 #include "GeminalOrbitalsLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
+#include "VibronicLayer.h"
+
 #include "Util/QsLog.h"
+
 #include "openbabel/obiter.h"
 #include "openbabel/mol.h"
 #include "openbabel/atom.h"
@@ -129,8 +133,6 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(new Orbitals(orbitals));
          } break;
 
-
-
          case Data::Type::GeminalOrbitals: {
             Data::GeminalOrbitals& 
                geminalOrbitals(dynamic_cast<Data::GeminalOrbitals&>(data));
@@ -164,7 +166,6 @@ Layer::List Factory::toLayers(Data::Base& data)
             Data::CubeData& cube(dynamic_cast<Data::CubeData&>(data));
             layers.append(new CubeData(cube));
          } break;
-
 
          case Data::Type::EfpFragment: {
             Data::EfpFragment& efp(dynamic_cast<Data::EfpFragment&>(data));
@@ -203,6 +204,12 @@ Layer::List Factory::toLayers(Data::Base& data)
             //Data::RemSection&  remSection(dynamic_cast<Data::RemSection&>(data));
             //Layer::Rem* remLayer(new Rem(remSection));
             //layers.append(remLayer);
+         } break;
+
+         case Data::Type::Vibronic: {
+            Data::Vibronic& 
+               vibronic(dynamic_cast<Data::Vibronic&>(data));
+            layers.append(new Vibronic(vibronic));
          } break;
 
 
