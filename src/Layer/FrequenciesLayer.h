@@ -78,6 +78,7 @@ namespace Layer {
          void configure();
          void setActiveMode(Mode const& mode);
          void playMode(Mode const& mode); 
+         void playMode(int mode); 
          void clearActiveMode();
 
       private:
@@ -89,6 +90,7 @@ namespace Layer {
          double m_speed;
          double m_scale;
          const Mode*  m_activeMode;
+         QList<Mode*> m_modeList;
    };
 
 

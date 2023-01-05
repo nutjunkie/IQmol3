@@ -37,29 +37,58 @@ namespace Data {
       public:
          Type::ID typeID() const { return Type::VibronicSpectrum; }
 
-         VibronicSpectrum(QString const& title = QString(), 
-            QList<double> const& data = QList<double>()) : m_title(title), m_data(data) { }
+         enum Theory { FC = 0, HT, FCHT };
+         static const Theory AllTheories[3];
 
-         void setData(QList<double> const&);
+         VibronicSpectrum(QString const& title = QString(), Theory theory = FC, 
+            int mode = -1, QList<double> const& data = QList<double>());
 
-         void dump() const;
+         VibronicSpectrum& operator+=(VibronicSpectrum const& that);
+
+         VibronicSpectrum& operator-=(VibronicSpectrum const& that);
+
+         QList<double> const& data() const { return m_data; }
+
+         int mode() const { return m_mode; }
+
+         Theory theory() const { return m_theory; }
+
+         double min() const { return m_min; }
+
+         double max() const { return m_max; }
+
+         unsigned nPoints() const { return m_data.size(); }
 
          QString const& title() const { return m_title; }
+
+         void finalize();
+
+         void dump() const { }
 
          void serialize(InputArchive& ar, unsigned int const /*version*/) 
          {
             ar & m_title;
             ar & m_data;
+            ar & m_min;
+            ar & m_max;
+            ar & m_mode;
          }
 
          void serialize(OutputArchive& ar, unsigned int const /*version*/) 
          {
             ar & m_title;
             ar & m_data;
+            ar & m_min;
+            ar & m_max;
+            ar & m_mode;
          }
 
       private:
+         Theory m_theory;
          QString m_title;
+         double m_max;
+         double m_min;
+         int m_mode;
          QList<double> m_data;
    };
 
@@ -89,6 +118,30 @@ namespace Data {
 
          void addSpectrum(VibronicSpectrum* spectrum);
 
+         void setFrequencies(QList<double> const& initial, QList<double> const& fin);
+
+         void finalize();
+
+         double frequencyDomainMin() const { return m_fmin; }
+
+         double frequencyDomainMax() const { return m_fmax; }
+
+         double frequencyDomainDelta() const { return m_fdelta; }
+
+         unsigned nPoints() const;
+
+         unsigned nSpectra() const { return m_spectra.size(); }
+
+         unsigned nModes() const { return m_initialFrequencies.size(); }
+
+         QList<double> const& initialFrequencies() const { return m_initialFrequencies; }
+
+         QList<double> const& finalFrequencies() const { return m_finalFrequencies; }
+
+         VibronicSpectrum const& operator[](unsigned i) const { return *m_spectra[i]; }
+
+         VibronicSpectrum const& spectrum(VibronicSpectrum::Theory theory, int i) const;
+
          void dump() const;
 
          void serialize(InputArchive& ar, unsigned int const /*version*/) 
@@ -111,14 +164,19 @@ namespace Data {
             ar & m_fdelta;
          }
 
-         VibronicSpectrumList const& spectra() const { return m_spectra; }
-
       private:
          double m_temperature;
          double m_electronicEnergy;
          double m_fmin, m_fmax, m_fdelta;
          Vec3   m_electronicDipole;
+
+         QList<double> m_initialFrequencies;
+         QList<double> m_finalFrequencies;
+
          VibronicSpectrumList m_spectra;
+         QMap<int, VibronicSpectrum*> m_fcSpectra;
+         QMap<int, VibronicSpectrum*> m_htSpectra;
+         QMap<int, VibronicSpectrum*> m_fchtSpectra;
    };
 
 } } // end namespace IQmol::Data

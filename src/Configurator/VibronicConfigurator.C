@@ -22,146 +22,365 @@
 
 #include "VibronicConfigurator.h"
 #include "Layer/VibronicLayer.h"
-#include "Data/Vibronic.h"
+#include "Util/ColorGradient.h"
+#include "Util/QsLog.h"
 #include "CustomPlot.h"
-
+#include <algorithm>
 
 
 namespace IQmol {
 namespace Configurator { 
 
-Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic) 
+Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
+   m_minIntensity(0.0), m_maxIntensity(0.0), m_currentTheory(Data::VibronicSpectrum::FC)
 {
    m_configurator.setupUi(this);
 
-   m_configurator.widthSlider->setEnabled(false);
-   m_configurator.widthLabel->setEnabled(false);
-   m_configurator.spectrumTable->horizontalHeader()
-      ->setSectionResizeMode(QHeaderView::Stretch);
+   QTableWidget* table(m_configurator.spectrumTable);
+   table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-   connect(this, SIGNAL(update()), &m_vibronic, SIGNAL(update()));
+   QHeaderView* header(table->horizontalHeader());
+   header->setSortIndicatorShown(true);
+   connect(header, SIGNAL(selectionPressed(int)), this, SLOT(sort(int)));
 
-   m_pen.setColor(Qt::blue);
-   m_pen.setStyle(Qt::SolidLine);
-   m_pen.setWidthF(1);
-
-   m_selectPen.setColor(Qt::red);
-   m_selectPen.setStyle(Qt::SolidLine);
-   m_selectPen.setWidthF(3);
-
-   load();
-   initSpectrum();
+   initPlotCanvas();
+   initTable();
+   initGraphs();
+   reset();
 }
 
 
 Vibronic::~Vibronic()
 {
-   if (m_spectrum) delete m_spectrum;
+   if (m_plotCanvas) delete m_plotCanvas;
 }
 
 
-void Vibronic::load()
+void Vibronic::initPlotCanvas()
 {
-   QTableWidget* table(m_configurator.spectrumTable);
-   Data::VibronicSpectrumList const& spectra(m_vibronic.spectra());
-   table->setRowCount(spectra.size());
+   m_plotCanvas = new CustomPlot();
+   m_plotCanvas->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+   m_plotCanvas->setAntialiasedElements(QCP::aePlottables);
+   m_plotCanvas->axisRect()->setRangeDrag(Qt::Horizontal);
+   m_plotCanvas->axisRect()->setRangeZoom(Qt::Horizontal);
 
-   int row(0);
-   Data::VibronicSpectrumList::const_iterator iter;
-   qDebug() << " Loading spectra" << spectra.size();
-   for (iter = spectra.begin(); iter != spectra.end(); ++iter, ++row) {
-       QTableWidgetItem* item = new QTableWidgetItem((*iter)->title());
-       item->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
-       item->setData(Qt::UserRole, QVariantPtr<Data::VibronicSpectrum>::toQVariant(*iter));
-       table->setItem(row, 0, item);
-   }
-}
+   m_plotCanvas->xAxis->setSelectableParts(QCPAxis::spNone);
+   m_plotCanvas->xAxis->setLabel("Frequency / (cm⁻¹)");
+   m_plotCanvas->yAxis->setLabel("Intensity");
+   m_plotCanvas->legend->setVisible(true);
 
-
-void Vibronic::initSpectrum()
-{
-   m_spectrum = new CustomPlot();
-   m_spectrum->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-   m_spectrum->axisRect()->setRangeDrag(Qt::Horizontal);
-   m_spectrum->axisRect()->setRangeZoom(Qt::Horizontal);
-
-   m_spectrum->xAxis->setSelectableParts(QCPAxis::spNone);
-   m_spectrum->xAxis->setLabel("Frequency");
-   m_spectrum->yAxis->setLabel("Intensity");
-
-   connect(m_spectrum, SIGNAL(mousePress(QMouseEvent*)),
+   connect(m_plotCanvas, SIGNAL(mousePress(QMouseEvent*)),
       this, SLOT(setSelectionRectMode(QMouseEvent*)));
 
    QFrame* frame(m_configurator.spectrumFrame);
    QVBoxLayout* layout(new QVBoxLayout());
    frame->setLayout(layout);
-   layout->addWidget(m_spectrum);
+   layout->addWidget(m_plotCanvas);
 }
 
 
-
-void Vibronic::updatePlot()
+void Vibronic::initTable()
 {
-   m_spectrum->clearGraphs();
-   double scale(m_configurator.scaleFactor->value());
-   double width(m_configurator.widthSlider->value());
+   QTableWidget* table(m_configurator.spectrumTable);
+   Data::Vibronic const& vibronic(m_vibronic.data());
 
-   if (m_configurator.impulseButton->isChecked()) {
-      plotImpulse(scale);
-      m_spectrum->yAxis->setLabel("Intensity");
+   QList<double> const& initialFrequencies(vibronic.initialFrequencies()); 
+   QList<double> const& finalFrequencies(vibronic.finalFrequencies()); 
 
-   }else if (m_configurator.gaussianButton->isChecked()) {
-      plotSpectrum(scale, width);
-      m_spectrum->yAxis->setLabel("Rel. Intensity");
+   unsigned nModes(initialFrequencies.size());
+   if (nModes == 0) return;
+   table->setRowCount(nModes);
 
-   }else if (m_configurator.lorentzianButton->isChecked()) {
-      plotSpectrum(scale, width);
-      m_spectrum->yAxis->setLabel("Rel. Intensity");
+   for (unsigned mode(0); mode < nModes; ++mode) {
+       QString text0(QString::number(initialFrequencies[mode], 'f', 2));
+       QTableWidgetItem* freq0 = new QTableWidgetItem(text0);
+       freq0->setData(Qt::UserRole, mode);
+       freq0->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+       table->setItem(mode, 0, freq0);
 
+       QString text1(QString::number(finalFrequencies[mode], 'f', 2));
+       QTableWidgetItem* freq1 = new QTableWidgetItem(text1);
+       freq1->setData(Qt::UserRole, mode);
+       freq1->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+       table->setItem(mode, 1, freq1);
+
+       QTableWidgetItem* intensity = new QTableWidgetItem();
+       intensity->setData(Qt::UserRole, mode);
+       intensity->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+       table->setItem(mode, 2, intensity);
+   }
+}
+
+
+void Vibronic::initGraphs()
+{
+   Data::Vibronic const& vibronic(m_vibronic.data());
+
+   unsigned nModes(vibronic.nModes());
+   unsigned nPoints(vibronic.nPoints());
+
+   double xmin(vibronic.frequencyDomainMin());
+   double xmax(vibronic.frequencyDomainMax());
+   double delta(vibronic.frequencyDomainDelta());
+
+   QVector<double> x(nPoints);
+   for (unsigned xi = 0; xi < nPoints; ++xi) {
+       x[xi] = xmin + xi*delta;
+   }   
+
+   ColorGradient::ColorList const& colors = { 
+        QColor("#a6cee3"), QColor("#1f78b4"), QColor("#b2df8a"), QColor("#33a02c"),
+        QColor("#fb9a99"), QColor("#e31a1c"), QColor("#fdbf6f"), QColor("#ff7f00"),
+       QColor("#cab2d6"),QColor("#6a3d9a")
+   };
+
+   for (const auto theory : Data::VibronicSpectrum::AllTheories) {
+       for (int mode = -1; mode < (int)nModes; ++mode) {
+           Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
+
+           QVector<double> y(nPoints);
+           for (unsigned xi = 0; xi < nPoints; ++xi) {
+               y[xi] = spectrum.data()[xi];
+           }   
+
+           QPen pen;
+           pen.setStyle(Qt::SolidLine);
+           if (mode < 0) {
+              pen.setWidthF(2);
+              pen.setColor(Qt::darkGray);
+           }else {
+              pen.setWidthF(1);
+              pen.setColor(colors[mode % colors.size()]);
+           }
+
+           QCPGraph* graph(m_plotCanvas->addGraph());
+           graph->setData(x, y); 
+           graph->setPen(pen);
+           pen.setWidthF(3);
+           graph->selectionDecorator()->setPen(pen);
+           graph->setName("Mode " + QString::number(mode+1));
+           connect(graph, SIGNAL(selectionChanged(bool)), this, SLOT(plotSelectionChanged(bool)));
+           ModeIndex index(theory, mode);
+           m_graphMap[index] = graph;
+       } 
    }
 
-   m_spectrum->replot();
+   QCPGraph* graph;
+
+   graph = m_graphMap[ModeIndex(Data::VibronicSpectrum::FC,-1)];
+   graph->setSelectable(QCP::stNone);
+   graph->setName("Franck-Condon");
+
+   graph = m_graphMap[ModeIndex(Data::VibronicSpectrum::HT,-1)];
+   graph->setName("Herzberg-Teller");
+   graph->setSelectable(QCP::stNone);
+
+   graph = m_graphMap[ModeIndex(Data::VibronicSpectrum::FCHT,-1)];
+   graph->setName("FC + HT");
+   graph->setSelectable(QCP::stNone);
+}
+
+
+void Vibronic::reset()
+{
+   Data::Vibronic const& vibronic(m_vibronic.data());
+   double xmin(vibronic.frequencyDomainMin());
+   double xmax(vibronic.frequencyDomainMax());
+   m_plotCanvas->xAxis->setRange(xmin, xmax);
+
+   on_fcButton_clicked(true);
+}
+
+
+void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
+{
+   QTableWidget* table(m_configurator.spectrumTable);
+
+   Data::Vibronic const& vibronic(m_vibronic.data());
+   unsigned nRows(table->rowCount());
+   bool ok(true);
+
+   for (int row(0); row < nRows; ++row) {
+       QTableWidgetItem* item = table->item(row, 2);
+       int mode = item->data(Qt::UserRole).toInt(&ok);  if (!ok) return;
+       Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
+       item->setText(QString::number(spectrum.max(), 'f', 5));
+   }
+}
+
+
+void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
+{
+   clearAllGraphs();
+   ModeIndex index(theory, -1);
+   QCPGraph* graph(m_graphMap[index]);
+   if (graph) {
+      graph->setVisible(true);
+      graph->addToLegend(m_plotCanvas->legend);
+   }
+   
+   Data::VibronicSpectrum const& spectrum(m_vibronic.data().spectrum(theory, -1));
+   m_plotCanvas->yAxis->setRange(spectrum.min(), spectrum.max());
+
+   QList<QTableWidgetItem*> selection(m_configurator.spectrumTable->selectedItems());
+   bool (ok);
+
+   for (auto iter = selection.begin(); iter != selection.end(); ++iter) {
+       int mode = (*iter)->data(Qt::UserRole).toInt(&ok);  
+       if (ok) {
+          ModeIndex index(m_currentTheory, mode);
+          QCPGraph* graph = m_graphMap[index];
+          if (graph) {
+             graph->setVisible(true);
+          }
+       }
+   }
+
+   m_vibronic.playMode(-1);
+   m_plotCanvas->replot();
+}
+
+
+void Vibronic::on_fcButton_clicked(bool tf)
+{
+   m_currentTheory = Data::VibronicSpectrum::FC;
+   resetTable(m_currentTheory);
+   resetCanvas(m_currentTheory);
+}
+
+
+void Vibronic::on_htButton_clicked(bool tf)
+{
+   m_currentTheory = Data::VibronicSpectrum::HT;
+   resetTable(m_currentTheory);
+   resetCanvas(m_currentTheory);
+}
+
+
+void Vibronic::on_fchtButton_clicked(bool tf)
+{
+   m_currentTheory = Data::VibronicSpectrum::FCHT;
+   resetTable(m_currentTheory);
+   resetCanvas(m_currentTheory);
+}
+
+
+void Vibronic::clearAllGraphs()
+{
+   int count(m_plotCanvas->graphCount()); 
+   for (int i(0); i < count; ++i) {
+       selectGraph(m_plotCanvas->graph(i), false);
+       m_plotCanvas->graph(i)->setVisible(false);
+   }
+   m_plotCanvas->legend->clearItems();
+}
+
+
+void Vibronic::on_spectrumTable_itemSelectionChanged() 
+{
+   resetCanvas(m_currentTheory);
+
+   QList<QTableWidgetItem*> selection(m_configurator.spectrumTable->selectedItems());
+   bool (ok);
+
+   for (auto iter = selection.begin(); iter != selection.end(); ++iter) {
+       int mode = (*iter)->data(Qt::UserRole).toInt(&ok);  
+       if (ok) {
+          ModeIndex index(m_currentTheory, mode);
+          QCPGraph* graph = m_graphMap[index];
+          if (graph) graph->setVisible(true);
+       }
+   }
+
+   m_vibronic.playMode(-1);
+   m_plotCanvas->replot();
+}
+
+
+void Vibronic::on_clearSelectionButton_clicked()
+{
+   m_configurator.spectrumTable->clearSelection();
+   resetCanvas(m_currentTheory);
+}
+
+
+void Vibronic::on_selectAllButton_clicked()
+{
+   resetCanvas(m_currentTheory);
+   m_configurator.spectrumTable->selectAll();
+}
+
+
+void Vibronic::on_spectrumTable_cellDoubleClicked(int row, int col) 
+{
+   QTableWidget* table(m_configurator.spectrumTable);
+
+   int nCol(table->columnCount());
+   for (int col(0); col < nCol; ++col) {
+       table->item(row,col)->setSelected(true);
+   }
+
+   bool ok;
+   int mode = table->item(row,0)->data(Qt::UserRole).toInt(&ok);  if (!ok) mode = -1;
+
+   ModeIndex index(m_currentTheory,mode);
+   QCPGraph* graph = m_graphMap[index];
+   if (graph) selectGraph(graph, true);
+
+   m_vibronic.playMode(mode);
+}
+
+
+void Vibronic::selectGraph(QCPGraph* graph, bool selected)
+{
+   if (selected) {
+      graph->addToLegend(m_plotCanvas->legend);
+      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+   }else {
+      graph->setSelection(QCPDataSelection());
+      graph->removeFromLegend(m_plotCanvas->legend);
+   }
+   
+   m_plotCanvas->replot();
 }
 
 
 void Vibronic::plotSelectionChanged(bool tf)
 {
    QCPGraph* graph(qobject_cast<QCPGraph*>(sender()));
+   m_vibronic.playMode(-1);
    if (!graph) return;
 
-   if (tf) {
-      graph->setPen(m_selectPen);
-      graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc));
-   }else {
-      graph->setPen(m_pen);
-      graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle));
+   selectGraph(graph, tf);
+
+   if (!tf) return;
+
+   QList<ModeIndex> keys(m_graphMap.keys(graph));
+   if (keys.size() != 1) {
+      QLOG_WARN() << "Unexpected number of spectrum indices returned";
       return;
    }
 
-   if (!tf) return;
-   if (!m_configurator.impulseButton->isChecked()) return;
-
-   bool ok;
-   int mode(graph->name().toInt(&ok));
-   if (!ok) return;
-
-   QTableWidget* table(m_configurator.spectrumTable);
-   table->setCurrentCell(mode, 0, 
-      QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
-   table->scrollToItem(table->item(mode,0));
+   int mode(keys.first().second);
+   m_vibronic.playMode(mode);
 }
 
-void Vibronic::plotImpulse(double const)
+
+void Vibronic::setSelectionRectMode(QMouseEvent* e)
 {
+   if (e->modifiers() == Qt::ShiftModifier) {
+      m_plotCanvas->setSelectionRectMode(QCP::srmZoom);
+   }else {
+      m_plotCanvas->setSelectionRectMode(QCP::srmNone);
+   }
 }
 
 
-void Vibronic::plotSpectrum(double const, double const)
+void Vibronic::closeEvent(QCloseEvent* e)
 {
+   m_vibronic.playMode(-1);
+   Base::closeEvent(e);
 }
 
-void Vibronic::reset()
-{
-}
 
 } } // end namespace IQmol::Configurator

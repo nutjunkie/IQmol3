@@ -44,6 +44,7 @@ Frequencies::Frequencies(Data::Frequencies const& frequencies) : Base("Frequenci
        Mode* mode = new Mode(**iter);
        connect(mode, SIGNAL(playMode(Mode const&)), this, SLOT(playMode(Mode const&)));
        appendLayer(mode);
+       m_modeList.append(mode);
    }
 
    m_configurator.load();
@@ -151,6 +152,21 @@ void Frequencies::setLoop(bool const loop)
 {
    m_loop = loop ? -1.0 : 1.0;
 }
+
+
+void Frequencies::playMode(int mode)
+{     
+   unsigned nModes(m_modeList.size());
+
+   if (mode < 0 || mode >= nModes) {
+      clearActiveMode();
+      setPlay(false);
+   }else {
+      m_activeMode = m_modeList[mode];
+      setActiveMode(*m_activeMode);
+      setPlay(true);
+   }         
+} 
 
 
 void Frequencies::playMode(Mode const& mode)

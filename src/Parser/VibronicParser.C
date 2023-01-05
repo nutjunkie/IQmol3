@@ -46,10 +46,10 @@ bool VibronicDir::parseFile(QString const& path)
           TextStream textStream(&file);
 
           QString fileName(iter->fileName());
-          qDebug() << "===> fileName: " << fileName;
+          QString baseName(iter->baseName());
 
           if (fileName.startsWith("Spec")) {
-             parseSpectrumFile(textStream, fileName);
+             parseSpectrumFile(textStream, baseName);
 
           }else if (fileName == "vibronic_spectra.log") {
              parseLogFile(textStream);
@@ -65,6 +65,9 @@ bool VibronicDir::parseFile(QString const& path)
        }
    }
 
+   // Need to take differences for FC component
+   m_vibronic->finalize();
+   
    // Need to check vibronic data is valid
    m_dataBank.append(m_vibronic);
 
@@ -74,12 +77,24 @@ bool VibronicDir::parseFile(QString const& path)
 
 bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title)
 {
-   Data::VibronicSpectrum* vibronicSpectrum(new Data::VibronicSpectrum(title));
-   QList<double> data;
+   bool ok; 
+   const QRegularExpression rx(QLatin1Literal("[^0-9]+"));
+   const auto&& parts = title.split(rx, QString::SkipEmptyParts);
+   unsigned mode = parts.last().toInt(&ok); 
 
+   Data::VibronicSpectrum::Theory theory;
+   if (title.contains("_fcht_")) {
+      theory = Data::VibronicSpectrum::FCHT;
+   }else if (title.contains("_fc_")) {
+      theory = Data::VibronicSpectrum::FC;
+   }else if (title.contains("_ht_")) {
+      theory = Data::VibronicSpectrum::HT;
+   }
+
+   QList<double> data;
+   
    while (!textStream.atEnd()) {
       QStringList tokens(textStream.nextLineAsTokens());
-
       for (unsigned i = 0; i < tokens.length(); ++i) {
           bool ok;
           double x = tokens[i].toDouble(&ok); if (!ok) goto error;
@@ -87,13 +102,11 @@ bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title
       }
    }
 
-   vibronicSpectrum->setData(data);
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum(title, theory, mode-1, data));
 
-   m_vibronic->addSpectrum(vibronicSpectrum);
    return true;
 
    error:
-      delete vibronicSpectrum;
       QString msg("Problem parsing vibronic spectrum file, line number ");
       m_errors.append(msg + QString::number(textStream.lineNumber()));
       return false;
@@ -103,6 +116,7 @@ bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title
 bool VibronicDir::parseDatFile(TextStream& textStream)
 {
    QList<double> fc, ht, fcht;
+   int mode(-1); // Used to indicate these are total spetra
    double x;
    bool ok;
 
@@ -118,9 +132,12 @@ bool VibronicDir::parseDatFile(TextStream& textStream)
       fcht.append(tokens[4].toDouble(&ok)); if (!ok) goto error;
    }
 
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FC",   fc));
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("HT",   ht));
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FCHT", fcht));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FC",   
+      Data::VibronicSpectrum::FC,   mode, fc));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("HT",  
+      Data::VibronicSpectrum::HT,   mode, ht));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FCHT", 
+      Data::VibronicSpectrum::FCHT, mode, fcht));
 
    return true;
 
@@ -134,10 +151,18 @@ bool VibronicDir::parseDatFile(TextStream& textStream)
 bool VibronicDir::parseLogFile(TextStream& textStream)
 {
    QStringList tokens;
+   unsigned nModes(0);
    bool ok;
 
    while (!textStream.atEnd()) {
       QString line(textStream.nextLine());
+
+      if (line.contains("Number of Frequency")) {
+         tokens = TextStream::tokenize(line); 
+         if (tokens.size() == 5) {
+            nModes = tokens[4].toInt(&ok);  if(!ok) goto error;
+         }
+      }
 
       if (line.contains("Temperature(K)")) {
          tokens = TextStream::tokenize(line); 
@@ -165,6 +190,20 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
             double y = tokens[5].toDouble(&ok);  if (!ok) goto error;
             double z = tokens[6].toDouble(&ok);  if (!ok) goto error;
             m_vibronic->setElectronicDipole(Vec3(x,y,z));
+         }
+      }
+
+      if (line.contains("Frequency   Initial         Final")) {
+         QList<double> initial;
+         QList<double> final;
+         double f;
+         for (unsigned mode = 0; mode < nModes; ++mode) {
+             tokens = textStream.nextLineAsTokens();
+             f = tokens[1].toDouble(&ok);  if (!ok) goto error;
+             initial.append(f);
+             f = tokens[2].toDouble(&ok);  if (!ok) goto error;
+             final.append(f);
+             m_vibronic->setFrequencies(initial, final);
          }
       }
 

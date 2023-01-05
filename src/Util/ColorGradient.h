@@ -50,8 +50,8 @@ namespace ColorGradient {
          Function& operator=(Function const& that);
 
          QColor colorAt(double val) const;
-         ColorList colors() const { return m_colors; }
-         void resample(int nColors);
+         ColorList const& colors() const { return m_colors; }
+         ColorList const& resample(int nColors);
 
       private:
          void copy(Function const& that);

@@ -54,6 +54,8 @@ namespace Data {
          void dump() const;
          VibrationalModeList const& modes() const { return m_modes; }
 
+         VibrationalMode const& mode(unsigned i) const { return *m_modes[i]; }
+
          void serialize(InputArchive& ar, unsigned int const version = 0) {
             privateSerialize(ar, version);
          }

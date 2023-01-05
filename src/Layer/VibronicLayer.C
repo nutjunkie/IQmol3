@@ -45,9 +45,9 @@ void Vibronic::configure()
 }
 
 
-Data::VibronicSpectrumList const& Vibronic::spectra() const 
+Data::Vibronic const& Vibronic::data() const 
 { 
-   return m_vibronic.spectra(); 
+   return m_vibronic;
 }
 
 

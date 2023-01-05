@@ -51,6 +51,7 @@
 #include "MoleculeLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
+#include "VibronicLayer.h"
 
 
 #include "Grid/SpatialProperty.h"
@@ -196,6 +197,13 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
       unsigned index(list.first()->defaultIndex());
       setGeometry(*(list.first()->at(index)));
       m_addGeometryMenu->setEnabled(list.size() == 1);
+   }
+
+   QList<Vibronic*> vibronic(findLayers<Vibronic>(Children));
+   QList<Frequencies*> frequencies(findLayers<Frequencies>(Children));
+   if (vibronic.size() > 0 && frequencies.size() > 0) {
+      connect(vibronic.last(), SIGNAL(playMode(int)), frequencies.last(), SLOT(playMode(int)));
+      
    }
 }
 

@@ -147,9 +147,9 @@ QColor Function::interpolateHSV(double delta, QColor const& col1, QColor const& 
 }
 
 
-void Function::resample(int nColors)
+ColorList const& Function::resample(int nColors)
 {
-   if (nColors == m_colors.size() || nColors < 1) return;
+   if (nColors == m_colors.size() || nColors < 1) return m_colors;
 
    ColorList newColors;
    if (nColors == 1) {
@@ -161,6 +161,7 @@ void Function::resample(int nColors)
       }
    }
    m_colors = newColors;
+   return m_colors;
 }
 
 } } // end namespace IQmol::ColorGradient

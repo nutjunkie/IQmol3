@@ -24,9 +24,12 @@
 
 #include "Configurator.h"
 #include "Configurator/ui_VibronicConfigurator.h"
+#include "Data/Vibronic.h"
 #include <QPen>
 #include <QBrush>
 
+
+class QCPGraph;
 
 namespace IQmol {
 
@@ -55,23 +58,44 @@ namespace Configurator {
          void reset();
 
       protected:
-         void load();
+         void load() { }
 
       private Q_SLOTS:
          void plotSelectionChanged(bool);
-         void updatePlot();
+         void setSelectionRectMode(QMouseEvent* e);
+         void on_spectrumTable_itemSelectionChanged();
+         void on_spectrumTable_cellDoubleClicked(int row, int col);
+         void on_clearSelectionButton_clicked();
+         void on_selectAllButton_clicked();
+
+         void on_fcButton_clicked(bool);
+         void on_htButton_clicked(bool);
+         void on_fchtButton_clicked(bool);
 
       private:
          Ui::VibronicConfigurator m_configurator;
          Layer::Vibronic& m_vibronic;
-         CustomPlot* m_spectrum;
+         CustomPlot* m_plotCanvas;
 
-         QPen m_pen;
-         QPen m_selectPen;
+         double m_minIntensity;
+         double m_maxIntensity;
+         Data::VibronicSpectrum::Theory m_currentTheory;
 
-         void initSpectrum();
-         void plotImpulse(double const scaleFactor);
-         void plotSpectrum(double const scaleFactor, double const width);
+         void initPlotCanvas();
+         void initGraphs();
+         void initTable();
+
+         void resetTable(Data::VibronicSpectrum::Theory);
+         void resetCanvas(Data::VibronicSpectrum::Theory);
+
+         void clearAllGraphs();
+         void selectGraph(QCPGraph*, bool);
+         void closeEvent(QCloseEvent*);
+
+         typedef QPair<Data::VibronicSpectrum::Theory, int> ModeIndex;
+         QMap<ModeIndex, QCPGraph*> m_graphMap;
+
+         QMap<QCPGraph*, int> m_modeMap;
    };
 
 } } // end namespace IQmol::Configurator

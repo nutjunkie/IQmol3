@@ -30,11 +30,9 @@ namespace IQmol {
 
 namespace Data {
    class Vibronic;
-   class VibronicSpectrumList;
 }
 
 namespace Layer {
-
 
    class Vibronic: public Base {
 
@@ -42,10 +40,11 @@ namespace Layer {
 
       public:
          Vibronic(Data::Vibronic const&);
-         Data::VibronicSpectrumList const& spectra() const;
+         Data::Vibronic const& data() const;
 
       Q_SIGNALS:
          void update();
+         void playMode(int mode); // -ve => stop animation
 
       public Q_SLOTS:
          void configure();
