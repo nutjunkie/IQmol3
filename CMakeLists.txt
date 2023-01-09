@@ -79,6 +79,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 
+# We need this to be able to include e.g. "Data/Bank.h" in the sources
+include_directories(src)
+
 add_subdirectory(src)
 if (${Qt5Core_VERSION_STRING} VERSION_GREATER_EQUAL 5.15 )
    qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
