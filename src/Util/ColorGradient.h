@@ -30,6 +30,7 @@
 namespace IQmol {
 namespace ColorGradient {
 
+
    typedef QList<QColor> ColorList;
 
    QString ToString(ColorList const&);

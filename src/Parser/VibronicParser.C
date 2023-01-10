@@ -80,7 +80,7 @@ bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title
    bool ok; 
    const QRegularExpression rx(QLatin1Literal("[^0-9]+"));
    const auto&& parts = title.split(rx, QString::SkipEmptyParts);
-   unsigned mode = parts.last().toInt(&ok); 
+   int mode = parts.last().toInt(&ok); 
 
    Data::VibronicSpectrum::Theory theory;
    if (title.contains("_fcht_")) {
@@ -102,7 +102,7 @@ bool VibronicDir::parseSpectrumFile(TextStream& textStream, QString const& title
       }
    }
 
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum(title, theory, mode-1, data));
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum(theory, mode-1, data));
 
    return true;
 
@@ -132,11 +132,11 @@ bool VibronicDir::parseDatFile(TextStream& textStream)
       fcht.append(tokens[4].toDouble(&ok)); if (!ok) goto error;
    }
 
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FC",   
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum(
       Data::VibronicSpectrum::FC,   mode, fc));
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("HT",  
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum(
       Data::VibronicSpectrum::HT,   mode, ht));
-   m_vibronic->addSpectrum(new Data::VibronicSpectrum("FCHT", 
+   m_vibronic->addSpectrum(new Data::VibronicSpectrum(
       Data::VibronicSpectrum::FCHT, mode, fcht));
 
    return true;

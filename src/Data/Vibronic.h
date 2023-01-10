@@ -40,8 +40,8 @@ namespace Data {
          enum Theory { FC = 0, HT, FCHT };
          static const Theory AllTheories[3];
 
-         VibronicSpectrum(QString const& title = QString(), Theory theory = FC, 
-            int mode = -1, QList<double> const& data = QList<double>());
+         VibronicSpectrum(Theory theory = FC, int mode = -1, 
+            QList<double> const& data = QList<double>());
 
          VibronicSpectrum& operator+=(VibronicSpectrum const& that);
 
@@ -59,15 +59,12 @@ namespace Data {
 
          unsigned nPoints() const { return m_data.size(); }
 
-         QString const& title() const { return m_title; }
-
          void finalize();
 
          void dump() const { }
 
          void serialize(InputArchive& ar, unsigned int const /*version*/) 
          {
-            ar & m_title;
             ar & m_data;
             ar & m_min;
             ar & m_max;
@@ -76,7 +73,6 @@ namespace Data {
 
          void serialize(OutputArchive& ar, unsigned int const /*version*/) 
          {
-            ar & m_title;
             ar & m_data;
             ar & m_min;
             ar & m_max;
@@ -85,19 +81,10 @@ namespace Data {
 
       private:
          Theory m_theory;
-         QString m_title;
          double m_max;
          double m_min;
          int m_mode;
          QList<double> m_data;
-   };
-
-
-   class VibronicSpectrumList: public List<VibronicSpectrum>
-   {
-      public:
-        // Why is a fully qualified namespace required for Type with Qt >= 6.0
-        IQmol::Data::Type::ID typeID() const { return IQmol::Data::Type::VibronicSpectrumList; }
    };
 
 
@@ -106,7 +93,10 @@ namespace Data {
       friend class boost::serialization::access;
 
       public:
+
          Type::ID typeID() const { return Type::Vibronic; }
+
+         ~Vibronic();
 
          void setTemperature(double const t);
 
@@ -128,17 +118,13 @@ namespace Data {
 
          double frequencyDomainDelta() const { return m_fdelta; }
 
-         unsigned nPoints() const;
-
-         unsigned nSpectra() const { return m_spectra.size(); }
+         unsigned nPoints() const { return m_fcSpectra[-1]->nPoints(); };
 
          unsigned nModes() const { return m_initialFrequencies.size(); }
 
          QList<double> const& initialFrequencies() const { return m_initialFrequencies; }
 
          QList<double> const& finalFrequencies() const { return m_finalFrequencies; }
-
-         VibronicSpectrum const& operator[](unsigned i) const { return *m_spectra[i]; }
 
          VibronicSpectrum const& spectrum(VibronicSpectrum::Theory theory, int i) const;
 
@@ -164,6 +150,7 @@ namespace Data {
             ar & m_fdelta;
          }
 
+
       private:
          double m_temperature;
          double m_electronicEnergy;
@@ -173,7 +160,6 @@ namespace Data {
          QList<double> m_initialFrequencies;
          QList<double> m_finalFrequencies;
 
-         VibronicSpectrumList m_spectra;
          QMap<int, VibronicSpectrum*> m_fcSpectra;
          QMap<int, VibronicSpectrum*> m_htSpectra;
          QMap<int, VibronicSpectrum*> m_fchtSpectra;

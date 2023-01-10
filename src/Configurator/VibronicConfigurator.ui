@@ -140,7 +140,7 @@ QToolTip {
              <enum>QAbstractItemView::SelectRows</enum>
             </property>
             <property name="sortingEnabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <attribute name="horizontalHeaderCascadingSectionResizes">
              <bool>true</bool>
@@ -215,7 +215,7 @@ QToolTip {
      <item>
       <widget class="QPushButton" name="selectAllButton">
        <property name="text">
-        <string>Select All</string>
+        <string>Show All</string>
        </property>
        <property name="autoDefault">
         <bool>true</bool>
@@ -225,7 +225,7 @@ QToolTip {
      <item>
       <widget class="QPushButton" name="clearSelectionButton">
        <property name="text">
-        <string>Select None</string>
+        <string>Show None</string>
        </property>
       </widget>
      </item>

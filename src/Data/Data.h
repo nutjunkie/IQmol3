@@ -76,7 +76,6 @@ namespace Data {
                 NmrReference,           NmrReferenceList,       Nmr,
                 ExcitedStates,          ElectronicTransition,   ElectronicTransitionList, 
                 OrbitalSymmetries,      Vibronic,               VibronicSpectrum,
-                VibronicSpectrumList,
                /*---------------------  *---------------------  *--------------------- */
                 YamlNode,               PovRay,                 GeminalOrbitals
       };

@@ -76,9 +76,6 @@ namespace Configurator {
          Ui::VibronicConfigurator m_configurator;
          Layer::Vibronic& m_vibronic;
          CustomPlot* m_plotCanvas;
-
-         double m_minIntensity;
-         double m_maxIntensity;
          Data::VibronicSpectrum::Theory m_currentTheory;
 
          void initPlotCanvas();
@@ -93,9 +90,7 @@ namespace Configurator {
          void closeEvent(QCloseEvent*);
 
          typedef QPair<Data::VibronicSpectrum::Theory, int> ModeIndex;
-         QMap<ModeIndex, QCPGraph*> m_graphMap;
-
-         QMap<QCPGraph*, int> m_modeMap;
+         QMap<ModeIndex, QCPGraph*> m_modeMap;
    };
 
 } } // end namespace IQmol::Configurator

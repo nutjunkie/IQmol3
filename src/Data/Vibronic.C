@@ -32,9 +32,8 @@ namespace Data {
 const VibronicSpectrum::Theory constexpr VibronicSpectrum::AllTheories[3] = { FC, HT, FCHT };
 
 
-VibronicSpectrum::VibronicSpectrum(QString const& title, Theory theory, int mode, 
-   QList<double> const& data) : m_title(title), m_theory(theory), m_mode(mode), 
-   m_data(data), m_min(0.0), m_max(0.0) 
+VibronicSpectrum::VibronicSpectrum(Theory theory, int mode, QList<double> const& data) 
+  : m_theory(theory), m_mode(mode), m_data(data), m_min(0.0), m_max(0.0) 
 {
 }
 
@@ -82,6 +81,21 @@ void VibronicSpectrum::finalize()
 
 
 // ------------------- Vibronic -------------------
+
+Vibronic::~Vibronic() 
+{
+   for (auto iter = m_fcSpectra.begin(); iter != m_fcSpectra.end(); ++iter) {
+       delete iter.value();
+   }
+
+   for (auto iter = m_htSpectra.begin(); iter != m_htSpectra.end(); ++iter) {
+       delete iter.value();
+   }
+
+   for (auto iter = m_fchtSpectra.begin(); iter != m_fchtSpectra.end(); ++iter) {
+       delete iter.value();
+   }
+}
    
 
 void Vibronic::dump() const 
@@ -122,8 +136,6 @@ void Vibronic::setFrequencies(QList<double> const& initial, QList<double> const&
 
 void Vibronic::addSpectrum(VibronicSpectrum* spectrum)
 {
-   m_spectra.append(spectrum);
-
    switch (spectrum->theory()) {
       case VibronicSpectrum::FC:
          m_fcSpectra[spectrum->mode()] = spectrum;
@@ -168,7 +180,7 @@ void Vibronic::finalize()
 
    for (unsigned mode(0); mode < mModes; ++mode) {
        (*m_fcSpectra[mode]) -= (*m_fcSpectra[-1]);
-       m_fchtSpectra[mode] = new VibronicSpectrum("", theory, mode, m_fcSpectra[mode]->data());
+       m_fchtSpectra[mode] = new VibronicSpectrum(theory, mode, m_fcSpectra[mode]->data());
        (*m_fchtSpectra[mode]) += (*m_htSpectra[mode]);
 
        m_fcSpectra[mode]->finalize();
@@ -179,16 +191,21 @@ void Vibronic::finalize()
    m_fcSpectra[-1]->finalize();
    m_htSpectra[-1]->finalize();
    m_fchtSpectra[-1]->finalize();
+
+   // TEMP
+m_fcSpectra[-2] = new VibronicSpectrum(VibronicSpectrum::FC, -2, m_fcSpectra[0]->data());
+m_htSpectra[-2] =  new VibronicSpectrum(VibronicSpectrum::HT, -2, m_htSpectra[0]->data());
+m_fchtSpectra[-2] = new VibronicSpectrum(VibronicSpectrum::FCHT, -2, m_fchtSpectra[0]->data());
+
+   for (unsigned mode(1); mode < mModes; ++mode) {
+       (*m_fcSpectra[-2])   += (*m_fcSpectra[mode]);
+       (*m_htSpectra[-2])   += (*m_htSpectra[mode]);
+       (*m_fchtSpectra[-2]) += (*m_fchtSpectra[mode]);
+   }
+
+   m_fcSpectra[-2]->finalize();
+   m_htSpectra[-2]->finalize();
+   m_fchtSpectra[-2]->finalize();
 }
-
-
-unsigned Vibronic::nPoints() const 
-{
-    return m_spectra.size() > 0 ? m_spectra[0]->nPoints() : 0;
-}
-
-
-
-
 
 } } // end namespace IQmol::Data
