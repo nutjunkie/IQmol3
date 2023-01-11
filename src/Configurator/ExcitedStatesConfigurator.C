@@ -59,13 +59,10 @@ ExcitedStates::ExcitedStates(Layer::ExcitedStates& excitedStates) :
    initMoPlot();
 
    m_configurator.unitsCombo->clear();
-   m_configurator.unitsCombo->addItem("eV",       Constants::ElectronVolt);
-   m_configurator.unitsCombo->addItem("cm⁻¹",     Constants::Wavenumber);
-   m_configurator.unitsCombo->addItem("Hartree",  Constants::Hartree);
-   m_configurator.unitsCombo->addItem("KJ/mol",   Constants::KJoulePerMol);
-   m_configurator.unitsCombo->addItem("KCal/mol", Constants::KCalPerMol);
-   m_configurator.unitsCombo->addItem("MHz",      Constants::MegaHertz);
-   m_configurator.unitsCombo->setCurrentIndex(0);
+   for (const auto unit : Constants::AllUnits) {
+       m_configurator.unitsCombo->addItem(Constants::toString(unit), unit);
+   }
+   m_configurator.unitsCombo->setCurrentIndex(1); // eV
 }
 
 
@@ -87,7 +84,7 @@ void ExcitedStates::initSpectrum()
    m_spectrum->axisRect()->setRangeZoom(Qt::Horizontal);
 
    m_spectrum->xAxis->setSelectableParts(QCPAxis::spNone);
-   m_spectrum->xAxis->setLabel("Energy/eV");
+   m_spectrum->xAxis->setLabel(QString("Energy / ") + Constants::toString(m_units));
 
    connect(m_spectrum, SIGNAL(mousePress(QMouseEvent*)),
       this, SLOT(setSelectionRectMode(QMouseEvent*)));
@@ -112,7 +109,7 @@ void ExcitedStates::initMoPlot()
    frame->setLayout(layout);
    layout->addWidget(m_moPlot);
 
-   m_moPlot->yAxis->setLabel("Energy/Hartree");
+   m_moPlot->yAxis->setLabel("Energy / Hartree");
    QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
    m_moPlot->xAxis->setTicker(textTicker);
    m_moPlot->xAxis->setRange(0,3.25);
@@ -219,7 +216,6 @@ void ExcitedStates::initTable()
 
    m_maxValues.first  = 0;
    m_maxValues.second = 0;
-   m_rawData.clear();
 
    int row(0);
    Data::ElectronicTransitionList::const_iterator iter;
@@ -230,8 +226,6 @@ void ExcitedStates::initTable()
 
        m_maxValues.first  = std::max(m_maxValues.first,  energy);
        m_maxValues.second = std::max(m_maxValues.second, strength);
-
-       m_rawData.append(qMakePair(energy, strength));
 
        QString text(QString::number(energy, 'f', 3));
        item = new DoubleTableWidgetItem();
@@ -259,65 +253,92 @@ void ExcitedStates::initTable()
 }
 
 
+void ExcitedStates::updateMoPlot(int const index)
+{
+   clearTransitionLines();
+   QList<Data::Amplitude>  amplitudes(m_excitedStates.stateData().amplitudes(index));
+
+   QPen pen;
+   QColor color;
+   pen.setStyle(Qt::SolidLine);
+   pen.setWidth(3);
+
+   double dx(-0.2);
+   QList<Data::Amplitude>::const_iterator iter;
+   for (iter = amplitudes.begin(); iter != amplitudes.end(); ++iter) {
+
+       color.setHsv(280, 255*std::abs((*iter).m_amplitude), 255);
+       pen.setColor(color);
+
+       QCPItemLine* line(new QCPItemLine(m_moPlot));
+       line->setSelectable(true);
+       m_transitionLines.append(line);
+
+       double x( ((*iter).m_spin == Data::Alpha) ? 0.75 : 2.5 );
+       line->position("start")->setCoords(x+dx, (*iter).m_ei);
+       line->position("end"  )->setCoords(x+dx, (*iter).m_ea);
+       dx += 0.1;
+
+       line->setPen(pen);
+       // decorator?
+       line->setSelectedPen(m_selectedPen);
+       line->setHead(QCPLineEnding::esSpikeArrow);
+   }
+
+   m_moPlot->replot();
+}
+
 
 void ExcitedStates::updateEnergyUnits()
 {
-   Data::ElectronicTransitionList const& transitions(m_excitedStates.stateData().transitions());
+   int u(m_configurator.unitsCombo->currentData().toInt());
+   m_units = static_cast<Constants::Units>(u);
+   updateTable(); 
+   updateSpectrum(); 
+}
+
+
+void ExcitedStates::updateTable()
+{
+   double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToEv);
+   QString label("Energy / ");
+   label += Constants::toString(m_units);
+
    QTableWidget* table(m_configurator.energyTable); 
-   QTableWidgetItem* item;
-   
-   int units(m_configurator.unitsCombo->currentData().toInt());
-   double conversion(1.0);
-   QString label;
-
-   //m_maxValues.first = 0;
-   m_rawData.clear();
-
-   switch (units) {
-      case Constants::ElectronVolt:
-         // Default energies are in eV
-         conversion = 1.0;
-         label = "Energy / eV";
-         break;
-      case Constants::Wavenumber:
-         conversion = Constants::HartreeToWavenumber/Constants::HartreeToEv;
-         label = "Energy / cm⁻¹";
-         break;
-   }
-
    table->horizontalHeaderItem(0)->setText(label);
-   if (m_spectrum) m_spectrum->xAxis->setLabel(label);
 
    int row(0);
-   Data::ElectronicTransitionList::const_iterator iter;
-   for (iter = transitions.begin(); iter != transitions.end(); ++iter) {
+   Data::ElectronicTransitionList const& transitions(m_excitedStates.stateData().transitions());
+   for (auto iter(transitions.begin()); iter != transitions.end(); ++iter, ++row) {
        double energy((*iter)->energy() * conversion);
        double strength((*iter)->strength());
        QString text;
 
-       switch (units) {
-          case Constants::ElectronVolt:
-             text = QString::number(energy, 'f', 3);
-             break;
+       switch (m_units) {
+          case Constants::KJoulePerMol:
+          case Constants::KCalPerMol:
           case Constants::Wavenumber:
+             text = QString::number(energy, 'f', 0);
+             break;
+          case Constants::MegaHertz:
+             text = QString::number(energy, 'g', 4);
+             break;
+          default:
              text = QString::number(energy, 'f', 3);
              break;
        }
 
-       //m_maxValues.first = std::max(m_maxValues.first, energy);
-       m_rawData.append(qMakePair(energy, strength));
        table->item(row, 0)->setText(text + "     ");
-       ++row;
    }
-
-   updateSpectrum();
 }
-
 
 
 void ExcitedStates::updateSpectrum()
 {
-   //m_spectrum->xAxis->setLabel("Energy/eV");
+   QString label("Energy / ");
+   label += Constants::toString(m_units);
+   if (m_spectrum) m_spectrum->xAxis->setLabel(label);
+
    m_spectrum->clearGraphs();
    double width(m_configurator.widthSlider->value());
 
@@ -338,18 +359,23 @@ void ExcitedStates::updateSpectrum()
 }
 
 
-
 void ExcitedStates::plotImpulse()
 {
    QVector<double> x(1), y(1);
+   double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToEv);
 
-   for (int transition = 0; transition < m_rawData.size(); ++transition) {
-       x[0] = m_rawData[transition].first;
-       y[0] = m_rawData[transition].second;
+   int i(0);
+
+   Data::ElectronicTransitionList const& 
+      transitions(m_excitedStates.stateData().transitions());
+
+   for (auto iter = transitions.begin(); iter != transitions.end(); ++iter, ++i) {
+       x[0] = (*iter)->energy() * conversion;
+       y[0] = (*iter)->strength();
 
        QCPGraph* graph(m_spectrum->addGraph());
        graph->setData(x, y);
-       graph->setName(QString::number(transition));
+       graph->setName(QString::number(i));
        graph->setLineStyle(QCPGraph::lsImpulse);
        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle));
        graph->setPen(m_pen);
@@ -359,24 +385,28 @@ void ExcitedStates::plotImpulse()
 
    // The extra range is for the tails of the non-impulse spectra
    double const maxEnergy(m_maxValues.first+1);
-   m_spectrum->xAxis->setRange(0, maxEnergy);
+   m_spectrum->xAxis->setRange(0, maxEnergy*conversion);
    m_spectrum->yAxis->setRange(0, 1.05*m_maxValues.second);
 }
 
 
 void ExcitedStates::plotSpectrum(Profile const profile, double const width)
 {
+   double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToEv);
+
    unsigned const bins(200);
    // The extra range is for the tails of the non-impulse spectra
    double const maxEnergy(m_maxValues.first+1);
    double const delta(maxEnergy/bins);
 
    QVector<double> x(bins), y(bins);
-
    for (unsigned xi = 0; xi < bins; ++xi) {
        x[xi] = xi*delta;
        y[xi] = 0.0;
    }
+
+   Data::ElectronicTransitionList const& 
+      transitions(m_excitedStates.stateData().transitions());
 
    switch (profile) {
       // These parameters only work for eV.
@@ -384,9 +414,10 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
          double g(0.02*width);
          double A(std::sqrt(4.0*std::log(2.0)/(g*M_PI)));
          double a(-4.0*std::log(2.0)/g);
-         for (int mode = 0; mode < m_rawData.size(); ++mode) {
-             double nu(m_rawData[mode].first);
-             double I(m_rawData[mode].second);
+
+         for (auto iter = transitions.begin(); iter != transitions.end(); ++iter) {
+             double nu((*iter)->energy()); 
+             double I((*iter)->strength());
              for (unsigned xi = 0; xi < bins; ++xi) {
                  y[xi] += I*A*std::exp(a*(x[xi]-nu)*(x[xi]-nu));
              }
@@ -397,9 +428,10 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
          double A(2.0/M_PI);
          double g(0.005*width);
          double g2(g*g);
-         for (int mode = 0; mode < m_rawData.size(); ++mode) {
-             double nu(m_rawData[mode].first);
-             double I(m_rawData[mode].second);
+
+         for (auto iter = transitions.begin(); iter != transitions.end(); ++iter) {
+             double nu((*iter)->energy()); 
+             double I((*iter)->strength());
              for (unsigned xi = 0; xi < bins; ++xi) {
                  y[xi] += I*A*g / (g2+(x[xi]-nu)*(x[xi]-nu));
              }
@@ -407,11 +439,6 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
       } break;
 
    }
-
-   int u(m_configurator.unitsCombo->currentData().toInt());
-   auto units = static_cast<Constants::Units>(u);
-   // Default energies are in eV
-   double conversion(Constants::convertFromHartree(units)/Constants::HartreeToEv);
 
    double maxIntensity(0.0);
    for (unsigned xi = 0; xi < bins; ++xi) {
@@ -429,10 +456,9 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
    graph->setAntialiased(true);
    graph->selectionDecorator()->setPen(m_selectedPen);
 
-   m_spectrum->xAxis->setRange(0, maxEnergy);
+   m_spectrum->xAxis->setRange(0, maxEnergy*conversion);
    m_spectrum->yAxis->setRange(0, 1.04);
 }
-
 
 
 void ExcitedStates::plotSelectionChanged(bool tf)
@@ -536,45 +562,6 @@ void ExcitedStates::on_widthSlider_valueChanged(int)
 {
    updateSpectrum();
 }
-
-
-void ExcitedStates::updateMoPlot(int const index)
-{
-   clearTransitionLines();
-   QList<Data::Amplitude>  amplitudes(m_excitedStates.stateData().amplitudes(index));
-
-   //qDebug() << "Number of amplitudes" << amplitudes.size();
-
-   QPen pen;
-   QColor color;
-   pen.setStyle(Qt::SolidLine);
-   pen.setWidth(3);
-
-   double dx(-0.2);
-   QList<Data::Amplitude>::const_iterator iter;
-   for (iter = amplitudes.begin(); iter != amplitudes.end(); ++iter) {
-
-       color.setHsv(280, 255*std::abs((*iter).m_amplitude), 255);
-       pen.setColor(color);
-
-       QCPItemLine* line(new QCPItemLine(m_moPlot));
-       line->setSelectable(true);
-       m_transitionLines.append(line);
-
-       double x( ((*iter).m_spin == Data::Alpha) ? 0.75 : 2.5 );
-       line->position("start")->setCoords(x+dx, (*iter).m_ei);
-       line->position("end"  )->setCoords(x+dx, (*iter).m_ea);
-       dx += 0.1;
-
-       line->setPen(pen);
-       // decorator?
-       line->setSelectedPen(m_selectedPen);
-       line->setHead(QCPLineEnding::esSpikeArrow);
-   }
-
-   m_moPlot->replot();
-}
-
 
 
 

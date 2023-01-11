@@ -43,7 +43,7 @@ namespace Constants {
    double const HartreeToKJmol      = 2625.49962;
    double const HartreeToKCalmol    = HartreeToKJmol/JoulesPerCalorie;
 
-   enum Units { Hartree, ElectronVolt, Wavenumber, KJoulePerMol, KCalPerMol, MegaHertz };
+   enum Units { Hartree = 0, ElectronVolt, Wavenumber, KJoulePerMol, KCalPerMol, MegaHertz };
 
    const Units constexpr AllUnits[] = {
       Hartree, 

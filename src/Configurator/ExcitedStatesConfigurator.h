@@ -74,9 +74,10 @@ namespace Configurator {
          void initMoPlot();
          void initSpectrum();
 
+         void updateTable();
          void updateSpectrum();
-         void updateEnergyUnits();
          void updateMoPlot(int const index);
+         void updateEnergyUnits();
 
          void plotImpulse();
          void plotSpectrum(Profile const, double const width);
@@ -93,7 +94,6 @@ namespace Configurator {
 
          // Keep units in eV and only scale user-side
          Constants::Units m_units;
-         QList<QPair<double, double> > m_rawData;
          QPair<double, double> m_maxValues;  
 
          QList<QCPAbstractItem*> m_transitionLines;
