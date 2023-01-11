@@ -25,7 +25,9 @@
 #include "ElectronicTransition.h"
 #include "ExcitedStates.h"
 #include "CustomPlot.h"
-#include "Constants.h"
+
+#include "Util/Constants.h"
+#include "Util/NumericalTableItem.h"
 #include <cmath>
 
 
@@ -33,7 +35,7 @@ namespace IQmol {
 namespace Configurator {
 
 ExcitedStates::ExcitedStates(Layer::ExcitedStates& excitedStates) : 
-  m_excitedStates(excitedStates), m_moPlot(0), m_spectrum(0)
+  m_excitedStates(excitedStates), m_moPlot(0), m_spectrum(0), m_units(Constants::ElectronVolt)
 {
    m_configurator.setupUi(this);
 
@@ -57,11 +59,14 @@ ExcitedStates::ExcitedStates(Layer::ExcitedStates& excitedStates) :
    initMoPlot();
 
    m_configurator.unitsCombo->clear();
-   m_configurator.unitsCombo->addItem("eV", Constants::ElectronVolt);
-   m_configurator.unitsCombo->addItem("Wavenumber", Constants::Wavenumber);
+   m_configurator.unitsCombo->addItem("eV",       Constants::ElectronVolt);
+   m_configurator.unitsCombo->addItem("cm⁻¹",     Constants::Wavenumber);
+   m_configurator.unitsCombo->addItem("Hartree",  Constants::Hartree);
+   m_configurator.unitsCombo->addItem("KJ/mol",   Constants::KJoulePerMol);
+   m_configurator.unitsCombo->addItem("KCal/mol", Constants::KCalPerMol);
+   m_configurator.unitsCombo->addItem("MHz",      Constants::MegaHertz);
    m_configurator.unitsCombo->setCurrentIndex(0);
 }
-
 
 
 ExcitedStates::~ExcitedStates()
@@ -70,7 +75,6 @@ ExcitedStates::~ExcitedStates()
    if (m_moPlot) delete m_moPlot;
    if (m_spectrum) delete m_spectrum;
 }
-
 
 
 void ExcitedStates::initSpectrum()
@@ -204,8 +208,12 @@ void ExcitedStates::initTable()
    Data::ElectronicTransitionList const& transitions(m_excitedStates.stateData().transitions());
 
    QTableWidget* table(m_configurator.energyTable);
-   table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+   table->setSortingEnabled(true);
    table->setRowCount(transitions.size());
+
+   QHeaderView* header(table->horizontalHeader());
+   header->setSectionResizeMode(QHeaderView::Stretch);
+   header->setSortIndicatorShown(true);
 
    QTableWidgetItem* item;
 
@@ -226,27 +234,28 @@ void ExcitedStates::initTable()
        m_rawData.append(qMakePair(energy, strength));
 
        QString text(QString::number(energy, 'f', 3));
-       item = new QTableWidgetItem( text + "     ");
+       item = new DoubleTableWidgetItem();
+       item->setText( text + "    ");
        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
        item->setData(Qt::UserRole, row);
        table->setItem(row, 0, item);
 
        text = QString::number(strength, 'f', 3);
-       item = new QTableWidgetItem( text + "    ");
+       item = new DoubleTableWidgetItem();
+       item->setText( text + "    ");
        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
        item->setData(Qt::UserRole, row);
        table->setItem(row, 1, item);
 
        text = QString::number(spinSquared, 'f', 3);
-       item = new QTableWidgetItem( text + "    ");
+       item = new DoubleTableWidgetItem();
+       item->setText( text + "    ");
        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
        item->setData(Qt::UserRole, row);
        table->setItem(row, 2, item);
 
        ++row;
    }
-
-   updateSpectrum();
 }
 
 
@@ -261,18 +270,18 @@ void ExcitedStates::updateEnergyUnits()
    double conversion(1.0);
    QString label;
 
-   m_maxValues.first = 0;
+   //m_maxValues.first = 0;
    m_rawData.clear();
 
    switch (units) {
       case Constants::ElectronVolt:
          // Default energies are in eV
          conversion = 1.0;
-         label = "Energy/eV";
+         label = "Energy / eV";
          break;
       case Constants::Wavenumber:
          conversion = Constants::HartreeToWavenumber/Constants::HartreeToEv;
-         label = "Energy/cm⁻¹";
+         label = "Energy / cm⁻¹";
          break;
    }
 
@@ -295,7 +304,7 @@ void ExcitedStates::updateEnergyUnits()
              break;
        }
 
-       m_maxValues.first = std::max(m_maxValues.first, energy);
+       //m_maxValues.first = std::max(m_maxValues.first, energy);
        m_rawData.append(qMakePair(energy, strength));
        table->item(row, 0)->setText(text + "     ");
        ++row;
@@ -370,7 +379,7 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
    }
 
    switch (profile) {
-
+      // These parameters only work for eV.
       case Gaussian: {
          double g(0.02*width);
          double A(std::sqrt(4.0*std::log(2.0)/(g*M_PI)));
@@ -399,12 +408,18 @@ void ExcitedStates::plotSpectrum(Profile const profile, double const width)
 
    }
 
+   int u(m_configurator.unitsCombo->currentData().toInt());
+   auto units = static_cast<Constants::Units>(u);
+   // Default energies are in eV
+   double conversion(Constants::convertFromHartree(units)/Constants::HartreeToEv);
+
    double maxIntensity(0.0);
    for (unsigned xi = 0; xi < bins; ++xi) {
        if (y[xi] > maxIntensity) maxIntensity = y[xi];
    }
 
    for (unsigned xi = 0; xi < bins; ++xi) {
+       x[xi] *= conversion;
        y[xi] /= maxIntensity;
    }
 

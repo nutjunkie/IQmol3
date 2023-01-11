@@ -24,6 +24,7 @@
 
 #include "Configurator.h"
 #include "Configurator/ui_ExcitedStatesConfigurator.h"
+#include "Util/Constants.h"
 #include <QPen>
 
 
@@ -89,9 +90,11 @@ namespace Configurator {
          QCPItemText* m_label;
          QPen m_pen;
          QPen m_selectedPen;
-         QList<QPair<double, double> > m_rawData;
 
-         QPair<double, double> m_maxValues;
+         // Keep units in eV and only scale user-side
+         Constants::Units m_units;
+         QList<QPair<double, double> > m_rawData;
+         QPair<double, double> m_maxValues;  
 
          QList<QCPAbstractItem*> m_transitionLines;
    };

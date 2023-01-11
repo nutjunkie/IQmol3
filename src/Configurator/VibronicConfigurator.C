@@ -24,38 +24,19 @@
 #include "Layer/VibronicLayer.h"
 #include "Util/ColorGradient.h"
 #include "Util/QsLog.h"
+#include "Util/NumericalTableItem.h"
 #include "CustomPlot.h"
 #include <algorithm>
-
-#define SORT_ROLE Qt::UserRole+1
 
 
 namespace IQmol {
 namespace Configurator { 
 
 
-class MyTableWidgetItem : public QTableWidgetItem {
-    public:
-        bool operator <(const QTableWidgetItem &other) const
-        {
-            return text().toDouble() < other.text().toDouble();
-        }
-};
-
-
 Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
    m_currentTheory(Data::VibronicSpectrum::FC)
 {
    m_configurator.setupUi(this);
-
-   QTableWidget* table(m_configurator.spectrumTable);
-   table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-   //QStandardItemModel* model = static_cast<QStandardItemModel*>(table->model());
-   //model->setSortRole(SORT_ROLE);
-   QHeaderView* header(table->horizontalHeader());
-   header->setSortIndicatorShown(true);
-   table->setSortingEnabled(true);
 
    initPlotCanvas();
    initTable();
@@ -96,6 +77,12 @@ void Vibronic::initPlotCanvas()
 void Vibronic::initTable()
 {
    QTableWidget* table(m_configurator.spectrumTable);
+   table->setSortingEnabled(true);
+
+   QHeaderView* header(table->horizontalHeader());
+   header->setSectionResizeMode(QHeaderView::Stretch);
+   header->setSortIndicatorShown(true);
+
    Data::Vibronic const& vibronic(m_vibronic.data());
 
    QList<double> const& initialFrequencies(vibronic.initialFrequencies()); 
@@ -106,21 +93,19 @@ void Vibronic::initTable()
    table->setRowCount(nModes);
 
    for (unsigned mode(0); mode < nModes; ++mode) {
-       QTableWidgetItem* freq0 = new MyTableWidgetItem();
+       QTableWidgetItem* freq0 = new DoubleTableWidgetItem();
        freq0->setData(Qt::UserRole, mode);
-       freq0->setText(QString::number(initialFrequencies[mode], 'f', 2));
+       freq0->setText(QString::number(initialFrequencies[mode], 'f', 2) + "    ");
        freq0->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-       //freq0->setData(Qt::EditRole, initialFrequencies[mode]);
        table->setItem(mode, 0, freq0);
 
-       QTableWidgetItem* freq1 = new MyTableWidgetItem();
+       QTableWidgetItem* freq1 = new DoubleTableWidgetItem();
        freq1->setData(Qt::UserRole, mode);
-       freq1->setText(QString::number(finalFrequencies[mode], 'f', 2));
+       freq1->setText(QString::number(finalFrequencies[mode], 'f', 2) + "    ");
        freq1->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-       //freq1->setData(Qt::EditRole, finalFrequencies[mode]);
        table->setItem(mode, 1, freq1);
 
-       QTableWidgetItem* intensity = new MyTableWidgetItem();
+       QTableWidgetItem* intensity = new DoubleTableWidgetItem();
        intensity->setData(Qt::UserRole, mode);
        intensity->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
        table->setItem(mode, 2, intensity);
@@ -145,9 +130,9 @@ void Vibronic::initGraphs()
    }   
 
    ColorGradient::ColorList const& colors = { 
-        QColor("#a6cee3"), QColor("#1f78b4"), QColor("#b2df8a"), QColor("#33a02c"),
-        QColor("#fb9a99"), QColor("#e31a1c"), QColor("#fdbf6f"), QColor("#ff7f00"),
-       QColor("#cab2d6"),QColor("#6a3d9a")
+      QColor("#a6cee3"), QColor("#1f78b4"), QColor("#b2df8a"), QColor("#33a02c"),
+      QColor("#fb9a99"), QColor("#e31a1c"), QColor("#fdbf6f"), QColor("#ff7f00"),
+      QColor("#cab2d6"), QColor("#6a3d9a")
    };
 
    for (const auto theory : Data::VibronicSpectrum::AllTheories) {
@@ -224,8 +209,7 @@ void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
        QTableWidgetItem* item = table->item(row, 2);
        int mode = item->data(Qt::UserRole).toInt(&ok);  if (!ok) return;
        Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
-       item->setText(QString::number(spectrum.max(), 'f', 5));
-       //item->setData(Qt::EditRole, spectrum.max());
+       item->setText(QString::number(spectrum.max(), 'f', 5) + "    ");
    }
 }
 
@@ -244,7 +228,11 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
       graph->addToLegend(m_plotCanvas->legend);
    }
 
-//-------------------------------------------------
+//--------------------------------------------------------
+// The following is to show the additivity (or otherwise)
+// of the mode spectra for debug purposes.
+//--------------------------------------------------------
+/*
    ModeIndex index2(theory, -2);
    graph = m_modeMap[index2];
    if (graph) {
@@ -257,7 +245,8 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
    }else {
       qDebug() << "Failed to find summation plot";
    }
-//-------------------------------------------------
+*/
+//--------------------------------------------------------
  
    m_plotCanvas->yAxis->setRange(min,max);
    
