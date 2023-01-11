@@ -135,6 +135,8 @@ void Vibronic::initGraphs()
       QColor("#cab2d6"), QColor("#6a3d9a")
    };
 
+   QCPGraph* graph;
+
    for (const auto theory : Data::VibronicSpectrum::AllTheories) {
        for (int mode = -2; mode < (int)nModes; ++mode) {
            Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
@@ -158,7 +160,7 @@ void Vibronic::initGraphs()
               pen.setColor(colors[mode % colors.size()]);
            }
 
-           QCPGraph* graph(m_plotCanvas->addGraph());
+           graph = m_plotCanvas->addGraph();
            graph->setData(x, y); 
            graph->setPen(pen);
            pen.setWidthF(3);
@@ -168,9 +170,31 @@ void Vibronic::initGraphs()
            ModeIndex index(theory, mode);
            m_modeMap[index] = graph;
        } 
-   }
 
-   QCPGraph* graph;
+       { // Add electronic transition impulse
+           QPen pen;
+           pen.setStyle(Qt::SolidLine);
+           QColor color;
+           color.setHsv(280, 255, 255);
+           pen.setColor(color);
+           pen.setWidthF(2);
+
+           QVector<double> x(1), y(1);
+           x[0] = vibronic.electronicEnergy();
+           y[0] = 0.25*vibronic.spectrum(theory,-1).max();
+
+           graph = m_plotCanvas->addGraph();
+           graph->setData(x, y);
+           graph->setName("Electronic Transition");
+           graph->setLineStyle(QCPGraph::lsImpulse);
+           graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle));
+           graph->setPen(pen);
+           graph->setSelectable(QCP::stNone);
+
+           ModeIndex idx(theory, (int)nModes);
+           m_modeMap[idx] = graph;
+       }
+   }
 
    graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FC,-1)];
    graph->setSelectable(QCP::stNone);
@@ -228,6 +252,7 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
       graph->addToLegend(m_plotCanvas->legend);
    }
 
+
 //--------------------------------------------------------
 // The following is to show the additivity (or otherwise)
 // of the mode spectra for debug purposes.
@@ -258,10 +283,18 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
        if (ok) {
           ModeIndex index(m_currentTheory, mode);
           QCPGraph* graph = m_modeMap[index];
-          if (graph) {
-             graph->setVisible(true);
-          }
+          if (graph) graph->setVisible(true);
        }
+   }
+
+   // Electronic transition
+   int n = m_vibronic.data().nModes();
+   bool checked(m_configurator.originTransition->isChecked());
+   ModeIndex idx(m_currentTheory, n);
+   graph = m_modeMap[idx];
+   if (graph && checked) {
+      graph->setVisible(true);
+      graph->addToLegend(m_plotCanvas->legend);
    }
 
    m_vibronic.playMode(-1);
@@ -337,6 +370,14 @@ void Vibronic::on_selectAllButton_clicked()
    resetCanvas(m_currentTheory);
    m_configurator.spectrumTable->selectAll();
 }
+
+
+void Vibronic::on_originTransition_clicked(bool)
+{
+   resetCanvas(m_currentTheory);
+}
+
+
 
 
 void Vibronic::on_spectrumTable_cellDoubleClicked(int row, int col) 

@@ -164,6 +164,14 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
          }
       }
 
+      if (line.contains("Electronic Energy Gap")) {
+         tokens = TextStream::tokenize(line); 
+         if (tokens.size() == 5) {
+            double t = tokens[4].toDouble(&ok);  if (!ok) goto error;
+            m_vibronic->setElectronicEnergy(t);
+         }
+      }
+
       if (line.contains("Temperature(K)")) {
          tokens = TextStream::tokenize(line); 
          if (tokens.size() == 3) {
@@ -171,7 +179,6 @@ bool VibronicDir::parseLogFile(TextStream& textStream)
             m_vibronic->setTemperature(t);
          }
       }
-
 
       if (line.contains("Frequency Domain")) {
          tokens = TextStream::tokenize(line); 

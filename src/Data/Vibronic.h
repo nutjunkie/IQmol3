@@ -101,8 +101,7 @@ namespace Data {
          void setTemperature(double const t);
 
          void setElectronicEnergy(double const t);
-
-         void setFrequencyDomain(double const min, double const max, double const delta); 
+         double electronicEnergy() const { return m_electronicEnergy; }
 
          void setElectronicDipole(Vec3 const& mu);
 
@@ -110,13 +109,15 @@ namespace Data {
 
          void setFrequencies(QList<double> const& initial, QList<double> const& fin);
 
-         void finalize();
+
+         void setFrequencyDomain(double const min, double const max, double const delta); 
 
          double frequencyDomainMin() const { return m_fmin; }
 
          double frequencyDomainMax() const { return m_fmax; }
 
          double frequencyDomainDelta() const { return m_fdelta; }
+
 
          unsigned nPoints() const { return m_fcSpectra[-1]->nPoints(); };
 
@@ -129,6 +130,8 @@ namespace Data {
          VibronicSpectrum const& spectrum(VibronicSpectrum::Theory theory, int i) const;
 
          void dump() const;
+
+         void finalize();
 
          void serialize(InputArchive& ar, unsigned int const /*version*/) 
          {

@@ -112,6 +112,12 @@ void Vibronic::setTemperature(double const t)
 }
 
 
+void Vibronic::setElectronicEnergy(double const e)
+{
+   m_electronicEnergy = e;
+}
+
+
 void Vibronic::setFrequencyDomain(double const min, double const max, double const delta) 
 {
    m_fmin = min;

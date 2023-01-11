@@ -67,6 +67,7 @@ namespace Configurator {
          void on_spectrumTable_cellDoubleClicked(int row, int col);
          void on_clearSelectionButton_clicked();
          void on_selectAllButton_clicked();
+         void on_originTransition_clicked(bool);
 
          void on_fcButton_clicked(bool);
          void on_htButton_clicked(bool);
@@ -89,6 +90,10 @@ namespace Configurator {
          void selectGraph(QCPGraph*, bool);
          void closeEvent(QCloseEvent*);
 
+         // Mode -2       debug spectrum formed by summing individual modes
+         // Mode -1       corresponds to the total spectra
+         // Mode 0 -> n-1 correspond to the individual mode spectra
+         // Mode n        is the electronic only impulse
          typedef QPair<Data::VibronicSpectrum::Theory, int> ModeIndex;
          QMap<ModeIndex, QCPGraph*> m_modeMap;
    };
