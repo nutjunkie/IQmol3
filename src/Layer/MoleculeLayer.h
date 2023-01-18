@@ -87,6 +87,7 @@ namespace IQmol {
       class Constraint;
       class Surface;
       class Group;
+      class Info;
       typedef QMap<OpenBabel::OBAtom*, Atom*>  AtomMap;
       typedef QMap<OpenBabel::OBBond*, Bond*>  BondMap;
       typedef QMap<OpenBabel::OBAtom*, Group*> GroupMap;

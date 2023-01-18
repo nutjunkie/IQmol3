@@ -59,12 +59,12 @@ namespace Constants {
    {
       QString s;
       switch (units) {
-         case Hartree:       s = "Hartree";   break;
-         case ElectronVolt:  s = "eV";        break;
-         case Wavenumber:    s = "cm⁻¹";      break;
-         case KJoulePerMol:  s = "KJ/mol";    break;
-         case KCalPerMol:    s = "KCal/mol";  break;
-         case MegaHertz:     s = "MHz";       break;
+         case Hartree:       s = "Hartree";    break;
+         case ElectronVolt:  s = "eV";         break;
+         case Wavenumber:    s = "cm⁻¹";       break;
+         case KJoulePerMol:  s = "KJ mol⁻¹";   break;
+         case KCalPerMol:    s = "KCal mol⁻¹"; break;
+         case MegaHertz:     s = "MHz";        break;
       }
       return s;
    }

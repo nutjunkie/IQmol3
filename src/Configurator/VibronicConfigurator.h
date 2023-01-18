@@ -1,5 +1,4 @@
-#ifndef IQMOL_CONFIGURATOR_VIBRONIC_H
-#define IQMOL_CONFIGURATOR_VIBRONIC_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -25,6 +24,7 @@
 #include "Configurator.h"
 #include "Configurator/ui_VibronicConfigurator.h"
 #include "Data/Vibronic.h"
+#include "Util/Constants.h"
 #include <QPen>
 #include <QBrush>
 
@@ -68,6 +68,7 @@ namespace Configurator {
          void on_clearSelectionButton_clicked();
          void on_selectAllButton_clicked();
          void on_originTransition_clicked(bool);
+         void on_unitsCombo_currentIndexChanged(int);
 
          void on_fcButton_clicked(bool);
          void on_htButton_clicked(bool);
@@ -80,7 +81,7 @@ namespace Configurator {
          Data::VibronicSpectrum::Theory m_currentTheory;
 
          void initPlotCanvas();
-         void initGraphs();
+         void updateSpectra(Constants::Units const);
          void initTable();
 
          void resetTable(Data::VibronicSpectrum::Theory);
@@ -96,8 +97,7 @@ namespace Configurator {
          // Mode n        is the electronic only impulse
          typedef QPair<Data::VibronicSpectrum::Theory, int> ModeIndex;
          QMap<ModeIndex, QCPGraph*> m_modeMap;
+         Constants::Units m_units;
    };
 
 } } // end namespace IQmol::Configurator
-
-#endif

@@ -109,7 +109,7 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
    m_surfaceAnimator(this), 
-   m_info(this), 
+   m_info(this),
    m_atomList(this, "Atoms"), 
    m_bondList(this, "Bonds"), 
    m_chargesList(this, "Charges"), 
@@ -139,6 +139,7 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
    // The following gets around this.
    OBConversion conv;
    conv.SetInFormat("xyz");
+
 
    // Add actions for the context menu
    connect(newAction("Configure"), SIGNAL(triggered()), 

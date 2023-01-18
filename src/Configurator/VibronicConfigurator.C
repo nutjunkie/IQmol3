@@ -34,13 +34,21 @@ namespace Configurator {
 
 
 Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
-   m_currentTheory(Data::VibronicSpectrum::FC)
+   m_currentTheory(Data::VibronicSpectrum::FC), m_units(Constants::Wavenumber)
 {
    m_configurator.setupUi(this);
 
    initPlotCanvas();
    initTable();
-   initGraphs();
+   updateSpectra(m_units);
+
+   m_configurator.unitsCombo->clear();
+   for (const auto unit : Constants::AllUnits) {
+       m_configurator.unitsCombo->addItem(Constants::toString(unit), unit);
+   }
+   int index(m_units);
+   m_configurator.unitsCombo->setCurrentIndex(index);
+
    reset();
 }
 
@@ -60,7 +68,6 @@ void Vibronic::initPlotCanvas()
    m_plotCanvas->axisRect()->setRangeZoom(Qt::Horizontal);
 
    m_plotCanvas->xAxis->setSelectableParts(QCPAxis::spNone);
-   m_plotCanvas->xAxis->setLabel("Frequency / (cm⁻¹)");
    m_plotCanvas->yAxis->setLabel("Intensity");
    m_plotCanvas->legend->setVisible(true);
 
@@ -113,16 +120,21 @@ void Vibronic::initTable()
 }
 
 
-void Vibronic::initGraphs()
+void Vibronic::updateSpectra(Constants::Units const units)
 {
    Data::Vibronic const& vibronic(m_vibronic.data());
-
    unsigned nModes(vibronic.nModes());
    unsigned nPoints(vibronic.nPoints());
 
-   double xmin(vibronic.frequencyDomainMin());
-   double xmax(vibronic.frequencyDomainMax());
-   double delta(vibronic.frequencyDomainDelta());
+   QString label("Energy / ");
+   label += Constants::toString(units);
+   m_plotCanvas->xAxis->setLabel(label);
+   m_plotCanvas->clearGraphs();
+
+   double conversion(Constants::convertFromHartree(units)/Constants::HartreeToWavenumber);
+   double xmin(vibronic.frequencyDomainMin()*conversion);
+   double xmax(vibronic.frequencyDomainMax()*conversion);
+   double delta(vibronic.frequencyDomainDelta()*conversion);
 
    QVector<double> x(nPoints);
    for (unsigned xi = 0; xi < nPoints; ++xi) {
@@ -180,7 +192,7 @@ void Vibronic::initGraphs()
            pen.setWidthF(2);
 
            QVector<double> x(1), y(1);
-           x[0] = vibronic.electronicEnergy();
+           x[0] = vibronic.electronicEnergy()*conversion;
            y[0] = 0.25*vibronic.spectrum(theory,-1).max();
 
            graph = m_plotCanvas->addGraph();
@@ -207,14 +219,19 @@ void Vibronic::initGraphs()
    graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FCHT,-1)];
    graph->setName("FC + HT");
    graph->setSelectable(QCP::stNone);
+
+   m_plotCanvas->xAxis->setRange(xmin, xmax);
+   m_plotCanvas->replot();
 }
 
 
 void Vibronic::reset()
 {
+   double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToWavenumber);
+
    Data::Vibronic const& vibronic(m_vibronic.data());
-   double xmin(vibronic.frequencyDomainMin());
-   double xmax(vibronic.frequencyDomainMax());
+   double xmin(vibronic.frequencyDomainMin()*conversion);
+   double xmax(vibronic.frequencyDomainMax()*conversion);
    m_plotCanvas->xAxis->setRange(xmin, xmax);
 
    on_fcButton_clicked(true);
@@ -378,6 +395,13 @@ void Vibronic::on_originTransition_clicked(bool)
 }
 
 
+void Vibronic::on_unitsCombo_currentIndexChanged(int)
+{
+   int u(m_configurator.unitsCombo->currentData().toInt());
+   m_units = static_cast<Constants::Units>(u);
+   updateSpectra(m_units);
+   resetCanvas(m_currentTheory);
+}
 
 
 void Vibronic::on_spectrumTable_cellDoubleClicked(int row, int col) 

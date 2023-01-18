@@ -62,7 +62,8 @@ ExcitedStates::ExcitedStates(Layer::ExcitedStates& excitedStates) :
    for (const auto unit : Constants::AllUnits) {
        m_configurator.unitsCombo->addItem(Constants::toString(unit), unit);
    }
-   m_configurator.unitsCombo->setCurrentIndex(1); // eV
+   int index(m_units);
+   m_configurator.unitsCombo->setCurrentIndex(index);
 }
 
 
@@ -289,15 +290,6 @@ void ExcitedStates::updateMoPlot(int const index)
 }
 
 
-void ExcitedStates::updateEnergyUnits()
-{
-   int u(m_configurator.unitsCombo->currentData().toInt());
-   m_units = static_cast<Constants::Units>(u);
-   updateTable(); 
-   updateSpectrum(); 
-}
-
-
 void ExcitedStates::updateTable()
 {
    double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToEv);
@@ -337,9 +329,9 @@ void ExcitedStates::updateSpectrum()
 {
    QString label("Energy / ");
    label += Constants::toString(m_units);
-   if (m_spectrum) m_spectrum->xAxis->setLabel(label);
-
+   m_spectrum->xAxis->setLabel(label);
    m_spectrum->clearGraphs();
+
    double width(m_configurator.widthSlider->value());
 
    if (m_configurator.impulseButton->isChecked()) {
@@ -530,7 +522,10 @@ void ExcitedStates::on_resetZoomButton_clicked(bool)
 
 void ExcitedStates::on_unitsCombo_currentIndexChanged(int)
 {
-   updateEnergyUnits();
+   int u(m_configurator.unitsCombo->currentData().toInt());
+   m_units = static_cast<Constants::Units>(u);
+   updateTable(); 
+   updateSpectrum(); 
 }
 
 

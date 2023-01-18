@@ -42,6 +42,7 @@ $rem
   basis             6-31G
   sym_ignore        true
   vibronic_spectra  1
+  vibronic_zero_out_nmode  1
 $end
 
 $vibronic

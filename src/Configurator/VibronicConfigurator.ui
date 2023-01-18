@@ -251,9 +251,26 @@ QToolTip {
        <item>
         <widget class="QCheckBox" name="originTransition">
          <property name="text">
-          <string>Show 0-0 Transition</string>
+          <string>Electronic Transition</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Units</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="unitsCombo"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">

@@ -1,5 +1,4 @@
-#ifndef IQMOL_CONFIGURATOR_EXCITEDSTATES_H
-#define IQMOL_CONFIGURATOR_EXCITEDSTATES_H
+#pragma once
 /*******************************************************************************
          
   Copyright (C) 2022 Andrew Gilbert
@@ -77,7 +76,6 @@ namespace Configurator {
          void updateTable();
          void updateSpectrum();
          void updateMoPlot(int const index);
-         void updateEnergyUnits();
 
          void plotImpulse();
          void plotSpectrum(Profile const, double const width);
@@ -100,5 +98,3 @@ namespace Configurator {
    };
 
 } } // End namespace IQmol::Configurator
-
-#endif

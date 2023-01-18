@@ -35,6 +35,7 @@ using namespace boost::placeholders;
 
 namespace IQmol {
 
+
 // --------------- RadialDisatance ---------------
 RadialDistance::RadialDistance() : SpatialProperty("Radial Distance") 
 { 
