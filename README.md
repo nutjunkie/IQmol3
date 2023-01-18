@@ -13,3 +13,9 @@ website:  http://iqmol.org
 This is a rebase of the original code that migrates to CMake and updates several
 of the external libraries, including them as submodules in an attempt to ease the
 build process.
+
+The source relies on submodules, so to checkout the code use the recursive flag:
+
+```
+git clone --recursive https://github.com/nutjunkie/IQmol3.git
+```
