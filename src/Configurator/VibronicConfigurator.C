@@ -49,6 +49,11 @@ Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
    int index(m_units);
    m_configurator.unitsCombo->setCurrentIndex(index);
 
+   connect(m_configurator.initialButton, SIGNAL(clicked(bool)), 
+      &m_vibronic, SLOT(connectInitialFrequencies(bool)));
+   connect(m_configurator.finalButton, SIGNAL(clicked(bool)), 
+      &m_vibronic, SLOT(connectFinalFrequencies(bool)));
+
    reset();
 }
 

@@ -48,6 +48,7 @@ namespace Data {
          double maxFrequency() const;
          double maxIntensity() const;
          double maxRamanIntensity() const;
+         QList<double> frequencies() const;
 
          unsigned nModes() const { return m_modes.size(); }
 

@@ -34,13 +34,16 @@ namespace Data {
 
 namespace Layer {
 
+   class Frequencies;
+
    class Vibronic: public Base {
 
       Q_OBJECT 
 
       public:
          Vibronic(Data::Vibronic const&);
-         Data::Vibronic const& data() const;
+         Data::Vibronic const& data() const { return m_vibronic; }
+         void setFrequencyLayers(QList<Layer::Frequencies*> const& frequencyLayers);
 
       Q_SIGNALS:
          void update();
@@ -48,10 +51,14 @@ namespace Layer {
 
       public Q_SLOTS:
          void configure();
+         void connectInitialFrequencies(bool);
+         void connectFinalFrequencies(bool);
 
       private:
          Data::Vibronic const& m_vibronic;
          Configurator::Vibronic m_configurator;
+         Layer::Frequencies* m_initialFrequencies;
+         Layer::Frequencies* m_finalFrequencies;
    };
 
 

@@ -21,7 +21,9 @@
 ********************************************************************************/
 
 #include "VibronicLayer.h"
+#include "FrequenciesLayer.h"
 #include "Data/Vibronic.h"
+#include "Util/QsLog.h"
 
 
 using namespace qglviewer;
@@ -31,7 +33,7 @@ namespace Layer {
 
 
 Vibronic::Vibronic(Data::Vibronic const& vibronic) : Base("Vibronic"), 
-   m_vibronic(vibronic), m_configurator(*this)
+   m_vibronic(vibronic), m_configurator(*this), m_initialFrequencies(0), m_finalFrequencies(0)
 {
    m_configurator.load();
    setConfigurator(&m_configurator);
@@ -45,10 +47,63 @@ void Vibronic::configure()
 }
 
 
-Data::Vibronic const& Vibronic::data() const 
-{ 
-   return m_vibronic;
+void Vibronic::setFrequencyLayers(QList<Layer::Frequencies*> const& frequencyLayers)
+{
+   if (frequencyLayers.size() != 2) {
+      QLOG_WARN() << "Invalid number of Frquency Layers passed to Vibronic Layer" 
+                  << frequencyLayers.size();
+   }
+
+   QList<double> const& f0(m_vibronic.initialFrequencies());
+   QList<double> const& f1(m_vibronic.finalFrequencies());
+
+   QList<double> const F0(frequencyLayers.first()->frequencies());
+   QList<double> const F1(frequencyLayers.last()->frequencies());
+
+   int n(f0.size());
+   if (f1.size() != n || F0.size() != n || F1.size() != n) {
+      QLOG_WARN() << "Invalid frequency data in Vibronic Layer";
+      return;
+   }
+
+   double d0(0), d1(0);
+   for (int i = 0; i < n; ++i) {
+       d0 += std::abs(f0[i]-F0[i]);
+       d1 += std::abs(f0[i]-F1[i]);
+   }
+
+
+   QLOG_INFO() << "d0/d1 values" << d0 << d1;
+
+   if (d0 < d1) {
+      m_initialFrequencies = frequencyLayers.first();
+      m_finalFrequencies   = frequencyLayers.last();
+   }else {
+      m_initialFrequencies = frequencyLayers.last();
+      m_finalFrequencies   = frequencyLayers.first();
+   }
+
+   connectFinalFrequencies(true);
 }
 
+
+void Vibronic::connectInitialFrequencies(bool)
+{
+   playMode(-1);
+   disconnect(this, SIGNAL(playMode(int)));
+   if (m_initialFrequencies) {
+      connect(this, SIGNAL(playMode(int)), m_initialFrequencies, SLOT(playMode(int)));
+   }
+}
+
+
+void Vibronic::connectFinalFrequencies(bool)
+{
+   playMode(-1);
+   disconnect(this, SIGNAL(playMode(int)));
+   if (m_finalFrequencies) {
+      connect(this, SIGNAL(playMode(int)), m_finalFrequencies, SLOT(playMode(int)));
+   }
+}
 
 } } // end namespace IQmol::Layer

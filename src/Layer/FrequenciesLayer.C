@@ -228,6 +228,12 @@ void Frequencies::setScale(double const scale)
 }
 
 
+QList<double> Frequencies::frequencies() const
+{
+    return m_frequencies.frequencies();
+}
+
+
 
 // --------------- Mode ---------------
 

@@ -37,6 +37,7 @@ class CustomPlot;
 
 namespace Layer {
    class Vibronic;
+   class Frequencies;
 }
 
 namespace Configurator {
@@ -50,6 +51,7 @@ namespace Configurator {
       public:
          explicit Vibronic(Layer::Vibronic&);
          ~Vibronic();
+         void setFrequencyLayers(QList<Layer::Frequencies*> const& frequencyLayers);
       
       Q_SIGNALS:
          void update();
@@ -63,6 +65,7 @@ namespace Configurator {
       private Q_SLOTS:
          void plotSelectionChanged(bool);
          void setSelectionRectMode(QMouseEvent* e);
+
          void on_spectrumTable_itemSelectionChanged();
          void on_spectrumTable_cellDoubleClicked(int row, int col);
          void on_clearSelectionButton_clicked();

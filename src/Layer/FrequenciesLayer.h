@@ -69,6 +69,8 @@ namespace Layer {
          double maxRamanIntensity() const;
          bool   haveRaman() const;
 
+         QList<double> frequencies() const;
+
       Q_SIGNALS:
          void pushAnimators(AnimatorList const&);
          void popAnimators(AnimatorList const&);

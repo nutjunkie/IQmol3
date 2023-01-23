@@ -203,9 +203,7 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
    QList<Vibronic*> vibronic(findLayers<Vibronic>(Children));
    QList<Frequencies*> frequencies(findLayers<Frequencies>(Children));
    if (vibronic.size() > 0 && frequencies.size() > 0) {
-      // Connect to the last frequencies layer, which should be the excited state.
-      connect(vibronic.last(), SIGNAL(playMode(int)), frequencies.last(), SLOT(playMode(int)));
-      
+      vibronic.last()->setFrequencyLayers(frequencies);
    }
 }
 
