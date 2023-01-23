@@ -57,6 +57,7 @@ bool    Atom::s_vibrationColorInitialized  = false;  // There must be a better w
 
 
 
+// Static functions
 double Atom::distance(Atom* A, Atom* B) 
 {
    return (A->getPosition() - B->getPosition()).norm();

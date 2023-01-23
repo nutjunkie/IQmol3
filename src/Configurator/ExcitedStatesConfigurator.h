@@ -73,8 +73,8 @@ namespace Configurator {
          void initMoPlot();
          void initSpectrum();
 
-         void updateTable();
-         void updateSpectrum();
+         void updateTable(Constants::Units const);
+         void updateSpectrum(Constants::Units const);
          void updateMoPlot(int const index);
 
          void plotImpulse();

@@ -131,14 +131,13 @@ void Vibronic::updateSpectra(Constants::Units const units)
    m_plotCanvas->xAxis->setLabel(label);
    m_plotCanvas->clearGraphs();
 
-   double conversion(Constants::convertFromHartree(units)/Constants::HartreeToWavenumber);
-   double xmin(vibronic.frequencyDomainMin()*conversion);
-   double xmax(vibronic.frequencyDomainMax()*conversion);
-   double delta(vibronic.frequencyDomainDelta()*conversion);
+   double xmin(vibronic.frequencyDomainMin());
+   double xmax(vibronic.frequencyDomainMax());
+   double delta(vibronic.frequencyDomainDelta());
 
    QVector<double> x(nPoints);
    for (unsigned xi = 0; xi < nPoints; ++xi) {
-       x[xi] = xmin + xi*delta;
+       x[xi] = Constants::convert(xmin + xi*delta, Constants::Wavenumber, units);
    }   
 
    ColorGradient::ColorList const& colors = { 
@@ -192,7 +191,7 @@ void Vibronic::updateSpectra(Constants::Units const units)
            pen.setWidthF(2);
 
            QVector<double> x(1), y(1);
-           x[0] = vibronic.electronicEnergy()*conversion;
+           x[0] = Constants::convert(vibronic.electronicEnergy(), Constants::Wavenumber, units);
            y[0] = 0.25*vibronic.spectrum(theory,-1).max();
 
            graph = m_plotCanvas->addGraph();
@@ -220,6 +219,8 @@ void Vibronic::updateSpectra(Constants::Units const units)
    graph->setName("FC + HT");
    graph->setSelectable(QCP::stNone);
 
+   xmin = std::min(x.first(), x.last());
+   xmax = std::max(x.first(), x.last());
    m_plotCanvas->xAxis->setRange(xmin, xmax);
    m_plotCanvas->replot();
 }
@@ -227,12 +228,11 @@ void Vibronic::updateSpectra(Constants::Units const units)
 
 void Vibronic::reset()
 {
-   double conversion(Constants::convertFromHartree(m_units)/Constants::HartreeToWavenumber);
-
    Data::Vibronic const& vibronic(m_vibronic.data());
-   double xmin(vibronic.frequencyDomainMin()*conversion);
-   double xmax(vibronic.frequencyDomainMax()*conversion);
-   m_plotCanvas->xAxis->setRange(xmin, xmax);
+
+   double xmin(Constants::convert(vibronic.frequencyDomainMin(), Constants::Wavenumber, m_units));
+   double xmax(Constants::convert(vibronic.frequencyDomainMax(), Constants::Wavenumber, m_units));
+   m_plotCanvas->xAxis->setRange(std::min(xmin, xmax), std::max(xmin, xmax));
 
    on_fcButton_clicked(true);
 }
@@ -268,7 +268,6 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
       graph->setVisible(true);
       graph->addToLegend(m_plotCanvas->legend);
    }
-
 
 //--------------------------------------------------------
 // The following is to show the additivity (or otherwise)
