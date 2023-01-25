@@ -194,6 +194,9 @@ void Vibronic::finalize()
        m_fchtSpectra[mode]->finalize();
    }
 
+   m_fchtSpectra[-1] = new VibronicSpectrum(theory, -1, m_fcSpectra[-1]->data());
+   (*m_fchtSpectra[-1]) += (*m_htSpectra[-1]);
+
    m_fcSpectra[-1]->finalize();
    m_htSpectra[-1]->finalize();
    m_fchtSpectra[-1]->finalize();

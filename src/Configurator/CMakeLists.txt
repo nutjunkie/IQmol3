@@ -102,7 +102,7 @@ target_link_libraries(${LIB} PUBLIC
 )
 
 target_link_libraries(${LIB} PRIVATE
-   Grid
+#  Grid
    Plot
    # Process # QChemJobInfo
    # Viewer

@@ -18,7 +18,7 @@ echo "Configuring build for $ARCH" >> configure.log
 
 if [ $ARCH == 'Darwin' ]; then
    if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
-      QT=/opt/homebrew/Cellar/qt@5/5.15.8/lib/cmake/Qt5
+      QT=/opt/homebrew/Cellar/qt@5/5.15.8_1/lib/cmake/Qt5
    else 
       QT=${CMAKE_PREFIX_PATH}
    fi
