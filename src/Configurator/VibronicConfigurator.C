@@ -46,15 +46,27 @@ Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
    for (const auto unit : Constants::AllUnits) {
        m_configurator.unitsCombo->addItem(Constants::toString(unit), unit);
    }
-   int index(m_units);
-   m_configurator.unitsCombo->setCurrentIndex(index);
 
    connect(m_configurator.initialButton, SIGNAL(clicked(bool)), 
       &m_vibronic, SLOT(connectInitialFrequencies(bool)));
    connect(m_configurator.finalButton, SIGNAL(clicked(bool)), 
       &m_vibronic, SLOT(connectFinalFrequencies(bool)));
 
+   Data::Vibronic const& data(m_vibronic.data());
+
+   if (!data.hasTheory(Data::VibronicSpectrum::FC)) {
+      m_configurator.fcButton->setEnabled(false);
+   }
+   if (!data.hasTheory(Data::VibronicSpectrum::FC)) {
+      m_configurator.htButton->setEnabled(false);
+   }
+   if (!data.hasTheory(Data::VibronicSpectrum::FC)) {
+      m_configurator.fchtButton->setEnabled(false);
+   }
+
    reset();
+
+   m_configurator.unitsCombo->setCurrentIndex(Constants::Wavenumber);
 }
 
 
@@ -127,14 +139,16 @@ void Vibronic::initTable()
 
 void Vibronic::updateSpectra(Constants::Units const units)
 {
-   Data::Vibronic const& vibronic(m_vibronic.data());
-   unsigned nModes(vibronic.nModes());
-   unsigned nPoints(vibronic.nPoints());
-
    QString label("Energy / ");
    label += Constants::toString(units);
    m_plotCanvas->xAxis->setLabel(label);
    m_plotCanvas->clearGraphs();
+
+   Data::Vibronic const& vibronic(m_vibronic.data());
+   unsigned nModes(vibronic.nModes());
+   unsigned nPoints(vibronic.nPoints());
+
+   if (nPoints == 0) return;
 
    double xmin(vibronic.frequencyDomainMin());
    double xmax(vibronic.frequencyDomainMax());
@@ -154,7 +168,10 @@ void Vibronic::updateSpectra(Constants::Units const units)
    QCPGraph* graph;
 
    for (const auto theory : Data::VibronicSpectrum::AllTheories) {
-       for (int mode = -2; mode < (int)nModes; ++mode) {
+
+       if (!vibronic.hasTheory(theory)) continue;
+       
+       for (int mode = -1; mode < (int)nModes; ++mode) {
            Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
 
            QVector<double> y(nPoints);
@@ -212,17 +229,24 @@ void Vibronic::updateSpectra(Constants::Units const units)
        }
    }
 
-   graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FC,-1)];
-   graph->setSelectable(QCP::stNone);
-   graph->setName("Franck-Condon");
+   if (vibronic.hasTheory(Data::VibronicSpectrum::FC)) {
+      graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FC,-1)];
+      graph->setSelectable(QCP::stNone);
+      graph->setName("Franck-Condon");
+   }
 
-   graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::HT,-1)];
-   graph->setName("Herzberg-Teller");
-   graph->setSelectable(QCP::stNone);
+   if (vibronic.hasTheory(Data::VibronicSpectrum::HT)) {
+      graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::HT,-1)];
+      graph->setName("Herzberg-Teller");
+      graph->setSelectable(QCP::stNone);
+   }
 
-   graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FCHT,-1)];
-   graph->setName("FC + HT");
-   graph->setSelectable(QCP::stNone);
+  
+   if (vibronic.hasTheory(Data::VibronicSpectrum::FCHT)) {
+      graph = m_modeMap[ModeIndex(Data::VibronicSpectrum::FCHT,-1)];
+      graph->setName("FC + HT");
+      graph->setSelectable(QCP::stNone);
+   }
 
    xmin = std::min(x.first(), x.last());
    xmax = std::max(x.first(), x.last());
@@ -254,8 +278,12 @@ void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
    for (int row(0); row < nRows; ++row) {
        QTableWidgetItem* item = table->item(row, 2);
        int mode = item->data(Qt::UserRole).toInt(&ok);  if (!ok) return;
-       Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
-       item->setText(QString::number(spectrum.max(), 'f', 5) + "    ");
+       double max(0.0); 
+       if (vibronic.hasTheory(theory)) {
+          Data::VibronicSpectrum const& spectrum(vibronic.spectrum(theory, mode));
+          max = spectrum.max();
+       }
+       item->setText(QString::number(max, 'f', 5) + "    ");
    }
 }
 
@@ -263,9 +291,12 @@ void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
 void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
 {
    clearAllGraphs();
+   if (!m_vibronic.data().hasTheory(theory)) return;
+
    Data::VibronicSpectrum const& spectrum(m_vibronic.data().spectrum(theory, -1));
    double min(spectrum.min());
    double max(spectrum.max());
+
 
    ModeIndex index(theory, -1);
    QCPGraph* graph(m_modeMap[index]);

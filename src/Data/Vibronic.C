@@ -176,37 +176,65 @@ VibronicSpectrum const& Vibronic::spectrum(VibronicSpectrum::Theory theory, int 
 }
 
 
+unsigned Vibronic::nPoints() const
+{
+   unsigned n(0);
+   if (m_fcSpectra.size() > 0) n = m_fcSpectra[-1]->nPoints();
+   return n;
+}
+
+
+bool Vibronic::hasTheory(VibronicSpectrum::Theory const theory) const
+{
+   bool ok(false);
+
+   switch (theory) {
+      case VibronicSpectrum::FC:
+         ok = m_fcSpectra.size() > 0;
+         break;
+      case VibronicSpectrum::HT:
+         ok = m_htSpectra.size() > 0;
+         break;
+      case VibronicSpectrum::FCHT:
+         ok = m_fchtSpectra.size() > 0;
+         break;
+   }
+
+   return ok;
+}
+
+
 // This creates the difference spectra for the FC case and combined FC+HT to get FCHT
 void Vibronic::finalize()
 {
-   unsigned mModes(nModes());
-   unsigned mPoints(nPoints());
-  
+   if (!hasTheory(VibronicSpectrum::FC)) return;
+
+   int mModes(nModes());
+   for (int mode(0); mode < mModes; ++mode) {
+       (*m_fcSpectra[mode]) -= (*m_fcSpectra[-1]);
+       m_fcSpectra[mode]->finalize();
+   }
+   m_fcSpectra[-1]->finalize();
+
+   if (!hasTheory(VibronicSpectrum::HT)) return;
    VibronicSpectrum::Theory theory(VibronicSpectrum::FCHT);
 
-   for (unsigned mode(0); mode < mModes; ++mode) {
-       (*m_fcSpectra[mode]) -= (*m_fcSpectra[-1]);
+   for (int mode(-1); mode < mModes; ++mode) {
        m_fchtSpectra[mode] = new VibronicSpectrum(theory, mode, m_fcSpectra[mode]->data());
        (*m_fchtSpectra[mode]) += (*m_htSpectra[mode]);
-
-       m_fcSpectra[mode]->finalize();
        m_htSpectra[mode]->finalize();
        m_fchtSpectra[mode]->finalize();
    }
 
-   m_fchtSpectra[-1] = new VibronicSpectrum(theory, -1, m_fcSpectra[-1]->data());
-   (*m_fchtSpectra[-1]) += (*m_htSpectra[-1]);
-
-   m_fcSpectra[-1]->finalize();
-   m_htSpectra[-1]->finalize();
-   m_fchtSpectra[-1]->finalize();
+   return;
 
    // TEMP
-m_fcSpectra[-2] = new VibronicSpectrum(VibronicSpectrum::FC, -2, m_fcSpectra[0]->data());
-m_htSpectra[-2] =  new VibronicSpectrum(VibronicSpectrum::HT, -2, m_htSpectra[0]->data());
-m_fchtSpectra[-2] = new VibronicSpectrum(VibronicSpectrum::FCHT, -2, m_fchtSpectra[0]->data());
 
-   for (unsigned mode(1); mode < mModes; ++mode) {
+   m_fcSpectra[-2]   = new VibronicSpectrum(VibronicSpectrum::FC,   -2, m_fcSpectra[0]->data());
+   m_htSpectra[-2]   = new VibronicSpectrum(VibronicSpectrum::HT,   -2, m_htSpectra[0]->data());
+   m_fchtSpectra[-2] = new VibronicSpectrum(VibronicSpectrum::FCHT, -2, m_fchtSpectra[0]->data());
+
+   for (int mode(1); mode < mModes; ++mode) {
        (*m_fcSpectra[-2])   += (*m_fcSpectra[mode]);
        (*m_htSpectra[-2])   += (*m_htSpectra[mode]);
        (*m_fchtSpectra[-2]) += (*m_fchtSpectra[mode]);

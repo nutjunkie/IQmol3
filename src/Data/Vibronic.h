@@ -118,8 +118,7 @@ namespace Data {
 
          double frequencyDomainDelta() const { return m_fdelta; }
 
-
-         unsigned nPoints() const { return m_fcSpectra[-1]->nPoints(); };
+         unsigned nPoints() const;
 
          unsigned nModes() const { return m_initialFrequencies.size(); }
 
@@ -128,6 +127,8 @@ namespace Data {
          QList<double> const& finalFrequencies() const { return m_finalFrequencies; }
 
          VibronicSpectrum const& spectrum(VibronicSpectrum::Theory theory, int i) const;
+
+         bool hasTheory(VibronicSpectrum::Theory const) const;
 
          void dump() const;
 
