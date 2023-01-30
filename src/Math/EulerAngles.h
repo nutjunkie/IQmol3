@@ -27,7 +27,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 namespace EulerAngles {
 
    qglviewer::Quaternion toQuaternion(double const alpha, double const beta, 
@@ -35,6 +35,6 @@ namespace EulerAngles {
 
    qglviewer::Vec fromQuaternion(qglviewer::Quaternion const& q);
    
-} } } // end namespace IQmol::Util::EulerAngles
+} } } // end namespace IQmol::Math::EulerAngles
 
 #endif

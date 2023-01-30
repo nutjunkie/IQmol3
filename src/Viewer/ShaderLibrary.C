@@ -79,10 +79,12 @@ void ShaderLibrary::init()
    const GLubyte* shading  = glGetString(GL_SHADING_LANGUAGE_VERSION);
    QLOG_INFO() << "GLSL     " << QString((char*)shading);
    //Check source framebuffer status 
+#ifndef WIN32
    GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
       QLOG_INFO() << "FrametestFramebufferBlitLayered srcFBO Status:" << fbStatus;
 	}
+#endif
 }
 
 

@@ -26,10 +26,11 @@
 #include "Util/Constants.h"
 #include "Data/AtomicProperty.h"
 #include "Data/DipoleMoment.h"
+#include "Data/Energy.h"
+#include "Data/Frequencies.h"
 #include "Data/GeometryList.h"
 #include "Data/OrbitalFactory.h"
 #include "Data/OrbitalsList.h"
-#include "Data/Frequencies.h"
 #include "Data/VibrationalMode.h"
 #include "Data/PointCharge.h"
 
@@ -39,20 +40,35 @@
 template<typename T>
 QList<T> toQList(std::vector<T> vec)
 {
-   return QList<T>::fromVector(QVector<T>(vec.begin(), vec.end()));
+   return QList<T>::fromVector(QVector<T>::fromStdVector(vec));
 }
 
 
-QList<unsigned> toQList(std::vector<unsigned long> vec)
+QList<unsigned> toQList(std::vector<unsigned long long> vec)
 {
-   return QList<unsigned>::fromVector(QVector<unsigned>(vec.begin(), vec.end()));
+   QList<unsigned> out;
+
+   std::vector<unsigned long long>::const_iterator iter;
+
+   for (iter = vec.begin(); iter != vec.end(); ++iter) {
+       out.push_back(unsigned(*iter));
+   }
+
+   return out;
 }
 
 
 template<typename T>
 QList<T> toQList(T const* start, size_t const n)
 {
-   return QList<T>(start, start+n);
+   QList<T> out;
+   T const* iter(start);
+
+   for (size_t i = 0; i  < n; ++i, ++iter) {
+       out.push_back(*iter);
+   }
+
+   return out;
 }
 
 
@@ -534,7 +550,7 @@ bool Archive::parseFile(QString const& filePath)
 
       for (size_t j(0); j < jobList.size(); ++j) {
 
-          QString label("Job " + QString::number(j));
+          QString label("Job " + QString::number(j+1));
           Data::GeometryList* geometryList(new Data::GeometryList(label));
           Data::OrbitalsList* orbitalsList(new Data::OrbitalsList());
 
@@ -577,6 +593,11 @@ bool Archive::parseFile(QString const& filePath)
                   auto meth = ef->add_layer<Schema::EnergyFunction::method>();
                   auto scf  = meth.add_layer<Schema::EnergyFunction::method::scf>();
                   auto orbs = scf.add_layer<Schema::MolecularOrbitals>();
+
+		  double energy(0);
+                  ef->read(Schema::EnergyFunction::energy, energy);
+		  Data::TotalEnergy& total(geometry->getProperty<Data::TotalEnergy>());
+		  total.setValue(energy, Data::Energy::Hartree);
 
                   Data::OrbitalData orbitalData;
                   readOrbitalData(orbs, shellData, orbitalData);

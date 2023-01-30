@@ -124,9 +124,9 @@ void Viewer::setSurfaceFormat()
    QSurfaceFormat format;
    format.setDepthBufferSize(24);
    format.setStencilBufferSize(8);
-   format.setAlphaBufferSize(8);
+   //format.setAlphaBufferSize(8);
    format.setSamples(8);
-   format.setVersion(3,3);
+   format.setVersion(2,1);
    //format.setProfile(QSurfaceFormat::CoreProfile);
    format.setProfile(QSurfaceFormat::CompatibilityProfile);
 

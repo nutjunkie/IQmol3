@@ -198,7 +198,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN32
        if (IQmol::Preferences::LogFileHidden()) {
           int fileHidden(0x2);  // Where is FILE_ATTRIBUTE_HIDDEN defined?
-          WCHAR* fnam = (WCHAR*)logFile.constData();
+          //WCHAR* fnam = (WCHAR*)logFile.constData();
+          const char* fnam = (char*)logFile.constData();
           SetFileAttributes(fnam, fileHidden); 
        }
 #endif

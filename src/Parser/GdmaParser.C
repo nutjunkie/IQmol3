@@ -58,7 +58,7 @@ qDebug() << "parsing line:" << line;
          tokens = textStream.seekAndSplit("Q00");
          if (tokens.size() < 3) goto error;
          double q(tokens[2].toDouble(&ok));  if (!ok) goto error;
-         geometry->setCharge(Util::round(q));
+         geometry->setCharge(Math::round(q));
 
          tokens = textStream.nextLineAsTokens();
          if (tokens.size() < 9) goto error;

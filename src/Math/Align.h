@@ -27,7 +27,7 @@
 
 
 namespace IQmol {
-namespace Util {
+namespace Math {
 
    /// Wrapper class to the QCPRotation package
    class Align {
@@ -57,6 +57,6 @@ namespace Util {
    };
 
 
-} } // end namespace IQmol::Util
+} } // end namespace IQmol::Math
 
 #endif

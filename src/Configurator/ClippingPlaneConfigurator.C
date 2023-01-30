@@ -56,12 +56,12 @@ void ClippingPlane::sync()
    axis = orientation.rotate(axis).unit();
 
    double theta(std::acos(axis.z));
-   theta = Util::round(theta*180.0/M_PI);
+   theta = Math::round(theta*180.0/M_PI);
    if (theta < 0) theta += 180;
    m_configurator.thetaValue->setValue(theta); 
 
    double phi(std::atan2(axis.y, axis.x));
-   phi = Util::round(phi*180.0/M_PI);
+   phi = Math::round(phi*180.0/M_PI);
    if (phi < 0) phi += 360;
    m_configurator.phiValue->setValue(phi); 
 }

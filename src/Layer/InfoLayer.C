@@ -134,7 +134,7 @@ void Info::addAtom(Atom const* atom)
    setDipoleValid(false);
 
    // This expression favours low-spin systems
-   if (Util::isOdd(z)) m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
+   if (Math::isOdd(z)) m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
    if (!m_suspendUpdate) updated();
 }
 
@@ -155,7 +155,7 @@ void Info::removeAtom(Atom const* atom)
    setDipoleValid(false);
 
    // This expression favours low-spin systems
-   if (Util::isOdd(z)) m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
+   if (Math::isOdd(z)) m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
    if (!m_suspendUpdate) updated();
 }
 
@@ -199,12 +199,12 @@ void Info::setCharge(int const charge)
 {
    m_charge = charge;
 
-   if ( Util::isEven(numberOfElectrons()) ) {
-      if (Util::isEven(m_multiplicity)) {
+   if ( Math::isEven(numberOfElectrons()) ) {
+      if (Math::isEven(m_multiplicity)) {
          m_multiplicity -= 1;
       }
    } else {                        
-      if (Util::isOdd(m_multiplicity)) {
+      if (Math::isOdd(m_multiplicity)) {
          m_multiplicity += (m_multiplicity == 1) ? 1 : -1;
       }
    }
@@ -218,12 +218,12 @@ void Info::setMultiplicity(unsigned const multiplicity)
    m_multiplicity = multiplicity;
    int n(numberOfElectrons());
 
-   if (Util::isEven(m_multiplicity)) {
-      if (Util::isEven(n)) { 
+   if (Math::isEven(m_multiplicity)) {
+      if (Math::isEven(n)) { 
          m_charge += 1;
       }
    } else {                                
-      if (Util::isOdd(n)) {
+      if (Math::isOdd(n)) {
          m_charge += (n == 1) ? -1 : 1;
       }
    }

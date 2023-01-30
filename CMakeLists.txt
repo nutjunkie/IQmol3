@@ -1,18 +1,38 @@
 cmake_minimum_required(VERSION 3.14.4)
 
-set(targetName IQmol)
-project(${targetName} VERSION 3.0.0 LANGUAGES CXX C Fortran)
-
 if (UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
+
+if(WIN32)
+	# cmake -DBUILD_SHARED=ON -G "MinGW Makefiles" ../
+	# -DYAML_STATIC_DEFINE
+   set(BOOST_ROOT             "C:/boost")
+   set(MINGW_ROOT             "C:/mingw64")
+   set(HDF5_ROOT              "C:/Users/andre/Development/hdf5")
+   set(CMAKE_C_COMPILER       "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe")
+   set(CMAKE_CXX_COMPILER     "${MINGW_ROOT}/bin/x86_64-w64-mingw32-g++.exe")
+   set(CMAKE_Fortran_COMPILER "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gfortran.exe")
+   set(CMAKE_PREFIX_PATH      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5")
+   set(OPENSSL_ROOT_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/modules/openssl")
+   set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
+   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a")
+   set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
+
+   enable_language("RC")
+   set(WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/windows.rc)
+endif()
+
+set(targetName IQmol)
+project(${targetName} VERSION 3.1.0 LANGUAGES CXX C Fortran)
+
 
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 
 set(NO_WARNING "-Wno-deprecated")
@@ -24,6 +44,9 @@ set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 
 find_package(ZLIB      REQUIRED)
+if(ZLIB_FOUND)
+   include_directories(${ZLIB_INCLUDE_DIRS})
+endif()
 find_package(Threads   REQUIRED)
 find_package(OpenGL    REQUIRED)
 find_package(OpenSSL   REQUIRED)
@@ -115,6 +138,15 @@ if (LINUX)
    )
 endif (LINUX)
 
+if (WIN32)
+   add_executable(${targetName} 
+      src/main.C
+      ${IQmol_RESOURCES_RCC}
+      ${WIN32_RESOURCES}
+   )
+   set_target_properties(${targetName} PROPERTIES WIN32_EXECUTABLE ON)
+endif (WIN32)
+
 # The following is required to link gfortran statically, and was working before
 # the compiler update.
 #unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
@@ -128,24 +160,23 @@ add_dependencies(Process Configurator)
 add_dependencies(Viewer Process)
 
 target_link_libraries (${targetName}
+   Main
+   Process
+   Parser
+   Network
+   Qui 
+   Layer
+   Viewer
    Configurator
    Data
-   Util
    Grid
-   Layer
-   Main
-   Network
-   Parser
-   Plot
-   Process
-   Qui 
+   Util
    Math
-   Viewer
+   Plot
+   Fort
    openbabel
    libssh2
    yaml-cpp
-   OpenMeshCoreStatic
-   OpenMeshToolsStatic
    QGLViewer
    Qt5::Core
    Qt5::Gui
@@ -153,10 +184,18 @@ target_link_libraries (${targetName}
    Qt5::PrintSupport
    Qt5::Widgets
    Qt5::OpenGL
+   #OpenMeshCoreStatic
+   #OpenMeshToolsStatic
+   ${OPENMESH_LIBRARIES}
+   #Boost::iostreams
+   #Boost::serialization
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
+   ${ZLIB_LIBRARIES}
 )
+
+message("OpenGL Libraries" ${OPENGL_LIBRARIES})
 
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})

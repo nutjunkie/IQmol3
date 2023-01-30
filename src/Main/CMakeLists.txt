@@ -23,7 +23,6 @@ set( SOURCES
    PeriodicTable.C
    PreferencesBrowser.C
    ToolBar.C
-   symmol.f90
 )
 
 set( UI_FILES
