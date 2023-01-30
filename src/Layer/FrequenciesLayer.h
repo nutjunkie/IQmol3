@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "Animator.h"
-#include "FrequenciesConfigurator.h"
+#include "Viewer/Animator.h"
+#include "Configurator/FrequenciesConfigurator.h"
 #include "QGLViewer/vec.h"
 #include "openbabel/math/vector3.h"
 #include <vector>
@@ -69,6 +69,8 @@ namespace Layer {
          double maxRamanIntensity() const;
          bool   haveRaman() const;
 
+         QList<double> frequencies() const;
+
       Q_SIGNALS:
          void pushAnimators(AnimatorList const&);
          void popAnimators(AnimatorList const&);
@@ -78,6 +80,7 @@ namespace Layer {
          void configure();
          void setActiveMode(Mode const& mode);
          void playMode(Mode const& mode); 
+         void playMode(int mode); 
          void clearActiveMode();
 
       private:
@@ -89,6 +92,7 @@ namespace Layer {
          double m_speed;
          double m_scale;
          const Mode*  m_activeMode;
+         QList<Mode*> m_modeList;
    };
 
 

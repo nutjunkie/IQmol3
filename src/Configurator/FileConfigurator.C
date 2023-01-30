@@ -22,7 +22,7 @@
 
 #include "FileConfigurator.h"
 #include "Preferences.h"
-#include "FileLayer.h"
+#include "Layer/FileLayer.h"
 #include <QRegularExpression>
 #include <QFileInfo>
 #include <QFont>

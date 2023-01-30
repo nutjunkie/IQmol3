@@ -1,0 +1,51 @@
+#! /bin/bash
+
+TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+CONFIGURE_ARGS=$*
+
+date >> configure.log
+echo "IQmol configured by `whoami`@`hostname`:" > configure.log
+echo "" >> configure.log
+echo "$0 $CONFIGURE_ARGS" >> configure.log
+echo "" >> configure.log
+
+DEFINES="-DBUILD_SHARED=OFF"
+#DEFINES="-DBUILD_SHARED=OFF -DGL_SILENCE_DEPRECATION=ON"
+
+ARCH=$(uname)
+echo "Configuring build for $ARCH" >> configure.log
+
+if [ $ARCH == 'Darwin' ]; then
+   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
+      QT=/opt/homebrew/Cellar/qt@5/5.15.8_1/lib/cmake/Qt5
+   else 
+      QT=${CMAKE_PREFIX_PATH}
+   fi
+
+elif [ $ARCH == 'Linux' ]; then
+   BOOST=/sw/boost/1.72.0/serial/gcc72
+
+   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
+      QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
+   else 
+      QT=${CMAKE_PREFIX_PATH}
+   fi
+
+else 
+   echo "Windows configure, go figure"
+   exit 1
+fi
+
+
+echo "QT  = $QT" >> configure.log
+
+mkdir -p $TOPDIR/build
+cd $TOPDIR/build
+
+if [ -e CMakeCache.txt ]; then
+    rm CMakeCache.txt
+fi
+
+cmake $DEFINES  -DCMAKE_PREFIX_PATH=$QT  -DBOOST_ROOT=$BOOST $TOPDIR 2>&1 | tee -a ../configure.log
+exit ${PIPESTATUS[0]}

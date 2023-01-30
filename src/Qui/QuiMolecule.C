@@ -25,9 +25,8 @@
 #include "openbabel/forcefield.h"
 #include "openbabel/internalcoord.h"
 
+#include "Util/QtVersionHacks.h"
 #include "QuiMolecule.h"
-
-#define RIGHT right
 
 
 using namespace OpenBabel;
@@ -53,7 +52,7 @@ bool Molecule::setCoordinates(QString const& input) {
    if (lines.count() < 1) return false;
 
    QString first(lines[0].replace(QChar(','),QChar(' ')));
-   QStringList tokens(first.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
+   QStringList tokens(first.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
 
    // Molecule read from previous job
    if (lines.count() == 1 && tokens[0].toLower() == "read") {
@@ -74,7 +73,7 @@ bool Molecule::setCoordinates(QString const& input) {
    // We take a peek at the first line of coordinates.  If there is only one
    // token then we assume a z-matrix format, otherwise we assume an XYZ.
    tokens.clear();
-   tokens = lines[1].split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+   tokens = lines[1].split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
 
    Clear();  // Clear the current OBMol data
    OBConversion conv;
@@ -179,18 +178,17 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
    QTextStream mol(&buffer);
 
    mol.setNumberFlags(mol.numberFlags()|QTextStream::ForcePoint);
-   mol.setRealNumberNotation(QTextStream::FixedNotation);
 
    switch (coords) {
 
       case Coordinates::Cartesian: {
-         mol << qSetFieldWidth(3) << RIGHT 
+         mol << qSetFieldWidth(3) << right 
              << GetTotalCharge() << GetTotalSpinMultiplicity() << "\n";
          FOR_ATOMS_OF_MOL(atom, this) {
-            mol << qSetFieldWidth(3) << RIGHT 
+            mol << qSetFieldWidth(3) << right 
                 << QString(OpenBabel::OBElements::GetSymbol(atom->GetAtomicNum()))
                 << qSetFieldWidth(12) << qSetRealNumberPrecision(6)
-                << RIGHT << atom->GetX() << atom->GetY() << atom->GetZ()
+                << right << atom->GetX() << atom->GetY() << atom->GetZ()
                 << qSetFieldWidth(0) << "\n";
          }
       } break;
@@ -214,7 +212,7 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
          b = vic[atom->GetIdx()]->_b;
          c = vic[atom->GetIdx()]->_c;
 
-         mol << qSetFieldWidth(4) << RIGHT
+         mol << qSetFieldWidth(4) << right
              << QString(OpenBabel::OBElements::GetSymbol(atom->GetAtomicNum())
                       + QString::number(atom->GetIdx()))
              << qSetFieldWidth(0);
@@ -249,22 +247,22 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
 
          if (w < 0.0) w += 360.0;
          if (t < 0.0) t += 360.0;
-
+          
          if (atom->GetIdx() > 1) {
             mol << "   r" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << RIGHT
+                << qSetRealNumberPrecision(5) << right
                 << r << qSetFieldWidth(0) << "\n";
          }
 
          if (atom->GetIdx() > 2) {
             mol << "   a" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << RIGHT
+                << qSetRealNumberPrecision(5) << right
                 << w << qSetFieldWidth(0) << "\n";
          }
 
          if (atom->GetIdx() > 3) {
              mol << "   d" << atom->GetIdx() << " = " << qSetFieldWidth(12)
-                 << qSetRealNumberPrecision(5) << RIGHT
+                 << qSetRealNumberPrecision(5) << right
                  << t << qSetFieldWidth(0) << "\n";
          }
       }
@@ -298,29 +296,29 @@ QString Molecule::formatForQui(Coordinates::ID const& coords) {
          if (w < 0.0) w += 360.0;
          if (t < 0.0) t += 360.0;
 
-         mol << qSetFieldWidth(4) << RIGHT
+         mol << qSetFieldWidth(4) << right
              << QString(OpenBabel::OBElements::GetSymbol(atom->GetAtomicNum())
                  + QString::number(atom->GetIdx()));
 
          if (atom->GetIdx() > 1) {
-            mol << qSetFieldWidth(6) << RIGHT
+            mol << qSetFieldWidth(6) << right
                 << QString(OpenBabel::OBElements::GetSymbol(a->GetAtomicNum())
                         + QString::number(a->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << RIGHT << r;
+                << qSetRealNumberPrecision(5) << right << r;
          }
 
          if (atom->GetIdx() > 2) {
-            mol << qSetFieldWidth(6) << RIGHT
+            mol << qSetFieldWidth(6) << right
                 << QString(OpenBabel::OBElements::GetSymbol(b->GetAtomicNum())
                     + QString::number(b->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << RIGHT << w;
+                << qSetRealNumberPrecision(5) << right << w;
          }
 
          if (atom->GetIdx() > 3) {
-            mol << qSetFieldWidth(6) << RIGHT
+            mol << qSetFieldWidth(6) << right
                 << QString(OpenBabel::OBElements::GetSymbol(c->GetAtomicNum())
                     + QString::number(c->GetIdx())) << qSetFieldWidth(12)
-                << qSetRealNumberPrecision(5) << RIGHT << t;
+                << qSetRealNumberPrecision(5) << right << t;
          }
 
          mol << qSetFieldWidth(0) << "\n";

@@ -23,7 +23,7 @@
 #include "ui_NmrConfigurator.h"
 #include "NmrConfigurator.h"
 #include "NmrReferenceLibrary.h"
-#include "NmrLayer.h"
+#include "Layer/NmrLayer.h"
 #include "NmrData.h"
 #include "CustomPlot.h"
 #include "QMsgBox.h"

@@ -43,7 +43,16 @@ template <class T> class QVariantPtr {
       static QVariant toQVariant(T* ptr)
       {
          return QVariant::fromValue((void* )ptr);
-         //return qVariantFromValue((void *) ptr);
+      }
+
+      static T const* toConstPointer(QVariant v)
+      {
+         return  (T const*) v.value<void *>();
+      }
+
+      static QVariant const toConstQVariant(T const* ptr)
+      {
+         return QVariant::fromValue((void* )ptr);
       }
 };
 

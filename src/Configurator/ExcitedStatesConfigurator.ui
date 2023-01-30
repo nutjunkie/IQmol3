@@ -56,7 +56,6 @@ QToolButton:pressed {
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <zorder>energyTable</zorder>
       </widget>
      </item>
      <item row="1" column="1">

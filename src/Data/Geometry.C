@@ -20,6 +20,7 @@
 
 ********************************************************************************/
 
+#include <QtGlobal>
 #include "Data/Geometry.h"
 #include "Data/AtomicProperty.h"
 #include "Math/Numerical.h"
@@ -50,10 +51,15 @@ Geometry::Geometry(Geometry const& that) : Base()
 
 Geometry::Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates)
 {
-    //QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
-    //QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+
+
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
     QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>::fromStdVector(atomicNumbers));
     QList<double>   coords = QList<double>::fromVector(QVector<double>::fromStdVector(coordinates));
+#else
+    QList<unsigned> nuclei = QList<unsigned>::fromVector(QVector<unsigned>(atomicNumbers.begin(), atomicNumbers.end()));
+    QList<double>   coords = QList<double>::fromVector(QVector<double>(coordinates.begin(), coordinates.end()));
+#endif
     set(nuclei, coords);
 }
 

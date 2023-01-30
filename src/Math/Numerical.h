@@ -1,5 +1,5 @@
-#ifndef IQMOL_UTIL_NUMERICAL_H
-#define IQMOL_UTIL_NUMERICAL_H
+#ifndef IQMOL_MATH_NUMERICAL_H
+#define IQMOL_MATH_NUMERICAL_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert

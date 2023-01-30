@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
-#include "ClippingPlaneConfigurator.h"
+#include "Configurator/ClippingPlaneConfigurator.h"
 
 namespace IQmol {
 namespace Layer {

@@ -24,11 +24,11 @@
 #define _USE_MATH_DEFINES
 #include "ShaderLibrary.h"
 #include "Preferences.h"
-#include "TextStream.h"
+#include "Parser/TextStream.h"
 #include "Exception.h"
 #include "QsLog.h"
 #include "GLSLmath.h"
-#include "ParseFile.h"
+#include "Parser/ParseFile.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QOpenGLFramebufferObject>
@@ -150,12 +150,16 @@ void ShaderLibrary::loadShaders()
                 QLOG_DEBUG() << "Shader compilation successful:" << name;
                 m_shaders.insert(name, program);
                 QVariantMap uniforms(parseUniformVariables(vertex.filePath()));
-		QVariantMap tmp(parseUniformVariables(fragment.filePath()));
-		QMap<QString, QVariant>::const_iterator i = tmp.constBegin();
-		while (i != tmp.constEnd()) {
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
+                QVariantMap tmp(parseUniformVariables(fragment.filePath()));
+                QMap<QString, QVariant>::const_iterator i = tmp.constBegin();
+                while (i != tmp.constEnd()) {
                    uniforms.insert(i.key(), i.value());
-		   ++i;
-	        }
+                   ++i;
+                }
+#else
+                uniforms.insert(parseUniformVariables(fragment.filePath()));
+#endif
                 setUniformVariables(name, uniforms);
              }
           }

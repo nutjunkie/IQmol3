@@ -22,6 +22,8 @@
 
 ********************************************************************************/
 
+#include <QString>
+
 
 namespace IQmol {
 namespace Constants {
@@ -40,8 +42,92 @@ namespace Constants {
    double const HartreeToMHz        = 6.579683921e9;
    double const HartreeToKJmol      = 2625.49962;
    double const HartreeToKCalmol    = HartreeToKJmol/JoulesPerCalorie;
+   double const HartreeToNanometer  = 45.56337117; // Need to divide this by energy
+   double const NanometerToHartree  = 33737.82860; // Need to divide this by energy
 
-   enum Units { Hartree, ElectronVolt, Wavenumber, KJoulePerMol, KCalPerlMol, MegaHertz };
+   enum Units { 
+      Hartree = 0, 
+      ElectronVolt, 
+      Wavenumber, 
+      KJoulePerMol, 
+      KCalPerMol, 
+      MegaHertz,
+      Nanometer
+   };
+
+   const Units constexpr AllUnits[] = {
+      Hartree, 
+      ElectronVolt, 
+      Wavenumber, 
+      KJoulePerMol, 
+      KCalPerMol, 
+      MegaHertz,
+      Nanometer
+   };
+
+
+   inline QString toString(Units const units)
+   {
+      QString s;
+      switch (units) {
+         case Hartree:       s = "Hartree";    break;
+         case ElectronVolt:  s = "eV";         break;
+         case Wavenumber:    s = "cm⁻¹";       break;
+         case KJoulePerMol:  s = "KJ mol⁻¹";   break;
+         case KCalPerMol:    s = "KCal mol⁻¹"; break;
+         case MegaHertz:     s = "MHz";        break;
+         case Nanometer:     s = "nm";         break;
+      }
+      return s;
+   }
+
+
+/*
+   inline double convertFromHartree(Units const units, double const energy = 1.0)
+   {
+      double conv(1.0);
+      switch (units) {
+         case Hartree:       conv = 1.0;                  break;
+         case ElectronVolt:  conv = HartreeToEv;          break;
+         case Wavenumber:    conv = HartreeToWavenumber;  break;
+         case KJoulePerMol:  conv = HartreeToKJmol;       break;
+         case KCalPerMol:    conv = HartreeToKCalmol;     break;
+         case MegaHertz:     conv = HartreeToMHz;         break;
+         case NanoMeters:
+      }
+      return energy*conv;
+   }
+*/
+
+
+   inline double convert(double const value, Units const from, Units const to)
+   {
+      if (from == to) return value;
+      // First convert to Hartree
+      double conv(value);
+
+      switch (from) {
+         case Hartree:       conv /= 1.0;                        break;
+         case ElectronVolt:  conv /= HartreeToEv;                break;
+         case Wavenumber:    conv /= HartreeToWavenumber;        break;
+         case KJoulePerMol:  conv /= HartreeToKJmol;             break;
+         case KCalPerMol:    conv /= HartreeToKCalmol;           break;
+         case MegaHertz:     conv /= HartreeToMHz;               break;
+         case Nanometer:     conv  = NanometerToHartree/value;  break;
+      }
+
+      switch (to) {
+         case Hartree:       conv *= 1.0;                      break;
+         case ElectronVolt:  conv *= HartreeToEv;              break;
+         case Wavenumber:    conv *= HartreeToWavenumber;      break;
+         case KJoulePerMol:  conv *= HartreeToKJmol;           break;
+         case KCalPerMol:    conv *= HartreeToKCalmol;         break;
+         case MegaHertz:     conv *= HartreeToMHz;             break;
+         case Nanometer:     conv  = HartreeToNanometer/conv;  break;
+      }
+
+      return conv; 
+   }
 
 } } // end namespace IQmol::Constants
 

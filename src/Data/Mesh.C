@@ -139,7 +139,7 @@ void Mesh::copy(Mesh const& that)
 
 Mesh& Mesh::operator+=(Mesh const& that)
 {
-//   qDebug() << "Invoking Mesh::operator+=";
+   qDebug() << "Invoking Mesh::operator+= inefficient";
    QMap<Vertex, Vertex> vertexMap;
    QMap<Face, Face> faceMap;
 

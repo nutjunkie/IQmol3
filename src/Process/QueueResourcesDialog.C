@@ -20,6 +20,7 @@
    
 ********************************************************************************/
 
+#include "QtVersionHacks.h"
 #include "QueueResourcesDialog.h"
 #include "QMsgBox.h"
 #include "QsLog.h"
@@ -72,10 +73,10 @@ void QueueResourcesDialog::verify()
    }
 
    QueueResources* currentQueue((*m_queueResourcesList)[m_dialog.queue->currentIndex()]);
-   QStringList requestedTime(time.split(":", QString::SkipEmptyParts));
+   QStringList requestedTime(time.split(":", IQmolSkipEmptyParts));
 
    time = currentQueue->m_maxWallTime;
-   QStringList maxTime(time.split(":", QString::SkipEmptyParts));
+   QStringList maxTime(time.split(":", IQmolSkipEmptyParts));
 
    if (requestedTime.size() < 3 || maxTime.size() < 3) {
       QMsgBox::warning(this, "IQmol", "Validated wall time not in the format h:mm:ss");

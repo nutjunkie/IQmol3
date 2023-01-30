@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "Configurator/ConstraintConfigurator.h"
-#include "Layer/ConstraintLayer.h"
+#include "ConstraintLayer.h"
 #include "Data/Constraint.h"
 #include "Util/GLShape.h"
 #include "Math/Axes.h"
@@ -247,6 +247,10 @@ bool Constraint::satisfied() const
          double val(Layer::Atom::torsion(m_atoms[0], m_atoms[1], m_atoms[2], m_atoms[3]));
          ok = std::abs(val-m_targetValue) <= 0.1;    
          } break;
+
+      case FrozenAtoms: {
+         ok = false;
+      } break;
    }
 
    return ok;
@@ -279,6 +283,9 @@ void Constraint::addTo(OpenBabel::OBFFConstraints& constraints) const
                                           m_atoms[1]->getIndex(),
                                           m_atoms[2]->getIndex(),
                                           m_atoms[3]->getIndex(), m_targetValue);
+          break;
+
+      case FrozenAtoms: 
           break;
    }
 
@@ -321,6 +328,8 @@ QString Constraint::formatQChem() const
                          + QString::number(m_atoms[3]->getIndex()) + "  "
                          + QString::number(m_targetValue, 'f', precision);
           break;
+      case FrozenAtoms: 
+          break;
    }
 
 
@@ -354,6 +363,7 @@ void Constraint::draw()
       case Distance:  drawDistance();  break;
       case Angle:     drawAngle();     break;
       case Torsion:   drawTorsion();   break;
+      case FrozenAtoms:                break;
    }
 }
 

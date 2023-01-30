@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "MoleculeConfigurator.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "SurfaceInfo.h"
 
 #include<QtDebug>

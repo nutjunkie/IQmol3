@@ -22,7 +22,7 @@
 
 #include "BackgroundLayer.h"
 #include "OpenGL.h"
-#include "Preferences.h"
+#include "Util/Preferences.h"
 
 #include <QDebug>
 #include <cmath>

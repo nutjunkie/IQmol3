@@ -5,6 +5,7 @@
  *  \date February 2008
  */
 
+#include "QtVersionHacks.h"
 #include "OptSection.h"
 #include "GeometryConstraint.h"
 
@@ -79,7 +80,7 @@ void OptSection::read(QString const& input) {
    deleteConstraints();
    Constraint* constraint;
    QStringList lines( input.trimmed().split(
-      QRegularExpression("\\n"), QString::SkipEmptyParts) );
+      QRegularExpression("\\n"), IQmolSkipEmptyParts) );
 
    for (int i = 0; i < lines.count(); ++i) {
        constraint = Constraint::fromString(lines[i]);

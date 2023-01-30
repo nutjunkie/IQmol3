@@ -22,7 +22,7 @@
 
 ********************************************************************************/
 
-#include "IsotopesConfigurator.h"
+#include "Configurator/IsotopesConfigurator.h"
 #include "AtomLayer.h"
 #include "openbabel/data.h"
 

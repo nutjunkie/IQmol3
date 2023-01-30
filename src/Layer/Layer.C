@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "QsLog.h"
+#include "Util/QsLog.h"
 
 
 namespace IQmol {

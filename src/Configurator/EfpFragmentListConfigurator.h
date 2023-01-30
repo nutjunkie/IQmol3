@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_EfpFragmentListConfigurator.h"
+#include "Configurator/ui_EfpFragmentListConfigurator.h"
 
 
 namespace IQmol {

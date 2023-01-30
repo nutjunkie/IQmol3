@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_SymmetryConfigurator.h"
+#include "Configurator/ui_SymmetryConfigurator.h"
 
 
 namespace IQmol {

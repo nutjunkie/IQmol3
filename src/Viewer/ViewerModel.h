@@ -23,11 +23,11 @@
 ********************************************************************************/
 
 #include "Viewer.h"
-#include "AxesMeshLayer.h"
-#include "ClippingPlaneLayer.h"
-#include "AxesLayer.h"
-#include "MoleculeLayer.h"
-#include "BackgroundLayer.h"
+#include "Layer/AxesMeshLayer.h"
+#include "Layer/ClippingPlaneLayer.h"
+#include "Layer/AxesLayer.h"
+#include "Layer/MoleculeLayer.h"
+#include "Layer/BackgroundLayer.h"
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QList>

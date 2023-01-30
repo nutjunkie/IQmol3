@@ -48,11 +48,14 @@ namespace Data {
          double maxFrequency() const;
          double maxIntensity() const;
          double maxRamanIntensity() const;
+         QList<double> frequencies() const;
 
          unsigned nModes() const { return m_modes.size(); }
 
          void dump() const;
          VibrationalModeList const& modes() const { return m_modes; }
+
+         VibrationalMode const& mode(unsigned i) const { return *m_modes[i]; }
 
          void serialize(InputArchive& ar, unsigned int const version = 0) {
             privateSerialize(ar, version);

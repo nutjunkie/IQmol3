@@ -33,7 +33,7 @@
 #include "NetworkException.h"
 #include "QMsgBox.h"
 #include "QsLog.h"
-#include "FileLayer.h"
+#include "Layer/FileLayer.h"
 
 #include <QCloseEvent>
 #include <QInputDialog>

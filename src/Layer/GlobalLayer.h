@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "Preferences.h"
+#include "Util/Preferences.h"
 
 namespace IQmol {
 namespace Layer {

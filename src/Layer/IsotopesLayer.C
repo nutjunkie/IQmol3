@@ -20,7 +20,7 @@
 
 ********************************************************************************/
 
-#include "IsotopesConfigurator.h"
+#include "Configurator/IsotopesConfigurator.h"
 #include "IsotopesLayer.h"
 #include "MoleculeLayer.h"
 

@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_ClippingPlaneConfigurator.h"
+#include "Configurator/ui_ClippingPlaneConfigurator.h"
 
 
 namespace IQmol {

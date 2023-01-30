@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "PointGroup.h"
-#include "SymmetryConfigurator.h"
+#include "Data/PointGroup.h"
+#include "Configurator/SymmetryConfigurator.h"
 
 
 namespace IQmol {

@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "PrimitiveLayer.h"
-#include "EfpFragmentListConfigurator.h"
+#include "Configurator/EfpFragmentListConfigurator.h"
 
 
 namespace IQmol {

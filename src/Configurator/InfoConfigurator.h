@@ -23,7 +23,7 @@
 ********************************************************************************/
  
 #include "Configurator.h"
-#include "ui_InfoConfigurator.h"
+#include "Configurator/ui_InfoConfigurator.h"
 
 
 namespace IQmol {

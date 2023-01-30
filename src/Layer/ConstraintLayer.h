@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "QGLViewer/vec.h"
-#include "Layer/AtomLayer.h"
+#include "AtomLayer.h"
 #include "Math/Axes.h"
 #include "openbabel/forcefield.h"
 

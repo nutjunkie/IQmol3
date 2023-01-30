@@ -22,13 +22,13 @@
 
 #include "CubeDataLayer.h"
 #include "SurfaceLayer.h"
-#include "SurfaceInfo.h"
 #include "MoleculeLayer.h"
-#include "MarchingCubes.h"
-#include "MeshDecimator.h"
-#include "SpatialProperty.h"
-#include "CubeData.h"
-#include "QsLog.h"
+#include "Grid/MarchingCubes.h"
+#include "Grid/MeshDecimator.h"
+#include "Data/SurfaceInfo.h"
+#include "Grid/SpatialProperty.h" 
+#include "Data/CubeData.h"
+#include "Util/QsLog.h"
 
 #include <QDebug>
 
@@ -116,4 +116,4 @@ Surface* CubeData::calculateSurface(Data::SurfaceInfo const& surfaceInfo)
    return surfaceLayer;
 }
 
-} } // end namespace IQmol:;Layer
+} } // end namespace IQmol::Layer

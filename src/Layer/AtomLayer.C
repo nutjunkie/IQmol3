@@ -20,10 +20,10 @@
 
 ********************************************************************************/
 
-#include "Layer/AtomLayer.h"
+#include "AtomLayer.h"
 #include "Util/Preferences.h"
 #include "Viewer/Viewer.h"
-#include "PovRayGen.h"
+#include "Viewer/PovRayGen.h"
 #include "Util/GLShape.h"
 #include <openbabel/elements.h>
 #include <openbabel/data.h>
@@ -57,6 +57,7 @@ bool    Atom::s_vibrationColorInitialized  = false;  // There must be a better w
 
 
 
+// Static functions
 double Atom::distance(Atom* A, Atom* B) 
 {
    return (A->getPosition() - B->getPosition()).norm();

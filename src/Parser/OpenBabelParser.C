@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 
+#include "Util/QtVersionHacks.h"
 #include "OpenBabelParser.h"
 #include "TextStream.h"
 
@@ -420,7 +421,7 @@ bool OpenBabel::formatSupported(QString const& extension)
       QString s;
       for (iter = formats.begin(); iter != formats.end(); ++iter) {
           QString fmt(QString::fromStdString(*iter));
-          fmt = fmt.split(QRegularExpression("\\s+"), QString::SkipEmptyParts).first();
+          fmt = fmt.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts).first();
           s += fmt + " ";
           s_obFormats.append(fmt.toLower());
       }

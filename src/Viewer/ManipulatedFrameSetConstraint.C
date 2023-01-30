@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "ManipulatedFrameSetConstraint.h"
-#include "GLObjectLayer.h"
+#include "Layer/GLObjectLayer.h"
 
 
 using namespace qglviewer;

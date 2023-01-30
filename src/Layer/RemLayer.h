@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "RemSectionData.h"
+#include "Data/RemSectionData.h"
 
 
 namespace IQmol {

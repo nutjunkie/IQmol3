@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "SymmetryConfigurator.h"
-#include "SymmetryLayer.h"
+#include "Layer/SymmetryLayer.h"
 
 #include <QDebug>
 

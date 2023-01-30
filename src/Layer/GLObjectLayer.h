@@ -53,6 +53,8 @@ namespace Layer {
       friend class IQmol::ManipulatedFrameSetConstraint;
 
       public: 
+         enum DrawMode { Fill, Lines, Dots };
+
          /// Note the constructor does not allow a QObject parent.  This
          /// means the destruction of GLObjects must be taken care of 
          /// explicitly and not through the Qt mechanism.

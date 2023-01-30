@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_BackgroundConfigurator.h"
+#include "Configurator/ui_BackgroundConfigurator.h"
 #include <QColor>
 
 

@@ -18,6 +18,7 @@
  *  \date January 2008
  */
 
+#include "QtVersionHacks.h"
 #include <QFile>
 #include <QFileInfo>
 #include <QRegularExpression>
@@ -59,7 +60,7 @@ QList<Job*> ParseQChemFileContents(QString const& contents)
    if (contents.contains("A Quantum Leap Into The Future Of Chemistry")) {
       // Output file
       blocks = contents.split("A Quantum Leap Into The Future Of Chemistry", 
-         QString::SkipEmptyParts); 
+         IQmolSkipEmptyParts); 
       blocks.pop_front();  // Get rid of initial guff at the start of the file
    } else {
       // Input file
@@ -113,7 +114,7 @@ QString ParseXyzCoordinates(QStringList const& coords, bool bailOnError) {
    bool okay(true), xOK, yOK, zOK;
 
    for (int i = 0; i < coords.count(); ++i) {
-       tokens = coords.at(i).split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+       tokens = coords.at(i).split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
 
        if (tokens.count() == 4) {
           tokens[1].toDouble(&xOK);

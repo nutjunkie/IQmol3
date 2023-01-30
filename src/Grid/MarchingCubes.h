@@ -22,7 +22,7 @@
    
 ********************************************************************************/
 
-#include "Mesh.h"
+#include "Data/Mesh.h"
 #include "QGLViewer/vec.h"
 #include <QMap>
 

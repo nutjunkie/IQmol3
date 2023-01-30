@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_ScalarConstraintConfigurator.h"
-#include "ui_VectorConstraintConfigurator.h"
+#include "Configurator/ui_ScalarConstraintConfigurator.h"
+#include "Configurator/ui_VectorConstraintConfigurator.h"
 
 
 namespace IQmol {

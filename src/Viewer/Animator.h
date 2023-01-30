@@ -23,13 +23,19 @@
 ********************************************************************************/
 
 #include "Layer/GLObjectLayer.h"
-#include "Layer/SurfaceLayer.h"
 #include "Data/Geometry.h"
 #include <QObject>
 #include <QList>
 
 
+
+
 namespace IQmol {
+
+namespace Layer {
+   class Surface;
+}
+
 namespace Animator {
 
    enum Waveform { Square, Ramp, Sigmoidal, Triangle, Sinusoidal };
@@ -195,7 +201,7 @@ namespace Animator {
          void stepBack();
          void reset();
          void setAlpha(double const);
-         void setDrawMode(Layer::Surface::DrawMode const);
+         void setDrawMode(Layer::GLObject::DrawMode const);
 
       private:
          void setCurrentIndex(int const n);

@@ -20,6 +20,7 @@
    
 ********************************************************************************/
 
+#include "QtVersionHacks.h"
 #include "Server.h"
 #include "ServerRegistry.h"
 #include "Reply.h"
@@ -406,7 +407,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
    switch (m_configuration.queueSystem()) {
       case ServerConfiguration::PBS: {
          // A successful submission returns a single token containing the job ID
-         QStringList tokens(message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
+         QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
          if (tokens.size() >= 1) {
             job->setJobId(tokens.first());
             QLOG_DEBUG() << "PBS job submitted with id" << job->jobId();
@@ -426,7 +427,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
       case ServerConfiguration::SGE: {
          // A successful submission returns a string like:
          //   Your job 2834 ("test.sh") has been submitted
-         QStringList tokens(message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
+         QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
          if (message.contains("has been submitted")) {
             if (tokens.size() >= 3) {
                int id(tokens[2].toInt(&ok));
@@ -439,7 +440,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
       case ServerConfiguration::SLURM: {
          // A successful submission returns a string like:
          //   Submitted batch job 1234
-         QStringList tokens(message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
+         QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
          if (message.contains("Submitted batch job")) {
             if (tokens.size() >= 4) {
                int id(tokens[3].toInt(&ok));
@@ -500,7 +501,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
             }
 
          }else {
-            QStringList tokens(message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts));
+            QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
             if (tokens.size() == 1) {  // bash returns only the pid
                int id(tokens[0].toInt(&ok));
                if (ok) job->setJobId(QString::number(id));
@@ -617,14 +618,14 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
             ok = true;
          }else {
 
-            QStringList lines(message.split(QRegularExpression("\\n"), QString::SkipEmptyParts));
+            QStringList lines(message.split(QRegularExpression("\\n"), IQmolSkipEmptyParts));
             QStringList tokens;
             QStringList::iterator iter;
 
             for (iter = lines.begin(); iter != lines.end(); ++iter) {
                 //job_state = R
                 if ((*iter).contains("job_state =")) {
-                   tokens = (*iter).split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+                   tokens = (*iter).split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
                    if (tokens.size() >= 3) {
                       if (tokens[2] == "R" || tokens[2] == "E") {
                          status = Job::Running;
@@ -640,7 +641,7 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
                 }
 
                 if ((*iter).contains("resources_used.cput")) {
-                   QString time((*iter).split(QRegularExpression("\\s+"), QString::SkipEmptyParts).last());
+                   QString time((*iter).split(QRegularExpression("\\s+"), IQmolSkipEmptyParts).last());
                    job->resetTimer(Util::Timer::toSeconds(time));
                 }else if ((*iter).contains("comment =")) {
                    statusMessage = (*iter).remove("comment = ").trimmed();

@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_DipoleConfigurator.h"
+#include "Configurator/ui_DipoleConfigurator.h"
 
 
 namespace IQmol {

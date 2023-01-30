@@ -1,6 +1,6 @@
 set(LIB Layer)
-find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
-find_package(Qt5 COMPONENTS Xml OpenGL REQUIRED)
+
+find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 
 set( HEADERS
    AtomLayer.h
@@ -30,7 +30,6 @@ set( HEADERS
    InfoLayer.h
    IsotopesLayer.h
    Layer.h
-   LayerFactory.h
    MolecularSurfacesLayer.h
    MoleculeLayer.h
    NaturalBondOrbitalsLayer.h
@@ -41,6 +40,7 @@ set( HEADERS
    RemLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
+   VibronicLayer.h
 )
 
 set( SOURCES
@@ -80,20 +80,17 @@ set( SOURCES
    RemLayer.C
    SurfaceLayer.C
    SymmetryLayer.C
+   VibronicLayer.C
 )
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-
-include_directories(../ ../Data ../Util ../Viewer ../Old ../Grid ../Parser ../Process ../Configurator)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Configurator)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../Grid)
-
 qt5_wrap_cpp( SOURCES ${HEADERS} )
-add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
+
+add_library(${LIB} ${SOURCES})
+
+target_link_libraries(${LIB} PUBLIC
+   Configurator
+   Util
+)
 
 target_link_libraries(${LIB} PRIVATE 
    Qt5::Core 

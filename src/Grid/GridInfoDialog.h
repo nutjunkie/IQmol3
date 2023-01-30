@@ -22,8 +22,8 @@
    
 ********************************************************************************/
 
-#include "ui_GridInfoDialog.h"
-#include "GridData.h"
+#include "Grid/ui_GridInfoDialog.h"
+#include "Data/GridData.h"
 #include <QPoint>
 
 

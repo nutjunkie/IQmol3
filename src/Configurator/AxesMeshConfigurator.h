@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_AxesMeshConfigurator.h"
+#include "Configurator/ui_AxesMeshConfigurator.h"
 
 
 namespace IQmol {

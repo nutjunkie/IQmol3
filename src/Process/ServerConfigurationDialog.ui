@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
-    <height>422</height>
+    <width>609</width>
+    <height>405</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -414,12 +414,24 @@ Use Web for HTTP/HTTPS servers</string>
         <item row="3" column="1">
          <widget class="QLineEdit" name="workingDirectory">
           <property name="toolTip">
-           <string>This is the directory on the server where calculations will be run</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the directory on the server where calculations will be run.  &lt;/p&gt;&lt;p&gt;Specify the absolute path without any environment variables or&lt;/p&gt;&lt;p&gt;the ~ shortcut for your home directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="4" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Do not use ~ or environment variables</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="horizontalSpacer_4">
             <property name="orientation">

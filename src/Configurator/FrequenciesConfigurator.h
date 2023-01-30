@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_FrequenciesConfigurator.h"
+#include "Configurator/ui_FrequenciesConfigurator.h"
 #include <QPen>
 #include <QBrush>
 
@@ -78,17 +78,15 @@ namespace Configurator {
          void on_ramanCheckbox_clicked(bool);
          void on_resetViewButton_clicked(bool);
 
+         void setSelectionRectMode(QMouseEvent*);
          void plotSelectionChanged(bool);
          void updatePlot();
-
-         void setSelectionRectMode(QMouseEvent*);
 
 
       private:
          enum Profile { Gaussian, Lorentzian };
 
          void closeEvent(QCloseEvent*);
- //        void contextMenuEvent(QContextMenuEvent*);
          void setVectorColor(QColor const& color);
          void plotImpulse(double const scaleFactor);
          void plotSpectrum(Profile const, double const scaleFactor, double const width);

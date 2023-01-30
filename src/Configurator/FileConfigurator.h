@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_FileConfigurator.h"
+#include "Configurator/ui_FileConfigurator.h"
 #include <QTimer>
 #include <QFile>
 

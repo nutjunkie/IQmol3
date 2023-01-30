@@ -21,10 +21,10 @@
 ********************************************************************************/
 
 #include "BuildEfpFragmentHandler.h"
-#include "EfpFragmentLayer.h"
+#include "Layer/EfpFragmentLayer.h"
 #include "EfpFragment.h"
 #include "Viewer.h"
-#include "MoleculeLayer.h"
+#include "Layer/MoleculeLayer.h"
 #include "UndoCommands.h"
 #include "QsLog.h"
 #include <QFileInfo>

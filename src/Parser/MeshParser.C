@@ -20,10 +20,10 @@
    
 ********************************************************************************/
 
+#include "OpenMesh/Core/IO/MeshIO.hh"
 #include "MeshParser.h"
 #include "Data/Mesh.h"
 
-#include "OpenMesh/Core/IO/MeshIO.hh"
 
 namespace IQmol {
 namespace Parser {

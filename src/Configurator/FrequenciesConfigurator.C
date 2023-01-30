@@ -22,11 +22,11 @@
 
 #include "FrequenciesConfigurator.h"
 #include "QVariantPtr.h"
-#include "FrequenciesLayer.h"
+#include "Layer/FrequenciesLayer.h"
 #include "VibrationalMode.h"
 #include "Preferences.h"
 #include "CustomPlot.h"
-#include "AtomLayer.h"
+#include "Layer/AtomLayer.h"
 #include <QColorDialog>
 #include <QHeaderView>
 #include "QsLog.h"

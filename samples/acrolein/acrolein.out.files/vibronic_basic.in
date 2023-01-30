@@ -1,0 +1,30 @@
+'Vertical Gradient Method VG=1/yes, VG=0/no'
+0
+'Number of atoms'
+8
+'Number of Frequencies'
+18
+'Electronic energy gap(cm-1)'
+34131.5700656707
+'Including the Herzberg-Teller Term Yes/No = 1/0'
+1
+'Temperature(K)'
+298.150000000000
+'Frequency, wmin(cm-1), wmax(cm-1), dw(cm-1)'
+10000.0000000000 50000.0000000000 5.00000000000000
+'Time point dt(a.u.), pointcount'
+1.00000000000000 40000
+'Damping(cm-1)'
+300.000000000000
+'Flag of the optical spectra'
+1
+'Scale factor of frequency and zero-point energy'
+1.00000000000000 1.00000000000000 1.00000000000000 1.00000000000000
+'The Incident laser Frenquency W_in (cm-1)'
+34131.5700656707
+'The Epsilon for the delta function (cm-1)'
+25.0000000000000
+'Transition dipole moments'
+0.000796700000000000 0.00248820000000000 -0.0406273000000000
+'The two-photon transition moments'
+

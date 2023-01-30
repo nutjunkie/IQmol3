@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "OrbitalsLayer.h"
-#include "CanonicalOrbitals.h"
+#include "Data/CanonicalOrbitals.h"
 
 class QProgressDialog;
 

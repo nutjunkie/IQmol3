@@ -22,7 +22,7 @@
 
 #include "AtomLayer.h"
 #include "BondLayer.h"
-#include "Geometry.h"
+#include "Data/Geometry.h"
 #include "openbabel/obiter.h"
 #include "openbabel/mol.h"
 #include "openbabel/atom.h"

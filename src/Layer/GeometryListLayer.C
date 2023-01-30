@@ -22,14 +22,15 @@
 
 #include "GeometryListLayer.h"
 #include "GeometryLayer.h"
-#include "Geometry.h"
-#include "Energy.h"
-#include "GeometryList.h"
-#include "GeometryListConfigurator.h"
 #include "InfoLayer.h"
 #include "AtomLayer.h"
-#include "QsLog.h"
 
+#include "Configurator/GeometryListConfigurator.h"
+#include "Data/Geometry.h"
+#include "Data/Energy.h"
+#include "Data/GeometryList.h"
+#include "QsLog.h"
+#include "Viewer/Animator.h"
 #include <QDebug>
 
 

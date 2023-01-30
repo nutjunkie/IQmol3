@@ -20,9 +20,9 @@
    
 ********************************************************************************/
 
-#include "NmrConfigurator.h"
+#include "Configurator/NmrConfigurator.h"
+#include "Data/NmrData.h"
 #include "NmrLayer.h"
-#include "NmrData.h"
 #include "MoleculeLayer.h"
 
 

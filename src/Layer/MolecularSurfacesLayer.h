@@ -23,9 +23,9 @@
 ********************************************************************************/
 
 #include "Layer.h"
-#include "MolecularSurfacesConfigurator.h"
-#include "SurfaceInfo.h"
-#include "Surface.h"
+#include "Configurator/MolecularSurfacesConfigurator.h"
+#include "Data/SurfaceInfo.h"
+#include "Data/Surface.h"
 
 
 

@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_IsotopesConfigurator.h"
+#include "Configurator/ui_IsotopesConfigurator.h"
 
 
 class QComboBox;

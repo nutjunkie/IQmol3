@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ui_OrbitalsConfigurator.h"
-#include "SurfaceInfo.h"
+#include "Configurator/ui_OrbitalsConfigurator.h"
+#include "Data/SurfaceInfo.h"
 #include <QPen>
 
 

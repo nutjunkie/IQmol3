@@ -78,6 +78,21 @@ void Frequencies::setThermochemicalData(double const zpve, double const enthalpy
    m_pressure = pressure;
 }
 
+
+QList<double> Frequencies::frequencies() const
+{
+   QList<double> frequencies;
+
+   VibrationalModeList::const_iterator iter;
+   for (iter = m_modes.begin(); iter != m_modes.end(); ++iter) {
+       frequencies.append((*iter)->frequency());
+   }
+
+   return frequencies; 
+}
+
+
+
 void Frequencies::dump() const
 {
    qDebug() << "  Thermochemical Data:"

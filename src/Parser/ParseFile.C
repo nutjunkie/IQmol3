@@ -38,13 +38,13 @@
 #include "ExternalChargesParser.h"
 #include "FormattedCheckpointParser.h"
 #include "OpenBabelParser.h"
+#include "VibronicParser.h"
 #include "YamlParser.h"
 
 #ifdef QARCHIVE
 #include "ArchiveParser.h"
 #endif
 
-#include <QFileInfo>
 #include <QDir>
 
 
@@ -83,6 +83,13 @@ void ParseFile::parseDirectory(QString const& filePath, QString const& filter)
    QDir::Filters filters(QDir::Files | QDir::Readable);
    m_filePaths << dir.entryList(filters);
 
+   QStringList dirs(dir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot));
+   QStringList::iterator iter;
+   for (iter = dirs.begin(); iter != dirs.end(); ++iter) {
+       QFileInfo fileInfo(filePath, *iter);
+       m_filePaths << *iter;
+   }
+
    if (m_filePaths.isEmpty()) {
       // look for the first output file
       list.clear();
@@ -103,7 +110,7 @@ void ParseFile::parseDirectory(QString const& filePath, QString const& filter)
    }
 
    qDebug() << "FilePath: " << m_filePath;
-   qDebug() << "FilePaths:" << m_filePaths;
+   qDebug() << "Files:    " << m_filePaths;
 
 //  ---
    // This is a hack to ensure the .out file gets read before the other files
@@ -116,7 +123,6 @@ void ParseFile::parseDirectory(QString const& filePath, QString const& filter)
    m_filePaths = filePaths;
 //  ---
 
-   QStringList::iterator iter;
    for (iter = m_filePaths.begin(); iter != m_filePaths.end(); ++iter) {
        (*iter).prepend(m_filePath + "/");
    }
@@ -129,6 +135,8 @@ void ParseFile::parseDirectory(QString const& filePath, QString const& filter)
 void ParseFile::run()
 {
    Data::FileList* fileList = new Data::FileList();
+
+   qDebug() << "File list in run()" << m_filePaths;
 
    bool addToFileList(true);
    QStringList::const_iterator file;
@@ -158,17 +166,26 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
    
    if (!fileInfo.exists()) {
       QString msg("File not found: ");
-
       msg += fileInfo.filePath();
-qDebug() << msg;
-      m_filePaths.removeAll(filePath);
       m_errorList.append(msg);
+      //m_filePaths.removeAll(filePath);
       addToFileList = false;
       return false;
    }
 
    QString extension(fileInfo.suffix().toLower());
    Base* parser(0);
+
+   // Intercept directories first
+   if (fileInfo.isDir()) {
+      addToFileList = false;
+      if (fileInfo.filePath().endsWith("files")) {
+         parser = new VibronicDir;
+      }else {
+         QLOG_WARN() << "No parser for directory" << fileInfo.filePath();
+         return false;
+      }
+   } 
 
    if (extension == "run" || extension == "err" || extension == "bat") {
       return false;

@@ -22,12 +22,13 @@
 
 ********************************************************************************/
 
-#include "Orbitals.h"
+#include "Data/Orbitals.h"
+#include "Data/GridData.h"
+#include "Data/SurfaceInfo.h"
+#include "Data/Density.h"
+
+#include "Configurator/OrbitalsConfigurator.h"
 #include "Layer.h"
-#include "GridData.h"
-#include "SurfaceInfo.h"
-#include "OrbitalsConfigurator.h"
-#include "Density.h"
 #include <QPair>
 
 

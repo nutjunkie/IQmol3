@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "InfoConfigurator.h"
-#include "InfoLayer.h"
+#include "Layer/InfoLayer.h"
 #include "StringFormat.h"
 #include <cmath>
 

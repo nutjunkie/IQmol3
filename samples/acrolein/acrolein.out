@@ -1,0 +1,1074 @@
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+
+ Q-Chem 6.0 (devel), Q-Chem, Inc., Pleasanton, CA (2022)
+
+ E. Epifanovsky,  A. T. B. Gilbert,  Xintian Feng,  Joonho Lee,  Yuezhi Mao,  
+ N. Mardirossian,  P. Pokhilko,  A. White,  M. Wormit,  M. P. Coons,  
+ A. L. Dempwolff,  Zhengting Gan,  D. Hait,  P. R. Horn,  L. D. Jacobson,  
+ I. Kaliman,  J. Kussmann,  A. W. Lange,  Ka Un Lao,  D. S. Levine,  Jie Liu,  
+ S. C. McKenzie,  A. F. Morrison,  K. Nanda,  F. Plasser,  D. R. Rehn,  
+ M. L. Vidal,  Zhi-Qiang You,  Ying Zhu,  B. Alam,  B. Albrecht,  
+ A. Aldossary,  E. Alguire,  J. H. Andersen,  V. Athavale,  D. Barton,  
+ K. Begam,  A. Behn,  N. Bellonzi,  Y. A. Bernard,  E. J. Berquist,  
+ H. Burton,  A. Carreras,  K. Carter-Fenk,  Romit Chakraborty,  
+ Chandrima Chakravarty,  Junhan Chen,  A. D. Chien,  K. D. Closser,  
+ V. Cofer-Shabica,  L. Cunha,  S. Dasgupta,  Jia Deng,  M. de Wergifosse,  
+ M. Diedenhofen,  Hainam Do,  S. Ehlert,  Po-Tung Fang,  S. Fatehi,  
+ Qingguo Feng,  T. Friedhoff,  B. Ganoe,  J. Gayvert,  Qinghui Ge,  
+ G. Gidofalvi,  M. Goldey,  J. Gomes,  C. Gonzalez-Espinoza,  S. Gulania,  
+ A. Gunina,  J. A. Gyamfi,  M. W. D. Hanson-Heine,  P. H. P. Harbach,  
+ A. W. Hauser,  M. F. Herbst,  M. Hernandez Vera,  M. Hodecker,  
+ Z. C. Holden,  S. Houck,  Xunkun Huang,  Kerwin Hui,  B. C. Huynh,  
+ K. Ikeda,  M. Ivanov,  Hyunjun Ji,  Zuxin Jin,  Hanjie Jiang,  B. Kaduk,  
+ S. Kaehler,  R. Kang,  K. Khistyaev,  Jaehoon Kim,  Yongbin Kim,  
+ P. Klunzinger,  Z. Koczor-Benda,  Joong Hoon Koh,  D. Kosenkov,  
+ Saikiran Kotaru,  L. Koulias,  T. Kowalczyk,  C. M. Krauter,  K. Kue,  
+ A. Kunitsa,  T. Kus,  A. Landau,  K. V. Lawler,  D. Lefrancois,  S. Lehtola,  
+ Rain Li,  Shaozhi Li,  Yi-Pei Li,  Jiashu Liang,  M. Liebenthal,  
+ Hung-Hsuan Lin,  You-Sheng Lin,  Fenglai Liu,  Kuan-Yu Liu,  
+ M. Loipersberger,  A. Luenser,  C. Malbon,  A. Manjanath,  P. Manohar,  
+ E. Mansoor,  S. F. Manzer,  Shan-Ping Mao,  A. V. Marenich,  T. Markovich,  
+ S. Mason,  F. Matz,  S. A. Maurer,  P. F. McLaughlin,  M. F. S. J. Menger,  
+ J.-M. Mewes,  S. A. Mewes,  P. Morgante,  Mohammad Mostafanejad,  
+ J. W. Mullinax,  K. J. Oosterbaan,  G. Paran,  V. Parravicini,  
+ Alexander C. Paul,  Suranjan K. Paul,  F. Pavosevic,  Zheng Pei,  S. Prager,  
+ E. I. Proynov,  E. Ramos,  B. Rana,  A. E. Rask,  A. Rettig,  R. M. Richard,  
+ F. Rob,  E. Rossomme,  T. Scheele,  M. Scheurer,  M. Schneider,  
+ P. E. Schneider,  N. Sergueev,  S. M. Sharada,  Hengyuan Shen,  
+ W. Skomorowski,  D. W. Small,  C. J. Stein,  Yingli Su,  Yu-Chuan Su,  
+ E. J. Sundstrom,  Zhen Tao,  J. Thirman,  Hung-Yi Tsai,  T. Tsuchimochi,  
+ N. M. Tubman,  C. Utku,  S. P. Veccham,  O. Vydrov,  J. Wenzel,  
+ Jonathan Wong,  J. Witte,  A. Yamada,  Chou-Hsun Yang,  Kun Yao,  
+ S. Yeganeh,  S. R. Yost,  A. Zech,  F. Zeller,  Igor Ying Zhang,  
+ Xing Zhang,  Yu Zhang,  D. Zuev,  A. Aspuru-Guzik,  A. T. Bell,  
+ N. A. Besley,  K. B. Bravaya,  B. R. Brooks,  D. Casanova,  Jeng-Da Chai,  
+ Hsing-Ta Chen,  S. Coriani,  C. J. Cramer,  A. E. DePrince, III,  
+ R. A. DiStasio Jr.,  A. Dreuw,  B. D. Dunietz,  T. R. Furlani,  
+ W. A. Goddard III,  S. Grimme,  S. Hammes-Schiffer,  T. Head-Gordon,  
+ W. J. Hehre,  Chao-Ping Hsu,  T.-C. Jagau,  Yousung Jung,  A. Klamt,  
+ Jing Kong,  D. S. Lambrecht,  Xiangyuan Li,  WanZhen Liang,  N. J. Mayhall,  
+ C. W. McCurdy,  J. B. Neaton,  T. Neudecker,  C. Ochsenfeld,  
+ J. A. Parkhill,  R. Peverati,  V. A. Rassolov,  Haisheng Ren,  Yihan Shao,  
+ L. V. Slipchenko,  R. P. Steele,  J. E. Subotnik,  A. J. W. Thom,  
+ A. Tkatchenko,  D. G. Truhlar,  T. Van Voorhis,  Fan Wang,  
+ T. A. Wesolowski,  K. B. Whaley,  H. L. Woodcock III,  P. M. Zimmerman,  
+ S. Faraji,  P. M. W. Gill,  M. Head-Gordon,  J. M. Herbert,  A. I. Krylov
+
+ Contributors to earlier versions of Q-Chem not listed above: 
+ R. D. Adamson,  B. Austin,  R. Baer,  J. Baker,  G. J. O. Beran,  
+ K. Brandhorst,  S. T. Brown,  E. F. C. Byrd,  Arup K. Chakraborty,  
+ G. K. L. Chan,  Chun-Min Chang,  Yunqing Chen,  C.-L. Cheng,  
+ Siu Hung Chien,  D. M. Chipman,  D. L. Crittenden,  H. Dachsel,  
+ R. J. Doerksen,  A. D. Dutoi,  R. G. Edgar,  J. Fosso-Tande,  
+ L. Fusti-Molnar,  D. Ghosh,  A. Ghysels,  A. Golubeva-Zadorozhnaya,  
+ J. Gonthier,  M. S. Gordon,  S. R. Gwaltney,  G. Hawkins,  J. E. Herr,  
+ A. Heyden,  S. Hirata,  E. G. Hohenstein,  G. Kedziora,  F. J. Keil,  
+ C. Kelley,  Jihan Kim,  R. A. King,  R. Z. Khaliullin,  P. P. Korambath,  
+ W. Kurlancheek,  A. Laurent,  A. M. Lee,  M. S. Lee,  S. V. Levchenko,  
+ Ching Yeh Lin,  D. Liotard,  E. Livshits,  R. C. Lochan,  I. Lotan,  
+ L. A. Martinez-Martinez,  P. E. Maslen,  N. Nair,  D. P. O'Neill,  
+ D. Neuhauser,  E. Neuscamman,  C. M. Oana,  R. Olivares-Amaya,  R. Olson,  
+ T. M. Perrine,  B. Peters,  P. A. Pieniazek,  A. Prociuk,  Y. M. Rhee,  
+ J. Ritchie,  M. A. Rohrdanz,  E. Rosta,  N. J. Russ,  H. F. Schaefer III,  
+ M. W. Schmidt,  N. E. Schultz,  S. Sharma,  N. Shenvi,  C. D. Sherrill,  
+ A. C. Simmonett,  A. Sodt,  T. Stein,  D. Stuck,  K. S. Thanthiriwatte,  
+ V. Vanovschi,  L. Vogt,  Tao Wang,  A. Warshel,  M. A. Watson,  
+ C. F. Williams,  Q. Wu,  X. Xu,  Jun Yang,  W. Zhang,  Yan Zhao
+
+   Please cite Q-Chem as follows:
+  "Software for the frontiers of quantum chemistry:
+   An overview of developments in the Q-Chem 5 package"
+   J. Chem. Phys. 155, 084801 (2021)
+   https://doi.org/10.1063/5.0055522 (open access)
+
+ Q-Chem 6.0.0 for Mac (Intel) OS X
+
+ Parts of Q-Chem use Armadillo 9.900.5 (Nocturnal Misbehaviour).
+ http://arma.sourceforge.net/
+
+ Q-Chem begins on Wed Nov 30 18:29:20 2022  
+
+ Host: Andrews-MacBook-Pro.local
+0
+
+     Scratch files written to /Users/agilbert/Development/QChem/scratch/qchem2241//
+ Processing $rem in /Users/agilbert/Development/QChem/tkt2864/config/preferences:
+ Processing $rem in /Users/agilbert/.qchemrc:
+
+ Checking the input file for inconsistencies... 	...done.
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+$molecule
+0  1
+H       2.1195528784     0.5137422595    -0.3319342228
+C       1.4473683869     1.3590099487    -0.2933475878
+C       1.9520728354     2.7134108539    -0.2005020112
+O       0.1958898087     1.0825185696    -0.3348212670
+C       3.2454834797     3.0352628973    -0.1554278077
+H       1.2007132242     3.4800122584    -0.1682859681
+H       4.0246737381     2.2977268163    -0.1853180390
+H       3.5522735487     4.0594282963    -0.0866880965
+$end
+
+$rem
+  jobtype               freq
+  method                hf
+  basis                 6-31G
+  cis_state_deriv       1
+  cis_singlets          true
+  cis_triplets          false
+  cis_n_roots           10
+  sym_ignore            true
+  save_vibronic_params  true
+$end
+
+--------------------------------------------------------------
+ ----------------------------------------------------------------
+             Standard Nuclear Orientation (Angstroms)
+    I     Atom           X                Y                Z
+ ----------------------------------------------------------------
+    1      H       2.1195528784     0.5137422595    -0.3319342228
+    2      C       1.4473683869     1.3590099487    -0.2933475878
+    3      C       1.9520728354     2.7134108539    -0.2005020112
+    4      O       0.1958898087     1.0825185696    -0.3348212670
+    5      C       3.2454834797     3.0352628973    -0.1554278077
+    6      H       1.2007132242     3.4800122584    -0.1682859681
+    7      H       4.0246737381     2.2977268163    -0.1853180390
+    8      H       3.5522735487     4.0594282963    -0.0866880965
+ ----------------------------------------------------------------
+ Nuclear Repulsion Energy =         101.99606519 hartrees
+ There are       15 alpha and       15 beta electrons
+ Requested basis set is 6-31G
+ There are 20 shells and 44 basis functions
+
+ Total QAlloc Memory Limit   2000 MB
+ Mega-Array Size       188 MB
+ MEM_STATIC part       192 MB
+
+
+                       Distance Matrix (Angstroms)
+             H (  1)   C (  2)   C (  3)   O (  4)   C (  5)   H (  6)
+   C (  2)  1.080647
+   C (  3)  2.209947  1.448361
+   O (  4)  2.005990  1.282328  2.400423
+   C (  5)  2.767118  2.462126  1.333616  3.625660
+   H (  6)  3.109631  2.138955  1.073898  2.604876  2.092619
+   H (  7)  2.614112  2.745061  2.113930  4.019785  1.073308  3.061510
+   H (  8)  3.832065  3.430101  2.094125  4.493203  1.071336  2.423266
+             H (  7)
+   H (  8)  1.826604
+
+ A cutoff of  1.0D-12 yielded    203 shell pairs
+ There are      1025 function pairs
+ Smallest overlap matrix eigenvalue = 5.60E-03
+ Guess from superposition of atomic densities
+ Warning:  Energy on first SCF cycle will be non-variational
+ SAD guess density has 30.000000 electrons
+
+ -----------------------------------------------------------------------
+  General SCF calculation program by
+  Eric Jon Sundstrom, Paul Horn, Yuezhi Mao, Dmitri Zuev, Alec White,
+  David Stuck, Shaama M.S., Shane Yost, Joonho Lee, David Small,
+  Daniel Levine, Susi Lehtola, Hugh Burton, Evgeny Epifanovsky,
+  Bang C. Huynh
+ -----------------------------------------------------------------------
+ Hartree-Fock
+ A restricted SCF calculation will be
+ performed using DIIS
+ SCF converges when DIIS error is below 1.0e-08
+ ---------------------------------------
+  Cycle       Energy         DIIS error
+ ---------------------------------------
+    1    -191.6443915067      1.48e-01  
+    2    -190.5575701469      2.00e-02  
+    3    -190.6022161339      1.89e-02  
+    4    -190.6689353762      1.61e-03  
+    5    -190.6706045757      5.69e-04  
+    6    -190.6708067273      2.95e-04  
+    7    -190.6708732404      1.27e-04  
+    8    -190.6708835425      5.17e-05  
+    9    -190.6708850747      9.42e-06  
+   10    -190.6708851266      2.59e-06  
+   11    -190.6708851304      5.79e-07  
+   12    -190.6708851306      8.31e-08  
+   13    -190.6708851306      1.71e-08  
+   14    -190.6708851306      4.43e-09  Convergence criterion met
+ ---------------------------------------
+ SCF time:   CPU 0.18s  wall 0.00s 
+ SCF   energy in the final basis set =     -190.6708851306
+ Total energy in the final basis set =     -190.6708851306
+
+ Direct RCIS calculation will be performed
+ Singlet excitation energies requested
+ CIS energy converged when residual is below 10e- 6
+ ---------------------------------------------------
+ Iter    Rts Conv    Rts Left    Ttl Dev     Max Dev
+ ---------------------------------------------------
+   1         0          10      0.041480    0.009096
+   2         0          10      0.011307    0.002001
+   3         0          10      0.009942    0.004550
+   4         0          10      0.004237    0.001960
+   5         0          10      0.001082    0.000424
+   6         1           9      0.000272    0.000096
+   7         3           7      0.000090    0.000038
+   8         6           4      0.000011    0.000004
+   9        10           0      0.000003    0.000001    Roots Converged
+ ---------------------------------------------------
+
+ ---------------------------------------------------
+               CIS Excitation Energies              
+ ---------------------------------------------------
+
+ Excited state   1: excitation energy (eV) =    4.0446
+ Total energy for state  1:                  -190.52224862 au
+    Multiplicity: Singlet
+    Trans. Mom.:  0.0008 X   0.0025 Y  -0.0406 Z
+    Strength   :     0.0001642338
+    D(   14) --> V(    1) amplitude =  0.8991
+    D(   14) --> V(    2) amplitude =  0.3941
+
+ Excited state   2: excitation energy (eV) =    7.0768
+ Total energy for state  2:                  -190.41081663 au
+    Multiplicity: Singlet
+    Trans. Mom.: -1.9750 X  -0.9759 Y  -0.0985 Z
+    Strength   :     0.8430686096
+    D(   15) --> V(    1) amplitude =  0.9646
+
+ Excited state   3: excitation energy (eV) =    8.1403
+ Total energy for state  3:                  -190.37173506 au
+    Multiplicity: Singlet
+    Trans. Mom.:  0.0028 X   0.0088 Y  -0.1445 Z
+    Strength   :     0.0041788741
+    D(   10) --> V(    2) amplitude = -0.2183
+    D(   11) --> V(    1) amplitude =  0.8910
+    D(   11) --> V(    2) amplitude =  0.3024
+
+ Excited state   4: excitation energy (eV) =    8.8520
+ Total energy for state  4:                  -190.34557926 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0006 X  -0.0020 Y   0.0327 Z
+    Strength   :     0.0002334145
+    D(   12) --> V(    1) amplitude =  0.9115
+
+ Excited state   5: excitation energy (eV) =    9.4880
+ Total energy for state  5:                  -190.32220935 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0618 X   0.0330 Y   0.0008 Z
+    Strength   :     0.0011395897
+    D(   13) --> V(    1) amplitude =  0.8918
+    D(   15) --> V(    2) amplitude =  0.2777
+
+ Excited state   6: excitation energy (eV) =   10.1900
+ Total energy for state  6:                  -190.29640833 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0000 X  -0.0000 Y   0.0005 Z
+    Strength   :     0.0000000686
+    D(    9) --> V(    1) amplitude = -0.4295
+    D(   10) --> V(    1) amplitude = -0.5706
+    D(   11) --> V(    2) amplitude =  0.3572
+    D(   14) --> V(    2) amplitude =  0.4399
+
+ Excited state   7: excitation energy (eV) =   10.6074
+ Total energy for state  7:                  -190.28107194 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0012 X  -0.0037 Y   0.0603 Z
+    Strength   :     0.0009499533
+    D(   15) --> V(    3) amplitude =  0.7450
+    D(   15) --> V(    4) amplitude = -0.5817
+
+ Excited state   8: excitation energy (eV) =   10.7268
+ Total energy for state  8:                  -190.27668100 au
+    Multiplicity: Singlet
+    Trans. Mom.:  0.5578 X  -0.1191 Y   0.0036 Z
+    Strength   :     0.0855158723
+    D(   13) --> V(    1) amplitude = -0.2913
+    D(   15) --> V(    2) amplitude =  0.9324
+
+ Excited state   9: excitation energy (eV) =   11.1172
+ Total energy for state  9:                  -190.26233554 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0010 X  -0.0031 Y   0.0509 Z
+    Strength   :     0.0007091028
+    D(   15) --> V(    3) amplitude =  0.6008
+    D(   15) --> V(    4) amplitude =  0.6299
+    D(   15) --> V(    5) amplitude =  0.3669
+
+ Excited state  10: excitation energy (eV) =   11.3158
+ Total energy for state 10:                  -190.25503785 au
+    Multiplicity: Singlet
+    Trans. Mom.: -0.0019 X  -0.0059 Y   0.0970 Z
+    Strength   :     0.0026203618
+    D(    9) --> V(    1) amplitude = -0.7203
+    D(   10) --> V(    1) amplitude =  0.4021
+    D(   12) --> V(    2) amplitude =  0.3893
+
+ ---------------------------------------------------
+ Calculating Relaxed Density
+ ---------------------------------------------------
+ Iter    Rts Conv    Rts Left    Ttl Dev     Max Dev
+ ---------------------------------------------------
+   1         0          10      0.005748    0.001068
+   2         0          10      0.000871    0.000157
+   3         0          10      0.000096    0.000019
+   4         8           2      0.000003    0.000002
+   5        10           0      0.000000    0.000000    Roots Converged
+ ---------------------------------------------------
+  SETman timing summary (seconds)
+  CPU time                 0.38s
+  System time              0.00s
+  Wall time                0.38s
+
+ --------------------------------------------------------------
+
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+
+ Alpha MOs
+ -- Occupied --
+-20.5713 -11.3493 -11.2779 -11.2647  -1.3664  -1.0997  -0.9035  -0.7967
+ -0.6778  -0.6672  -0.5852  -0.5572  -0.5209  -0.4364  -0.3936
+ -- Virtual --
+  0.0689   0.2286   0.2433   0.2543   0.2926   0.3349   0.4170   0.4684
+  0.5349   0.7288   0.7367   0.7572   0.8167   0.8634   0.8808   0.9073
+  0.9326   1.0923   1.1267   1.1739   1.2075   1.2239   1.2456   1.2938
+  1.3626   1.3709   1.4433   1.5767   2.0214
+ --------------------------------------------------------------
+
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)
+  ----------------------------------------
+      1 H                     0.182637
+      2 C                     0.300873
+      3 C                    -0.222189
+      4 O                    -0.555045
+      5 C                    -0.319372
+      6 H                     0.227609
+      7 H                     0.189786
+      8 H                     0.195701
+  ----------------------------------------
+  Sum of atomic charges =     0.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                 0.0000
+    Dipole Moment (Debye)
+         X       4.0794      Y       1.5708      Z       0.1762
+       Tot       4.3750
+    Quadrupole Moments (Debye-Ang)
+        XX     -13.1731     XY       7.9937     YY     -16.1561
+        XZ      -0.9269     YZ       0.0736     ZZ     -25.2700
+    Octopole Moments (Debye-Ang^2)
+       XXX     -93.6801    XXY     -25.3317    XYY     -18.6697
+       YYY    -116.9802    XXZ       3.7919    XYZ      -0.9283
+       YYZ       5.6753    XZZ     -46.7858    YZZ     -54.4626
+       ZZZ      17.8694
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX    -545.8456   XXXY    -237.8587   XXYY    -160.4611
+      XYYY    -236.2760   YYYY    -634.8112   XXXZ      20.2526
+      XXYZ       8.4611   XYYZ       7.8111   YYYZ      30.9337
+      XXZZ    -129.9486   XYZZ    -122.0439   YYZZ    -148.9607
+      XZZZ      27.5115   YZZZ      33.3374   ZZZZ     -33.6205
+ -----------------------------------------------------------------
+ Calculating MO derivatives via CPSCF
+   1         3          24      0.200734    0.060705
+   2         3          24      0.045262    0.019487
+   3         3          24      0.007463    0.003126
+   4         3          24      0.000876    0.000333
+   5        14          13      0.000067    0.000028
+   6        26           1      0.000002    0.000002
+   7        27           0      0.000000    0.000000    Roots Converged
+ ------------------------------------------------------------------------------
+                     AOints        : Timing summary (seconds)
+ ------------------------------------------------------------------------------
+     job step          cpu (% of tot)      sys (% of tot)     wall (% of tot)
+ ------------------------------------------------------------------------------
+  cpscf_lag         0.1133E+00 (30.0)   0.1000E-05 (33.3)   0.1150E+00 (30.3)
+  iterzp            0.2226E+00 (59.0)   0.2000E-05 (66.7)   0.2226E+00 (58.7)
+  make_fx           0.0000E+00 ( 0.0)   0.0000E+00 ( 0.0)   0.0000E+00 ( 0.0)
+  AOints            0.4008E-01 (10.6)   0.0000E+00 ( 0.0)   0.4008E-01 (10.6)
+ ------------------------------------------------------------------------------
+   Grand Totals     0.3774E+00          0.3000E-05          0.3790E+00
+ ------------------------------------------------------------------------------
+ Calculating CIS amplitude derivatives via CPCIS
+ CIS relaxed dipole moment
+            1
+    1  97.8210284
+    2 115.9869085
+    3 -13.9362434
+	Magnitude:	152.368 au	387.282 Debye
+ CIS Excitation Energy is    0.1486365131
+ Gradient of the CIS Excitation Energy
+            1           2           3           4           5           6
+    1   0.0062588  -0.0882761   0.0067531   0.0835220  -0.0098096  -0.0003249
+    2   0.0045690  -0.0328826   0.0109137   0.0238742  -0.0048742  -0.0006862
+    3   0.0004026  -0.0037449   0.0008008   0.0030999  -0.0004909  -0.0000484
+            7           8
+    1   0.0005286   0.0013482
+    2  -0.0008934  -0.0000205
+    3  -0.0000444   0.0000252
+ Solving Z vectors of CPHF for 1 segments
+   1         3          24      0.039185    0.008342
+   2         3          24      0.005898    0.001310
+   3         4          23      0.000948    0.000203
+   4        11          16      0.000151    0.000037
+   5        24           3      0.000014    0.000005
+   6        27           0      0.000000    0.000000    Roots Converged
+ CPCIS time:  CPU 0.46 s  wall 0.46 s
+ transition dipole derivative
+            1           2           3
+    1   0.0008946   0.0006662  -0.0289236
+    2  -0.0002511  -0.0074293   0.0649379
+    3  -0.0168263   0.0559604   0.0065342
+    4  -0.0039118  -0.0021632   0.0867652
+    5  -0.0038344   0.0194258  -0.1565080
+    6   0.1130252  -0.1597281  -0.0155140
+    7  -0.0006577  -0.0008993  -0.0297748
+    8  -0.0050605  -0.0121983   0.0603197
+    9   0.0630635   0.1380693   0.0128560
+   10   0.0020519   0.0022867  -0.0492973
+   11   0.0028157  -0.0040789   0.0292427
+   12  -0.0553791   0.0372326   0.0020270
+   13   0.0017047   0.0006796   0.0071289
+   14   0.0055447   0.0028126   0.0109885
+   15  -0.0939645  -0.0566362  -0.0045171
+   16   0.0009545   0.0001822   0.0072360
+   17   0.0034089   0.0019034   0.0008311
+   18  -0.0558652  -0.0317279  -0.0028576
+   19   0.0003531  -0.0000835   0.0029583
+   20   0.0012018   0.0000486   0.0041921
+   21  -0.0209548  -0.0049581  -0.0004015
+   22  -0.0013892  -0.0006688   0.0039073
+   23  -0.0038250  -0.0004838  -0.0140041
+   24   0.0669012   0.0217880   0.0018729
+ TDDFT-Hessian time:  CPU 0.53 s  wall 0.55 s
+ Gradient time:  CPU 1.38 s  wall 1.39 s
+ **********************************************************************
+ **                                                                  **
+ **                       VIBRATIONAL ANALYSIS                       **
+ **                       --------------------                       **
+ **                                                                  **
+ **        VIBRATIONAL FREQUENCIES (CM**-1) AND NORMAL MODES         **
+ **     FORCE CONSTANTS (mDYN/ANGSTROM) AND REDUCED MASSES (AMU)     **
+ **                  INFRARED INTENSITIES (KM/MOL)                   **
+ **                                                                  **
+ **********************************************************************
+
+
+ Mode:                 1                      2                      3
+ Frequency:       182.27                 341.59                 520.19
+ Force Cnst:      0.0757                 0.2228                 0.1933
+ Red. Mass:       3.8671                 3.2402                 1.2124
+ IR Active:          YES                    YES                    YES
+ IR Intens:        0.889                  9.401                 82.851
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.008 -0.025  0.415   -0.134 -0.372 -0.025   -0.018 -0.056  0.917
+ C         -0.006 -0.019  0.306    0.069 -0.225 -0.012    0.003  0.008 -0.133
+ C         -0.004 -0.013  0.209    0.061 -0.224 -0.013   -0.000 -0.001  0.011
+ O          0.005  0.015 -0.242   -0.042  0.216  0.012   -0.000 -0.002  0.025
+ C          0.004  0.013 -0.205   -0.040  0.160  0.009   -0.000 -0.000  0.002
+ H         -0.009 -0.030  0.483   -0.069 -0.349 -0.023   -0.003 -0.009  0.145
+ H          0.011  0.035 -0.565    0.238  0.455  0.033    0.005  0.016 -0.255
+ H          0.004  0.011 -0.182   -0.433  0.280  0.009   -0.004 -0.014  0.225
+ TransDip  -0.001 -0.002  0.030   -0.015 -0.097 -0.006   -0.006 -0.018  0.291
+
+ Mode:                 4                      5                      6
+ Frequency:       543.21                 705.94                1000.44
+ Force Cnst:      0.7374                 0.4534                 1.2329
+ Red. Mass:       4.2414                 1.5440                 2.0907
+ IR Active:          YES                    YES                    YES
+ IR Intens:        3.510                  0.022                  5.964
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H          0.296  0.034  0.008    0.003  0.008 -0.137   -0.076 -0.298 -0.020
+ C          0.218 -0.057  0.001   -0.002 -0.007  0.113    0.038 -0.208 -0.012
+ C         -0.225  0.024 -0.003    0.004  0.011 -0.187    0.007  0.152  0.009
+ O          0.191  0.213  0.017   -0.000 -0.000  0.002   -0.081 -0.013 -0.002
+ C         -0.216 -0.184 -0.016   -0.001 -0.002  0.030    0.056  0.135  0.009
+ H         -0.312 -0.073 -0.011   -0.004 -0.013  0.209   -0.181 -0.023 -0.005
+ H         -0.478 -0.461 -0.038    0.008  0.026 -0.427   -0.375 -0.335 -0.028
+ H          0.124 -0.293 -0.016   -0.016 -0.051  0.838    0.720 -0.064  0.010
+ TransDip  -0.026 -0.054 -0.004   -0.000 -0.000  0.005    0.074  0.024  0.003
+
+ Mode:                 7                      8                      9
+ Frequency:      1051.81                1132.31                1228.20
+ Force Cnst:      0.8575                 0.8845                 1.6020
+ Red. Mass:       1.3156                 1.1709                 1.8025
+ IR Active:          YES                    YES                    YES
+ IR Intens:      107.754                 17.027                 30.381
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.001 -0.002  0.038   -0.001 -0.004  0.065   -0.477 -0.198 -0.021
+ C          0.000  0.001 -0.010   -0.000 -0.000  0.006   -0.036  0.169  0.010
+ C         -0.001 -0.003  0.041    0.002  0.007 -0.114    0.044 -0.160 -0.009
+ O         -0.000 -0.000  0.000    0.000  0.000 -0.002    0.063 -0.012  0.001
+ C          0.003  0.010 -0.161   -0.001 -0.003  0.042   -0.032  0.090  0.005
+ H         -0.003 -0.009  0.152   -0.017 -0.053  0.863   -0.264 -0.465 -0.034
+ H         -0.015 -0.048  0.790   -0.006 -0.017  0.283   -0.372 -0.278 -0.024
+ H         -0.011 -0.035  0.565    0.008  0.024 -0.390    0.397 -0.049  0.005
+ TransDip  -0.007 -0.020  0.332   -0.003 -0.008  0.132   -0.153 -0.087 -0.008
+
+ Mode:                10                     11                     12
+ Frequency:      1326.70                1449.63                1578.06
+ Force Cnst:      1.2294                 1.6125                 2.3278
+ Red. Mass:       1.1855                 1.3024                 1.5866
+ IR Active:          YES                    YES                    YES
+ IR Intens:        5.310                  0.570                  6.816
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H          0.710  0.596  0.050    0.042  0.015  0.002   -0.049  0.016  0.000
+ C         -0.018  0.002 -0.000    0.013 -0.009 -0.000   -0.120 -0.042 -0.005
+ C          0.012 -0.092 -0.005    0.079 -0.069 -0.003   -0.124 -0.069 -0.007
+ O         -0.056  0.012 -0.000   -0.006 -0.002 -0.000    0.102  0.026  0.004
+ C          0.018  0.050  0.003   -0.112  0.055  0.001    0.003  0.030  0.002
+ H         -0.106 -0.211 -0.015    0.699  0.519  0.045    0.242  0.303  0.023
+ H         -0.088 -0.075 -0.006   -0.395 -0.232 -0.022    0.384  0.399  0.032
+ H          0.233 -0.015  0.004   -0.016  0.011  0.000    0.684 -0.152  0.004
+ TransDip   0.074 -0.004  0.001   -0.016  0.018  0.001   -0.036 -0.075 -0.005
+
+ Mode:                13                     14                     15
+ Frequency:      1629.00                1796.95                3261.27
+ Force Cnst:      5.6271                 6.5981                 6.7592
+ Red. Mass:       3.5991                 3.4681                 1.0786
+ IR Active:          YES                    YES                    YES
+ IR Intens:        0.200                 52.202                 17.140
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.099 -0.182 -0.013    0.078  0.066  0.006   -0.630  0.771  0.035
+ C          0.353  0.153  0.016   -0.070 -0.035 -0.004    0.048 -0.064 -0.003
+ C         -0.072 -0.072 -0.006    0.309  0.135  0.014    0.001  0.003  0.000
+ O         -0.222 -0.054 -0.008    0.018  0.001  0.000    0.001 -0.002 -0.000
+ C         -0.068 -0.024 -0.003   -0.308 -0.092 -0.012   -0.002 -0.000 -0.000
+ H          0.133  0.117  0.010   -0.152 -0.373 -0.026    0.018 -0.022 -0.001
+ H          0.398  0.448  0.035    0.227  0.531  0.037    0.016 -0.017 -0.001
+ H          0.553 -0.205 -0.002    0.391 -0.339 -0.013    0.005  0.022  0.001
+ TransDip   0.007  0.012  0.001    0.195  0.124  0.011   -0.132  0.006 -0.002
+
+ Mode:                16                     17                     18
+ Frequency:      3338.33                3365.42                3430.85
+ Force Cnst:      6.9604                 7.3038                 7.7336
+ Red. Mass:       1.0600                 1.0945                 1.1151
+ IR Active:          YES                    YES                    YES
+ IR Intens:        5.420                  2.326                 14.572
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H          0.021 -0.030 -0.001   -0.010  0.018  0.001    0.001  0.002  0.000
+ C         -0.002  0.003  0.000    0.002 -0.000  0.000    0.001  0.001  0.000
+ C         -0.006  0.016  0.001    0.063 -0.056 -0.002    0.012 -0.011 -0.000
+ O          0.000 -0.000 -0.000   -0.000 -0.000 -0.000   -0.000 -0.000 -0.000
+ C         -0.066 -0.008 -0.002   -0.024  0.013  0.000    0.015 -0.096 -0.006
+ H          0.153 -0.159 -0.007   -0.670  0.684  0.029   -0.116  0.116  0.005
+ H          0.541 -0.522 -0.021    0.197 -0.188 -0.008   -0.433  0.398  0.016
+ H          0.165  0.592  0.040    0.000  0.008  0.000    0.231  0.749  0.050
+ TransDip  -0.063  0.040  0.001   -0.008 -0.048 -0.003    0.042 -0.115 -0.006
+
+ STANDARD THERMODYNAMIC QUANTITIES AT   298.15 K  AND     1.00 ATM
+
+   This Molecule has  0 Imaginary Frequencies
+   Zero point vibrational energy:       39.860 kcal/mol
+
+   Atom    1 Element H  Has Mass    1.00783
+   Atom    2 Element C  Has Mass   12.00000
+   Atom    3 Element C  Has Mass   12.00000
+   Atom    4 Element O  Has Mass   15.99491
+   Atom    5 Element C  Has Mass   12.00000
+   Atom    6 Element H  Has Mass    1.00783
+   Atom    7 Element H  Has Mass    1.00783
+   Atom    8 Element H  Has Mass    1.00783
+   Molecular Mass:    56.026230 amu
+   Principal axes and moments of inertia in amu*Bohr^2:
+                             1           2           3
+    Eigenvalues --       36.28672   399.87343   436.16015
+          X               0.80218    -0.59676    -0.01957
+          Y               0.59479     0.80155    -0.06112
+          Z               0.05216     0.03739     0.99794
+   Rotational Symmetry Number is   1
+   The Molecule is an Asymmetric Top
+   Translational Enthalpy:        0.889 kcal/mol
+   Rotational Enthalpy:           0.889 kcal/mol
+   Vibrational Enthalpy:         40.864 kcal/mol
+   gas constant (RT):             0.592 kcal/mol
+   Translational Entropy:        37.991  cal/mol.K
+   Rotational Entropy:           23.363  cal/mol.K
+   Vibrational Entropy:           5.295  cal/mol.K
+
+   Total Enthalpy:               43.234 kcal/mol
+   Total Entropy:                66.649  cal/mol.K
+ Total job time:  2.01s(wall), 1.99s(cpu) 
+ Wed Nov 30 18:29:22 2022
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+
+ 
+User input: 2 of 2 
+ 
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+
+ Q-Chem 6.0 (devel), Q-Chem, Inc., Pleasanton, CA (2022)
+
+ E. Epifanovsky,  A. T. B. Gilbert,  Xintian Feng,  Joonho Lee,  Yuezhi Mao,  
+ N. Mardirossian,  P. Pokhilko,  A. White,  M. Wormit,  M. P. Coons,  
+ A. L. Dempwolff,  Zhengting Gan,  D. Hait,  P. R. Horn,  L. D. Jacobson,  
+ I. Kaliman,  J. Kussmann,  A. W. Lange,  Ka Un Lao,  D. S. Levine,  Jie Liu,  
+ S. C. McKenzie,  A. F. Morrison,  K. Nanda,  F. Plasser,  D. R. Rehn,  
+ M. L. Vidal,  Zhi-Qiang You,  Ying Zhu,  B. Alam,  B. Albrecht,  
+ A. Aldossary,  E. Alguire,  J. H. Andersen,  V. Athavale,  D. Barton,  
+ K. Begam,  A. Behn,  N. Bellonzi,  Y. A. Bernard,  E. J. Berquist,  
+ H. Burton,  A. Carreras,  K. Carter-Fenk,  Romit Chakraborty,  
+ Chandrima Chakravarty,  Junhan Chen,  A. D. Chien,  K. D. Closser,  
+ V. Cofer-Shabica,  L. Cunha,  S. Dasgupta,  Jia Deng,  M. de Wergifosse,  
+ M. Diedenhofen,  Hainam Do,  S. Ehlert,  Po-Tung Fang,  S. Fatehi,  
+ Qingguo Feng,  T. Friedhoff,  B. Ganoe,  J. Gayvert,  Qinghui Ge,  
+ G. Gidofalvi,  M. Goldey,  J. Gomes,  C. Gonzalez-Espinoza,  S. Gulania,  
+ A. Gunina,  J. A. Gyamfi,  M. W. D. Hanson-Heine,  P. H. P. Harbach,  
+ A. W. Hauser,  M. F. Herbst,  M. Hernandez Vera,  M. Hodecker,  
+ Z. C. Holden,  S. Houck,  Xunkun Huang,  Kerwin Hui,  B. C. Huynh,  
+ K. Ikeda,  M. Ivanov,  Hyunjun Ji,  Zuxin Jin,  Hanjie Jiang,  B. Kaduk,  
+ S. Kaehler,  R. Kang,  K. Khistyaev,  Jaehoon Kim,  Yongbin Kim,  
+ P. Klunzinger,  Z. Koczor-Benda,  Joong Hoon Koh,  D. Kosenkov,  
+ Saikiran Kotaru,  L. Koulias,  T. Kowalczyk,  C. M. Krauter,  K. Kue,  
+ A. Kunitsa,  T. Kus,  A. Landau,  K. V. Lawler,  D. Lefrancois,  S. Lehtola,  
+ Rain Li,  Shaozhi Li,  Yi-Pei Li,  Jiashu Liang,  M. Liebenthal,  
+ Hung-Hsuan Lin,  You-Sheng Lin,  Fenglai Liu,  Kuan-Yu Liu,  
+ M. Loipersberger,  A. Luenser,  C. Malbon,  A. Manjanath,  P. Manohar,  
+ E. Mansoor,  S. F. Manzer,  Shan-Ping Mao,  A. V. Marenich,  T. Markovich,  
+ S. Mason,  F. Matz,  S. A. Maurer,  P. F. McLaughlin,  M. F. S. J. Menger,  
+ J.-M. Mewes,  S. A. Mewes,  P. Morgante,  Mohammad Mostafanejad,  
+ J. W. Mullinax,  K. J. Oosterbaan,  G. Paran,  V. Parravicini,  
+ Alexander C. Paul,  Suranjan K. Paul,  F. Pavosevic,  Zheng Pei,  S. Prager,  
+ E. I. Proynov,  E. Ramos,  B. Rana,  A. E. Rask,  A. Rettig,  R. M. Richard,  
+ F. Rob,  E. Rossomme,  T. Scheele,  M. Scheurer,  M. Schneider,  
+ P. E. Schneider,  N. Sergueev,  S. M. Sharada,  Hengyuan Shen,  
+ W. Skomorowski,  D. W. Small,  C. J. Stein,  Yingli Su,  Yu-Chuan Su,  
+ E. J. Sundstrom,  Zhen Tao,  J. Thirman,  Hung-Yi Tsai,  T. Tsuchimochi,  
+ N. M. Tubman,  C. Utku,  S. P. Veccham,  O. Vydrov,  J. Wenzel,  
+ Jonathan Wong,  J. Witte,  A. Yamada,  Chou-Hsun Yang,  Kun Yao,  
+ S. Yeganeh,  S. R. Yost,  A. Zech,  F. Zeller,  Igor Ying Zhang,  
+ Xing Zhang,  Yu Zhang,  D. Zuev,  A. Aspuru-Guzik,  A. T. Bell,  
+ N. A. Besley,  K. B. Bravaya,  B. R. Brooks,  D. Casanova,  Jeng-Da Chai,  
+ Hsing-Ta Chen,  S. Coriani,  C. J. Cramer,  A. E. DePrince, III,  
+ R. A. DiStasio Jr.,  A. Dreuw,  B. D. Dunietz,  T. R. Furlani,  
+ W. A. Goddard III,  S. Grimme,  S. Hammes-Schiffer,  T. Head-Gordon,  
+ W. J. Hehre,  Chao-Ping Hsu,  T.-C. Jagau,  Yousung Jung,  A. Klamt,  
+ Jing Kong,  D. S. Lambrecht,  Xiangyuan Li,  WanZhen Liang,  N. J. Mayhall,  
+ C. W. McCurdy,  J. B. Neaton,  T. Neudecker,  C. Ochsenfeld,  
+ J. A. Parkhill,  R. Peverati,  V. A. Rassolov,  Haisheng Ren,  Yihan Shao,  
+ L. V. Slipchenko,  R. P. Steele,  J. E. Subotnik,  A. J. W. Thom,  
+ A. Tkatchenko,  D. G. Truhlar,  T. Van Voorhis,  Fan Wang,  
+ T. A. Wesolowski,  K. B. Whaley,  H. L. Woodcock III,  P. M. Zimmerman,  
+ S. Faraji,  P. M. W. Gill,  M. Head-Gordon,  J. M. Herbert,  A. I. Krylov
+
+ Contributors to earlier versions of Q-Chem not listed above: 
+ R. D. Adamson,  B. Austin,  R. Baer,  J. Baker,  G. J. O. Beran,  
+ K. Brandhorst,  S. T. Brown,  E. F. C. Byrd,  Arup K. Chakraborty,  
+ G. K. L. Chan,  Chun-Min Chang,  Yunqing Chen,  C.-L. Cheng,  
+ Siu Hung Chien,  D. M. Chipman,  D. L. Crittenden,  H. Dachsel,  
+ R. J. Doerksen,  A. D. Dutoi,  R. G. Edgar,  J. Fosso-Tande,  
+ L. Fusti-Molnar,  D. Ghosh,  A. Ghysels,  A. Golubeva-Zadorozhnaya,  
+ J. Gonthier,  M. S. Gordon,  S. R. Gwaltney,  G. Hawkins,  J. E. Herr,  
+ A. Heyden,  S. Hirata,  E. G. Hohenstein,  G. Kedziora,  F. J. Keil,  
+ C. Kelley,  Jihan Kim,  R. A. King,  R. Z. Khaliullin,  P. P. Korambath,  
+ W. Kurlancheek,  A. Laurent,  A. M. Lee,  M. S. Lee,  S. V. Levchenko,  
+ Ching Yeh Lin,  D. Liotard,  E. Livshits,  R. C. Lochan,  I. Lotan,  
+ L. A. Martinez-Martinez,  P. E. Maslen,  N. Nair,  D. P. O'Neill,  
+ D. Neuhauser,  E. Neuscamman,  C. M. Oana,  R. Olivares-Amaya,  R. Olson,  
+ T. M. Perrine,  B. Peters,  P. A. Pieniazek,  A. Prociuk,  Y. M. Rhee,  
+ J. Ritchie,  M. A. Rohrdanz,  E. Rosta,  N. J. Russ,  H. F. Schaefer III,  
+ M. W. Schmidt,  N. E. Schultz,  S. Sharma,  N. Shenvi,  C. D. Sherrill,  
+ A. C. Simmonett,  A. Sodt,  T. Stein,  D. Stuck,  K. S. Thanthiriwatte,  
+ V. Vanovschi,  L. Vogt,  Tao Wang,  A. Warshel,  M. A. Watson,  
+ C. F. Williams,  Q. Wu,  X. Xu,  Jun Yang,  W. Zhang,  Yan Zhao
+
+   Please cite Q-Chem as follows:
+  "Software for the frontiers of quantum chemistry:
+   An overview of developments in the Q-Chem 5 package"
+   J. Chem. Phys. 155, 084801 (2021)
+   https://doi.org/10.1063/5.0055522 (open access)
+
+ Q-Chem 6.0.0 for Mac (Intel) OS X
+
+ Parts of Q-Chem use Armadillo 9.900.5 (Nocturnal Misbehaviour).
+ http://arma.sourceforge.net/
+
+ Q-Chem begins on Wed Nov 30 18:29:24 2022  
+
+ Host: Andrews-MacBook-Pro.local
+0
+
+     Scratch files written to /Users/agilbert/Development/QChem/scratch/qchem2241//
+ Processing $rem in /Users/agilbert/Development/QChem/tkt2864/config/preferences:
+ Processing $rem in /Users/agilbert/.qchemrc:
+
+ Checking the input file for inconsistencies... 	...done.
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+
+$molecule
+0 1
+H       2.1887220025     0.5822572084    -0.3263818343
+C       1.4324396944     1.3609255057    -0.2935230057
+C       1.9229294089     2.7396586420    -0.1994659959
+O       0.2524823254     1.0686412929    -0.3345613296
+C       3.2188155499     3.0165609079    -0.1570961185
+H       1.1751512346     3.5089725422    -0.1670136583
+H       3.9637412628     2.2419565015    -0.1899284285
+H       3.5837464216     4.0221392994    -0.0883546292
+$end
+
+$rem
+  jobtype           freq
+  method            hf
+  basis             6-31G
+  sym_ignore        true
+  vibronic_spectra  1
+$end
+
+$vibronic
+  model 2
+  freq_range 10000.0 50000.0 5.0
+$end
+--------------------------------------------------------------
+ ----------------------------------------------------------------
+             Standard Nuclear Orientation (Angstroms)
+    I     Atom           X                Y                Z
+ ----------------------------------------------------------------
+    1      H       2.1887220025     0.5822572084    -0.3263818343
+    2      C       1.4324396944     1.3609255057    -0.2935230057
+    3      C       1.9229294089     2.7396586420    -0.1994659959
+    4      O       0.2524823254     1.0686412929    -0.3345613296
+    5      C       3.2188155499     3.0165609079    -0.1570961185
+    6      H       1.1751512346     3.5089725422    -0.1670136583
+    7      H       3.9637412628     2.2419565015    -0.1899284285
+    8      H       3.5837464216     4.0221392994    -0.0883546292
+ ----------------------------------------------------------------
+ Nuclear Repulsion Energy =         103.47986477 hartrees
+ There are       15 alpha and       15 beta electrons
+ Requested basis set is 6-31G
+ There are 20 shells and 44 basis functions
+
+ Total QAlloc Memory Limit   2000 MB
+ Mega-Array Size       188 MB
+ MEM_STATIC part       192 MB
+
+
+                       Distance Matrix (Angstroms)
+             H (  1)   C (  2)   C (  3)   O (  4)   C (  5)   H (  6)
+   C (  2)  1.085987
+   C (  3)  2.177415  1.466401
+   O (  4)  1.996412  1.216311  2.366631
+   C (  5)  2.648695  2.439442  1.325817  3.553170
+   H (  6)  3.101352  2.167097  1.073345  2.614308  2.102173
+   H (  7)  2.433909  2.682244  2.100645  3.895001  1.075176  3.063020
+   H (  8)  3.719615  3.428159  2.101289  4.458821  1.071955  2.463911
+             H (  7)
+   H (  8)  1.823119
+
+ A cutoff of  1.0D-12 yielded    203 shell pairs
+ There are      1025 function pairs
+ Smallest overlap matrix eigenvalue = 5.26E-03
+ Guess from superposition of atomic densities
+ Warning:  Energy on first SCF cycle will be non-variational
+ SAD guess density has 30.000000 electrons
+
+ -----------------------------------------------------------------------
+  General SCF calculation program by
+  Eric Jon Sundstrom, Paul Horn, Yuezhi Mao, Dmitri Zuev, Alec White,
+  David Stuck, Shaama M.S., Shane Yost, Joonho Lee, David Small,
+  Daniel Levine, Susi Lehtola, Hugh Burton, Evgeny Epifanovsky,
+  Bang C. Huynh
+ -----------------------------------------------------------------------
+ Hartree-Fock
+ A restricted SCF calculation will be
+ performed using DIIS
+ SCF converges when DIIS error is below 1.0e-08
+ ---------------------------------------
+  Cycle       Energy         DIIS error
+ ---------------------------------------
+    1    -191.7989248846      1.55e-01  
+    2    -190.5783195177      1.88e-02  
+    3    -190.6286714627      1.61e-02  
+    4    -190.6759662160      1.57e-03  
+    5    -190.6775072442      5.65e-04  
+    6    -190.6776991973      2.76e-04  
+    7    -190.6777572074      9.93e-05  
+    8    -190.6777629327      3.49e-05  
+    9    -190.6777634674      6.39e-06  
+   10    -190.6777634912      2.28e-06  
+   11    -190.6777634937      5.12e-07  
+   12    -190.6777634939      1.26e-07  
+   13    -190.6777634939      3.12e-08  
+   14    -190.6777634939      5.25e-09  Convergence criterion met
+ ---------------------------------------
+ SCF time:   CPU 0.18s  wall 0.00s 
+ SCF   energy in the final basis set =     -190.6777634939
+ Total energy in the final basis set =     -190.6777634939
+
+ --------------------------------------------------------------
+
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+
+ Alpha MOs
+ -- Occupied --
+-20.5728 -11.3459 -11.2714 -11.2594  -1.4118  -1.0976  -0.8927  -0.7962
+ -0.6790  -0.6697  -0.6021  -0.5580  -0.5421  -0.4299  -0.3975
+ -- Virtual --
+  0.0838   0.2343   0.2459   0.2562   0.3012   0.3340   0.4213   0.4801
+  0.5352   0.7282   0.7354   0.7801   0.8144   0.8554   0.8811   0.9365
+  0.9700   1.0905   1.1276   1.1722   1.2086   1.2292   1.2410   1.2934
+  1.3627   1.3837   1.4410   1.5807   2.0673
+ --------------------------------------------------------------
+
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)
+  ----------------------------------------
+      1 H                     0.166045
+      2 C                     0.301559
+      3 C                    -0.215095
+      4 O                    -0.521568
+      5 C                    -0.335094
+      6 H                     0.224787
+      7 H                     0.185460
+      8 H                     0.193907
+  ----------------------------------------
+  Sum of atomic charges =     0.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                -0.0000
+    Dipole Moment (Debye)
+         X       3.6686      Y       1.5086      Z       0.1643
+       Tot       3.9701
+    Quadrupole Moments (Debye-Ang)
+        XX     -14.1696     XY       7.1042     YY     -16.7468
+        XZ      -0.8372     YZ       0.0368     ZZ     -25.1295
+    Octopole Moments (Debye-Ang^2)
+       XXX     -97.1779    XXY     -27.9184    XYY     -21.7275
+       YYY    -119.8076    XXZ       3.9675    XYZ      -0.8099
+       YYZ       5.6671    XZZ     -46.7859    YZZ     -54.3265
+       ZZZ      17.7258
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX    -551.0921   XXXY    -244.7917   XXYY    -167.8336
+      XYYY    -245.2366   YYYY    -646.8953   XXXZ      21.0636
+      XXYZ       8.8142   XYYZ       8.2743   YYYZ      31.1495
+      XXZZ    -128.6580   XYZZ    -121.4035   YYZZ    -148.8577
+      XZZZ      27.6837   YZZZ      33.2261   ZZZZ     -33.2783
+ -----------------------------------------------------------------
+ Calculating MO derivatives via CPSCF
+    1     0    27    0.0900662  
+    2     0    27    0.0331423  
+    3     0    27    0.0064469  
+    4     0    27    0.0006816  
+    5     4    23    0.0000777  
+    6    23     4    0.0000062  
+    7    27     0    0.0000004  Converged
+ ------------------------------------------------------------------------------
+                     AOints        : Timing summary (seconds)
+ ------------------------------------------------------------------------------
+     job step          cpu (% of tot)      sys (% of tot)     wall (% of tot)
+ ------------------------------------------------------------------------------
+  AOints            0.4040E-01 ( 9.8)   0.1000E-05 (50.0)   0.4040E-01 ( 9.8)
+ ------------------------------------------------------------------------------
+   Grand Totals     0.4118E+00          0.2000E-05          0.4136E+00
+ ------------------------------------------------------------------------------
+ Polarizability Matrix (a.u.)
+            1           2           3
+    1 -52.2015862 -10.0247236  -1.4057347
+    2 -10.0247236 -31.6180561  -1.4088805
+    3  -1.4057347  -1.4088805 -11.9371942
+ Calculating analytic Hessian of the SCF energy
+
+ Direct stationary perturbation theory relativistic correction:
+
+ rels  =       0.061630851355
+ relv  =      -0.239483155984
+ rel2e =       0.075264201562
+ E_rel =      -0.102588103067
+
+ **********************************************************************
+ **                                                                  **
+ **                       VIBRATIONAL ANALYSIS                       **
+ **                       --------------------                       **
+ **                                                                  **
+ **        VIBRATIONAL FREQUENCIES (CM**-1) AND NORMAL MODES         **
+ **     FORCE CONSTANTS (mDYN/ANGSTROM) AND REDUCED MASSES (AMU)     **
+ **                  INFRARED INTENSITIES (KM/MOL)                   **
+ **                                                                  **
+ **********************************************************************
+
+
+ Mode:                 1                      2                      3
+ Frequency:       183.69                 355.46                 621.60
+ Force Cnst:      0.0656                 0.2050                 1.1361
+ Red. Mass:       3.2996                 2.7531                 4.9905
+ IR Active:          YES                    YES                    YES
+ IR Intens:        9.922                 14.643                 11.574
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H          0.012  0.037 -0.609    0.169  0.358  0.025    0.198 -0.086 -0.001
+ C          0.005  0.015 -0.240   -0.019  0.182  0.011    0.240 -0.052  0.002
+ C          0.004  0.014 -0.221   -0.095  0.210  0.011   -0.200 -0.082 -0.009
+ O         -0.004 -0.013  0.220    0.073 -0.155 -0.008    0.201  0.284  0.021
+ C         -0.004 -0.011  0.188   -0.008 -0.177 -0.011   -0.250 -0.162 -0.015
+ H          0.008  0.024 -0.384    0.045  0.341  0.022   -0.410 -0.298 -0.026
+ H         -0.008 -0.025  0.404   -0.311 -0.469 -0.035   -0.441 -0.343 -0.030
+ H         -0.007 -0.022  0.353    0.391 -0.325 -0.012   -0.030 -0.252 -0.016
+ TransDip   0.002  0.006 -0.101   -0.008  0.122  0.007   -0.032 -0.104 -0.007
+
+ Mode:                 4                      5                      6
+ Frequency:       676.87                1020.91                1133.01
+ Force Cnst:      0.3224                 1.0250                 1.2262
+ Red. Mass:       1.1945                 1.6692                 1.6212
+ IR Active:          YES                    YES                    YES
+ IR Intens:       16.847                 27.607                 22.183
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.008 -0.026  0.423   -0.083 -0.273 -0.018   -0.016 -0.051  0.827
+ C         -0.000 -0.001  0.021    0.021 -0.167 -0.010    0.004  0.013 -0.206
+ C          0.002  0.008 -0.127    0.003  0.106  0.007   -0.001 -0.005  0.076
+ O         -0.000 -0.000  0.007   -0.044  0.002 -0.001   -0.001 -0.003  0.049
+ C         -0.000 -0.001  0.020    0.038  0.128  0.009   -0.001 -0.004  0.063
+ H         -0.006 -0.020  0.321   -0.237 -0.117 -0.012    0.003  0.008 -0.135
+ H          0.010  0.030 -0.491   -0.418 -0.324 -0.028    0.005  0.015 -0.251
+ H         -0.013 -0.041  0.675    0.704 -0.115  0.007    0.008  0.026 -0.420
+ TransDip  -0.003 -0.008  0.131   -0.051 -0.160 -0.011    0.003  0.009 -0.151
+
+ Mode:                 7                      8                      9
+ Frequency:      1140.99                1183.98                1296.96
+ Force Cnst:      0.8253                 1.2452                 2.0170
+ Red. Mass:       1.0760                 1.5077                 2.0352
+ IR Active:          YES                    YES                    YES
+ IR Intens:       59.624                 11.811                 38.245
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.004 -0.013  0.211   -0.005 -0.015  0.245   -0.025  0.244  0.014
+ C          0.001  0.003 -0.043    0.001  0.004 -0.065   -0.046  0.208  0.012
+ C          0.001  0.003 -0.051   -0.002 -0.007  0.122    0.054 -0.191 -0.011
+ O         -0.000 -0.001  0.009   -0.000 -0.001  0.014    0.005 -0.032 -0.002
+ C          0.001  0.002 -0.041    0.003  0.010 -0.161    0.013  0.081  0.005
+ H         -0.014 -0.045  0.735    0.008  0.025 -0.406   -0.418 -0.658 -0.048
+ H         -0.012 -0.038  0.627   -0.009 -0.028  0.457   -0.260 -0.193 -0.017
+ H          0.002  0.007 -0.110   -0.014 -0.044  0.719    0.359 -0.050  0.004
+ TransDip  -0.005 -0.015  0.247   -0.002 -0.007  0.110    0.091  0.176  0.013
+
+ Mode:                10                     11                     12
+ Frequency:      1438.29                1534.32                1606.38
+ Force Cnst:      1.7186                 1.6370                 1.8891
+ Red. Mass:       1.4100                 1.1803                 1.2426
+ IR Active:          YES                    YES                    YES
+ IR Intens:        1.782                 12.246                  4.645
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.017  0.005 -0.000    0.709  0.593  0.050   -0.296 -0.209 -0.019
+ C         -0.012  0.011  0.000    0.015 -0.064 -0.004   -0.027  0.031  0.001
+ C          0.073 -0.111 -0.005   -0.046 -0.048 -0.004   -0.103 -0.063 -0.006
+ O          0.019  0.003  0.001   -0.063  0.024  0.000    0.057  0.003  0.001
+ C         -0.109  0.079  0.003    0.014  0.020  0.001   -0.022  0.012  0.000
+ H          0.688  0.458  0.042    0.081  0.077  0.006    0.149  0.186  0.014
+ H         -0.460 -0.249 -0.024    0.144  0.126  0.011    0.419  0.413  0.033
+ H          0.070 -0.001  0.001    0.275 -0.066  0.001    0.633 -0.207 -0.000
+ TransDip  -0.037  0.021  0.001    0.111 -0.013  0.001    0.058  0.037  0.003
+
+ Mode:                13                     14                     15
+ Frequency:      1834.63                1914.70                3205.49
+ Force Cnst:      8.5321                14.5753                 6.5900
+ Red. Mass:       4.3024                 6.7479                 1.0885
+ IR Active:          YES                    YES                    YES
+ IR Intens:       29.729                242.732                 66.655
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.048  0.098  0.005   -0.199 -0.461 -0.032   -0.685  0.722  0.031
+ C         -0.192 -0.058 -0.007    0.495  0.193  0.022    0.058 -0.062 -0.003
+ C         -0.301 -0.116 -0.013   -0.251 -0.115 -0.012    0.001  0.004  0.000
+ O          0.162  0.050  0.006   -0.301 -0.076 -0.011   -0.001 -0.000 -0.000
+ C          0.329  0.088  0.012    0.173  0.040  0.006   -0.002  0.000 -0.000
+ H          0.036  0.287  0.018    0.207  0.332  0.024    0.014 -0.011 -0.000
+ H         -0.248 -0.529 -0.037   -0.083 -0.239 -0.016    0.012 -0.018 -0.001
+ H         -0.350  0.386  0.017   -0.106  0.172  0.008   -0.003  0.005  0.000
+ TransDip  -0.170 -0.039 -0.006    0.449  0.216  0.022    0.078 -0.249 -0.014
+
+ Mode:                16                     17                     18
+ Frequency:      3329.15                3378.06                3425.29
+ Force Cnst:      6.9485                 7.3681                 7.7001
+ Red. Mass:       1.0641                 1.0959                 1.1139
+ IR Active:          YES                    YES                    YES
+ IR Intens:        7.246                  1.202                 10.847
+ Raman Active:       YES                    YES                    YES
+               X      Y      Z        X      Y      Z        X      Y      Z
+ H         -0.013  0.017  0.001   -0.008  0.011  0.000   -0.006  0.010  0.001
+ C          0.001 -0.002 -0.000    0.003  0.001  0.000    0.001  0.000  0.000
+ C         -0.002 -0.009 -0.001    0.062 -0.059 -0.002    0.017 -0.014 -0.001
+ O          0.000  0.000  0.000   -0.001 -0.000 -0.000   -0.000 -0.000 -0.000
+ C          0.071 -0.004  0.001   -0.015  0.022  0.001    0.002 -0.095 -0.006
+ H         -0.077  0.082  0.003   -0.667  0.695  0.029   -0.161  0.164  0.007
+ H         -0.566  0.597  0.025    0.146 -0.153 -0.007   -0.361  0.362  0.015
+ H         -0.176 -0.522 -0.035   -0.045 -0.127 -0.009    0.284  0.769  0.053
+ TransDip   0.084 -0.020  0.000    0.010 -0.034 -0.002    0.013 -0.105 -0.006
+
+ STANDARD THERMODYNAMIC QUANTITIES AT   298.15 K  AND     1.00 ATM
+
+   This Molecule has  0 Imaginary Frequencies
+   Zero point vibrational energy:       41.858 kcal/mol
+
+   Atom    1 Element H  Has Mass    1.00783
+   Atom    2 Element C  Has Mass   12.00000
+   Atom    3 Element C  Has Mass   12.00000
+   Atom    4 Element O  Has Mass   15.99491
+   Atom    5 Element C  Has Mass   12.00000
+   Atom    6 Element H  Has Mass    1.00783
+   Atom    7 Element H  Has Mass    1.00783
+   Atom    8 Element H  Has Mass    1.00783
+   Molecular Mass:    56.026230 amu
+   Principal axes and moments of inertia in amu*Bohr^2:
+                             1           2           3
+    Eigenvalues --       36.82909   386.06205   422.89114
+          X               0.79346    -0.60830    -0.01957
+          Y               0.60633     0.79286    -0.06112
+          Z               0.05269     0.03663     0.99794
+   Rotational Symmetry Number is   1
+   The Molecule is an Asymmetric Top
+   Translational Enthalpy:        0.889 kcal/mol
+   Rotational Enthalpy:           0.889 kcal/mol
+   Vibrational Enthalpy:         42.695 kcal/mol
+   gas constant (RT):             0.592 kcal/mol
+   Translational Entropy:        37.991  cal/mol.K
+   Rotational Entropy:           23.312  cal/mol.K
+   Vibrational Entropy:           4.484  cal/mol.K
+
+   Total Enthalpy:               45.065 kcal/mol
+   Total Entropy:                65.787  cal/mol.K
+
+ --------------------------------------------
+ Vibrational Resolved Spectra Simulation
+ spectra saved in xxx_spectra.dat
+ log of calculation in vibronic_spectra.log
+ --------------------------------------------
+ Total job time:  12.53s(wall), 12.41s(cpu) 
+ Wed Nov 30 18:29:36 2022
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+

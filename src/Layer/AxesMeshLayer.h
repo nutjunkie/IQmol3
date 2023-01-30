@@ -23,7 +23,7 @@
 ********************************************************************************/
 
 #include "GlobalLayer.h"
-#include "AxesMeshConfigurator.h"
+#include "Configurator/AxesMeshConfigurator.h"
 
 
 namespace IQmol {

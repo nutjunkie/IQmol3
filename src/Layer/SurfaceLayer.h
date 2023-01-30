@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
-#include "SurfaceConfigurator.h"
-#include "Surface.h"
+#include "Configurator/SurfaceConfigurator.h"
+#include "Data/Surface.h"
 #include <QColor>
 
 
@@ -52,8 +52,6 @@ namespace IQmol {
          friend class Animator::Combo;
    
          public: 
-            enum DrawMode { Fill, Lines, Dots };
-   
             Surface(Data::Surface&);
             Surface(Data::Mesh&);
             ~Surface();
@@ -62,7 +60,7 @@ namespace IQmol {
             void drawFast();
             void drawSelected();
             void setAlpha(double const alpha);
-            void setDrawMode(DrawMode const mode) { m_drawMode = mode; }
+            void setDrawMode(GLObject::DrawMode const mode) { m_drawMode = mode; }
             void setClip(bool const tf);
             void povray(PovRayGen&);
 
@@ -107,7 +105,7 @@ namespace IQmol {
    
             Data::Surface& m_surface;
             Configurator::Surface m_configurator;
-            DrawMode m_drawMode;
+            GLObject::DrawMode m_drawMode;
    
             GLuint  m_callListPositive; 
             GLuint  m_callListNegative; 

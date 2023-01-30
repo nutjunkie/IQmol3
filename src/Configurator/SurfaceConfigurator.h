@@ -23,8 +23,8 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "ColorGradient.h"
-#include "ui_SurfaceConfigurator.h"
+#include "Util/ColorGradient.h"
+#include "Configurator/ui_SurfaceConfigurator.h"
 
 
 namespace IQmol {

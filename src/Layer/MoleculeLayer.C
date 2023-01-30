@@ -21,17 +21,17 @@
 ********************************************************************************/
 
 // Data
-#include "AtomicProperty.h"
-#include "Bank.h"
-#include "DipoleMoment.h"
-#include "Energy.h"
-#include "File.h"
-#include "Frequencies.h"
-#include "Geometry.h"
-#include "GeometryList.h"
-#include "MultipoleExpansion.h"
-#include "PointGroup.h"
-#include "SurfaceInfo.h"
+#include "Data/AtomicProperty.h"
+#include "Data/Bank.h"
+#include "Data/DipoleMoment.h"
+#include "Data/Energy.h"
+#include "Data/File.h"
+#include "Data/Frequencies.h"
+#include "Data/Geometry.h"
+#include "Data/GeometryList.h"
+#include "Data/MultipoleExpansion.h"
+#include "Data/PointGroup.h"
+#include "Data/SurfaceInfo.h"
 
 
 // Layers
@@ -51,16 +51,18 @@
 #include "MoleculeLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
+#include "VibronicLayer.h"
 
 
-#include "UndoCommands.h"
-#include "SpatialProperty.h"
-#include "Constants.h"
-#include "QsLog.h"
-#include "QMsgBox.h"
-#include "QChemJobInfo.h" 
-#include "Preferences.h"
-#include "IQmolParser.h"
+#include "Grid/SpatialProperty.h"
+#include "Viewer/UndoCommands.h"
+
+#include "Util/QsLog.h"
+#include "Util/QMsgBox.h"
+#include "Util/Constants.h"
+#include "Process/QChemJobInfo.h" 
+#include "Util/Preferences.h"
+#include "Parser/IQmolParser.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"
@@ -107,7 +109,7 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
    m_surfaceAnimator(this), 
-   m_info(this), 
+   m_info(this),
    m_atomList(this, "Atoms"), 
    m_bondList(this, "Bonds"), 
    m_chargesList(this, "Charges"), 
@@ -137,6 +139,7 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
    // The following gets around this.
    OBConversion conv;
    conv.SetInFormat("xyz");
+
 
    // Add actions for the context menu
    connect(newAction("Configure"), SIGNAL(triggered()), 
@@ -195,6 +198,12 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
       unsigned index(list.first()->defaultIndex());
       setGeometry(*(list.first()->at(index)));
       m_addGeometryMenu->setEnabled(list.size() == 1);
+   }
+
+   QList<Vibronic*> vibronic(findLayers<Vibronic>(Children));
+   QList<Frequencies*> frequencies(findLayers<Frequencies>(Children));
+   if (vibronic.size() > 0 && frequencies.size() > 0) {
+      vibronic.last()->setFrequencyLayers(frequencies);
    }
 }
 

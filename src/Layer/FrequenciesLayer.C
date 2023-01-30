@@ -23,9 +23,8 @@
 #include "FrequenciesLayer.h"
 #include "MoleculeLayer.h"
 #include "openbabel/generic.h"
-#include "Animator.h"
-
-#include "Frequencies.h"
+#include "Viewer/Animator.h"
+#include "Data/Frequencies.h"
 
 
 using namespace qglviewer;
@@ -45,6 +44,7 @@ Frequencies::Frequencies(Data::Frequencies const& frequencies) : Base("Frequenci
        Mode* mode = new Mode(**iter);
        connect(mode, SIGNAL(playMode(Mode const&)), this, SLOT(playMode(Mode const&)));
        appendLayer(mode);
+       m_modeList.append(mode);
    }
 
    m_configurator.load();
@@ -154,6 +154,21 @@ void Frequencies::setLoop(bool const loop)
 }
 
 
+void Frequencies::playMode(int mode)
+{     
+   unsigned nModes(m_modeList.size());
+
+   if (mode < 0 || mode >= nModes) {
+      clearActiveMode();
+      setPlay(false);
+   }else {
+      m_activeMode = m_modeList[mode];
+      setActiveMode(*m_activeMode);
+      setPlay(true);
+   }         
+} 
+
+
 void Frequencies::playMode(Mode const& mode)
 {
    if (m_activeMode == &mode) {
@@ -210,6 +225,12 @@ void Frequencies::setScale(double const scale)
 
    Atom::setVibrationVectorScale(4.0*scale);
    update();
+}
+
+
+QList<double> Frequencies::frequencies() const
+{
+    return m_frequencies.frequencies();
 }
 
 

@@ -23,7 +23,7 @@
 #include "BondLayer.h"
 #include "AtomLayer.h"
 #include "GLShape.h"
-#include "PovRayGen.h"
+#include "Viewer/PovRayGen.h"
 
 #include <QDebug>
 
@@ -683,7 +683,6 @@ void Bond::povrayWireFrame(PovRayGen& povray)
    povray.writeBond(A, C, m_begin->color(), radius);
    povray.writeBond(C, B, m_end->color(), radius);
 }
-
 
 
 } } // end namespace IQmol::Layer
