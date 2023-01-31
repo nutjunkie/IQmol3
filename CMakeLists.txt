@@ -24,7 +24,7 @@ if(WIN32)
 endif()
 
 set(targetName IQmol)
-project(${targetName} VERSION 3.1.0 LANGUAGES CXX C Fortran)
+project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 
 
 include(FortranCInterface)
@@ -195,11 +195,17 @@ target_link_libraries (${targetName}
    ${ZLIB_LIBRARIES}
 )
 
-message("OpenGL Libraries" ${OPENGL_LIBRARIES})
+message("OPENGL_LIBRARIES " ${OPENGL_LIBRARIES})
+message("ZLIB_LBRARIES "    ${ZLIB_LIBRARIES})
+message("BOOST_LBRARIES "   ${Boost_LIBRARIES})
+message("OPENMESH_LIBRARIES "   ${OPENMESH_LIBRARIES})
 
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
 #   target_link_libraries (${targetName} hdf5-static)
-   target_link_libraries (${targetName} )
 endif(QARCHIVE)
+
+#if (APPLE)
+#   target_link_libraries (${targetName} /opt/homebrew//lib/libzstd.a )
+#endif(APPLE)

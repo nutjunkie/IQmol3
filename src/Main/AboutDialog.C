@@ -21,7 +21,7 @@
 ********************************************************************************/
 
 #include "AboutDialog.h"
-#include "version.h"
+#include "../version.h"
 
 namespace IQmol {
 
