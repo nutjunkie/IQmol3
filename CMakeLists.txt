@@ -111,6 +111,11 @@ endif ()
 
 set(ICON_PATH resources/IQmol.icns)
 
+if (EXISTS /opt/local/lib/)
+   link_directories(/opt/local/lib/)
+endif()
+
+
 if (APPLE)
    add_executable(${targetName} 
       MACOSX_BUNDLE
@@ -159,6 +164,7 @@ endif (WIN32)
 add_dependencies(Process Configurator)
 add_dependencies(Viewer Process)
 
+
 target_link_libraries (${targetName}
    Main
    Process
@@ -195,17 +201,8 @@ target_link_libraries (${targetName}
    ${ZLIB_LIBRARIES}
 )
 
-message("OPENGL_LIBRARIES " ${OPENGL_LIBRARIES})
-message("ZLIB_LBRARIES "    ${ZLIB_LIBRARIES})
-message("BOOST_LBRARIES "   ${Boost_LIBRARIES})
-message("OPENMESH_LIBRARIES "   ${OPENMESH_LIBRARIES})
-
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
 #   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)
-
-#if (APPLE)
-#   target_link_libraries (${targetName} /opt/homebrew//lib/libzstd.a )
-#endif(APPLE)
