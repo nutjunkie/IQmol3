@@ -4,28 +4,8 @@ if (UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
-if(WIN32)
-	# cmake -DBUILD_SHARED=ON -G "MinGW Makefiles" ../
-	# -DYAML_STATIC_DEFINE
-   set(BOOST_ROOT             "C:/boost")
-   set(MINGW_ROOT             "C:/mingw64")
-   set(HDF5_ROOT              "C:/Users/andre/Development/hdf5")
-   set(CMAKE_C_COMPILER       "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe")
-   set(CMAKE_CXX_COMPILER     "${MINGW_ROOT}/bin/x86_64-w64-mingw32-g++.exe")
-   set(CMAKE_Fortran_COMPILER "${MINGW_ROOT}/bin/x86_64-w64-mingw32-gfortran.exe")
-   set(CMAKE_PREFIX_PATH      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5")
-   set(OPENSSL_ROOT_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/modules/openssl")
-   set(ZLIB_INCLUDE_DIR       "${MINGW_ROOT}/x86_64-w64-mingw32/include/")
-   set(ZLIB_LIBRARY           "${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a")
-   set(QT_UIC_EXECUTABLE      "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe")
-
-   enable_language("RC")
-   set(WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/windows.rc)
-endif()
-
 set(targetName IQmol)
 project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
-
 
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
@@ -33,11 +13,7 @@ include(FortranCInterface)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Release)
-
-
-set(NO_WARNING "-Wno-deprecated")
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${NO_WARNING}")
-
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 
@@ -82,8 +58,10 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 enable_testing()
 
 if(QARCHIVE)
+   set(ARMADILLO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/qarchive/armadillo/include)
    find_package(HDF5 REQUIRED)
-   find_package(Armadillo REQUIRED)
+#  find_package(Armadillo REQUIRED)
+
    add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
@@ -139,6 +117,9 @@ if (LINUX)
 endif (LINUX)
 
 if (WIN32)
+   set(WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/windows.rc)
+   enable_language("RC")
+
    add_executable(${targetName} 
       src/main.C
       ${IQmol_RESOURCES_RCC}
@@ -195,17 +176,8 @@ target_link_libraries (${targetName}
    ${ZLIB_LIBRARIES}
 )
 
-message("OPENGL_LIBRARIES " ${OPENGL_LIBRARIES})
-message("ZLIB_LBRARIES "    ${ZLIB_LIBRARIES})
-message("BOOST_LBRARIES "   ${Boost_LIBRARIES})
-message("OPENMESH_LIBRARIES "   ${OPENMESH_LIBRARIES})
-
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
 else(QARCHIVE)
 #   target_link_libraries (${targetName} hdf5-static)
 endif(QARCHIVE)
-
-#if (APPLE)
-#   target_link_libraries (${targetName} /opt/homebrew//lib/libzstd.a )
-#endif(APPLE)

@@ -1,7 +1,7 @@
 <project>
     <shortName>IQmol</shortName>
     <fullName>IQmol</fullName>
-    <version>3.0.1</version>
+    <version>3.1.1</version>
     <readmeFile>C:/Users/andre/Development/IQmol3/README.md</readmeFile>
     <licenseFile>C:/Users/andre/Development/IQmol3/LICENSE</licenseFile>
     <leftImage>C:/Users/andre/Development/IQmol3/resources/Installer-lhs.png</leftImage>
