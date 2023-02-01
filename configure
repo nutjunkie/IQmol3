@@ -1,51 +1,71 @@
 #! /bin/bash
 
 TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+mkdir -p $TOPDIR/build
 
 CONFIGURE_ARGS=$*
 
-date >> configure.log
 echo "IQmol configured by `whoami`@`hostname`:" > configure.log
+date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "" >> configure.log
 
-DEFINES="-DBUILD_SHARED=OFF"
-#DEFINES="-DBUILD_SHARED=OFF -DGL_SILENCE_DEPRECATION=ON"
-
 ARCH=$(uname)
 echo "Configuring build for $ARCH" >> configure.log
 
+DEFINES="-DBUILD_SHARED=OFF -DQARCHIVE=OFF"
+
+
 if [ $ARCH == 'Darwin' ]; then
-   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
-      QT=/opt/homebrew/Cellar/qt@5/5.15.8_1/lib/cmake/Qt5
-   else 
-      QT=${CMAKE_PREFIX_PATH}
-   fi
+   CMAKE_GENERATOR="Unix Makefiles"
+   QT=/opt/homebrew/Cellar/qt@5/5.15.8_1
 
 elif [ $ARCH == 'Linux' ]; then
-   BOOST=/sw/boost/1.72.0/serial/gcc72
+   CMAKE_GENERATOR="Unix Makefiles"
+   QT=/scratch/software_test/Qt5/5.12.12/gcc_64
 
-   if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
-      QT=/scratch/software_test/Qt5/5.12.12/gcc_64/lib/cmake/Qt5
-   else 
-      QT=${CMAKE_PREFIX_PATH}
-   fi
+   DEFINES+=" -DBOOST_ROOT=BOOST_ROOT=/sw/boost/1.72.0/serial/gcc72"
 
 else 
-   echo "Windows configure, go figure"
-   exit 1
+   ARCH='Windoze'
+   CMAKE_GENERATOR="MinGW Makefiles"
+   QT=C:/Qt/Qt5.12.12/5.12.12/mingw73_64
+   MINGW_ROOT=C:/mingw64
+   TOPDIR=${TOPDIR/\/cygdrive\/c/C:}
+
+   DEFINES+=" -DQT_UIC_EXECUTABLE=${QT}/bin/uic.exe"
+   DEFINES+=" -DCMAKE_C_COMPILER=${MINGW_ROOT}/bin/x86_64-w64-mingw32-gcc.exe"
+   DEFINES+=" -DCMAKE_CXX_COMPILER=${MINGW_ROOT}/bin/x86_64-w64-mingw32-g++.exe"
+   DEFINES+=" -DCMAKE_Fortran_COMPILER=${MINGW_ROOT}/bin/x86_64-w64-mingw32-gfortran.exe"
+   DEFINES+=" -DZLIB_INCLUDE_DIR=${MINGW_ROOT}/x86_64-w64-mingw32/include"
+   DEFINES+=" -DZLIB_LIBRARY=${MINGW_ROOT}/x86_64-w64-mingw32/lib/libz.a"
+   DEFINES+=" -DBOOST_ROOT=C:/boost"
+   DEFINES+=" -DHDF5_ROOT=C:/Users/andre/Development/hdf5"
+   DEFINES+=" -DOPENSSL_ROOT_DIR=${TOPDIR}/modules/openssl"
 fi
 
 
-echo "QT  = $QT" >> configure.log
+if [ -z ${CMAKE_PREFIX_PATH+x} ]; then 
+   CMAKE_PREFIX=${QT}/lib/cmake/Qt5
+else 
+   CMAKE_PREFIX=${CMAKE_PREFIX_PATH}
+fi
+DEFINES+=" -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX}"
 
-mkdir -p $TOPDIR/build
+echo "QT root = $QT" >> configure.log
+echo "DEFINES = $DEFINES" >> configure.log
+
 cd $TOPDIR/build
 
 if [ -e CMakeCache.txt ]; then
     rm CMakeCache.txt
 fi
 
-cmake $DEFINES  -DCMAKE_PREFIX_PATH=$QT  -DBOOST_ROOT=$BOOST $TOPDIR 2>&1 | tee -a ../configure.log
+cmake -G "$CMAKE_GENERATOR" $DEFINES $TOPDIR 2>&1 | tee -a ../configure.log
+
+if [ $ARCH == 'Windoze' ]; then
+   echo "-- Run $MINGW_ROOT/bin/mingw32-make.exe inside the build directory"
+fi
+
 exit ${PIPESTATUS[0]}
