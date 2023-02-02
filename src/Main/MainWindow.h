@@ -31,6 +31,11 @@
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
 
+#ifdef GROMACS
+#include "GromacsDialog.h"
+#include "GromacsServerDialog.h"
+#endif
+
 #include <QItemSelectionModel>
 #include <QSortFilterProxyModel>
 #include <QMainWindow>
@@ -53,7 +58,12 @@ class QUndoCommand;
 class QCloseEvent;
 class QMenu;
 
+
 namespace IQmol {
+
+namespace Gmx {
+   class GromacsDialog;
+}
 
    class ModelView;
 
@@ -86,6 +96,8 @@ namespace IQmol {
          void showPreferences() { m_preferencesBrowser.show(); }
          void showLogMessages();
          void showQChemUI();
+         void showGromacsDialog();
+         void showGromacsServerDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::QChemJobInfo&);
@@ -126,7 +138,9 @@ namespace IQmol {
          QUndoView       m_undoStackView;
          QProgressBar    m_progressBar;
          QLabel          m_status;
-         Viewer*         m_viewer;
+
+         Viewer*               m_viewer;
+         Gmx::GromacsDialog*   m_gromacsDialog;
 
          QItemSelectionModel   m_viewerSelectionModel;
          LogMessageDialog      m_logMessageDialog;

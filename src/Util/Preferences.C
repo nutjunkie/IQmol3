@@ -575,6 +575,7 @@ void PasswordVaultSeed(unsigned int const seed)
 
 // ---------
 
+/*
 QString PasswordVaultKey()
 {
    QVariant value(Get("PasswordVaultKey"));
@@ -585,6 +586,7 @@ void PasswordVaultKey(QString const& key)
 {
    Set("PasswordVaultKey", key);
 }
+*/
 
 // ---------
 
@@ -818,6 +820,19 @@ void JobMonitorList(QVariantList const& jobList)
    SetList("JobMonitorList", jobList);
 }
 
+
+// ---------
+
+QString GromacsServerAddress()
+{
+   QVariant value(Get("GromacsServerAddress"));
+   return value.isNull() ? QString("https://localhost:5000") : value.value<QString>();
+}
+
+void GromacsServerAddress(QString const& address)
+{
+   Set("GromacsServerAddress", address);
+}
 
 // ---------
 
