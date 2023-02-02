@@ -34,6 +34,10 @@
 #include "AtomicProperty.h"
 #include "Atom.h"
 
+#ifdef GROMACS
+#include "GromacsDialog.h" 
+#endif
+
 #include "Qui/InputDialog.h"
 #include <QResizeEvent>
 #include <QDropEvent>
@@ -58,7 +62,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
    m_viewerSelectionModel(&m_viewerModel, this),
    m_logMessageDialog(0),
    m_preferencesBrowser(this),
-   m_quiInputDialog(0)
+   m_quiInputDialog(0),
+   m_gromacsDialog(0)
 {
    m_viewer = new Viewer(m_viewerModel, this);
 
@@ -691,6 +696,19 @@ void MainWindow::createMenus()
       //action = menu->addAction(name);
       //connect(action, SIGNAL(triggered()), this, SLOT(testInternetConnection()));
 
+#ifdef GROMACS
+      menu->addSeparator();
+      name = "Gromacs Setup";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showGromacsDialog()));
+      action->setShortcut(Qt::CTRL | Qt::Key_G );
+
+      name = "Edit Gomacs Server";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showGromacsServerDialog()));
+#endif
+
+
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
@@ -963,6 +981,48 @@ void MainWindow::submitJob(IQmol::Process::QChemJobInfo& qchemJobInfo)
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
    if (!mol) return;
    mol->qchemJobInfoChanged(qchemJobInfo);
+}
+
+
+void MainWindow::showGromacsDialog() 
+{
+#ifdef GROMACS
+   if (!m_gromacsDialog) {
+      m_gromacsDialog = new Gmx::GromacsDialog(this);
+   }
+
+   Layer::Molecule* mol(m_viewerModel.activeMolecule());
+   if (!mol) return;
+   
+   if (!mol->sanityCheck()) {
+      QMessageBox mbox;
+      mbox.setText("Wonky molecule detected");
+      mbox.setInformativeText("Do you want to proceed?");
+      mbox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+      mbox.setDefaultButton(QMessageBox::Ok);
+   
+      QPixmap pixmap;
+      pixmap.load(":/imageQuestion");
+      mbox.setIconPixmap(pixmap);
+
+      if (mbox.exec() == QMessageBox::Cancel) return;
+   }
+
+   //m_gromacsDialog->setWindowModality(Qt::WindowModal);
+   m_gromacsDialog->show();
+#endif
+}
+
+
+void MainWindow::showGromacsServerDialog()
+{
+#ifdef GROMACS
+   Gmx::GromacsServerDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      Preferences::GromacsServerAddress(dialog.getAddress());
+   }
+#endif
 }
 
 

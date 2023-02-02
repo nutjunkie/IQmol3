@@ -159,8 +159,8 @@ namespace Preferences {
    unsigned int PasswordVaultSeed();
    void PasswordVaultSeed(unsigned int const);
 
-   QString PasswordVaultKey();
-   void PasswordVaultKey(QString const&);
+   //QString PasswordVaultKey();
+   //void PasswordVaultKey(QString const&);
    
    QString SSHKnownHostsFile();
    void SSHKnownHostsFile(QString const&);
@@ -173,6 +173,9 @@ namespace Preferences {
 
    QList<QVariant> JobMonitorList();
    void JobMonitorList(QList<QVariant> const&);
+
+   QString GromacsServerAddress();
+   void GromacsServerAddress(QString const&);
 
    // Deprecate
    QList<QVariant> CurrentProcessList();

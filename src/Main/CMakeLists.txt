@@ -56,3 +56,7 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Xml
    Qt5::OpenGL
 )
+
+if (WITH_GROMACS)
+   target_link_libraries(${LIB} PRIVATE Gromacs)
+endif()

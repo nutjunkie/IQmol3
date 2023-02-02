@@ -29,7 +29,6 @@
 #include <QTimer>
 
 
-class QNetworkReply;
 class QFile;
 
 typedef QMap<QString, QString> QStringMap;

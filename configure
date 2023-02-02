@@ -14,7 +14,7 @@ echo "" >> configure.log
 ARCH=$(uname)
 echo "Configuring build for $ARCH" >> configure.log
 
-DEFINES="-DBUILD_SHARED=OFF -DQARCHIVE=OFF"
+DEFINES="-DBUILD_SHARED=OFF -DWITH_QARCHIVE=OFF -DWITH_GROMACS=ON"
 
 
 if [ $ARCH == 'Darwin' ]; then

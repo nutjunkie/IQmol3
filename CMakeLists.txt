@@ -57,19 +57,24 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
 enable_testing()
 
-if(QARCHIVE)
+if(WITH_QARCHIVE)
+   add_compile_definitions(WITH_AVIEW QARCHIVE)
    set(ARMADILLO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/qarchive/armadillo/include)
    find_package(HDF5 REQUIRED)
 #  find_package(Armadillo REQUIRED)
 
-   add_compile_definitions(WITH_AVIEW QARCHIVE)
    include_directories(qarchive/libctx)
    include_directories(qarchive/libaview)
    include_directories(qarchive/libstore)
    include_directories(qarchive/libarchive)
    include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
    add_subdirectory(qarchive)
-endif(QARCHIVE)
+endif(WITH_QARCHIVE)
+
+if (WITH_GROMACS)
+   add_compile_definitions(GROMACS)
+   add_subdirectory(src/Gromacs)
+endif()
 
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
