@@ -38,6 +38,8 @@
 
 #include <exception>
 
+#include "OSGViewer/OSGViewer.h"
+
 
 namespace IQmol {
 
@@ -178,6 +180,12 @@ void IQmolApplication::open(QString const& file)
    }
    QLOG_INFO() << "Number of threads:" << QThread::idealThreadCount();
    QLOG_INFO() << "Active    threads:" << QThreadPool::globalInstance()->activeThreadCount();
+
+
+   QMainWindow* w = new QMainWindow();
+   OSGViewer* osgv = new OSGViewer(1,1, w);
+   w->setCentralWidget(osgv);
+   w->show();
 }
 
 

@@ -38,6 +38,11 @@ add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 include_directories(modules/openmesh/src)
 add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 
+set(DYNAMIC_OPENSCENEGRAPH OFF CACHE BOOL "Static OpenSceneGraph")
+include_directories(modules/OpenSceneGraph/include)
+add_subdirectory(modules/OpenSceneGraph EXCLUDE_FROM_ALL)
+#set(OPENSCENEGRAPH_LIBRARIES "osg osgDB osgGA osgUtil osgViewer")
+
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
@@ -166,9 +171,15 @@ target_link_libraries (${targetName}
    Math
    Plot
    Fort
+   OSGViewer
    openbabel
    libssh2
    yaml-cpp
+   osg 
+   osgDB 
+   osgGA 
+   osgUtil 
+   osgViewer
    QGLViewer
    Qt5::Core
    Qt5::Gui
@@ -176,16 +187,13 @@ target_link_libraries (${targetName}
    Qt5::PrintSupport
    Qt5::Widgets
    Qt5::OpenGL
-   #OpenMeshCoreStatic
-   #OpenMeshToolsStatic
    ${OPENMESH_LIBRARIES}
-   #Boost::iostreams
-   #Boost::serialization
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
 )
+   #${OPENSCENEGRAPH_LIBRARIES}
 
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
