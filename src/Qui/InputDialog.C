@@ -334,6 +334,14 @@ void InputDialog::showMessage(QString const& msg)
 }
 
 
+void InputDialog::closeDialog()
+{
+   close();
+   m_ui.disableControlsButton->setChecked(false);
+   m_ui.setupTabWidget->setVisible(true);
+}
+
+
 void InputDialog::setTaint(bool const tf, int line)
 {
    Q_UNUSED(line);
@@ -467,9 +475,6 @@ bool InputDialog::saveFile(bool prompt)
    if (tmp.fileName().isEmpty()) return false;
 
    Preferences::LastFileAccessed(tmp.filePath());
-   capturePreviewTextChanges();
-   updatePreviewText();
-
    QFile file(tmp.filePath());
    if (file.exists() && tmp.isWritable()) file.remove();
 
@@ -581,6 +586,7 @@ void InputDialog::changePreviewFont(QFont const& font)
 /// Updates the contents of the preview panel with the input for the JobList
 void InputDialog::updatePreviewText(JobList const& jobs, Job const* currentJob) 
 {
+   if (m_ui.disableControlsButton->isChecked()) return;
    if (m_taint) {
       QLOG_WARN() << "Updating tainted preview text in QUI";
    }
@@ -642,7 +648,17 @@ QStringList InputDialog::generateInputJobStrings(JobList const& jobs, bool previ
 QString InputDialog::generateInputString() 
 {
    bool preview(false);
-   return generateInputJobStrings(m_jobs, preview).join("\n@@@\n\n");
+   QString input;
+
+   if (m_ui.disableControlsButton->isChecked()) {
+      input = m_ui.previewText->toPlainText();
+   }else {
+      capturePreviewTextChanges();
+      updatePreviewText();
+      input = generateInputJobStrings(m_jobs, preview).join("\n@@@\n\n");
+   }
+
+   return input;
 }
 
 
@@ -765,6 +781,13 @@ void InputDialog::on_deleteJobButton_clicked(bool)
          m_ui.jobList->setCurrentIndex(index-1);
       }
    }
+}
+
+
+void InputDialog::on_disableControlsButton_clicked(bool tf)
+{
+   m_ui.setupTabWidget->setVisible(!tf);
+   if (!tf) TAINT(true);
 }
 
 
@@ -916,11 +939,8 @@ void InputDialog::printOptionDebug(QString const& name, bool doPrint)
 
 void InputDialog::submitJob() 
 {      
-   capturePreviewTextChanges();
-   updatePreviewText();
-
-   m_qchemJobInfo.set(
-      IQmol::Process::QChemJobInfo::InputString, generateInputString());
+   QString input(generateInputString());
+   m_qchemJobInfo.set(IQmol::Process::QChemJobInfo::InputString, input);
    m_qchemJobInfo.setServerName(m_ui.serverCombo->currentText());
    submitJobRequest(m_qchemJobInfo);
 }

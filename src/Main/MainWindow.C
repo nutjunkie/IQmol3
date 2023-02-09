@@ -918,7 +918,7 @@ void MainWindow::showQChemUI()
          this, SLOT(submitJob(IQmol::Process::QChemJobInfo&)));
  
       connect(&(Process::JobMonitor::instance()), SIGNAL(jobAccepted()),
-         m_quiInputDialog, SLOT(close()));
+         m_quiInputDialog, SLOT(closeDialog()));
 
       connect(&(Process::JobMonitor::instance()), SIGNAL(postUpdateMessage(QString const&)),
          m_quiInputDialog, SLOT(showMessage(QString const&)));

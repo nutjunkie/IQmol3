@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1306</width>
-    <height>855</height>
+    <width>1065</width>
+    <height>684</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QHBoxLayout" name="horizontalLayout_5">
     <item>
      <widget class="QTabWidget" name="setupTabWidget">
       <property name="sizePolicy">
@@ -446,8 +446,8 @@ QToolButton:checked {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>617</width>
-             <height>573</height>
+             <width>615</width>
+             <height>343</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -467,8 +467,8 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>599</width>
-                 <height>489</height>
+                 <width>591</width>
+                 <height>249</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -668,8 +668,8 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>599</width>
-                 <height>489</height>
+                 <width>591</width>
+                 <height>249</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -5542,126 +5542,146 @@ Eventually this should go.</string>
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="previewOutput">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="title">
-       <string>Generated Input File:</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_18">
-       <item>
-        <widget class="QTextEdit" name="previewText">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Courier New</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-           <underline>false</underline>
-           <strikeout>false</strikeout>
-          </font>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_31">
+      <item>
+       <widget class="QGroupBox" name="previewOutput">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Generated Input File:</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_18">
          <item>
-          <spacer>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QTextEdit" name="previewText">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="sizeHint" stdset="0">
+           <property name="minimumSize">
             <size>
-             <width>40</width>
-             <height>20</height>
+             <width>0</width>
+             <height>0</height>
             </size>
            </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Server</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="serverCombo"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout">
-         <item>
-          <widget class="QPushButton" name="resetButton">
-           <property name="text">
-            <string>Reset</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::MinimumExpanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cancelButton">
-           <property name="text">
-            <string>Cancel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="submitButton">
-           <property name="text">
-            <string>Submit</string>
-           </property>
-           <property name="autoDefault">
-            <bool>true</bool>
-           </property>
-           <property name="default">
-            <bool>true</bool>
+           <property name="font">
+            <font>
+             <family>Courier New</family>
+             <pointsize>12</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
+             <underline>false</underline>
+             <strikeout>false</strikeout>
+            </font>
            </property>
           </widget>
          </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="frame_2">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_30">
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Server</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="serverCombo"/>
+           </item>
+           <item>
+            <spacer>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="submitButton">
+             <property name="text">
+              <string>Submit</string>
+             </property>
+             <property name="autoDefault">
+              <bool>true</bool>
+             </property>
+             <property name="default">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QPushButton" name="resetButton">
+             <property name="text">
+              <string>Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="disableControlsButton">
+             <property name="text">
+              <string>Disable Controls</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_14">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="cancelButton">
+             <property name="text">
+              <string>Cancel</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -5670,8 +5690,8 @@ Eventually this should go.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1306</width>
-     <height>21</height>
+     <width>1065</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -5725,12 +5745,10 @@ Eventually this should go.</string>
  </widget>
  <tabstops>
   <tabstop>serverCombo</tabstop>
-  <tabstop>submitButton</tabstop>
   <tabstop>exchange</tabstop>
   <tabstop>deleteJobButton</tabstop>
   <tabstop>addJobButton</tabstop>
   <tabstop>previewText</tabstop>
-  <tabstop>resetButton</tabstop>
   <tabstop>geom_opt_tol_gradient</tabstop>
   <tabstop>dscf_convergence_level_2</tabstop>
   <tabstop>dscf_max_cycles_level_2</tabstop>
@@ -5817,7 +5835,6 @@ Eventually this should go.</string>
   <tabstop>link_atom_projection</tabstop>
   <tabstop>qmmm_full_hessian</tabstop>
   <tabstop>geom_opt_tol_energy</tabstop>
-  <tabstop>cancelButton</tabstop>
   <tabstop>meteco</tabstop>
   <tabstop>efp</tabstop>
   <tabstop>efp_fragments_only</tabstop>

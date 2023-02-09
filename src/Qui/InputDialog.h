@@ -86,6 +86,7 @@ class InputDialog : public QMainWindow {
 
    public Q_SLOTS:
       void showMessage(QString const& msg);
+      void closeDialog();
 
    Q_SIGNALS:
       void submitJobRequest(IQmol::Process::QChemJobInfo&);
@@ -102,6 +103,7 @@ class InputDialog : public QMainWindow {
       void on_addJobButton_clicked(bool) { addNewJob(); }
       void on_deleteJobButton_clicked(bool); 
       void on_submitButton_clicked(bool) { submitJob(); }
+      void on_disableControlsButton_clicked(bool);
 
       // Radio toggles for switching pages on stacked widgets
       void toggleStack(QStackedWidget* stack, bool on, QString model);
