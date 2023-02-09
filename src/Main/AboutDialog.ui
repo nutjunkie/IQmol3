@@ -41,7 +41,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="IQmol.qrc">:/resources/icons/iqmol.png</pixmap>
+        <pixmap resource="IQmol.qrc">:/icons/iqmol.png</pixmap>
        </property>
       </widget>
      </item>
