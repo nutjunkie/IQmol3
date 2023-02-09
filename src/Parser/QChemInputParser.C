@@ -121,7 +121,7 @@ void QChemInput::readMoleculeSection(TextStream& textStream)
       break;
    }
 
-   // Second line could be a 'read' token or the first atom
+   // Second line could be a 'read' token or the first atom or '--' for fragments
    line = textStream.nextLine();
    // offset is passed to the CartesianCoordinates parser to give
    // an accurate line number if an error occurs.
@@ -144,6 +144,10 @@ void QChemInput::readMoleculeSection(TextStream& textStream)
       }
       return;
    }
+
+#if 0
+   // This appears to be a deprecated format.  If we see -- we now treat it as 
+   // fragment input
 
    // Special case: EFP only fragments
    if (line.contains("--")) {
@@ -190,9 +194,10 @@ void QChemInput::readMoleculeSection(TextStream& textStream)
       }
       return;
    }
-
+#endif
+   
    tokens = TextStream::tokenize(line);
-   bool zmat(tokens.size() == 1);
+   bool zmat(tokens.size() == 1 && !line.contains("--"));
 
    QStringList lines;
    while (!textStream.atEnd() && !line.contains("$end", Qt::CaseInsensitive)) {
@@ -206,7 +211,11 @@ void QChemInput::readMoleculeSection(TextStream& textStream)
          }
          offset = textStream.lineNumber();
          lines.clear();
+      }else if (line.contains("--")) {
+         line  = textStream.nextLine(); // Charge and multiplicity
+         // Assume fragments, but we don't keep track of them
       }else {
+         // Assume fragments, but we don't keep track of them
          lines.append(line); 
       }
       line = textStream.nextLine();
