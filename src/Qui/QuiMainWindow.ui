@@ -447,7 +447,7 @@ QToolButton:checked {
              <x>0</x>
              <y>0</y>
              <width>615</width>
-             <height>343</height>
+             <height>330</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -468,7 +468,7 @@ QToolButton:checked {
                  <x>0</x>
                  <y>0</y>
                  <width>591</width>
-                 <height>249</height>
+                 <height>237</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -669,7 +669,7 @@ QToolButton:checked {
                  <x>0</x>
                  <y>0</y>
                  <width>591</width>
-                 <height>249</height>
+                 <height>236</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -5691,7 +5691,7 @@ Eventually this should go.</string>
      <x>0</x>
      <y>0</y>
      <width>1065</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -402,6 +402,7 @@ bool JobMonitor::getRemoteWorkingDirectory(Server* server, QString& name)
 
       while (name.endsWith("/"))  { name.chop(1); }
       while (name.endsWith("\\")) { name.chop(1); }
+      name = name.trimmed();
 
       if (!okPushed || name.isEmpty()) return false;
 
