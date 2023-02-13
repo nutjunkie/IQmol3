@@ -83,11 +83,10 @@ namespace Data {
          void resize();
 
          Vector const& shellValues(double const x, double const y, double const z);
-         Vector const& shellValues(qglviewer::Vec const& gridPoint);
 
          // Returns the vectorized upper triangular array of unique shell 
          // values at the grid point pairs.
-         Vector const& shellPairValues(qglviewer::Vec const& gridPoint);
+         Vector const& shellPairValues(double const x, double const y, double const z);
 
 		 // Initializes the list of densities to be evaluated a grid points
 		 // with subsequent densityValues calls.
@@ -109,6 +108,10 @@ namespace Data {
 
          // Basis offset for each atom
          QList<unsigned> basisAtomOffsets() const;
+
+         // Kludge to account for the ordering Q-Chem prints the shell functions,
+         // for Dyson orbitals printed to the output file.
+         void reorderFromQChem(Matrix& C);
 
          void serialize(InputArchive& ar, unsigned int const version = 0) {
             serializeList(ar, version);

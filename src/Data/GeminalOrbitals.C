@@ -169,6 +169,8 @@ void GeminalOrbitals::dump() const
           case  Data::Shell::F10:  ++f10;  nBasis += 10;  break;   
           case  Data::Shell::G9:   ++g9;   nBasis +=  9;  break;
           case  Data::Shell::G15:  ++g15;  nBasis += 15;  break;   
+          default: 
+             QLOG_WARN() << "Unhandled angular momentum in GeminalOrbitals::dump()";
        }
    }
 

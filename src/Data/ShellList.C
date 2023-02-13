@@ -89,6 +89,12 @@ ShellList::ShellList(ShellData const& shellData, Geometry const& geometry) : m_s
           case 4:
              append( new Shell(Shell::G15, atom, pos, expts, coefs) );
              break;
+          case -5: 
+             append( new Shell(Shell::H11, atom, pos, expts, coefs) );
+             break;
+          case 5:
+             append( new Shell(Shell::H21, atom, pos, expts, coefs) );
+             break;
 
           default:
              QString msg("Unknown Shell type found at position ");
@@ -149,33 +155,37 @@ void ShellList::boundingBox(qglviewer::Vec& min, qglviewer::Vec& max, double con
 
 void ShellList::dump() const
 {
-   unsigned n(0), s(0), p(0), d5(0), d6(0), f7(0), f10(0), g9(0), g15(0);
+   unsigned n(0), s(0), p(0), sp(0), d5(0), d6(0), f7(0), f10(0);
+   unsigned g9(0), g15(0), h11(0), h21(0);
 
    ShellList::const_iterator shell;
    for (shell = begin(); shell != end(); ++shell) {
-       switch ((*shell)->angularMomentum()) {
-          case  Shell::S:    ++s;    n +=  1;  break;
-          case  Shell::P:    ++p;    n +=  3;  break;   
-          case  Shell::D5:   ++d5;   n +=  5;  break;
-          case  Shell::D6:   ++d6;   n +=  6;  break;   
-          case  Shell::F7:   ++f7;   n +=  7;  break;
-          case  Shell::F10:  ++f10;  n += 10;  break;   
-          case  Shell::G9:   ++g9;   n +=  9;  break;
-          case  Shell::G15:  ++g15;  n += 15;  break;   
+       Shell::AngularMomentum L((*shell)->angularMomentum());
+       switch (L) {
+          case  Shell::S:    ++s;    break;
+          case  Shell::P:    ++p;    break;   
+          case  Shell::SP:   ++sp;   break;   
+          case  Shell::D5:   ++d5;   break;
+          case  Shell::D6:   ++d6;   break;   
+          case  Shell::F7:   ++f7;   break;
+          case  Shell::F10:  ++f10;  break;   
+          case  Shell::G9:   ++g9;   break;
+          case  Shell::G15:  ++g15;  break;   
+          case  Shell::H11:  ++h11;  break;   
+          case  Shell::H21:  ++h21;  break;   
        }   
+       n += Shell::nFunctions(L);
    }   
 
    QString check("OK");
    if (n != nBasis()) check.prepend("NOT ");
    qDebug() << "Basis function check:     " << check;
-
-   QString types("   S    P   D5   D6   F7  F10");
-   QString tally = QString("%1 %2 %3 %4 %5 %6").arg( s,4).arg( p,4).arg( d5,4)
-                                                  .arg(d6,4).arg(f7,4).arg(f10,4);
+   QString types("    S     P    SP    D5    D6    F7   F10  G9   G15  H11  H21");
+   QString tally = QString("%1 %2 %3 %4 %5 %6").arg(  s,5).arg(  p,5).arg( sp,5).arg( d5,5)
+                                               .arg( d6,5).arg( f7,5).arg(f10,5).arg( g9,5)
+                                               .arg(g15,5).arg(h11,5).arg(h21,5);
    qDebug() << "Shell types:              " << types;
    qDebug() << "                          " << tally;
-   
-   //List<Shell>::dump();
 }
 
 
@@ -242,23 +252,6 @@ QList<unsigned> ShellList::basisAtomOffsets() const
 // TODO: this could be batched over grid points so that matrix multiplications
 // can be used later on.  Also, auxilary data structures could be employed to 
 // make the computation more efficient.
-Vector const& ShellList::shellValues(qglviewer::Vec const& gridPoint)
-{
-   double const* values;
-   unsigned offset(0);
-
-   ShellList::const_iterator shell;
-   for (shell = begin(); shell != end(); ++shell) {
-       values = (*shell)->evaluate(gridPoint);
-       for (unsigned s = 0; s < (*shell)->nBasis(); ++s, ++offset) {
-           m_basisValues[offset] = values[s];
-       }
-   }
-
-   return m_basisValues;
-}
-
-
 Vector const& ShellList::shellValues(double const x, double const y, double const z)
 {
    double const* values;
@@ -283,9 +276,9 @@ Vector const& ShellList::shellValues(double const x, double const y, double cons
 
 
 // DEPRECATE
-Vector const& ShellList::shellPairValues(qglviewer::Vec const& gridPoint)
+Vector const& ShellList::shellPairValues(double const x, double const y, double const z)
 {
-   shellValues(gridPoint);
+   shellValues(x,y,z);
 
    unsigned k(0);
    double xi, xj; 
@@ -403,5 +396,166 @@ Vector const& ShellList::orbitalValues(double const x, double const y, double co
 
    return m_orbitalValues;
 }
+
+
+void ShellList::reorderFromQChem(Matrix& C)
+{
+   unsigned offset(0);
+   unsigned nOrbitals(C.size1());
+   ShellList::iterator shell;
+
+   for (shell = begin(); shell != end(); ++shell) {
+       Shell::AngularMomentum L((*shell)->angularMomentum());
+       switch (L) {
+
+          case Shell::S:
+          case Shell::P:
+          case Shell::SP:
+             break;
+
+          case Shell::D5:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double d2m( C(i, offset+0) );
+                 double d1m( C(i, offset+1) );
+                 double d0 ( C(i, offset+2) );
+                 double d1p( C(i, offset+3) );
+                 double d2p( C(i, offset+4) );
+                 C(i, offset+0) = d0;
+                 C(i, offset+1) = d1p;
+                 C(i, offset+2) = d1m;
+                 C(i, offset+3) = d2p;
+                 C(i, offset+4) = d2m;
+             }
+             break;
+
+          case Shell::D6:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double dxx( C(i, offset+0) );
+                 double dxy( C(i, offset+1) );
+                 double dyy( C(i, offset+2) );
+                 double dxz( C(i, offset+3) );
+                 double dyz( C(i, offset+4) );
+                 double dzz( C(i, offset+5) );
+                 C(i, offset+0) = dxx;
+                 C(i, offset+1) = dyy;
+                 C(i, offset+2) = dzz;
+                 C(i, offset+3) = dxy;
+                 C(i, offset+4) = dxz;
+                 C(i, offset+5) = dyz;
+             }
+             break;
+
+          case Shell::F7:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double f3m( C(i, offset+0) );
+                 double f2m( C(i, offset+1) );
+                 double f1m( C(i, offset+2) );
+                 double f0 ( C(i, offset+3) );
+                 double f1p( C(i, offset+4) );
+                 double f2p( C(i, offset+5) );
+                 double f3p( C(i, offset+6) );
+                 C(i, offset+0) = f0;
+                 C(i, offset+1) = f1p;
+                 C(i, offset+2) = f1m;
+                 C(i, offset+3) = f2p;
+                 C(i, offset+4) = f2m;
+                 C(i, offset+5) = f3p;
+                 C(i, offset+6) = f3m;
+             }
+             break;
+
+          case Shell::F10:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double fxxx( C(i, offset+0) );
+                 double fxxy( C(i, offset+1) );
+                 double fxyy( C(i, offset+2) );
+                 double fyyy( C(i, offset+3) );
+                 double fxxz( C(i, offset+4) );
+                 double fxyz( C(i, offset+5) );
+                 double fyyz( C(i, offset+6) );
+                 double fxzz( C(i, offset+7) );
+                 double fyzz( C(i, offset+8) );
+                 double fzzz( C(i, offset+9) );
+                 C(i, offset+0) = fxxx;
+                 C(i, offset+1) = fyyy;
+                 C(i, offset+2) = fzzz;
+                 C(i, offset+3) = fxyy;
+                 C(i, offset+4) = fxxy;
+                 C(i, offset+5) = fxxz;
+                 C(i, offset+6) = fxzz;
+                 C(i, offset+7) = fyzz;
+                 C(i, offset+8) = fyyz;
+                 C(i, offset+9) = fxyz;
+             }
+             break;
+
+          case Shell::G9:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double g4m( C(i, offset+0) );
+                 double g3m( C(i, offset+1) );
+                 double g2m( C(i, offset+2) );
+                 double g1m( C(i, offset+3) );
+                 double g0 ( C(i, offset+4) );
+                 double g1p( C(i, offset+5) );
+                 double g2p( C(i, offset+6) );
+                 double g3p( C(i, offset+7) );
+                 double g4p( C(i, offset+8) );
+                 C(i, offset+0) = g0;
+                 C(i, offset+1) = g1p;
+                 C(i, offset+2) = g1m;
+                 C(i, offset+3) = g2p;
+                 C(i, offset+4) = g2m;
+                 C(i, offset+5) = g3p;
+                 C(i, offset+6) = g3m;
+                 C(i, offset+7) = g4p;
+                 C(i, offset+8) = g4m;
+             }
+             break;
+
+          case Shell::G15:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double gxxxx( C(i, offset+ 0) );
+                 double gxxxy( C(i, offset+ 1) );
+                 double gxxyy( C(i, offset+ 2) );
+                 double gxyyy( C(i, offset+ 3) );
+                 double gyyyy( C(i, offset+ 4) );
+                 double gxxxz( C(i, offset+ 5) );
+                 double gxxyz( C(i, offset+ 6) );
+                 double gxyyz( C(i, offset+ 7) );
+                 double gyyyz( C(i, offset+ 8) );
+                 double gxxzz( C(i, offset+ 9) );
+                 double gxyzz( C(i, offset+10) );
+                 double gyyzz( C(i, offset+11) );
+                 double gxzzz( C(i, offset+12) );
+                 double gyzzz( C(i, offset+13) );
+                 double gzzzz( C(i, offset+14) );
+                 C(i, offset+ 0) = gxxxx;
+                 C(i, offset+ 1) = gyyyy;
+                 C(i, offset+ 2) = gzzzz;
+                 C(i, offset+ 3) = gxxxy;
+                 C(i, offset+ 4) = gxxxz;
+                 C(i, offset+ 5) = gxyyy;
+                 C(i, offset+ 6) = gyyyz;
+                 C(i, offset+ 7) = gxzzz;
+                 C(i, offset+ 8) = gyzzz;
+                 C(i, offset+ 9) = gxxyy;
+                 C(i, offset+10) = gxxzz;
+                 C(i, offset+11) = gyyzz;
+                 C(i, offset+12) = gxxyz;
+                 C(i, offset+13) = gxyyz;
+                 C(i, offset+14) = gxyzz;
+             }
+             break;
+
+          case Shell::H11:
+          case Shell::H21:
+             QLOG_WARN() << "Unhandled anguar momentum in Orbitals::reorderFromQChem";
+             break;
+       }
+       offset += Shell::nFunctions(L);
+   }
+}
+
+
 
 } } // end namespace IQmol::Data

@@ -512,14 +512,12 @@ bool GeminalOrbitals::computeOrbitalGrids(Data::GridDataList& grids)
        for (j = 0, y = origin.y;  j < ny;  ++j, y += delta.y) {
            for (k = 0, z = origin.z;  k < nz;  ++k, z += delta.z) {
    
-               Vec gridPoint(x,y,z);
-
                for (unsigned orb = 0; orb < nOrb; ++orb) tmp[orb] = 0.0;
                unsigned offset(0);
 
                //-----------------------------------------------------
                for (shell = shells.begin(); shell != shells.end(); ++shell) {
-                   if ( (values = (*shell)->evaluate(gridPoint)) ) {
+                   if ( (values = (*shell)->evaluate(x,y,z)) ) {
                       for (unsigned s = 0; s < (*shell)->nBasis(); ++s) {
                           for (unsigned orb = 0; orb < nOrb; ++orb) {
                               tmp[orb] += coefficientsA(orbitals[orb], offset) * values[s]; //VAR temp
@@ -731,8 +729,7 @@ bool GeminalOrbitals::computeDensityGrids(Data::GridDataList& grids)
    for (i = 0, x = origin.x; i < nx; i += 1, x += delta.x) {
        for (j = 0, y = origin.y; j < ny; j += 1, y += delta.y) {
            for (k = 0, z = origin.z; k < nz; k += 1, z += delta.z) {
-               Vec gridPoint(x, y, z);
-               computeShellPairs(gridPoint);
+               computeShellPairs(x,y,z);
 
                for (unsigned den = 0; den < nDensities; ++den) {
                    (*grids.at(den))(i, j, k) = sqrt(fabs(
@@ -755,7 +752,7 @@ bool GeminalOrbitals::computeDensityGrids(Data::GridDataList& grids)
 }
 
 
-void GeminalOrbitals::computeShellPairs(Vec const& gridPoint)
+void GeminalOrbitals::computeShellPairs(double const x, double const y, double const z)
 {
    Data::ShellList const& shells(m_geminalOrbitals.shellList());
 
@@ -763,7 +760,7 @@ void GeminalOrbitals::computeShellPairs(Vec const& gridPoint)
    Data::ShellList::const_iterator shell;
    unsigned k(0);
    for (shell = shells.begin(); shell != shells.end(); ++shell) {
-       if ( (values = (*shell)->evaluate(gridPoint)) ) {
+       if ( (values = (*shell)->evaluate(x,y,z)) ) {
           for (unsigned j = 0; j < (*shell)->nBasis(); ++j, ++k) {
               m_shellValues[k] = values[j];
           }
@@ -814,8 +811,6 @@ GeminalOrbitalProperty::GeminalOrbitalProperty(Data::GeminalOrbitals const& gemi
 
 double GeminalOrbitalProperty::orbital(double const x, double const y, double const z) const
 {
-  
-   Vec gridPoint(x,y,z);
    unsigned offset(0),i,s;
    double const*  values;
    double   val(0.0);
@@ -829,7 +824,7 @@ double GeminalOrbitalProperty::orbital(double const x, double const y, double co
 
    if( m_index < NA ){ 
      for (shell = shells.begin(); shell != shells.end(); ++shell) {
-       if ( (values = (*shell)->evaluate(gridPoint)) ) {
+       if ( (values = (*shell)->evaluate(x,y,z)) ) {
           for ( s = 0; s < (*shell)->nBasis(); ++s) {
 	    for (i = Limits[m_index]; i < Limits[m_index+1]; i++) {
                val += m_alpha(i,offset) * m_geminals[i] * values[s];
@@ -842,7 +837,7 @@ double GeminalOrbitalProperty::orbital(double const x, double const y, double co
      }
    } else {
      for (shell = shells.begin(); shell != shells.end(); ++shell) {
-       if ( (values = (*shell)->evaluate(gridPoint)) ) {
+       if ( (values = (*shell)->evaluate(x,y,z)) ) {
           for ( s = 0; s < (*shell)->nBasis(); ++s) {
 	    for (i = Limits[m_index-NA]; i < Limits[m_index+1-NA]; i++) {
                val += m_beta(i,offset) * m_geminals[i] * values[s];

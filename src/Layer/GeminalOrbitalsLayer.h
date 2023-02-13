@@ -85,7 +85,7 @@ namespace Layer {
          bool computeDensityGrids(Data::GridDataList& grids);
          void computeDensityVectors();
          void initGeminalOrbitalProperties();
-         void computeShellPairs(qglviewer::Vec const& gridPoint);
+         void computeShellPairs(double const x, double const y, double const z);
 
          Data::GridData* findGrid(Data::SurfaceType const& type, 
             Data::GridSize const& size, Data::GridDataList const& gridList);

@@ -576,6 +576,8 @@ Data::Geometry* FormattedCheckpoint::makeGeometry(GeomData const& geomData)
       geom->setChargeAndMultiplicity(geomData.charge, geomData.multiplicity);
       geom->scaleCoordinates(Constants::BohrToAngstrom);
       geom->computeGasteigerCharges();
+   }else {
+      QLOG_WARN() << "Inconsistent number of atoms in FormattedCheckpoint::makeGeometry";
    }
    return geom;
 }

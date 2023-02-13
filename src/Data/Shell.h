@@ -29,17 +29,35 @@
 namespace IQmol {
 namespace Data {
 
-   /// Basic Shell class representing a contracted shell of a particular
-   /// angular momentum.  Note that we assume all the input values are in
-   /// angstrom, not bohr, and that the coefficients are given for the
-   /// normalized basis functions.
+   // Shell class representing a contracted shell of a particular angular
+   // momentum.  Note that all the input values are assumed to be in angstrom,
+   // and are stored in angstrom as this is the native unit of the Viewer.
+   // Note also the coefficients are given for the normalized basis functions.
+   // Basis functions are stored in Molden format 
+   //    https://www.theochem.ru.nl/molden/molden_format.html
+
    class Shell : public Base {
 
       friend class boost::serialization::access;
 
       public:
-         enum AngularMomentum { S, P, D5, D6, F7, F10, G9, G15 };
+         enum AngularMomentum { 
+              H11 = -5,
+              G9  = -4,
+              F7  = -3,
+              D5  = -2,
+              SP  = -1,
+              S   =  0,
+              P   =  1,
+              D6  =  2,
+              F10 =  3,
+              G15 =  4,
+              H21 =  5 
+         };
+
          static QString toString(AngularMomentum const);
+         static unsigned nFunctions(AngularMomentum const);
+         static QString label(AngularMomentum const, unsigned const);
 
          Type::ID typeID() const { return Type::Shell; }
 
@@ -48,6 +66,12 @@ namespace Data {
             qglviewer::Vec const& position = qglviewer::Vec(), 
             QList<double> const& exponents = QList<double>(), 
             QList<double> const& contractionCoefficients = QList<double>());
+
+         AngularMomentum angularMomentum() const { return m_angularMomentum; }
+
+         QString label(unsigned i) const { return label(m_angularMomentum, i); }
+
+         unsigned nBasis() const { return nFunctions(m_angularMomentum); }
 
 		 /// Returns the (-1,-1,-1) and (1,1,1) octant corners of a rectangular
 		 /// box that encloses the significant region of the Shell where 
@@ -59,18 +83,13 @@ namespace Data {
          void boundingBox(qglviewer::Vec& min, qglviewer::Vec& max, 
             double const thresh = 0.001);
 
-		 // Returns a pointer to an array containing the values of the basis
-		 // functions at the given position.
-         double const* evaluate(qglviewer::Vec const& gridPoint) const;
-         double const* evaluate(double const x, double const y, double const z) const;
-
-         AngularMomentum angularMomentum() const { return m_angularMomentum; }
+		 // Returns a reference to an array containing the values of the basis
+		 // functions evaluated at the given position.  Returns a null pointer
+         // if the position is beyond the significant radius.
+         double const* evaluate(double const x, double const y, double const z);
 
          unsigned atomIndex() const { return m_atomIndex; }
 
-         unsigned nBasis() const;
-
-         QString label(unsigned const) const;
 
          void serialize(InputArchive& ar, unsigned int const version = 0) {
             privateSerialize(ar, version);
@@ -80,22 +99,22 @@ namespace Data {
             privateSerialize(ar, version); 
          }  
 
-
          void dump() const;
+
 
       private:
 		 /// Shell values are stored in this static array, the length of which
-		 /// is sufficient for up to g angular momentum.  This could cause 
+		 /// is sufficient for up to h angular momentum.  This could cause 
          /// problems if Shells are ever used in parallel.
-         static double s_values[15];
-         static double s_zeroValues[15];
+         QList<double> m_values;
 
 		 /// Computes and saves the significant radius of the shell,
 		 /// as determined by thresh.  Note that this is set to
 		 /// numeric_limits<double>::max until the bounding box is 
          /// requested with a threshold which is passed on to this.
          double computeSignificantRadius(double const thresh);
-         void normalize();
+
+         void normalizeToAngstrom();
 
          template <class Archive>
          void privateSerialize(Archive& ar, unsigned const) {
@@ -108,6 +127,7 @@ namespace Data {
          }
 
          AngularMomentum m_angularMomentum;
+         unsigned        m_nFunctions;
          unsigned        m_atomIndex;
          qglviewer::Vec  m_position;
          QList<double>   m_exponents;
