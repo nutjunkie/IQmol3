@@ -126,6 +126,7 @@ bool OpenBabel::parse(TextStream& stream)
    }
 
    ::OpenBabel::OBMol mol;
+   mol.SetSSSRPerceived();
 
    QByteArray byteArray(stream.readAll().toLatin1());
    std::string s(std::string(byteArray.data()));
@@ -280,7 +281,9 @@ bool OpenBabel::parse(::OpenBabel::OBMol& obMol)
            qglviewer::Vec pos(obAtom->x(), obAtom->y(), obAtom->z());
            unsigned Z(obAtom->GetAtomicNum());
            geometry->append(Z, pos);
-           charges.append(obAtom->GetPartialCharge());
+//           if (charges.size() < 1000) {
+              charges.append(obAtom->GetPartialCharge());
+//           }
        }
        geometry->setAtomicProperty<Data::AtomicCharge>(charges);
        geometry->setChargeAndMultiplicity(charge, multiplicity);
