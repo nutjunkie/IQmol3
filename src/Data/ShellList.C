@@ -514,6 +514,7 @@ void ShellList::reorderFromQChem(Matrix& C)
 
           case Shell::G15:
              for (unsigned i = 0; i < nOrbitals; ++i) {
+#if 0
                  double gxxxx( C(i, offset+ 0) );
                  double gxxxy( C(i, offset+ 1) );
                  double gxxyy( C(i, offset+ 2) );
@@ -529,6 +530,24 @@ void ShellList::reorderFromQChem(Matrix& C)
                  double gxzzz( C(i, offset+12) );
                  double gyzzz( C(i, offset+13) );
                  double gzzzz( C(i, offset+14) );
+#else
+                 // This is the ordering in reorderMatMOs, weird, no?
+                 double gzzzz( C(i, offset+ 0) );
+                 double gyzzz( C(i, offset+ 1) );
+                 double gyyzz( C(i, offset+ 2) );
+                 double gyyyz( C(i, offset+ 3) );
+                 double gyyyy( C(i, offset+ 4) );
+                 double gxzzz( C(i, offset+ 5) );
+                 double gxyzz( C(i, offset+ 6) );
+                 double gxyyz( C(i, offset+ 7) );
+                 double gxyyy( C(i, offset+ 8) );
+                 double gxxzz( C(i, offset+ 9) );
+                 double gxxyz( C(i, offset+10) );
+                 double gxxyy( C(i, offset+11) );
+                 double gxxxz( C(i, offset+12) );
+                 double gxxxy( C(i, offset+13) );
+                 double gxxxx( C(i, offset+14) );
+#endif
                  C(i, offset+ 0) = gxxxx;
                  C(i, offset+ 1) = gyyyy;
                  C(i, offset+ 2) = gzzzz;
@@ -548,8 +567,77 @@ void ShellList::reorderFromQChem(Matrix& C)
              break;
 
           case Shell::H11:
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double h5m( C(i, offset+ 0) );
+                 double h4m( C(i, offset+ 1) );
+                 double h3m( C(i, offset+ 2) );
+                 double h2m( C(i, offset+ 3) );
+                 double h1m( C(i, offset+ 4) );
+                 double h0 ( C(i, offset+ 5) );
+                 double h1p( C(i, offset+ 6) );
+                 double h2p( C(i, offset+ 7) );
+                 double h3p( C(i, offset+ 8) );
+                 double h4p( C(i, offset+ 9) );
+                 double h5p( C(i, offset+10) );
+                 C(i, offset+ 0) = h0;
+                 C(i, offset+ 1) = h1p;
+                 C(i, offset+ 2) = h1m;
+                 C(i, offset+ 3) = h2p;
+                 C(i, offset+ 4) = h2m;
+                 C(i, offset+ 5) = h3p;
+                 C(i, offset+ 6) = h3m;
+                 C(i, offset+ 7) = h4p;
+                 C(i, offset+ 8) = h4m;
+                 C(i, offset+ 9) = h5p;
+                 C(i, offset+10) = h5m;
+             }
+             break;
+
           case Shell::H21:
-             QLOG_WARN() << "Unhandled anguar momentum in Orbitals::reorderFromQChem";
+             for (unsigned i = 0; i < nOrbitals; ++i) {
+                 double hzzzzz( C(i, offset+ 0) );
+                 double hyzzzz( C(i, offset+ 1) );
+                 double hyyzzz( C(i, offset+ 2) );
+                 double hyyyzz( C(i, offset+ 3) );
+                 double hyyyyz( C(i, offset+ 4) );
+                 double hyyyyy( C(i, offset+ 5) );
+                 double hxzzzz( C(i, offset+ 6) );
+                 double hxyzzz( C(i, offset+ 7) );
+                 double hxyyzz( C(i, offset+ 8) );
+                 double hxyyyz( C(i, offset+ 9) );
+                 double hxyyyy( C(i, offset+10) );
+                 double hxxzzz( C(i, offset+11) );
+                 double hxxyzz( C(i, offset+12) );
+                 double hxxyyz( C(i, offset+13) );
+                 double hxxyyy( C(i, offset+14) );
+                 double hxxxzz( C(i, offset+15) );
+                 double hxxxyz( C(i, offset+16) );
+                 double hxxxyy( C(i, offset+17) );
+                 double hxxxxz( C(i, offset+18) );
+                 double hxxxxy( C(i, offset+19) );
+                 double hxxxxx( C(i, offset+20) );
+                 C(i, offset+ 0) = hxxxxx;
+                 C(i, offset+ 1) = hyyyyy;
+                 C(i, offset+ 2) = hzzzzz;
+                 C(i, offset+ 3) = hxxxxy;
+                 C(i, offset+ 4) = hxxxxz;
+                 C(i, offset+ 5) = hxyyyy;
+                 C(i, offset+ 6) = hyyyyz;
+                 C(i, offset+ 7) = hxzzzz;
+                 C(i, offset+ 8) = hyzzzz;
+                 C(i, offset+ 9) = hxxxyy;
+                 C(i, offset+10) = hxxxzz;
+                 C(i, offset+11) = hxxyyy;
+                 C(i, offset+12) = hyyyzz;
+                 C(i, offset+13) = hxxzzz;
+                 C(i, offset+14) = hyyzzz;
+                 C(i, offset+15) = hxxxyz;
+                 C(i, offset+16) = hxyyyz;
+                 C(i, offset+17) = hxyzzz;
+                 C(i, offset+18) = hxxyyz;
+                 C(i, offset+19) = hxxyzz;
+                 C(i, offset+20) = hxyyzz;
+             }
              break;
        }
        offset += Shell::nFunctions(L);

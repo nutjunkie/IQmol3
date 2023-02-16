@@ -366,23 +366,24 @@ void Shell::boundingBox(Vec& min, Vec& max, double const thresh)
 // by Anthony Stone
 double const* Shell::evaluate(double const gx, double const gy, double const gz)
 {
-   static const double f2    = 0.5;
-   static const double f4    = 0.25;
-   static const double f8    = 0.125;
-   static const double f16   = 0.0625;
+   static const double f2     = 0.5;
+   static const double f4     = 0.25;
+   static const double f8     = 0.125;
+   static const double f16    = 0.0625;
 
-   static const double rt3   = std::sqrt(3.0);
-   static const double rt5   = std::sqrt(5.0);
-   static const double rt6   = std::sqrt(6.0);
-   static const double rt7   = std::sqrt(7.0);
-   static const double rt10  = std::sqrt(10.0);
-   static const double rt14  = std::sqrt(14.0);
-   static const double rt15  = std::sqrt(15.0);
-   static const double rt21  = std::sqrt(21.0);
-   static const double rt35  = std::sqrt(35.0);
-   static const double rt63  = std::sqrt(63.0);
-   static const double rt70  = std::sqrt(70.0);
-   static const double rt105 = std::sqrt(105.0);
+   static const double rt3    = std::sqrt(3.0);
+   static const double rt5    = std::sqrt(5.0);
+   static const double rt6    = std::sqrt(6.0);
+   static const double rt7    = std::sqrt(7.0);
+   static const double rt10   = std::sqrt(10.0);
+   static const double rt14   = std::sqrt(14.0);
+   static const double rt15   = std::sqrt(15.0);
+   static const double rt21   = std::sqrt(21.0);
+   static const double rt35   = std::sqrt(35.0);
+   static const double rt63   = std::sqrt(63.0);
+   static const double rt70   = std::sqrt(70.0);
+   static const double rt105  = std::sqrt(105.0);
+   static const double rt35o3 = std::sqrt(35.0/3.0);
 
    double x(gx-m_position.x);
    double y(gy-m_position.y);
@@ -418,11 +419,11 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
          break;
 
       case D5:
-         m_values[0] = s * (3*z*z - r2) * f2;    // d0
-         m_values[1] = s * (x*z)        * rt3;   // d+1
-         m_values[2] = s * (y*z)        * rt3;   // d-1
-         m_values[3] = s * (x*x - y*y)  * rt3*f2 // d+2
-         m_values[4] = s * (x*y)        * rt3;   // d-2
+         m_values[0] = s * (3*z*z - r2) * f2    ; // d0
+         m_values[1] = s * (x*z)        * rt3   ; // d+1
+         m_values[2] = s * (y*z)        * rt3   ; // d-1
+         m_values[3] = s * (x*x - y*y)  * rt3*f2; // d+2
+         m_values[4] = s * (x*y)        * rt3   ; // d-2
          break;
 
       case D6:
@@ -435,11 +436,11 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
          break;
 
       case F7:
-         m_values[0] = s * z * (5*z*z - 3*r2 ) * f2;      // f0
-         m_values[1] = s * x * (5*z*z -   r2 ) * f4*rt6;  // f+1
-         m_values[2] = s * y * (5*z*z -   r2 ) * f4*rt6;  // f-1
+         m_values[0] = s * z * (5*z*z - 3*r2 ) * f2     ; // f0
+         m_values[1] = s * x * (5*z*z -   r2 ) * f4*rt6 ; // f+1
+         m_values[2] = s * y * (5*z*z -   r2 ) * f4*rt6 ; // f-1
          m_values[3] = s * z * (  x*x -   y*y) * f2*rt15; // f+2
-         m_values[4] = s * x*y*z               * rt15;    // f-2
+         m_values[4] = s * x*y*z               * rt15   ; // f-2
          m_values[5] = s * x * (  x*x - 3*y*y) * f4*rt10; // f+3
          m_values[6] = s * y * (3*x*x -   y*y) * f4*rt10; // f-3
       break;
@@ -459,11 +460,11 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
 
       case G9: {
          double x2(x*x), y2(y*y), z2(z*z);
-         m_values[0] = s * (35*z2*z2 - 30*z2*r2 + 3*r2*r2) * f8;      // g0
+         m_values[0] = s * (35*z2*z2 - 30*z2*r2 + 3*r2*r2) * f8     ; // g0
          m_values[1] = s *  x*z      * (7*z2 - 3*r2)       * f4*rt10; // g+1
          m_values[2] = s *  y*z      * (7*z2 - 3*r2)       * f4*rt10; // g-1
-         m_values[3] = s * (x2 - y2) * (7*z2 -   r2)       * f4*rt5;  // g+2
-         m_values[4] = s *  x*y      * (7*z2 -   r2)       * f2*rt5;  // g-2
+         m_values[3] = s * (x2 - y2) * (7*z2 -   r2)       * f4*rt5 ; // g+2
+         m_values[4] = s *  x*y      * (7*z2 -   r2)       * f2*rt5 ; // g-2
          m_values[5] = s *  x*z      * (  x2 - 3*y2)       * f4*rt70; // g+3
          m_values[6] = s *  y*z      * (3*x2 -   y2)       * f4*rt70; // g-3
          m_values[7] = s * (x2*x2 - 6*x2*y2 + y2*y2)       * f8*rt35; // g+4
@@ -478,8 +479,8 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
          m_values[ 4] = s * (x*x*x*z) * rt7   ; // xxxz
          m_values[ 5] = s * (x*y*y*y) * rt7   ; // xyyy
          m_values[ 6] = s * (y*y*y*z) * rt7   ; // yyyz
-         m_values[ 7] = s * (x*z*z*z) * rt7   ; // zzzx
-         m_values[ 8] = s * (y*z*z*z) * rt7   ; // zzzy
+         m_values[ 7] = s * (x*z*z*z) * rt7   ; // xzzz
+         m_values[ 8] = s * (y*z*z*z) * rt7   ; // yzzz
          m_values[ 9] = s * (x*x*y*y) * rt35o3; // xxyy
          m_values[10] = s * (x*x*z*z) * rt35o3; // xxzz
          m_values[11] = s * (y*y*z*z) * rt35o3; // yyzz
@@ -492,17 +493,17 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
          double x2(x*x),   y2(y*y),   z2(z*z);
          double x4(x2*x2), y4(y2*y2), z4(z2*z2), r4(r2*r2);
          // Need the ordering of these
-         m_values[ 0] = s * z * (63*z4 - 70*z2*r2 + 15*r4)                * f8;        // h0
-         m_values[ 1] = s * x * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15;   // h+1
-         m_values[ 2] = s * y * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15;   // h-1
-         m_values[ 3] = s * z * (3*z2*(x2-y2) - x2*(x2-y2))               * f4*rt105;  // h+2
-         m_values[ 4] = s * x*y*z * (3*z2-r2)                             * f2*rt105;  // h-2
-         m_values[ 5] = s * x * ( 9*x2*z2 - 27*y2*z2 -   x2*r2 + 3*y2*r2) * f16*rt70;  // h+3
-         m_values[ 6] = s * y * (27*x2*z2 -  9*y2*z2 - 3*x2*r2 +   y2*r2) * f16*rt70;  // h-3
-         m_values[ 7] = s * z * (x4 - 6*x2*y2+ y4)                        * f8*rt35*3; // h+4
-         m_values[ 8] = s * x*y*z * (x2-y2)                               * f2*rt35*3; // h+4
-         m_values[ 9] = s * x * (  x4 - 10*x2*y2 + 5*y4)                  * f16*rt14*3 // h+5
-         m_values[10] = s * y * (5*x4 - 10*x2*y2 +   y4)                  * f16*rt14*3 // h-5
+         m_values[ 0] = s * z * (63*z4 - 70*z2*r2 + 15*r4)                * f8        ; // h0
+         m_values[ 1] = s * x * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h+1
+         m_values[ 2] = s * y * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h-1
+         m_values[ 3] = s * z * (3*z2*(x2-y2) - x2*(x2-y2))               * f4*rt105  ; // h+2
+         m_values[ 4] = s * x*y*z * (3*z2-r2)                             * f2*rt105  ; // h-2
+         m_values[ 5] = s * x * ( 9*x2*z2 - 27*y2*z2 -   x2*r2 + 3*y2*r2) * f16*rt70  ; // h+3
+         m_values[ 6] = s * y * (27*x2*z2 -  9*y2*z2 - 3*x2*r2 +   y2*r2) * f16*rt70  ; // h-3
+         m_values[ 7] = s * z * (x4 - 6*x2*y2+ y4)                        * f8*rt35*3 ; // h+4
+         m_values[ 8] = s * x*y*z * (x2-y2)                               * f2*rt35*3 ; // h+4
+         m_values[ 9] = s * x * (  x4 - 10*x2*y2 + 5*y4)                  * f16*rt14*3; // h+5
+         m_values[10] = s * y * (5*x4 - 10*x2*y2 +   y4)                  * f16*rt14*3; // h-5
       }  break;
  
       case H21:
