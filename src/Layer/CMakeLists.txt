@@ -89,6 +89,8 @@ add_library(${LIB} ${SOURCES})
 
 target_link_libraries(${LIB} PUBLIC
    Configurator
+   Fort
+   Grid
    Util
 )
 
