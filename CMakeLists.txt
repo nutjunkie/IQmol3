@@ -148,6 +148,7 @@ endif (WIN32)
 #)
 
 add_dependencies(Process Configurator)
+add_dependencies(Grid Configurator)
 add_dependencies(Viewer Process)
 
 
