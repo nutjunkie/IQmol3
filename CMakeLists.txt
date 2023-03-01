@@ -8,7 +8,7 @@ set(targetName IQmol)
 project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 
 include(FortranCInterface)
-#FortranCInterface_VERIFY(CXX)
+
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

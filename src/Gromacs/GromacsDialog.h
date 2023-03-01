@@ -24,6 +24,7 @@
 #include "Gromacs/ui_GromacsDialog.h"
 #include <QDialog>
 #include <QJsonObject>
+#include <QJsonArray>
 
 
 class QNetworkAccessManager;
@@ -47,9 +48,10 @@ namespace Gmx {
 
       private Q_SLOTS:
          void on_generateBoxButton_clicked(bool);
-
+         //QJsonArray readToJson();
+         //void stageCalculation();   
          void boxRequestFinished();
-         void readToString();
+         QString readToString();
       
       private:
          QJsonObject boxRequestPayload();
