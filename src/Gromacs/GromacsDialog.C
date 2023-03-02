@@ -77,6 +77,8 @@ GromacsDialog::GromacsDialog(QWidget* parent) : QDialog(parent), m_networkReply(
    m_dialog.setupUi(this);
    m_dialog.boundary->setSuffix(" \u212B");
    m_networkAccessManager = new QNetworkAccessManager(this);
+
+   //Add path to opened molecule default should be pdb file
 }
 
 
