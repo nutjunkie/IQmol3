@@ -227,11 +227,20 @@ QJsonObject GromacsDialog::boxRequestPayload()
 
 void GromacsDialog::boxRequestFinished()
 {
-   enableRequestWidgets(true);    
-   QString msg("Request finished");
-   QMsgBox::information(this, "IQmol", msg);
-   QString outputdata = readToString();
-   // do stuff
+   enableRequestWidgets(true);
+   if(m_networkReply->error())
+    {
+      qDebug() << "ERROR!";
+      qDebug() << m_networkReply->errorString();
+      QString msg(m_networkReply->errorString());
+      QMsgBox::information(this, "IQmol", msg);
+
+    }else{  
+      QString msg("Request finished");
+      QMsgBox::information(this, "IQmol", msg);
+      QString outputdata = readToString();
+      // do stuff
+    }
 
    delete m_networkReply;
    m_networkReply = 0;
