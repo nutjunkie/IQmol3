@@ -25,6 +25,7 @@
 #include "Util/QsLog.h"
 #include "Util/Preferences.h"
 
+#include <QComboBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
@@ -78,6 +79,13 @@ GromacsDialog::GromacsDialog(QWidget* parent) : QDialog(parent), m_networkReply(
    m_dialog.boundary->setSuffix(" \u212B");
    m_networkAccessManager = new QNetworkAccessManager(this);
 
+   m_dialog.selectCalculation->addItem(tr("item 1"));
+   m_dialog.selectCalculation->addItem(tr("item 2"));
+   m_dialog.selectCalculation->addItem(tr("item 3"));
+
+
+
+
    //Add path to opened molecule default should be pdb file
 }
 
@@ -120,8 +128,7 @@ void GromacsDialog::stageCalculation()
    }
 
 
-}
-*/
+}*/
 
 /*QJsonArray GromacsDialog::readToJson()
 {

@@ -1,4 +1,6 @@
 build
 .*.swp
-.DS_Stor
+src/.DS_Store
+.DS_Store
 *.log
+*.code-workspace

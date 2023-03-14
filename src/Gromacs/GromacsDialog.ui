@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>311</width>
-    <height>237</height>
+    <width>484</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,9 @@
       <string>Solvent Box</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QComboBox" name="selectCalculation"/>
+      </item>
       <item>
        <widget class="QCheckBox" name="centerButton">
         <property name="text">
