@@ -703,9 +703,16 @@ void MainWindow::createMenus()
       connect(action, SIGNAL(triggered()), this, SLOT(showGromacsDialog()));
       action->setShortcut(Qt::CTRL | Qt::Key_G );
 
+      name = "Edit Gromacs Config";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showGromacsConfigDialog()));
+
       name = "Edit Gomacs Server";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(showGromacsServerDialog()));
+
+
+
 #endif
 
 
@@ -1010,6 +1017,18 @@ void MainWindow::showGromacsDialog()
 
    //m_gromacsDialog->setWindowModality(Qt::WindowModal);
    m_gromacsDialog->show();
+#endif
+}
+
+void MainWindow::showGromacsConfigDialog()
+{
+#ifdef GROMACS
+   Gmx::GromacsConfigDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      
+   }
+   
 #endif
 }
 

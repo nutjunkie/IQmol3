@@ -4,16 +4,20 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network REQUIRED)
 set( HEADERS
    GromacsDialog.h
    GromacsServerDialog.h
+   GromacsConfigDialog.h
+
 )
 
 set( SOURCES
    GromacsDialog.C
    GromacsServerDialog.C
+   GromacsConfigDialog.C
 )
 
 set( UI_FILES
    GromacsDialog.ui
    GromacsServerDialog.ui
+   GromacsConfigDialog.ui
 )
 
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )

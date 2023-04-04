@@ -177,6 +177,12 @@ namespace Preferences {
    QString GromacsServerAddress();
    void GromacsServerAddress(QString const&);
 
+   QString GromacsTopologyFile();
+   void GromacsTopologyFile(QString const&);
+
+   QString GromacsPositionFile();
+   void GromacsPositionFile(QString const&);
+
    // Deprecate
    QList<QVariant> CurrentProcessList();
    void CurrentProcessList(QList<QVariant> const&);

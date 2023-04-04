@@ -20,6 +20,8 @@
    
 ********************************************************************************/
 
+#include "GromacsPreferences.h"
+#include "GromacsConfigDialog.h"
 #include "GromacsDialog.h"
 #include "Util/QMsgBox.h"
 #include "Util/QsLog.h"
@@ -35,9 +37,12 @@
 #include <QJsonObject>
 #include <QHttpMultiPart>
 #include <QFile>
+#include <QTextStream>
 
 namespace IQmol {
 namespace Gmx { 
+
+//GromacsPreferences* GroPref = new GromacsPreferences();
 
 QString toString(BoxType type)
 {
@@ -79,10 +84,6 @@ GromacsDialog::GromacsDialog(QWidget* parent) : QDialog(parent), m_networkReply(
    m_dialog.boundary->setSuffix(" \u212B");
    m_networkAccessManager = new QNetworkAccessManager(this);
 
-   m_dialog.selectCalculation->addItem(tr("item 1"));
-   m_dialog.selectCalculation->addItem(tr("item 2"));
-   m_dialog.selectCalculation->addItem(tr("item 3"));
-
 
 
 
@@ -93,6 +94,7 @@ GromacsDialog::GromacsDialog(QWidget* parent) : QDialog(parent), m_networkReply(
 GromacsDialog::~GromacsDialog()
 {
    if (m_networkAccessManager) delete m_networkAccessManager;
+   
 }
 
 
@@ -146,10 +148,69 @@ QString GromacsDialog::readToString()
    qint64 size(m_networkReply->bytesAvailable());
    s = m_networkReply->read(size);
    qDebug() << "Reading" << size << " bytes to string" << s;
+   QString qPath("1AKI_newbox.gro");
+   QFile qFile(qPath);
+   if (qFile.open(QIODevice::WriteOnly)) {
+      QTextStream out(&qFile); out << s;
+      qFile.close();
+   }
    return(s);
-} 
+   
+}
+
+void GromacsDialog::on_solvateButton_clicked(bool)
+{
+   enableRequestWidgets(false);    
+   if (m_networkReply) {
+      QString msg("Request already in progress");
+      QMsgBox::warning(this, "IQmol", msg);
+      return;
+   }
+   qDebug() << "Solvating";
+   QString url(Preferences::GromacsServerAddress());
+   url += "/solvate";
+   qDebug() << "URL set to " << url;
 
 
+   QNetworkRequest request;
+   request.setUrl(url);
+   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpPart jsonPart;
+   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
+   QJsonObject payload(solvateRequestPayload());
+   QJsonDocument json;
+   json.setObject(payload);
+   //qDebug() << "Request body:" << json.toJson();
+   jsonPart.setBody(json.toJson());
+
+   QHttpPart filePart;
+   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
+   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
+   QFile *file = new QFile("1AKI_newbox.gro");
+   file->open(QIODevice::ReadOnly);
+   filePart.setBodyDevice(file);
+   file->setParent(multiPart); 
+   
+   QHttpPart topologyPart;
+   topologyPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/top"));
+   topologyPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"top\""));
+   QFile *file2 = new QFile(GroPref->getTopology());
+   file2->open(QIODevice::ReadOnly);
+   topologyPart.setBodyDevice(file2);
+   file2->setParent(multiPart); 
+
+
+
+
+   multiPart->append(jsonPart);
+   multiPart->append(filePart);
+   multiPart->append(topologyPart);
+   m_networkReply = m_networkAccessManager->post(request,multiPart);
+   qDebug() << "Request pending" ;
+   connect(m_networkReply, SIGNAL(finished()),  this, SLOT(solvateRequestFinished()) );
+   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
+
+}
 
 void GromacsDialog::on_generateBoxButton_clicked(bool)
 {
@@ -167,22 +228,13 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
 
    QNetworkRequest request;
    request.setUrl(url);
-
    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
    QHttpPart jsonPart;
    jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
-   
-
-
-   // Set header
-   //request.setRawHeader("jobId", "");
-   
-   //request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain; charset=UTF-8");
-
    QJsonObject payload(boxRequestPayload());
    QJsonDocument json;
    json.setObject(payload);
-   qDebug() << "Request body:" << json.toJson();
+   //qDebug() << "Request body:" << json.toJson();
    jsonPart.setBody(json.toJson());
 
    QHttpPart filePart;
@@ -232,7 +284,25 @@ QJsonObject GromacsDialog::boxRequestPayload()
 }
 
 
-void GromacsDialog::boxRequestFinished()
+
+QJsonObject GromacsDialog::solvateRequestPayload()
+{
+   QJsonObject json;
+   QString solvateType(m_dialog.solvationtype->currentText());
+   json.insert("solvatetype", solvateType);
+   QString topology(GroPref->getTopology());
+   json.insert("topology",topology);
+   json.insert("-cp","1AKI_newbox.gro");
+   json.insert("-o","1AKI_solv.gro");
+
+
+
+
+   return json;
+}
+
+
+void GromacsDialog::solvateRequestFinished()
 {
    enableRequestWidgets(true);
    if(m_networkReply->error())
@@ -252,5 +322,29 @@ void GromacsDialog::boxRequestFinished()
    delete m_networkReply;
    m_networkReply = 0;
 }
+
+void GromacsDialog::boxRequestFinished()
+{
+   enableRequestWidgets(true);
+   if(m_networkReply->error())
+    {
+      qDebug() << "ERROR!";
+      qDebug() << m_networkReply->errorString();
+      QString msg(m_networkReply->errorString());
+      QMsgBox::information(this, "IQmol", msg);
+
+    }else{  
+      QString msg("Request finished");
+      QMsgBox::information(this, "IQmol", msg);
+      //QString outputdata = readToString();
+  }
+
+      // do stuff
+
+   delete m_networkReply;
+   m_networkReply = 0;
+}
+
+
 
 } } // end namespace IQmol::Gmx

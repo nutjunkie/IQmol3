@@ -34,6 +34,7 @@
 #ifdef GROMACS
 #include "GromacsDialog.h"
 #include "GromacsServerDialog.h"
+#include "GromacsConfigDialog.h"
 #endif
 
 #include <QItemSelectionModel>
@@ -98,6 +99,7 @@ namespace Gmx {
          void showQChemUI();
          void showGromacsDialog();
          void showGromacsServerDialog();
+         void showGromacsConfigDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::QChemJobInfo&);

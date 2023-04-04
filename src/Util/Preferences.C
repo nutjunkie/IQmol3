@@ -834,6 +834,28 @@ void GromacsServerAddress(QString const& address)
    Set("GromacsServerAddress", address);
 }
 
+QString GromacsTopologyFile()
+{
+   QVariant value(Get("GromacsTopologyFile"));
+   return value.isNull() ? QString("topol.top") : value.value<QString>();
+}
+
+void GromacsTopologyFile(QString const& topology){
+   Set("GromacsTopologyFile", topology);
+
+}
+
+QString GromacsPositionFile(){
+   QVariant value(Get("GromacsPositionFile"));
+   return value.isNull() ? QString("posre.itp") : value.value<QString>();
+}
+
+void GromacsPositionFile(QString const& position){
+   Set("GromacsPositionFile", position);
+}
+
+
+
 // ---------
 
 
