@@ -237,7 +237,6 @@ void Molecule::appendData(Layer::List& list)
 
    for (iter = list.begin(); iter != list.end(); ++iter) {
        text = (*iter)->text();
-//qDebug() << "Layer text" << text;
        // Hack to allow multiple cube data files and frequencies
        if (text == "Cube Data") text = "cubedata";
        if (text == "Frequencies") text = "frequencies";
@@ -256,13 +255,12 @@ void Molecule::appendData(Layer::List& list)
           //toSet.append(*iter);
           orbitals->setMolecule(this);
 
-// This is currently preventing the addition of primivees to an exisiting molecule
+       // This is currently preventing the addition of primivees to an exisiting molecule
        }else if (!labels.contains(text)) {
           labels << (*iter)->text();
 
           if ((atoms = qobject_cast<Atoms*>(*iter))) {
              AtomList atomList(atoms->getAtoms());
-//qDebug() << "Atoms size" << atomList.size();
              AtomList::iterator atom;
              for (atom = atomList.begin(); atom != atomList.end(); ++atom) {
                  atoms->removeLayer(*atom);
@@ -270,7 +268,6 @@ void Molecule::appendData(Layer::List& list)
              }
           }else if ((bonds = qobject_cast<Bonds*>(*iter))) {
              BondList bondList(bonds->findLayers<Bond>(Children));
-//qDebug() << "Bonds size" << bondList.size();
              BondList::iterator bond;
              for (bond = bondList.begin(); bond != bondList.end(); ++bond) {
                  bonds->removeLayer(*bond);
@@ -291,12 +288,12 @@ void Molecule::appendData(Layer::List& list)
                  primitiveList.append(*efp);
              }
 
-           }else {
-			 // The ordering of this is all wrong as the atoms have not been
-			 // appended yet and some Layers need this in their setMolecule
-			 // function.
+          }else {
+		     // The ordering of this is all wrong as the atoms have not been
+		     // appended yet and some Layers need this in their setMolecule
+		     // function.
              toSet.append(*iter);
-            }
+          }
        } 
 
        if ( (cubeData = qobject_cast<CubeData*>(*iter)) ) {
@@ -304,7 +301,6 @@ void Molecule::appendData(Layer::List& list)
        }
    }
 
-//qDebug() << "Calling appendPrimitives()" << primitiveList.size();
    appendPrimitives(primitiveList);
    BondList bondList(findLayers<Bond>(Children));
    if (bondList.isEmpty()) reperceiveBonds();
@@ -525,6 +521,7 @@ PrimitiveList Molecule::fromOBMol(OBMol* obMol, AtomMap* atomMap, BondMap* bondM
 
 OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
 {
+   //qDebug() << "Making OBMol";
    OBAtom* obAtom;
    OBBond* obBond;
    Vec     position;
@@ -536,8 +533,6 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
    AtomList::iterator atomIter;
 
    obMol->BeginModify();
-   qDebug() << "OBMol::SetImplicitValencePerceived() deprecated";
-   //obMol->SetImplicitValencePerceived();
    obMol->SetHybridizationPerceived();
 
    for (atomIter = atoms.begin(); atomIter != atoms.end(); ++atomIter) {
@@ -1207,6 +1202,7 @@ void Molecule::appendPrimitive(Primitive* primitive)
 
 void Molecule::appendPrimitives(PrimitiveList const& primitives)
 {
+   //qDebug() << "Layer::Molecule::appendPrimitives()";
    Atom* atom;
    Bond* bond;
    Charge* charge;
@@ -1310,6 +1306,7 @@ void Molecule::takePrimitives(PrimitiveList const& primitives)
 
 void Molecule::updateInfo()
 {
+   ///qDebug() << "Layer::Molecule::updateInfo()";
    m_info.clear();
    AtomList atoms(findLayers<Atom>(Children));
    if (atoms.isEmpty()) return;
@@ -1543,6 +1540,7 @@ void Molecule::createGeometryList()
 
 void Molecule::setGeometry(IQmol::Data::Geometry& geometry)
 {
+   //qDebug() << "Layer::Molecule::setGeometry()";
    AtomList atoms(findLayers<Atom>(Children));
    unsigned nAtoms(atoms.size());
    if (nAtoms != geometry.nAtoms()) {
@@ -1838,8 +1836,6 @@ void Molecule::addHydrogens()
    // We now type the atoms and overwrite the valency/hybridization info
    // if it has been changed by the user.
    OBAtomTyper atomTyper;
-   qDebug() << "OBAtomTyper::AssignImplicitvalence() deprecated";
-   //atomTyper.AssignImplicitValence(*obMol);
 
    atomTyper.AssignHyb(*obMol);
    atomTyper.AssignTypes(*obMol);
@@ -1857,8 +1853,6 @@ void Molecule::addHydrogens()
        qDebug() << "GetHyb             = " << iter.key()->GetHyb();         
        qDebug() << "ExplicitHydrogenCoun " << iter.key()->ExplicitHydrogenCount();
        if (hybrid > 0) {
-          qDebug() << "OBAtom::SetImplicitValence() deprecated";
-          //iter.key()->SetImplicitValence(iter.value()->getValency());
           iter.key()->SetHyb(hybrid);
        }
    }
@@ -1881,12 +1875,12 @@ void Molecule::addHydrogens()
 void Molecule::computeEnergy(QString const& forceFieldName)
 {
    QLOG_DEBUG() << "Computing energy with forcefield" << forceFieldName;
-   OBPlugin::List("forcefields");
    QByteArray ff(forceFieldName.toLatin1());
    const char* obff(ff.data());
 
    OBForceField* forceField = OBForceField::FindForceField(obff);
    if (!forceField)  {
+      OBPlugin::List("forcefields");
       QString msg("Failed to load force field: ");
       msg += forceFieldName + "\nUnable to compute energy\n";
       msg += "BABEL_DATADIR environment variable may not be set correctly.";
@@ -2260,6 +2254,7 @@ AtomList Molecule::getContiguousFragment(Atom* first, Atom* second)
 
 void Molecule::reperceiveBonds(bool postCmd)
 {
+   //qDebug() << "Reperceiving bonds";
    AtomMap atomMap;
    BondMap bondMap;
    OBAtom* obAtom;
@@ -2411,6 +2406,7 @@ QList<double> Molecule::atomicCharges(Data::Type::ID type)
 
 void Molecule::setAtomicCharges(Data::Type::ID type)
 {
+   //qDebug() << "Layer::Molecule::setAtomicCharges()";
    QList<double> charges(atomicCharges(type));
    AtomList atoms(findLayers<Atom>(Children));
    int nAtoms(atoms.size());
@@ -2427,7 +2423,9 @@ void Molecule::setAtomicCharges(Data::Type::ID type)
        atoms[i]->setCharge(charge);
    }
    m_chargeType = type;
-   m_info.setCharge(totalCharge);
+   // The Gasteiger charges always give a neutral system, which messes up the
+   // charge/multiplicity from a real calculation.
+   //m_info.setCharge(totalCharge);
 }
 
 
@@ -2749,12 +2747,6 @@ void Molecule::initProperties()
       m_properties 
         << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
    }
-
-
-
-
-
-
 
    if (m_currentGeometry->hasProperty<Data::MultipoleExpansionList>()) {
       Data::MultipoleExpansionList& dma(
