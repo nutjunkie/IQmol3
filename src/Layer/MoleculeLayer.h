@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_MOLECULE_H
-#define IQMOL_LAYER_MOLECULE_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -22,6 +21,7 @@
    
 ********************************************************************************/
 
+#include "ComponentLayer.h"
 #include "Data/Bank.h"
 #include "InfoLayer.h"
 #include "FileLayer.h"
@@ -97,7 +97,7 @@ namespace IQmol {
       /// GLObjects that visually represent the molecule along with Data Layers
       /// containing information such as checkpoint files, cube files and output
       /// files.
-      class Molecule : public Base {
+      class Molecule : public Component {
    
          Q_OBJECT
    
@@ -443,5 +443,3 @@ namespace IQmol {
    typedef QList<Layer::Molecule*> MoleculeList;
 
 } // end namespace IQmol
-
-#endif

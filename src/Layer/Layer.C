@@ -28,7 +28,9 @@ namespace IQmol {
 namespace Layer {
 
 Base::Base(QString const& text, QObject* parent) : QObject(parent), 
-   QStandardItem(text), m_molecule(0), m_configurator(0), m_persistentParent(0), 
+   QStandardItem(text), 
+//    m_molecule(0), 
+   m_configurator(0), m_persistentParent(0), 
    m_propertyFlags(0)
 { 
    setFlags(Qt::ItemIsEnabled);
@@ -46,8 +48,10 @@ Base::~Base()
 }
 
 
+/*
 void Base::setMolecule(Molecule* molecule)
 {
+   return;
    m_molecule = molecule;
    QList<Base*> children(findLayers<Base>());
    QList<Base*>::iterator iter;
@@ -55,6 +59,7 @@ void Base::setMolecule(Molecule* molecule)
        (*iter)->setMolecule(molecule);
    }
 }
+*/
 
 
 void Base::appendLayer(Base* child)

@@ -45,20 +45,18 @@ Dipole::Dipole(qglviewer::Vec const& dipoleMoment) : GLObject("Dipole"),
 
 void Dipole::setMolecule(Molecule* molecule)
 {
-  m_molecule = molecule;
-
-  if (m_molecule) {
-     connect(m_molecule, SIGNAL(centerOfNuclearChargeAvailable(qglviewer::Vec const&)), 
+  if (molecule) {
+     connect(molecule, SIGNAL(centerOfNuclearChargeAvailable(qglviewer::Vec const&)), 
         this, SLOT(setPosition(qglviewer::Vec const&)));
 
-     connect(m_molecule, SIGNAL(radiusAvailable(double const&)), 
+     connect(molecule, SIGNAL(radiusAvailable(double const&)), 
         this, SLOT(setRadius(double const&)));
 
-     connect(this, SIGNAL(updated()), m_molecule, SIGNAL(softUpdate()));
+     connect(this, SIGNAL(updated()), molecule, SIGNAL(softUpdate()));
         
 
-     setPosition(m_molecule->centerOfNuclearCharge());
-     setRadius(m_molecule->radius());
+     setPosition(molecule->centerOfNuclearCharge());
+     setRadius(molecule->radius());
   }
 }
 

@@ -40,10 +40,12 @@ namespace Data {
 
 namespace Layer {
 
+   class Molecule;
 
    class GeminalOrbitals : public Base {
-   typedef QList<QPair<Data::SurfaceType, Data::GridSize> > GridQueue;
-   typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
+
+      typedef QList<QPair<Data::SurfaceType, Data::GridSize> > GridQueue;
+      typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
 
       Q_OBJECT
 
@@ -105,6 +107,7 @@ namespace Layer {
          Vector m_shellPairValues;
          Vector m_shellValues;
 
+         Molecule* m_molecule;
          SurfaceInfoQueue   m_surfaceInfoQueue;
          Data::GridDataList m_availableGrids;
          qglviewer::Vec     m_bbMin, m_bbMax;   // bounding box

@@ -1,0 +1,57 @@
+#pragma once
+/*******************************************************************************
+
+  Copyright (C) 2023 Andrew Gilbert
+
+  This file is part of IQmol, a free molecular visualization program. See
+  <http://iqmol.org> for more details.
+
+  IQmol is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+  details.
+
+  You should have received a copy of the GNU General Public License along
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+
+********************************************************************************/
+
+#include "ComponentLayer.h"
+#include "Util/octree/octree.h"
+#include "Util/octree/point3d.h"
+
+
+namespace IQmol {
+namespace Layer {
+
+   // Component of a System that is large.
+
+   class MacroMolecule : public Component {
+
+      Q_OBJECT
+
+      public:
+         explicit MacroMolecule(QString const& label = QString(), QObject* parent = 0) :
+            Component(label, parent), m_octree(1)
+         { }
+
+         ~MacroMolecule() { }
+
+         void setBoxingScale(double const scale);
+
+         void reBox();
+
+      Q_SIGNALS:
+    
+      private:
+         Octree< Point3D<double> >  m_octree;
+   };
+
+   typedef QList<Component*> ComponentList;
+
+} } // end namespace IQmol::Layer 

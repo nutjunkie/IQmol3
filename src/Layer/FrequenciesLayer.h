@@ -46,6 +46,7 @@ namespace Data {
 namespace Layer {
 
    class Mode;
+   class Molecule;
 
    /// Data Layer representing the vibrational frequencies of a molecule.
    /// The individual Modes are children of this item.
@@ -93,6 +94,7 @@ namespace Layer {
          double m_scale;
          const Mode*  m_activeMode;
          QList<Mode*> m_modeList;
+         Molecule* m_molecule;
    };
 
 

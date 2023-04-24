@@ -39,6 +39,7 @@ namespace Data {
 namespace Layer {
 
    class Surface;
+   class Molecule;
 
    /// Layer handle for the contents of a cube data file.
    class CubeData : public Base {
@@ -66,6 +67,7 @@ namespace Layer {
       private:
          Configurator::CubeData m_configurator;
          Data::CubeData const& m_cube;
+         Molecule* m_molecule;
    };
 
 } } // End namespace IQmol::Layer

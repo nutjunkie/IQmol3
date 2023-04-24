@@ -34,6 +34,7 @@
 namespace IQmol {
 namespace Layer {
 
+   class Molecule;
 
    // Container class for information about the whole molecule such as
    // number of atoms, charge, multiplicity etc.
@@ -90,6 +91,7 @@ namespace Layer {
          bool m_suspendUpdate;
 
       private:
+         Molecule* m_molecule;
          void setDipoleValid(bool);
          Configurator::Info m_configurator;
          Dipole m_dipoleLayer;

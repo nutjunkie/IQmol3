@@ -39,6 +39,8 @@ namespace Configurator {
 
 namespace Layer {
 
+   class Molecule;
+
    class GeometryList : public Base {
 
       Q_OBJECT
@@ -75,6 +77,7 @@ namespace Layer {
          void makeAnimators();
          void deleteAnimators();
 
+         Molecule* m_molecule;
          Configurator::GeometryList* m_configurator;
          Data::GeometryList& m_geometryList;
          AnimatorList m_animatorList;

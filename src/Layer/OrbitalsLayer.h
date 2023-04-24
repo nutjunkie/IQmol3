@@ -48,6 +48,7 @@ namespace Data {
 namespace Layer {
 
    class Surface;
+   class Molecule;
 
    class Orbitals : public Base {
 
@@ -115,6 +116,7 @@ namespace Layer {
 
          typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
 
+         Molecule*               m_molecule;
          SurfaceInfoQueue        m_surfaceInfoQueue;
          Data::GridDataList      m_availableGrids;
          qglviewer::Vec          m_bbMin, m_bbMax;   // bounding box

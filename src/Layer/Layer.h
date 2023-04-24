@@ -31,6 +31,11 @@
 
 
 namespace IQmol {
+
+namespace Configurator {
+   class Base;
+}
+
 namespace Layer {
 
    class Molecule;
@@ -95,8 +100,8 @@ namespace Layer {
 		 // QStandardItem to the Layer.
          virtual void setCheckStatus(Qt::CheckState const) { }
 
-         virtual void setMolecule(Molecule* molecule);
-         Molecule* molecule() const { return m_molecule; }
+         virtual void setMolecule(Molecule* molecule) { }
+         //Molecule* molecule() const { return m_molecule; }
         
 
          template <class T>
@@ -167,7 +172,7 @@ namespace Layer {
          void setPersistentParent(Base* parent);
 
       protected:
-         Molecule* m_molecule;
+         //Molecule* m_molecule;
          void setConfigurator(Configurator::Base* configurator) {
             m_configurator = configurator; 
          }

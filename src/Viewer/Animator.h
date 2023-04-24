@@ -34,6 +34,7 @@ namespace IQmol {
 
 namespace Layer {
    class Surface;
+   class Molecule;
 }
 
 namespace Animator {

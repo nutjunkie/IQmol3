@@ -11,6 +11,7 @@ set( HEADERS
    CanonicalOrbitalsLayer.h
    ChargeLayer.h
    ClippingPlaneLayer.h
+   ComponentLayer.h
    ConstraintLayer.h
    ContainerLayer.h
    CubeDataLayer.h
@@ -30,6 +31,7 @@ set( HEADERS
    InfoLayer.h
    IsotopesLayer.h
    Layer.h
+   MacroMolecule.h
    MolecularSurfacesLayer.h
    MoleculeLayer.h
    NaturalBondOrbitalsLayer.h
@@ -40,6 +42,7 @@ set( HEADERS
    RemLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
+   SystemLayer.h
    VibronicLayer.h
 )
 
@@ -80,6 +83,7 @@ set( SOURCES
    RemLayer.C
    SurfaceLayer.C
    SymmetryLayer.C
+   SystemLayer.C
    VibronicLayer.C
 )
 

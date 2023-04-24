@@ -101,7 +101,7 @@ namespace Layer {
 
 bool Molecule::s_autoDetectSymmetry = false;
 
-Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent), 
+Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_drawMode(Primitive::BallsAndSticks), 
    m_atomScale(1.0), m_bondScale(1.0), m_chargeScale(1.0), 
    m_smallerHydrogens(true), 

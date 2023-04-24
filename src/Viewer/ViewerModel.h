@@ -24,10 +24,11 @@
 
 #include "Viewer.h"
 #include "Layer/AxesMeshLayer.h"
+#include "Layer/BackgroundLayer.h"
 #include "Layer/ClippingPlaneLayer.h"
 #include "Layer/AxesLayer.h"
 #include "Layer/MoleculeLayer.h"
-#include "Layer/BackgroundLayer.h"
+#include "Layer/SystemLayer.h"
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QList>
@@ -147,6 +148,7 @@ namespace IQmol {
 		 /// ViewerModel, but does not append the Molecule.  In most cases the
 		 /// Molecule should be appended via an AddMolecule Command.
          Layer::Molecule* newMolecule();
+         Layer::System* newSystem();
          void connectMolecule(Layer::Molecule*);
          void disconnectMolecule(Layer::Molecule*);
          void forAllMolecules(boost::function<void(Layer::Molecule&)> function);
@@ -165,11 +167,7 @@ namespace IQmol {
             for (int i = 0; i < root->rowCount(); ++i) {
                 child = root->child(i);
                 base = QVariantPtr<Layer::Base>::toPointer(child->data());
-                if (base) {
-                   list += base->findLayers<T>(findFlags);
-                }else {
-                base = QVariantPtr<Layer::Base>::toPointer(child->data());
-                }
+                if (base) list += base->findLayers<T>(findFlags);
             }
             return list;
          }

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_GLOBJECT_H
-#define IQMOL_LAYER_GLOBJECT_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -33,7 +32,6 @@ namespace IQmol {
 
 class ManipulatedFrameSetConstraint;
 class PovRayGen;
-class ClippingPlane;
 
 namespace Layer {
 
@@ -184,5 +182,3 @@ namespace Layer {
 typedef QList<Layer::GLObject*> GLObjectList;
 
 } // end namespace IQmol
-
-#endif

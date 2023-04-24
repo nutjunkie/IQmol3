@@ -12,7 +12,7 @@ include(FortranCInterface)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 

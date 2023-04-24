@@ -28,6 +28,7 @@
 #include "Layer/GeometryListLayer.h"
 #include "Layer/GeometryLayer.h"
 #include "Layer/IsotopesLayer.h"
+#include "Layer/SystemLayer.h"
 #include "Preferences.h"
 #include "UndoCommands.h"
 #include "QMsgBox.h"
@@ -57,6 +58,7 @@
 
 using namespace qglviewer;
 using namespace boost::placeholders;
+
 
 namespace IQmol {
 
@@ -99,8 +101,15 @@ ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
    connect(this, SIGNAL(itemChanged(QStandardItem*)), 
       this, SLOT(checkItemChanged(QStandardItem*)));
 
+   Layer::System* system(newSystem());
+   qDebug() << "print appending System Layer" << system;
+   appendRow(system);
+ 
    Layer::Molecule* mol(newMolecule());
-   appendRow(mol);
+   //appendRow(mol);
+
+   system->appendLayer(mol);
+
    changeActiveViewerMode(Viewer::BuildAtom);
    sceneRadiusChanged(Preferences::DefaultSceneRadius());
 }
@@ -108,13 +117,14 @@ ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
 
 GLObjectList ViewerModel::getVisibleObjects() 
 { 
-   //qDebug() << "Number of visible objects" << m_visibleObjects.size(); 
+   // Need to loop over components
    return m_visibleObjects; 
 }
 
 
 GLObjectList ViewerModel::getSelectedObjects() 
 { 
+   // Need to loop over components
    return m_selectedObjects; 
 }
 
@@ -410,6 +420,15 @@ void ViewerModel::newMoleculeMenu()
    Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), invisibleRootItem()));
    changeActiveViewerMode(Viewer::BuildAtom);
    postCommand(cmd);
+}
+
+
+Layer::System* ViewerModel::newSystem()
+{
+   qDebug() << "About to create new System Layer";
+   Layer::System* system = new Layer::System("System", m_parent);
+   qDebug() << "About to create new System Layer" << system;
+   return system;
 }
 
 
@@ -846,8 +865,6 @@ void ViewerModel::reperceiveBondsForAnimation()
 
 void ViewerModel::computeEnergy()
 {
-   //qDebug() << "Compute energy turned off";
-   //return;
    forAllMolecules(boost::bind(&Layer::Molecule::computeEnergy, _1, m_forceField));
 }
 

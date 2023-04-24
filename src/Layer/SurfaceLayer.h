@@ -39,6 +39,8 @@ namespace IQmol {
 
    namespace Layer {
 
+      class Molecule;
+
       /// Representation of a OpenGL surface.  Note that a surface layer is 
       /// potentially made up of two separate surfaces (positive and negative) so
       /// that molecular orbitals can be treated as a single Layer.  Surfaces can
@@ -116,6 +118,7 @@ namespace IQmol {
             bool m_drawFaceNormals;
             bool m_balanceScale;  // for properties
 
+            Molecule* m_molecule;
             MeshDecimatorTask* m_decimator;
             void povray(PovRayGen&, Data::OMMesh const&, QColor const&);
             void povrayLines(PovRayGen&, Data::OMMesh const&, QColor const&);
