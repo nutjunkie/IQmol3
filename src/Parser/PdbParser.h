@@ -1,10 +1,11 @@
+#pragma once
 /*******************************************************************************
-
+       
   Copyright (C) 2022 Andrew Gilbert
-
+           
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-
+       
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,29 +15,32 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-
+      
   You should have received a copy of the GNU General Public License along
-  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
+   
 ********************************************************************************/
 
-#include "Atom.h"
-#include <openbabel/elements.h>
+#include "Parser.h"
 
 
 namespace IQmol {
+
 namespace Data {
-
-unsigned Atom::atomicNumber(QString const& symbol) 
-{
-   unsigned z(OpenBabel::OBElements::GetAtomicNum(symbol.toLatin1().data()));
-   return z;
+  class Geometry;
 }
 
+namespace Parser {
 
-Atom::Atom(QString const& symbol)
-{
-   m_atomicNumber = atomicNumber(symbol);
-}
+   /// Parses a PDB data file.  
 
-} } // end namespace IQmol::Data
+   class Pdb: public Base {
+
+      public:
+         bool parse(TextStream&);
+
+      private:
+         bool parseATOM(QString const& line, Data::Geometry&);
+   };
+
+} } // end namespace IQmol::Parser

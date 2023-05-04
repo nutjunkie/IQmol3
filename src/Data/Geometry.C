@@ -198,7 +198,7 @@ bool Geometry::sameAtoms(QList<unsigned> const& atomicNumbers) const
 
 void Geometry::append(unsigned const z, qglviewer::Vec const& position)
 {
-   Atom* atom = new Atom(z);
+   QmAtom* atom = new QmAtom(z);
    m_atoms.push_back(atom);
    m_coordinates.push_back(position);
 }
@@ -206,7 +206,7 @@ void Geometry::append(unsigned const z, qglviewer::Vec const& position)
 
 void Geometry::append(QString const& symbol, qglviewer::Vec const& position)
 {
-   Atom* atom = new Atom(symbol);
+   QmAtom* atom = new QmAtom(symbol);
    m_atoms.push_back(atom);
    m_coordinates.push_back(position);
 }
@@ -266,7 +266,7 @@ void Geometry::setMultiplicity(unsigned const multiplicity)
 unsigned Geometry::totalNuclearCharge() const
 {
    unsigned totalNuclearCharge(0);
-   QList<Atom*>::const_iterator atom;
+   QList<QmAtom*>::const_iterator atom;
    for (atom = m_atoms.begin(); atom != m_atoms.end(); ++atom) {
        totalNuclearCharge += (*atom)->atomicNumber();
    }

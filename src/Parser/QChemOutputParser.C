@@ -253,7 +253,6 @@ bool QChemOutput::parse(TextStream& textStream)
             if (geometry->sameAtoms(*firstGeometry)) {
                int charge(firstGeometry->charge());
                int multiplicity(firstGeometry->multiplicity());
-               qDebug() << "Setting charge and multiplicity of new geometry to " << charge << multiplicity;
                geometry->setChargeAndMultiplicity(charge, multiplicity);
                geometryList->append(geometry);
 

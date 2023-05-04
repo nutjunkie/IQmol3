@@ -22,7 +22,7 @@
 
 ********************************************************************************/
 
-#include "Atom.h"
+#include "QmAtom.h"
 #include <QtDebug>
 #include <vector>
 
@@ -86,7 +86,7 @@ namespace Data {
          bool setAtomicProperty(QList<double> values) 
          {
             if (values.size() != m_atoms.size()) return false; 
-            AtomList::iterator iter;
+            QmAtomList::iterator iter;
             unsigned i(0);
             for (iter = m_atoms.begin(); iter != m_atoms.end(); ++iter, ++i) {
                 P& p((*iter)->getProperty<P>());
@@ -105,7 +105,7 @@ namespace Data {
          QStringList getLabels() 
          {
             QStringList labels;
-            QList<Atom*>::iterator iter;
+            QList<QmAtom*>::iterator iter;
             for (iter = m_atoms.begin(); iter != m_atoms.end(); ++iter) {
                 labels.append((*iter)->getLabel<P>());
             }
@@ -176,7 +176,7 @@ namespace Data {
 
          unsigned totalNuclearCharge() const;
 
-         AtomList m_atoms;
+         QmAtomList m_atoms;
          QList<qglviewer::Vec> m_coordinates;
          int m_charge;
          unsigned m_multiplicity;

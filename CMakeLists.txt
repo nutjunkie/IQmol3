@@ -10,7 +10,7 @@ project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
@@ -19,13 +19,14 @@ set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
 
-find_package(ZLIB      REQUIRED)
+find_package(ZLIB    REQUIRED)
 if(ZLIB_FOUND)
    include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
-find_package(Threads   REQUIRED)
-find_package(OpenGL    REQUIRED)
-find_package(OpenSSL   REQUIRED)
+find_package(Threads REQUIRED)
+find_package(OpenGL  REQUIRED)
+find_package(OpenSSL REQUIRED)
+#find_package(CGAL    REQUIRED)
 
   
 # No CMakeLists.txt for libQGLViewer
@@ -47,6 +48,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 
+#include_directories(modules/openscenegraph/include)
+#add_subdirectory(modules/openscenegraph EXCLUDE_FROM_ALL)
+#add_subdirectory(tests)
+
 #set(HDF5_USE_STATIC_LIBRARIES 1)
 #include_directories(modules/hdf5/src)
 #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
@@ -56,6 +61,7 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 #add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
 enable_testing()
+
 
 if(WITH_QARCHIVE)
    add_compile_definitions(WITH_AVIEW QARCHIVE)

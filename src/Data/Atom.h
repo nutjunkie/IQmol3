@@ -1,8 +1,7 @@
-#ifndef IQMOL_DATA_ATOM_H
-#define IQMOL_DATA_ATOM_H
+#pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
 
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -23,83 +22,37 @@
 ********************************************************************************/
 
 #include "DataList.h"
-#include "Bank.h"
 
 
 namespace IQmol {
 namespace Data {
 
-   class AtomicProperty;
 
-   /// Data structure representing an atom.
+   // Base class for QM and MM atoms.  Note that position information is
+   // factored out into a geometry object.
    class Atom : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Atom(unsigned const Z = 0) :  m_atomicNumber(Z) { }
          Atom(QString const& symbol);
 
          Type::ID typeID() const { return Type::Atom; }
+
          unsigned atomicNumber() const { return m_atomicNumber; }
-
-		 /// Returns a reference to the requested AtomicProperty.  If the
-		 /// property does not exist, then a new one is created and added to 
-		 /// the list.
-         template <class P>
-         P& getProperty() 
-         {
-            P* p(0);
-            Bank::iterator iter;
-            for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-                if ( (p = dynamic_cast<P*>(*iter)) ) break; 
-            }
-            if (p == 0) {
-               p = new P();
-               p->setDefault(m_atomicNumber);
-               m_properties.append(p);
-            }
-            return *p;
-         }
-
-         template <class P>
-         bool hasProperty() const
-         {
-            P* p(0);
-            Bank::const_iterator iter;
-            for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-                if ( (p = dynamic_cast<P*>(*iter)) ) return true; 
-            }
-            return false;
-         }
-
-         template <class P>
-         QString getLabel() { return getProperty<P>().label(); }
+         QString getLabel() { return m_label; }
  
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void dump() const;
-
          static unsigned atomicNumber(QString const&);
 
-      private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) 
-         {
-            ar & m_atomicNumber;
-            m_properties.serialize(ar);
-         }
+         void serialize(InputArchive& ar, unsigned const version = 0)  { }
+         void serialize(OutputArchive& ar, unsigned const version = 0)  { }
 
+         void dump() const {  }
+     
+
+
+      protected:
+         QString  m_label;
          unsigned m_atomicNumber;
-         Bank m_properties;
    };
 
 
@@ -111,5 +64,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

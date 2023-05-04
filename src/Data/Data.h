@@ -45,6 +45,7 @@ namespace Data {
       enum ID { Undefined = 0, 
                /*---------------------  *---------------------  *--------------------- */
                 Atom,                   AtomList,               Bank, 
+                QmAtom,                 QmAtomList, 
                 PointCharge,            PointChargeList,        EfpFragment, 
                 EfpFragmentList,        EfpFragmentLibrary,     GridData, 
                 GridDataList,           File,                   FileList, 

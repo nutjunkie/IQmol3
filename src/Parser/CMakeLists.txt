@@ -19,6 +19,7 @@ set( SOURCES
    ParseFile.C
    ParseJobFiles.C
    Parser.C
+   PdbParser.C
    PovRayParser.C
    QChemInputParser.C
    QChemOutputParser.C

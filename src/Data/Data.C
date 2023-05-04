@@ -33,8 +33,12 @@ QString toString(ID const id)
 
    switch (id) {
       case Undefined:                  s = "Data::Undefined";                 break;
+
       case Atom:                       s = "Data::Atom";                      break;
       case AtomList:                   s = "Data::List<Atom>";                break;
+      case QmAtom:                     s = "Data::QmAtom";                    break;
+      case QmAtomList:                 s = "Data::List<QmAtom>";              break;
+
       case Bank:                       s = "Data::Bank";                      break;
       case PointCharge:                s = "Data::PointCharge";               break;
       case PointChargeList:            s = "Data::List<PointCharge>";         break;

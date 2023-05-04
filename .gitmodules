@@ -28,3 +28,6 @@
 [submodule "modules/libxml2"]
 	path = modules/libxml2
 	url = https://github.com/GNOME/libxml2.git
+[submodule "modules/cgal"]
+	path = modules/cgal
+	url = https://github.com/CGAL/cgal.git
