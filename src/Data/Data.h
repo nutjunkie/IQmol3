@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_H
-#define IQMOL_DATA_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -120,5 +119,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

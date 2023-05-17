@@ -240,8 +240,6 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
       parser = new Pdb;
    }
 
-
-
    if (extension == "ply" || extension == "obj" || 
        extension == "stl" || extension == "off" ) {
        QLOG_DEBUG() << "Using Mesh parser";

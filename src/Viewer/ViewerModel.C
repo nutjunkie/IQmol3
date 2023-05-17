@@ -21,12 +21,10 @@
 ********************************************************************************/
 
 #include "ViewerModel.h"
-#include "Layer/AtomLayer.h"
-#include "Layer/ChargeLayer.h"
-#include "Layer/FrequenciesLayer.h"
-#include "Layer/ConstraintLayer.h"
-#include "Layer/GeometryListLayer.h"
-#include "Layer/GeometryLayer.h"
+//#include "Layer/FrequenciesLayer.h"
+//#include "Layer/ConstraintLayer.h"
+//#include "Layer/GeometryListLayer.h"
+//#include "Layer/GeometryLayer.h"
 #include "Layer/IsotopesLayer.h"
 #include "Layer/SystemLayer.h"
 #include "Preferences.h"
@@ -229,18 +227,6 @@ void ViewerModel::fileOpenFinished()
    processConfigData(parser);
    processParsedData(parser);
    parser->deleteLater();
-
-/*
-qDebug() << "***************************************************";
-qDebug() << "Finished opening file/dir";
-qDebug() << "   file path" << info.filePath();
-qDebug() << "   path     " << info.path();
-qDebug() << "   dir name " << info.dir().dirName();
-qDebug() << "   base name" << info.completeBaseName();
-qDebug() << "   is dir?  " << info.isDir();
-qDebug() << "   is file? " << info.isFile();
-qDebug() << "***************************************************";
-*/
 }
 
 
