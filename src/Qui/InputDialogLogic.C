@@ -10,10 +10,10 @@
  *  \date   August 2008
  */
 
-#include "OptionRegister.h"
 #include "Actions.h"
 #include "Conditions.h"
 #include "InputDialog.h"
+#include "OptionRegister.h"
 
 #include <QDebug>
 

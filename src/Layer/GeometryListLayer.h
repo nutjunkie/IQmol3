@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_GEOMETRYLIST_H
-#define IQMOL_LAYER_GEOMETRYLIST_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -60,6 +59,7 @@ namespace Layer {
          void setCurrentGeometry(unsigned const index);
          void resetGeometry();
          void cloneLastGeometry();
+         void generateConformers();
 
       protected:
          void setPlay(bool const play);
@@ -88,5 +88,3 @@ namespace Layer {
    };
 
 } } // end namespace IQmol::Layer
-
-#endif

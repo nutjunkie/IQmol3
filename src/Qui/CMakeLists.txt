@@ -2,25 +2,13 @@ set(LIB Qui)
 find_package(Qt5 COMPONENTS Core Gui Widgets Sql Xml OpenGL REQUIRED)
 
 set( HEADERS
-   AdcTab.h
-   AimdTab.h
-   AttenuationParameterTab.h
-   AuxiliaryBasisTab.h
-   CisTab.h
-   EomTab.h
-   FreezingStringTab.h
-   FrequenciesTab.h
    GeometryConstraint.h
    InputDialog.h
    OptionDatabaseForm.h
    OptionEditors.h
    OptionEditors.h
-   PrimaryBasisTab.h
-   PropertiesTab.h
    QtNode.h
    QuiMolecule.h
-   ReactionPathTab.h
-   TransitionStateTab.h
 )
 
 set( SOURCES

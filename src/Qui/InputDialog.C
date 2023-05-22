@@ -21,40 +21,32 @@
 ********************************************************************************/
 
 #include "Preferences.h"
+#include "OptionDatabase.h"
 #include "PointCharge.h"
-
-#include "InputDialog.h"
-#include "ExternalChargesSection.h"
-#include "GeometryConstraint.h"
-#include "KeywordSection.h"
-#include "QuiJob.h"
-#include "Job.h" 
-#include "LJParametersSection.h"
-#include "Option.h"
-#include "OptSection.h"
-#include "QtNode.h"
-#include "Qui.h"
-#include "QMsgBox.h"
-#include "RemSection.h"
-#include "KeyValueSection.h"
-#include "MoleculeSection.h"
 #include "QsLog.h"
 #include "ParseFile.h"
 
+#include "InputDialog.h"
+#include "QuiJob.h"
+#include "Option.h"
+#include "QtNode.h"
+#include "Qui.h"
+#include "QMsgBox.h"
+
+#include "RemSection.h"
+#include "ExternalChargesSection.h"
+#include "LJParametersSection.h"
+#include "KeyValueSection.h"
+
+//#include "Job.h" 
+//#include <QClipboard>
+
 #include <QMenuBar>
-#include <QClipboard>
 #include <QFileDialog>
 #include <QFontDialog>
-#include <algorithm>
-#include <QList>
-#include <QApplication>
-#include <QTextStream>
 #include <QKeySequence>
 #include <QResizeEvent>
-#include <cstdlib>
-#include <QMimeData>
 #include <QFont>
-#include <QPixmap>
 #include <QInputDialog>
 #include <QRegularExpressionValidator>
 
