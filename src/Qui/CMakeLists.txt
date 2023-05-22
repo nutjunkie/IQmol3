@@ -8,7 +8,6 @@ set( HEADERS
    OptionEditors.h
    OptionEditors.h
    QtNode.h
-   QuiMolecule.h
 )
 
 set( SOURCES
@@ -29,7 +28,6 @@ set( SOURCES
    PcmSection.C
    Qui.C
    QuiJob.C
-   QuiMolecule.C
    ReadInput.C
    RemSection.C
 )
@@ -44,6 +42,7 @@ set( UI_FILES
    FreezingStringTab.ui
    FrequenciesTab.ui
    GeometryConstraintDialog.ui
+   GeometryTab.ui
    OptionDatabaseForm.ui
    OptionListEditor.ui
    OptionNumberEditor.ui

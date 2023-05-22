@@ -37,6 +37,7 @@
 #include "ui_EomTab.h"
 #include "ui_FreezingStringTab.h"
 #include "ui_FrequenciesTab.h"
+#include "ui_GeometryTab.h"
 #include "ui_PrimaryBasisTab.h"
 #include "ui_PropertiesTab.h"
 #include "ui_ReactionPathTab.h"
@@ -159,6 +160,7 @@ class InputDialog : public QMainWindow {
       Tab<Ui::EomTab>                  m_eomTab;
       Tab<Ui::FreezingStringTab>       m_freezingStringTab;
       Tab<Ui::FrequenciesTab>          m_frequenciesTab;
+      Tab<Ui::GeometryTab>             m_geometryTab;
       Tab<Ui::PrimaryBasisTab>         m_primaryBasisTab;
       Tab<Ui::PropertiesTab>           m_propertiesTab;
       Tab<Ui::ReactionPathTab>         m_reactionPathTab;

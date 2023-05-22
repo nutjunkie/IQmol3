@@ -69,6 +69,7 @@ InputDialog::InputDialog(QWidget* parent) : QMainWindow(parent),
    m_eomTab(this),
    m_freezingStringTab(this),
    m_frequenciesTab(this),
+   m_geometryTab(this),
    m_primaryBasisTab(this),
    m_propertiesTab(this),
    m_reactionPathTab(this),
@@ -159,6 +160,8 @@ void InputDialog::initializeToolBoxOptions()
    m_eomTab.hide();
    m_toolBoxOptions.insert("Freezing String",       &m_freezingStringTab);
    m_freezingStringTab.hide();
+   m_toolBoxOptions.insert("Optimization",          &m_geometryTab);
+   m_geometryTab.hide();
    m_toolBoxOptions.insert("Frequencies",           &m_frequenciesTab);
    m_frequenciesTab.hide();
    m_toolBoxOptions.insert("Primary Basis",         &m_primaryBasisTab);

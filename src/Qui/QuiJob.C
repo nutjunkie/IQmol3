@@ -10,7 +10,6 @@
 #include "QuiJob.h"
 #include "OptionDatabase.h"
 #include "Option.h"
-#include "QuiMolecule.h"
 #include "RemSection.h"
 #include "MoleculeSection.h"
 #include "KeyValueSection.h"
@@ -167,6 +166,7 @@ bool Job::isReadCoordinates()
 }
 
 
+/*
 Molecule* Job::getMolecule() 
 {
    if (m_moleculeSection)  {
@@ -175,6 +175,7 @@ Molecule* Job::getMolecule()
       return 0;
    }
 }
+*/
 
 
 
@@ -245,14 +246,6 @@ void Job::setGenericSection(QString const& name, QString const& contents)
 {
    KeywordSection* section = addSection(name, contents);
    section->print(false);
-}
-
-
-void Job::setMolecule(Molecule* mol) 
-{
-   if (m_moleculeSection) {
-      m_moleculeSection->setMolecule(mol);
-   }
 }
 
 

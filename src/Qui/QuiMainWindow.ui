@@ -446,7 +446,7 @@ QToolButton:checked {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>615</width>
+             <width>612</width>
              <height>330</height>
             </rect>
            </property>
@@ -467,7 +467,7 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>591</width>
+                 <width>588</width>
                  <height>237</height>
                 </rect>
                </property>
@@ -668,8 +668,8 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>591</width>
-                 <height>236</height>
+                 <width>588</width>
+                 <height>249</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -944,7 +944,7 @@ QToolButton:checked {
            <enum>QFrame::Sunken</enum>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>18</number>
           </property>
           <widget class="QWidget" name="AdvancedSCFControl">
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -3454,6 +3454,9 @@ widgets.</string>
              </layout>
             </item>
             <item>
+             <widget class="QComboBox" name="geom_opt_driver"/>
+            </item>
+            <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -3822,36 +3825,6 @@ widgets.</string>
            <layout class="QVBoxLayout" name="verticalLayout_37">
             <item>
              <layout class="QGridLayout">
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_44">
-                <property name="text">
-                 <string>Hessian Update</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="geom_opt_hessian_update"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_72">
-                <property name="text">
-                 <string>Initial Hessian</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="geom_opt_coordinates"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="geom_opt_hessian"/>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_14">
-                <property name="text">
-                 <string>Coordinates</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="2">
                <spacer>
                 <property name="orientation">
@@ -3865,7 +3838,20 @@ widgets.</string>
                 </property>
                </spacer>
               </item>
-              <item row="3" column="0" colspan="2">
+              <item row="0" column="1">
+               <widget class="QComboBox" name="geom_opt_hessian"/>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="geom_opt_hessian_update"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_72">
+                <property name="text">
+                 <string>Initial Hessian</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" colspan="2">
                <layout class="QHBoxLayout">
                 <item>
                  <spacer>
@@ -3892,42 +3878,39 @@ widgets.</string>
                 </item>
                </layout>
               </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_44">
+                <property name="text">
+                 <string>Hessian Update</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
              <layout class="QGridLayout">
-              <item row="2" column="1">
-               <widget class="QSpinBox" name="geom_opt_diis_subspace"/>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_70">
-                <property name="text">
-                 <string>GDIIS Subspace</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
+              <item row="0" column="0">
                <widget class="QLabel" name="label_45">
                 <property name="text">
                  <string>Print Level</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="geom_opt_print"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_17">
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_70">
                 <property name="text">
-                 <string>Max Cycles</string>
+                 <string>GDIIS Subspace</string>
                 </property>
                </widget>
               </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="geom_opt_diis_subspace"/>
+              </item>
               <item row="0" column="1">
-               <widget class="QSpinBox" name="geom_opt_max_cycles"/>
+               <widget class="QSpinBox" name="geom_opt_print"/>
               </item>
               <item row="0" column="2">
-               <spacer name="horizontalSpacer_17">
+               <spacer name="horizontalSpacer_16">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -5579,7 +5562,6 @@ Eventually this should go.</string>
             <font>
              <family>Courier New</family>
              <pointsize>12</pointsize>
-             <weight>50</weight>
              <italic>false</italic>
              <bold>false</bold>
              <underline>false</underline>
@@ -5786,7 +5768,6 @@ Eventually this should go.</string>
   <tabstop>pao_algorithm</tabstop>
   <tabstop>epao_iterate</tabstop>
   <tabstop>geom_opt_hessian_update</tabstop>
-  <tabstop>geom_opt_coordinates</tabstop>
   <tabstop>geom_opt_hessian</tabstop>
   <tabstop>qui_geom_opt_fallback</tabstop>
   <tabstop>geom_opt_diis_subspace</tabstop>

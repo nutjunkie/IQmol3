@@ -15,14 +15,12 @@
 
 namespace Qui {
 
-class Molecule;
 
 class MoleculeSection : public KeywordSection {
    public:
       MoleculeSection(QString const& coordinates = "read", int const charge = 0,
          int multiplicity = 1) : KeywordSection("molecule"), m_charge(charge), 
-         m_multiplicity(multiplicity), m_coordinates(coordinates), m_molecule(0),
-         m_isFsm(false)
+         m_multiplicity(multiplicity), m_coordinates(coordinates), m_isFsm(false)
       {
          parseCoordinates();
       }
@@ -40,8 +38,6 @@ class MoleculeSection : public KeywordSection {
 
       int getCharge() const { return m_charge; }
       int getMultiplicity() const { return m_multiplicity; }
-      void setMolecule(Qui::Molecule*);
-      Molecule* getMolecule();
 
       QString getCoordinates() { return m_coordinates; }
       int getNumberOfAtoms() { return m_numberOfAtoms; }
@@ -57,8 +53,6 @@ class MoleculeSection : public KeywordSection {
       int  m_numberOfAtoms;
       QString m_coordinates;
       QString m_coordinatesFsm;
-
-      Molecule* m_molecule;
       bool m_isFsm;
 
       QString myDump() const;
