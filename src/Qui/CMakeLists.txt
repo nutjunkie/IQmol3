@@ -33,6 +33,7 @@ set( SOURCES
 )
 
 set( UI_FILES
+   InputDialog.ui
    AdcTab.ui
    AimdTab.ui
    AttenuationParameterTab.ui
@@ -48,7 +49,6 @@ set( UI_FILES
    OptionNumberEditor.ui
    PrimaryBasisTab.ui
    PropertiesTab.ui
-   QuiMainWindow.ui
    ReactionPathTab.ui
    TransitionStateTab.ui
 )

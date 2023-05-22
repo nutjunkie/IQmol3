@@ -26,7 +26,7 @@
 
 #include "Logic.h"
 #include "OptionRegister.h"
-#include "ui_QuiMainWindow.h"
+#include "ui_InputDialog.h"
 #include "QChemJobInfo.h"
 
 #include "ui_AdcTab.h"
