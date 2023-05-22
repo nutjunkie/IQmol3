@@ -18,8 +18,8 @@ namespace Qui {
 
 class ExternalChargesSection : public KeywordSection {
    public:
-      ExternalChargesSection(QString const& data = "", bool print = true) 
-       : KeywordSection("external_charges", print), m_data(data.trimmed()) {
+      ExternalChargesSection(QString const& data = "", bool visible = true) 
+       : KeywordSection("external_charges", visible), m_data(data.trimmed()) {
          processData();
       }
 

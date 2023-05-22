@@ -19,6 +19,7 @@ namespace Qui {
 
 StringMap KeyValueSection::s_adHoc;
 
+
 void KeyValueSection::addAdHoc(QString const& rem, QString const& quiValue, 
    QString const& qchemValue) {
    // qchemValue (from the database) can be of the form qchem1|qchem2|...,
@@ -38,17 +39,6 @@ void KeyValueSection::addAdHoc(QString const& rem, QString const& quiValue,
           s_adHoc[ucRem + "::" + validQChemValues[i]] = quiValue;
        }   
    }   
-}
-
-
-KeyValueSection::KeyValueSection(QString const& name, bool print) 
-  : KeywordSection(name, print)
-{ 
-}
-
-
-KeyValueSection::~KeyValueSection() 
-{
 }
 
 
@@ -155,7 +145,7 @@ void KeyValueSection::read(QString const& data)
 
 KeyValueSection* KeyValueSection::clone() const 
 {
-   KeyValueSection* kvs(new KeyValueSection(m_name, m_print));
+   KeyValueSection* kvs(new KeyValueSection(m_name, m_visible));
    kvs->m_options = m_options;
    kvs->m_toPrint = m_toPrint;
    return kvs;

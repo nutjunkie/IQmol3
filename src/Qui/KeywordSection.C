@@ -42,44 +42,8 @@ KeywordSection* KeywordSectionFactory(QString const& type)
    }else if (t == "chemsol") {
       return new KeyValueSection("chemsol");
    }else {
-      return new GenericSection(t);
+      return new KeywordSection(t);
    }
 }
-
-
-QString KeywordSection::format() {
-   return m_print ? dump() + "\n" : QString();
-}
-
-
-
-// ---------- GenericSection ----------
-
-// This a fallback section that simply holds the data in a string.  It is
-// useful when no other formating or processing is required.
-
-QString GenericSection::dump() const 
-{
-   QString s;
-   s += "$" + name() + "\n";
-   if (!m_data.isEmpty()) s += m_data + "\n";
-   s += "$end\n";
-   return s;
-}
-
-QString GenericSection::rawData() {
-   return m_data;
-}
-
-void GenericSection::read(QString const& data) {
-    m_data = data.trimmed();
-    if (m_data.isEmpty()) m_print = false;
-}
-
-
-GenericSection* GenericSection::clone() const {
-   return new GenericSection(name(), m_data, m_print);
-}
-
 
 } // end namespace Qui

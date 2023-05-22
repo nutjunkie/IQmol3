@@ -19,31 +19,55 @@ namespace Qui {
 class KeywordSection {
 
    public:
-      KeywordSection(QString const& name, bool print = true) 
-       : m_print(print), m_name(name) { }
-
-      virtual ~KeywordSection() { }
+      KeywordSection(QString const& name, bool visible = true, 
+         QString const& contents = QString()) 
+       : m_visible(visible), m_name(name), m_contents(contents.trimmed()) { }
 
       QString name() const { return m_name; }
-      void print(bool print) { m_print = print; }
-      bool print() const { return m_print; }
 
-	  //! This is just a wrapper for dump() which checks the m_print flag and
-	  //! is what should be called.
-      QString format();
+      void visible(bool visible) { m_visible = visible; }
+      bool visible() const { return m_visible; }
 
-      virtual void read(QString const&) = 0;
-      virtual KeywordSection* clone() const = 0;
+      QString format(bool preview = false) const
+      {
+         QString s;
+         if (m_visible) {
+            s  = "$" + name() + "\n";
+            s += preview ? previewContents() : formatContents();
+            s += "$end\n\n";
+         }
+         return s;
+      }
 
+      virtual QString formatContents() const 
+      { 
+         return m_contents.isEmpty() ? m_contents : m_contents + "\n"; 
+      }
+
+      virtual void read(QString const& contents) 
+      {
+         m_contents = contents.trimmed(); 
+         if (m_contents.isEmpty()) m_visible = false;
+      }
+
+      virtual KeywordSection* clone() const
+      {
+          return new KeywordSection(m_name, m_visible, m_contents);
+      }
 
    protected:
-      virtual QString dump() const = 0;  
-      bool    m_print;
+	  // Allows for trunction of large contents
+      virtual QString previewContents() const
+      {
+         return formatContents();
+      }
+
+      bool    m_visible;
       QString m_name;
+      QString m_contents;
 
 
    private:
-      // This should prevent copying sections
       KeywordSection(KeywordSection const& that);
       KeywordSection const& operator=(KeywordSection const& that);
 };
@@ -53,28 +77,6 @@ class KeywordSection {
 // Non-member functions
 //! A factory for generating KeywordSections
 KeywordSection* KeywordSectionFactory(QString const& type);
-
-
-
-//! GenericSection is used in cases where no specialized section exists.
-class GenericSection :  public KeywordSection {
-   public:
-      GenericSection(QString const& name, QString const& data = "", bool print = true) 
-        : KeywordSection(name, print), m_data(data) { }
-
-      void read(QString const& data);
-
-      QString rawData();
-
-      GenericSection* clone() const;
-
-    protected: 
-	  QString dump() const;
-
-    private:
-      QString m_data;
-};
-
 
 } // end namespace Qui
 #endif

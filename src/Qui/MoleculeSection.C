@@ -89,12 +89,9 @@ QString MoleculeSection::myDump() const
 }
 
 
-QString MoleculeSection::dump() const
+QString MoleculeSection::formatContents() const
 {
-   QString s("$molecule\n");
-   s += myDump();
-   s += "$end\n";
-   return s;
+   return myDump(); 
 }
 
 

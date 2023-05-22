@@ -39,7 +39,7 @@ void PcmSection::read(QString const& data)
 
 
 PcmSection* PcmSection::clone() const {
-   return new PcmSection(m_data, m_print);
+   return new PcmSection(m_data, m_visible);
 }
 
 

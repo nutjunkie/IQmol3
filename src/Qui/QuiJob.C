@@ -222,14 +222,14 @@ void Job::setScanCoordinates(QString const& scan)
 void Job::setEfpFragments(QString const& efpFragments) 
 {
    KeywordSection* efp = addSection("efp_fragments", efpFragments);
-   efp->print(!efpFragments.isEmpty());
+   efp->visible(!efpFragments.isEmpty());
 }
 
 
 void Job::setEfpParameters(QString const& efpParameters) 
 {
    KeywordSection* efp = addSection("efp_parameters", efpParameters);
-   efp->print(!efpParameters.isEmpty());
+   efp->visible(!efpParameters.isEmpty());
 }
 
 
@@ -238,14 +238,14 @@ void Job::setExternalCharges(QString const& charges)
    if (charges.isEmpty()) return;
    ExternalChargesSection* externalCharges(new ExternalChargesSection(charges));
    addSection(externalCharges);
-   externalCharges->print(!charges.isEmpty());
+   externalCharges->visible(!charges.isEmpty());
 }
 
 
 void Job::setGenericSection(QString const& name, QString const& contents)
 {
    KeywordSection* section = addSection(name, contents);
-   section->print(false);
+   section->visible(false);
 }
 
 
@@ -304,14 +304,14 @@ KeywordSection* Job::addSection(QString const& name, QString const& value)
 
 QString Job::getComment() 
 {
-   GenericSection* comment = dynamic_cast<GenericSection*>(getSection("comment"));
-   return comment ? comment->rawData() : QString();
+   KeywordSection* comment = getSection("comment");
+   return comment ? comment->formatContents() : QString();
 }
 
 
 void Job::setComment(QString const& s) 
 {
-   GenericSection* comment = dynamic_cast<GenericSection*>(getSection("comment"));
+   KeywordSection* comment = getSection("comment");
    if (comment) {
       comment->read(s);
    }else {
@@ -352,12 +352,12 @@ int Job::getNumberOfAtoms() {
 }
 
 
-void Job::printSection(QString const& name, bool doPrint) {
-   if (doPrint && m_sections.count(name) == 0) {
+void Job::printSection(QString const& name, bool isVisible) {
+   if (isVisible && m_sections.count(name) == 0) {
       // if we should print a section then there should be one there.
       addSection(KeywordSectionFactory(name)); 
    }
-   if (m_sections.count(name)) m_sections[name]->print(doPrint);
+   if (m_sections.count(name)) m_sections[name]->visible(isVisible);
 }
 
 
@@ -366,32 +366,20 @@ QString Job::format(bool const preview)
    QMap<QString,KeywordSection*>::iterator iter, 
       begin(m_sections.begin()), end(m_sections.end());
 
-   QString s, name;
+   QString s;
 
+   // Ensure standard ordering of common sections
    iter = m_sections.find("comment");
-   if (iter != end) s += iter.value()->format();
+   if (iter != end) s += iter.value()->format(preview);
    iter = m_sections.find("molecule");
-   if (iter != end) s += iter.value()->format();
+   if (iter != end) s += iter.value()->format(preview);
    iter = m_sections.find("rem");
-   if (iter != end) s += iter.value()->format();
-
-
-   iter = m_sections.find("external_charges");
-   if (iter != end) {
-      if (preview) {
-         ExternalChargesSection* x;
-         x = dynamic_cast<ExternalChargesSection*>(iter.value());
-         s += x->previewFormat();
-      }else {
-         s += iter.value()->format();
-      }
-   }
+   if (iter != end) s += iter.value()->format(preview);
 
    for (iter = begin; iter != end; ++iter) {
-	   name = iter.key();
-	   if (name != "comment" && name != "molecule" && 
-           name != "rem"     && name != "external_charges") {
-           s += iter.value()->format();
+	   QString name = iter.key();
+	   if (name != "comment" && name != "molecule" && name != "rem") {
+           s += iter.value()->format(preview);
 	   }
    }
 

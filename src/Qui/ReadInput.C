@@ -171,7 +171,7 @@ std::vector<KeywordSection*> ReadKeywordSections(QString input) {
       qDebug() << "finding section" << name;
       KeywordSection* ks = KeywordSectionFactory(name);
       ks->read(tmp);
-      ks->print(true);
+      ks->visible(true);
       sections.push_back(ks);
       input.remove(0,j+3);
    }

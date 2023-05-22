@@ -1,5 +1,4 @@
-#ifndef QUI_KEYVALUESECTION_H
-#define QUI_KEYVALUESECTION_H
+#pragma once
 
 /*!
  *  \class KeyValueSection 
@@ -22,9 +21,8 @@ typedef QMap<QString, QString> StringMap;
 class KeyValueSection : public KeywordSection 
 {
    public:
-      KeyValueSection(QString const& name, bool print = true);
-
-      virtual ~KeyValueSection();
+      KeyValueSection(QString const& name, bool print = true) 
+       : KeywordSection(name, print) { }
 
       void read(QString const& input);
 
@@ -75,4 +73,3 @@ class KeyValueSection : public KeywordSection
 };
 
 } // end namespace Qui
-#endif

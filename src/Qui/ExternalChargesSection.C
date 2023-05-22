@@ -59,7 +59,7 @@ void ExternalChargesSection::read(QString const& data)
 
 ExternalChargesSection* ExternalChargesSection::clone() const 
 {
-   return new ExternalChargesSection(m_data, m_print);
+   return new ExternalChargesSection(m_data, m_visible);
 }
 
 
