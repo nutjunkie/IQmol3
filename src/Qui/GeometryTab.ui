@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeometryTab</class>
+ <widget class="QWidget" name="GeometryTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>511</width>
+    <height>357</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QRadioButton" name="qui_optimize">
+       <property name="text">
+        <string>OPTIMIZE</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="qui_libopt3">
+       <property name="text">
+        <string>LibOpt3</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="geomOptStack">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="Optimize">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="1" column="3">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Displacement</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>Coordinates</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_45">
+           <property name="text">
+            <string>Print Level</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="3">
+          <widget class="QCheckBox" name="geom_opt_iproj">
+           <property name="text">
+            <string>Allow Molecular Re-orientation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="3" colspan="4">
+          <widget class="QCheckBox" name="geom_print">
+           <property name="text">
+            <string>Print Geometry at Each Step</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="4">
+          <widget class="QSpinBox" name="geom_opt_tol_energy"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="QSpinBox" name="geom_opt_diis_subspace"/>
+         </item>
+         <item row="4" column="4">
+          <widget class="QDoubleSpinBox" name="geom_opt_max_step_size">
+           <property name="prefix">
+            <string/>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>9.990000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="5">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>x10&lt;sup&gt;-8&lt;/sup&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QSpinBox" name="geom_opt_tol_gradient"/>
+         </item>
+         <item row="1" column="6">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="5">
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>x10&lt;sup&gt;-6&lt;/sup&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_44">
+           <property name="text">
+            <string>Hessian Update</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QComboBox" name="geom_opt_hessian"/>
+         </item>
+         <item row="7" column="3" colspan="4">
+          <widget class="QCheckBox" name="geom_opt_scf_guess_always">
+           <property name="text">
+            <string>Re-generate SCF Guess at Each Step</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0" colspan="3">
+          <widget class="QCheckBox" name="geom_opt_symmetry">
+           <property name="text">
+            <string>Use Point Group Symmetry</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QComboBox" name="geom_opt_hessian_update"/>
+         </item>
+         <item row="4" column="3">
+          <widget class="QLabel" name="label_71">
+           <property name="text">
+            <string>Max Stepsize</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_72">
+           <property name="text">
+            <string>Initial Hessian</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="3">
+          <widget class="QLabel" name="label_68">
+           <property name="text">
+            <string>Linear Angle</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="3">
+          <widget class="QCheckBox" name="qui_cartesian_fallback">
+           <property name="text">
+            <string>Use Cartesians on Failure</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>Energy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>Max Cycles</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_70">
+           <property name="text">
+            <string>GDIIS Subspace</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="geom_opt_max_cycles"/>
+         </item>
+         <item row="3" column="4">
+          <widget class="QSpinBox" name="geom_opt_linear_angle"/>
+         </item>
+         <item row="1" column="5">
+          <widget class="QLabel" name="label_113">
+           <property name="text">
+            <string>x10&lt;sup&gt;-6&lt;/sup&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QSpinBox" name="geom_opt_tol_displacement"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="geom_opt_print"/>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>Gradient</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QComboBox" name="geom_opt_coordinates"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="Libopt3">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="3">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Displacement</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QDoubleSpinBox" name="qui_geom_opt_displacement_convergence"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="qui_geom_opt_print_level"/>
+         </item>
+         <item row="2" column="4">
+          <widget class="QDoubleSpinBox" name="qui_geom_opt_energy_convergence"/>
+         </item>
+         <item row="5" column="3" colspan="2">
+          <widget class="QCheckBox" name="qui_geom_opt_user_topology">
+           <property name="text">
+            <string>User-defined Topology</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="4">
+          <widget class="QDoubleSpinBox" name="qui_geom_opt_gradient_convergence"/>
+         </item>
+         <item row="4" column="3">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Recompute Hessian</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Gradient</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Max Cycles</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Initial Hessian</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="4">
+          <widget class="QSpinBox" name="qui_geom"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Coordinates</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="3">
+          <widget class="QLabel" name="label_73">
+           <property name="text">
+            <string>Max Stepsize</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="qui_geom_opt_maxiter"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Print Level</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>Energy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Algorithm</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="4">
+          <widget class="QDoubleSpinBox" name="qui_geom_opt_max_displacement"/>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QComboBox" name="qui_geom_opt_coordinates"/>
+         </item>
+         <item row="3" column="1" colspan="2">
+          <widget class="QComboBox" name="qui_geom_opt_algorithm"/>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QComboBox" name="qui_geom_opt_initial_hessian"/>
+         </item>
+         <item row="5" column="0" colspan="3">
+          <widget class="QCheckBox" name="qui_geom_opt_restart">
+           <property name="text">
+            <string>Use Cartesians on Failure</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="3">
+          <widget class="QCheckBox" name="qui_geom_opt_final_vibrational_analysis">
+           <property name="text">
+            <string>Final Vibrational Analysis</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -48,7 +48,7 @@ class RemSection : public KeywordSection {
 
 
    protected:
-      QString dump() const;
+      QString formatContents() const;
 
 
    private:

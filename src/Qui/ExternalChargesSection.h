@@ -18,25 +18,22 @@ namespace Qui {
 
 class ExternalChargesSection : public KeywordSection {
    public:
-      ExternalChargesSection(QString const& data = "", bool visible = true) 
-       : KeywordSection("external_charges", visible), m_data(data.trimmed()) {
-         processData();
+      ExternalChargesSection(QString const& contents = "", bool visible = true) 
+       : KeywordSection("external_charges", visible, true, contents) {
+         processContents();
       }
 
-      ~ExternalChargesSection() {  }
-
       void read(QString const& input);
+
       ExternalChargesSection* clone() const;
-      QString previewFormat() const;
 
    protected:
-      QString dump() const;
+      QString previewContents() const;
 
    private:
-      QString m_data;
       QString m_truncatedData;
 
-      void processData();
+      void processContents();
 };
 
 

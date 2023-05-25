@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1065</width>
-    <height>684</height>
+    <width>1062</width>
+    <height>736</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="SetupTab">
        <attribute name="title">
@@ -447,7 +447,7 @@ QToolButton:checked {
              <x>0</x>
              <y>0</y>
              <width>612</width>
-             <height>330</height>
+             <height>382</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -468,7 +468,7 @@ QToolButton:checked {
                  <x>0</x>
                  <y>0</y>
                  <width>588</width>
-                 <height>237</height>
+                 <height>288</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -669,7 +669,7 @@ QToolButton:checked {
                  <x>0</x>
                  <y>0</y>
                  <width>588</width>
-                 <height>249</height>
+                 <height>288</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -944,7 +944,7 @@ QToolButton:checked {
            <enum>QFrame::Sunken</enum>
           </property>
           <property name="currentIndex">
-           <number>18</number>
+           <number>24</number>
           </property>
           <widget class="QWidget" name="AdvancedSCFControl">
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -3454,9 +3454,6 @@ widgets.</string>
              </layout>
             </item>
             <item>
-             <widget class="QComboBox" name="geom_opt_driver"/>
-            </item>
-            <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -3838,20 +3835,7 @@ widgets.</string>
                 </property>
                </spacer>
               </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="geom_opt_hessian"/>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="geom_opt_hessian_update"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_72">
-                <property name="text">
-                 <string>Initial Hessian</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0" colspan="2">
+              <item row="1" column="0" colspan="2">
                <layout class="QHBoxLayout">
                 <item>
                  <spacer>
@@ -3869,47 +3853,13 @@ widgets.</string>
                   </property>
                  </spacer>
                 </item>
-                <item>
-                 <widget class="QCheckBox" name="qui_geom_opt_fallback">
-                  <property name="text">
-                   <string>Use Cartesians on Failure</string>
-                  </property>
-                 </widget>
-                </item>
                </layout>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_44">
-                <property name="text">
-                 <string>Hessian Update</string>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>
             <item>
              <layout class="QGridLayout">
               <item row="0" column="0">
-               <widget class="QLabel" name="label_45">
-                <property name="text">
-                 <string>Print Level</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_70">
-                <property name="text">
-                 <string>GDIIS Subspace</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="geom_opt_diis_subspace"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="geom_opt_print"/>
-              </item>
-              <item row="0" column="2">
                <spacer name="horizontalSpacer_16">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -3923,34 +3873,6 @@ widgets.</string>
                </spacer>
               </item>
              </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="geom_opt_scf_guess_always">
-              <property name="text">
-               <string>Re-generate SCF Guess at Each Step</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="geom_print">
-              <property name="text">
-               <string>Print Geometry at Each Step</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="geom_opt_iproj">
-              <property name="text">
-               <string>Allow Moleculear Re-orientation</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="geom_opt_symmetry">
-              <property name="text">
-               <string>Use Point Group Symmetry</string>
-              </property>
-             </widget>
             </item>
             <item>
              <spacer>
@@ -3971,68 +3893,7 @@ widgets.</string>
            <layout class="QVBoxLayout" name="verticalLayout_36">
             <item>
              <layout class="QGridLayout">
-              <item row="2" column="2">
-               <widget class="QLabel" name="label_11">
-                <property name="text">
-                 <string>x10&lt;sup&gt;-8&lt;/sup&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QSpinBox" name="geom_opt_tol_energy"/>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_10">
-                <property name="text">
-                 <string>Displacement</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QLabel" name="label_113">
-                <property name="text">
-                 <string>x10&lt;sup&gt;-6&lt;/sup&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="geom_opt_tol_displacement"/>
-              </item>
               <item row="0" column="0">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>Gradient</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="geom_opt_tol_gradient"/>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_15">
-                <property name="text">
-                 <string>x10&lt;sup&gt;-6&lt;/sup&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>Energy</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_68">
-                <property name="text">
-                 <string>Linear Angle</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QSpinBox" name="geom_opt_linear_angle"/>
-              </item>
-              <item row="0" column="3">
                <spacer name="horizontalSpacer_15">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -4044,29 +3905,6 @@ widgets.</string>
                  </size>
                 </property>
                </spacer>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_71">
-                <property name="text">
-                 <string>Max Stepsize</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QDoubleSpinBox" name="geom_opt_max_step_size">
-                <property name="prefix">
-                 <string/>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>3</number>
-                </property>
-                <property name="maximum">
-                 <double>9.990000000000000</double>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>
@@ -5504,6 +5342,9 @@ Eventually this should go.</string>
              <widget class="QSpinBox" name="cis_guess_disk_type"/>
             </item>
             <item>
+             <widget class="QComboBox" name="geom_opt_driver"/>
+            </item>
+            <item>
              <spacer name="verticalSpacer_31">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -5672,8 +5513,8 @@ Eventually this should go.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1065</width>
-     <height>37</height>
+     <width>1062</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -5731,7 +5572,6 @@ Eventually this should go.</string>
   <tabstop>deleteJobButton</tabstop>
   <tabstop>addJobButton</tabstop>
   <tabstop>previewText</tabstop>
-  <tabstop>geom_opt_tol_gradient</tabstop>
   <tabstop>dscf_convergence_level_2</tabstop>
   <tabstop>dscf_max_cycles_level_2</tabstop>
   <tabstop>dscf_max_cycles_level_1</tabstop>
@@ -5767,13 +5607,6 @@ Eventually this should go.</string>
   <tabstop>pao_method</tabstop>
   <tabstop>pao_algorithm</tabstop>
   <tabstop>epao_iterate</tabstop>
-  <tabstop>geom_opt_hessian_update</tabstop>
-  <tabstop>geom_opt_hessian</tabstop>
-  <tabstop>qui_geom_opt_fallback</tabstop>
-  <tabstop>geom_opt_diis_subspace</tabstop>
-  <tabstop>geom_opt_print</tabstop>
-  <tabstop>geom_opt_scf_guess_always</tabstop>
-  <tabstop>geom_print</tabstop>
   <tabstop>vibman_print</tabstop>
   <tabstop>analytic_derivative_order</tabstop>
   <tabstop>fd_step_size</tabstop>
@@ -5808,14 +5641,11 @@ Eventually this should go.</string>
   <tabstop>qui_svp_rotchi</tabstop>
   <tabstop>qui_svp_rotphi</tabstop>
   <tabstop>qui_svp_rotthe</tabstop>
-  <tabstop>geom_opt_tol_displacement</tabstop>
   <tabstop>setupTabWidget</tabstop>
   <tabstop>pdb_print</tabstop>
-  <tabstop>geom_opt_iproj</tabstop>
   <tabstop>gaussian_blur</tabstop>
   <tabstop>link_atom_projection</tabstop>
   <tabstop>qmmm_full_hessian</tabstop>
-  <tabstop>geom_opt_tol_energy</tabstop>
   <tabstop>meteco</tabstop>
   <tabstop>efp</tabstop>
   <tabstop>efp_fragments_only</tabstop>

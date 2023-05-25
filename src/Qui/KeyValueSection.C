@@ -1,9 +1,24 @@
-/*!
- *  \file KeyValueSection.C 
- *
- *  \author Andrew Gilbert
- *  \date March 2018
- */
+/*******************************************************************************
+
+  Copyright (C) 2023 Andrew Gilbert
+
+  This file is part of IQmol, a free molecular visualization program. See
+  <http://iqmol.org> for more details.
+
+  IQmol is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+  details.
+
+  You should have received a copy of the GNU General Public License along
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+
+********************************************************************************/
 
 #include "QtVersionHacks.h"
 #include "KeyValueSection.h"
@@ -50,8 +65,9 @@ void KeyValueSection::fixAdHoc(QString const& name, QString& value)
    Option opt; 
    OptionDatabase& db(OptionDatabase::instance());
    bool inDatabase(db.get(name, opt));
+   if (!inDatabase) return;
 
-   if (inDatabase && opt.getType() == Option::Type_Logical) {
+   if (opt.getType() == Option::Type_Logical) {
       if (value.toLower() == "true") {
          value = "1";
       }else if (value.toLower() == "false") {
@@ -60,6 +76,10 @@ void KeyValueSection::fixAdHoc(QString const& name, QString& value)
          value = "1";
       }
    } 
+
+   if (name == "QUI_GEOM_OPT_USER_TOPOLOGY") {
+      value = (value.toInt() == 0) ? "generated" : "read";
+   }
 }
 
 
@@ -89,11 +109,9 @@ void KeyValueSection::setOption(QString const& key, QString const& value)
 }
 
 
-QString KeyValueSection::dump() const
+QString KeyValueSection::formatContents() const
 {
-   QString s(m_name);
-   s.prepend("$");
-   s += "\n";
+   QString s;
 
    StringMap::const_iterator iter;
    QString key, value;
@@ -108,11 +126,10 @@ QString KeyValueSection::dump() const
           key.replace("QUI_PCM_","");
           key.replace("QUI_SMX_","");
           key.replace("QUI_CHEMSOL_","");
+          key.replace("QUI_GEOM_OPT_","");
           s += "   " + key + "  " + value + "\n";
        }
    }
-       
-   s += "$end\n";
 
    return s;
 }

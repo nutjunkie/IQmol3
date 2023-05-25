@@ -28,6 +28,7 @@ Job::Job() {
    m_pcmSection           = new KeyValueSection("pcm",false);
    m_smxSection           = new KeyValueSection("smx",false);
    m_chemsolSection       = new KeyValueSection("chemsol",false);
+   m_geomOptSection       = new KeyValueSection("geom_opt",false, false);
 
    m_sections["rem"]      = m_remSection;
    m_sections["molecule"] = m_moleculeSection;
@@ -35,6 +36,7 @@ Job::Job() {
    m_sections["pcm"]      = m_pcmSection;
    m_sections["smx"]      = m_smxSection;
    m_sections["chemsol"]  = m_chemsolSection;
+   m_sections["geom_opt"] = m_geomOptSection;
 
    // A hack to ensure the corresponding $blocks have something inside them
    // when they are printed.
@@ -166,20 +168,6 @@ bool Job::isReadCoordinates()
 }
 
 
-/*
-Molecule* Job::getMolecule() 
-{
-   if (m_moleculeSection)  {
-      return m_moleculeSection->getMolecule();
-   }else {
-      return 0;
-   }
-}
-*/
-
-
-
-
 void Job::setCharge(int value) 
 {
    if (m_moleculeSection) m_moleculeSection->setCharge(value);
@@ -264,6 +252,9 @@ void Job::setOption(QString const& name, QString const& value)
    }else if (name.startsWith("QUI_CHEMSOL_", Qt::CaseInsensitive)) {
       if (m_chemsolSection) m_chemsolSection->setOption(name, value);
 
+   }else if (name.startsWith("QUI_GEOM_OPT", Qt::CaseInsensitive)) {
+      if (m_geomOptSection) m_geomOptSection->setOption(name, value);
+
    }else if (m_remSection) {
       m_remSection->setOption(name, value);
       if (name.toUpper() == "JOB_TYPE" && m_moleculeSection) {
@@ -281,11 +272,14 @@ void Job::printOption(QString const& name, bool doPrint)
    }else if (name.startsWith("QUI_PCM")) {
       if (m_pcmSection) m_pcmSection->printOption(name, doPrint);
 
-   }else if (name.startsWith("QUI_SMX_", Qt::CaseInsensitive)) {
+   }else if (name.startsWith("QUI_SMX", Qt::CaseInsensitive)) {
       if (m_smxSection) m_smxSection->printOption(name, doPrint);
 
-   }else if (name.startsWith("QUI_CHEMSOL_", Qt::CaseInsensitive)) {
+   }else if (name.startsWith("QUI_CHEMSOL", Qt::CaseInsensitive)) {
       if (m_chemsolSection) m_chemsolSection->printOption(name, doPrint);
+
+   }else if (name.startsWith("QUI_GEOM_OPT", Qt::CaseInsensitive)) {
+      if (m_geomOptSection) m_geomOptSection->printOption(name, doPrint);
 
    }else {
       if (m_remSection) m_remSection->printOption(name, doPrint);
@@ -295,7 +289,7 @@ void Job::printOption(QString const& name, bool doPrint)
 
 KeywordSection* Job::addSection(QString const& name, QString const& value) 
 {
-   KeywordSection* section(KeywordSectionFactory(name));
+   KeywordSection* section(KeywordSection::Factory(name));
    section->read(value);
    addSection(section);
    return section;
@@ -355,7 +349,7 @@ int Job::getNumberOfAtoms() {
 void Job::printSection(QString const& name, bool isVisible) {
    if (isVisible && m_sections.count(name) == 0) {
       // if we should print a section then there should be one there.
-      addSection(KeywordSectionFactory(name)); 
+      addSection(KeywordSection::Factory(name)); 
    }
    if (m_sections.count(name)) m_sections[name]->visible(isVisible);
 }

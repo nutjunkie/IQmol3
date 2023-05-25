@@ -19,7 +19,7 @@ namespace Qui {
 
 class OptSection : public KeywordSection {
    public:
-      OptSection() : KeywordSection("opt") { }
+      OptSection() : KeywordSection("opt", false, false) { }
       ~OptSection() { deleteConstraints(); }
 
       void read(QString const& input);
@@ -29,7 +29,7 @@ class OptSection : public KeywordSection {
       int numberOfDummyAtoms() const { return m_dummyAtoms.size(); }
 
    protected:
-      QString dump() const;
+      QString formatContents() const;
 
    private:
       GeometryConstraint::List m_constraints;

@@ -25,7 +25,6 @@ set( SOURCES
    OptionDatabase.C
    OptionDatabaseForm.C
    OptionEditors.C
-   PcmSection.C
    Qui.C
    QuiJob.C
    ReadInput.C
@@ -44,6 +43,8 @@ set( UI_FILES
    FrequenciesTab.ui
    GeometryConstraintDialog.ui
    GeometryTab.ui
+   Libopt3Tab.ui
+   OptimizeTab.ui
    OptionDatabaseForm.ui
    OptionListEditor.ui
    OptionNumberEditor.ui

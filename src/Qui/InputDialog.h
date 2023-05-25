@@ -42,6 +42,8 @@
 #include "ui_PropertiesTab.h"
 #include "ui_ReactionPathTab.h"
 #include "ui_TransitionStateTab.h"
+//#include "ui_OptimizeTab.h"
+//#include "ui_Libopt3Tab.h"
 #include "Tab.h"
 
 class QResizeEvent;
@@ -112,7 +114,7 @@ class InputDialog : public QMainWindow {
       void on_ftc_toggled(bool);
       void on_qui_cfmm_toggled(bool);
       void on_qui_use_ri_toggled(bool);
-      void on_qui_none(bool on);
+      void on_qui_none_toggled(bool on);
 
       void on_solvent_method_currentTextChanged(QString const&);
 
@@ -149,7 +151,6 @@ class InputDialog : public QMainWindow {
       void resizeEvent(QResizeEvent* event);
 
    private:
-      // ---------- Data ----------
       Ui::MainWindow  m_ui;
 
       Tab<Ui::AdcTab>                  m_adcTab;
@@ -165,6 +166,8 @@ class InputDialog : public QMainWindow {
       Tab<Ui::PropertiesTab>           m_propertiesTab;
       Tab<Ui::ReactionPathTab>         m_reactionPathTab;
       Tab<Ui::TransitionStateTab>      m_transitionStateTab;
+//      Tab<Ui::OptimizeTab>             m_optimizeTab;
+//      Tab<Ui::Libopt3Tab>              m_libopt3Tab;
 
       IQmol::Process::QChemJobInfo m_qchemJobInfo;
 

@@ -169,7 +169,7 @@ std::vector<KeywordSection*> ReadKeywordSections(QString input) {
       // this up.  That is, the KeywordSection object must be associated with a
       // Job object.
       qDebug() << "finding section" << name;
-      KeywordSection* ks = KeywordSectionFactory(name);
+      KeywordSection* ks = KeywordSection::Factory(name);
       ks->read(tmp);
       ks->visible(true);
       sections.push_back(ks);

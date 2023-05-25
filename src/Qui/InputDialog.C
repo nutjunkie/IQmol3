@@ -74,6 +74,8 @@ InputDialog::InputDialog(QWidget* parent) : QMainWindow(parent),
    m_propertiesTab(this),
    m_reactionPathTab(this),
    m_transitionStateTab(this),
+//   m_libopt3Tab(this),
+//   m_optimizeTab(this),
    m_db(OptionDatabase::instance()), m_reg(OptionRegister::instance()), 
    m_taint(false), m_currentJob(0), m_fileIn("")
 {
@@ -136,16 +138,6 @@ InputDialog::~InputDialog()
 
 void InputDialog::initializeToolBoxOptions() 
 {
-/*
-   int numberOfUndeletedPages(2);  // wtf are these?
-   while (m_ui.toolBoxOptions->count() > numberOfUndeletedPages) {
-      QWidget* widget(m_ui.toolBoxOptions->widget(0)); 
-      QString name(m_ui.toolBoxOptions->itemText(0)); 
-      widget->hide();
-      m_ui.toolBoxOptions->removeItem(0);
-      m_toolBoxOptions.insert(name, widget);
-   }
-*/
    m_toolBoxOptions.insert("ADC",                   &m_adcTab);
    m_adcTab.hide();
    m_toolBoxOptions.insert("Ab Initio MD",          &m_aimdTab);
@@ -172,6 +164,13 @@ void InputDialog::initializeToolBoxOptions()
    m_reactionPathTab.hide();
    m_toolBoxOptions.insert("Transition State",      &m_transitionStateTab);
    m_transitionStateTab.hide();
+
+/*
+   m_toolBoxOptions.insert("Optimize",  &m_optimizeTab);
+   m_optimizeTab.hide();
+   m_toolBoxOptions.insert("Libopt3",   &m_lTab);
+   m_libopt3Tab.hide();
+*/
 }
 
 
@@ -969,7 +968,7 @@ void InputDialog::toggleStack(QStackedWidget* stack, bool on, QString model)
 }
 
 
-void InputDialog::on_qui_none(bool on) 
+void InputDialog::on_qui_none_toggled(bool on) 
 {
    toggleStack(m_ui.largeMoleculesStack, on, "LargeMoleculesNone");
 }
@@ -994,25 +993,6 @@ void InputDialog::on_qui_use_ri_toggled(bool on)
 {
    toggleStack(m_ui.largeMoleculesStack, on, "LargeMoleculesRI");
 }
-
-
-
-/*
-void InputDialog::on_qui_solvent_cosmo_toggled(bool on) 
-{
-   toggleStack(m_ui.solventStack, on, "SolventCosmo");
-}
-
-void InputDialog::on_qui_solvent_chemsol_toggled(bool on) 
-{
-   toggleStack(m_ui.solventStack, on, "SolventChemSol");
-}
-
-void InputDialog::on_qui_solvent_svp_toggled(bool on) 
-{
-   toggleStack(m_ui.solventStack, on, "SolventSVP");
-}
-*/
 
 
 void InputDialog::on_solvent_method_currentTextChanged(QString const& value)
@@ -1093,6 +1073,20 @@ void InputDialog::on_qui_multiplicity_valueChanged(int value)
 
 
 
+void InputDialog::on_qui_optimize_toggled(bool on)
+{
+   toggleStack(m_ui.geomOptStack, on, "Optimize");
+}
+
+
+void InputDialog::on_qui_libopt3e_toggled(bool on)
+{
+   toggleStack(m_ui.geomOptStack, on, "Libopt3");
+}
+
+
+
+
 
 /***********************************************************************
  *   
@@ -1128,42 +1122,42 @@ bool InputDialog::initializeControls()
 
              case Option::Impl_Combo: {
                 QComboBox* combo = qobject_cast<QComboBox*>(control);
-                if (!combo) return false;
+                if (!combo) goto error;
                 initializeControl(opt, combo);
              }
              break;
 
              case Option::Impl_Check: {
                 QCheckBox* check = qobject_cast<QCheckBox*>(control);
-                if (!check) return false;
+                if (!check) goto error;
                 initializeControl(opt, check);
              }
              break;
  
              case Option::Impl_Text: {
                 QLineEdit* edit = qobject_cast<QLineEdit*>(control);
-                if (!edit) return false;
+                if (!edit) goto error;
                 initializeControl(opt, edit);
              }
              break;
  
              case Option::Impl_Spin: {
                 QSpinBox* spin = qobject_cast<QSpinBox*>(control);
-                if (!spin) return false;
+                if (!spin) goto error;
                 initializeControl(opt, spin);
              }
              break;
  
              case Option::Impl_DSpin: {
                 QDoubleSpinBox* dspin = qobject_cast<QDoubleSpinBox*>(control);
-                if (!dspin) return false;
+                if (!dspin) goto error;
                 initializeControl(opt, dspin);
              }
              break;
  
              case Option::Impl_Radio: {
                 QRadioButton* radio = qobject_cast<QRadioButton*>(control);
-                if (!radio) return false;
+                if (!radio) goto error;
                 initializeControl(opt, radio);
              }
              break;
@@ -1181,6 +1175,11 @@ bool InputDialog::initializeControls()
        }
     }
     return true;
+
+    error:
+      qDebug() << "Problem with reading option from database: " << name 
+               << "implementation:" << opt.getImplementation();
+      return false;
 }
 
 

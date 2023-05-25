@@ -89,6 +89,7 @@ class Job {
       KeyValueSection* m_pcmSection;
       KeyValueSection* m_smxSection;
       KeyValueSection* m_chemsolSection;
+      KeyValueSection* m_geomOptSection;
 
 	  //! This contains a list of all the sections, including the RemSection
 	  //! and MoleculeSection

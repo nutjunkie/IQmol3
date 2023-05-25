@@ -24,10 +24,6 @@ class QFile;
 class QVariant;
 
 
-namespace Avogadro {
-   class Molecule;
-}
-
 namespace Qui {
 
 class Job;
@@ -58,12 +54,6 @@ QList<Job*> ParseQChemFileContents(QString const& lines);
 //! there exists abiguity over which sections belong to which job.  This can be
 //! resolved by spliting the string/file on @@@ before invoking this function.
 std::vector<KeywordSection*> ReadKeywordSections(QString input);
-
-
-#ifdef AVOGADRO
-QString ExtractGeometry(Avogadro::Molecule* mol, QString const& coords);
-int TotalChargeOfNuclei(Avogadro::Molecule* mol);
-#endif
 
 } // end namespace Qui
 
