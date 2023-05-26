@@ -60,7 +60,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="Positions">
+           <widget class="QLineEdit" name="positions">
             <property name="text">
              <string>posre.itp</string>
             </property>

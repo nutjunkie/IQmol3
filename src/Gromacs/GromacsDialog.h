@@ -22,7 +22,6 @@
 ********************************************************************************/
  
 #include "Gromacs/ui_GromacsDialog.h"
-#include "GromacsPreferences.h"
 #include <QDialog>
 #include <QJsonObject>
 #include <QJsonArray>

@@ -22,7 +22,7 @@
 
 #include "GromacsDialog.h"
 
-#include "GromacsPreferences.h"
+
 #include "GromacsConfigDialog.h"
 #include "Util/Preferences.h"
 
@@ -35,17 +35,19 @@ namespace Gmx {
 GromacsConfigDialog::GromacsConfigDialog(QWidget* parent) : QDialog(parent)
 {
    m_dialog.setupUi(this);
+   m_dialog.topology->setText(Preferences::GromacsTopologyFile());
+   m_dialog.positions->setText(Preferences::GromacsPositionsFile());
 
 }
 
-QString GromacsConfigDialog::getTopologyPref() const
+QString GromacsConfigDialog::getTopology() const
 {
-   return GroPref->getTopology();
+   return m_dialog.topology->text();
 }
 
-QString GromacsConfigDialog::getPositionsPref() const
+QString GromacsConfigDialog::getPositions() const
 {
-   return GroPref->getPositions();
+   return m_dialog.positions->text();
 }
 
 } } // end namespace IQmol::Gmx

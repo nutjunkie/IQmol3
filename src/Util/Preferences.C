@@ -845,12 +845,12 @@ void GromacsTopologyFile(QString const& topology){
 
 }
 
-QString GromacsPositionFile(){
+QString GromacsPositionsFile(){
    QVariant value(Get("GromacsPositionFile"));
    return value.isNull() ? QString("posre.itp") : value.value<QString>();
 }
 
-void GromacsPositionFile(QString const& position){
+void GromacsPositionsFile(QString const& position){
    Set("GromacsPositionFile", position);
 }
 

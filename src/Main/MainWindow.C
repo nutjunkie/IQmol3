@@ -1026,7 +1026,9 @@ void MainWindow::showGromacsConfigDialog()
    Gmx::GromacsConfigDialog dialog(this);
    dialog.exec();
    if (dialog.result() == QDialog::Accepted) {
-      
+      Preferences::GromacsTopologyFile(dialog.getTopology());
+      Preferences::GromacsPositionsFile(dialog.getPositions());
+
    }
    
 #endif
@@ -1043,6 +1045,8 @@ void MainWindow::showGromacsServerDialog()
    }
 #endif
 }
+
+
 
 
 void MainWindow::insertMoleculeDialog() 

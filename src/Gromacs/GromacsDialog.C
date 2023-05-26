@@ -20,7 +20,7 @@
    
 ********************************************************************************/
 
-#include "GromacsPreferences.h"
+
 #include "GromacsConfigDialog.h"
 #include "GromacsDialog.h"
 #include "Util/QMsgBox.h"
@@ -42,7 +42,6 @@
 namespace IQmol {
 namespace Gmx { 
 
-//GromacsPreferences* GroPref = new GromacsPreferences();
 
 QString toString(BoxType type)
 {
@@ -194,7 +193,7 @@ void GromacsDialog::on_solvateButton_clicked(bool)
    QHttpPart topologyPart;
    topologyPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/top"));
    topologyPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"top\""));
-   QFile *file2 = new QFile(GroPref->getTopology());
+   QFile *file2 = new QFile(Preferences::GromacsTopologyFile());
    file2->open(QIODevice::ReadOnly);
    topologyPart.setBodyDevice(file2);
    file2->setParent(multiPart); 
@@ -290,7 +289,7 @@ QJsonObject GromacsDialog::solvateRequestPayload()
    QJsonObject json;
    QString solvateType(m_dialog.solvationtype->currentText());
    json.insert("solvatetype", solvateType);
-   QString topology(GroPref->getTopology());
+   QString topology = Preferences::GromacsTopologyFile();
    json.insert("topology",topology);
    json.insert("-cp","1AKI_newbox.gro");
    json.insert("-o","1AKI_solv.gro");

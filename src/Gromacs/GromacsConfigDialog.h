@@ -37,8 +37,8 @@ namespace Gmx {
       public:
          GromacsConfigDialog(QWidget* parent);
 
-         QString getTopologyPref() const;
-         QString getPositionsPref() const;
+         QString getTopology() const;
+         QString getPositions() const;
       
       private:
          Ui::GromacsConfigDialog  m_dialog;

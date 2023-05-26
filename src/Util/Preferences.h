@@ -180,8 +180,8 @@ namespace Preferences {
    QString GromacsTopologyFile();
    void GromacsTopologyFile(QString const&);
 
-   QString GromacsPositionFile();
-   void GromacsPositionFile(QString const&);
+   QString GromacsPositionsFile();
+   void GromacsPositionsFile(QString const&);
 
    // Deprecate
    QList<QVariant> CurrentProcessList();
