@@ -22,6 +22,8 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+#include "Data/MacroMolecule.h"
+
 //#include "Util/octree/octree.h"
 //#include "Util/octree/point3d.h"
 
@@ -35,12 +37,12 @@
 
 namespace IQmol {
 
-typedef CGAL::Simple_cartesian<double>                K;  
-typedef K::Point_3                                    Point_d;
-typedef CGAL::Random_points_in_cube_3<Point_d>      Random_points_iterator;
-typedef CGAL::Search_traits_3<K>                      Traits;
-typedef CGAL::Fuzzy_sphere<Traits>                    Fuzzy_circle;
-typedef CGAL::Kd_tree<Traits>                         Tree;
+typedef CGAL::Simple_cartesian<double>          K;  
+typedef K::Point_3                              Point_d;
+typedef CGAL::Random_points_in_cube_3<Point_d>  Random_points_iterator;
+typedef CGAL::Search_traits_3<K>                Traits;
+typedef CGAL::Fuzzy_sphere<Traits>              Fuzzy_circle;
+typedef CGAL::Kd_tree<Traits>                   Tree;
 
 
 namespace Layer {
@@ -52,9 +54,7 @@ namespace Layer {
       Q_OBJECT
 
       public:
-         explicit MacroMolecule(QString const& label = QString(), QObject* parent = 0) :
-            Component(label, parent), m_tree(1)
-         { }
+         explicit MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* parent = 0 );
 
          ~MacroMolecule() { }
 
@@ -62,9 +62,12 @@ namespace Layer {
 
          void reBox();
 
+         double radius() { return m_radius; };
+
       Q_SIGNALS:
     
       private:
+         double m_radius;
          Tree m_tree;
 //         Octree< Point3D<double> >  m_octree;
    };

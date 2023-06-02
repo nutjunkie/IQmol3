@@ -30,6 +30,11 @@
 #include <QJsonDocument>
 #include <QDebug>
 
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QHttpMultiPart>
+#include <QFile>
 
 namespace IQmol {
 namespace Gmx { 
@@ -73,6 +78,8 @@ GromacsDialog::GromacsDialog(QWidget* parent) : QDialog(parent), m_networkReply(
    m_dialog.setupUi(this);
    m_dialog.boundary->setSuffix(" \u212B");
    m_networkAccessManager = new QNetworkAccessManager(this);
+
+   //Add path to opened molecule default should be pdb file
 }
 
 
@@ -87,13 +94,54 @@ void GromacsDialog::enableRequestWidgets(bool tf)
    m_dialog.generateBoxButton->setEnabled(tf);
 }
 
-
-void GromacsDialog::readToString()
+/*
+void GromacsDialog::stageCalculation()
 {
-   if (!m_networkReply) return;
+   qDebug() << "Generating ID";
+   QString url(Preferences::GromacsServerAddress());
+   url += "/stagecalculation";
+   qDebug() << "URL set to " << url;
+   
+   QNetworkRequest request;
+   request.setUrl(url);
+   QJsonDocument json;
+   QNetworkReply *reply = m_networkAccessManager->get(request);
+   //QString strReply = (QString)reply->readAll();
+   
+   
+
+
+  
+   QJsonArray json_array = readToJson();
+   qDebug() << "size of array is " << json_array.size();
+   foreach (const QJsonValue &value, json_array) {
+      QJsonObject json_obj = value.toObject();
+      qDebug() << "id is " << json_obj["id"].toString();
+   //QString id2 =  QString(m_networkReply->rawHeaderList().size());
+   connect(reply, SIGNAL(readyRead()), this, SLOT(readToJson()) );
+   }
+
+
+}
+*/
+
+/*QJsonArray GromacsDialog::readToJson()
+{
+   QJsonDocument jsonResponse;
+   if (!reply) return(jsonResponse);
+   QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
+   QJsonArray json_array = jsonResponse.array();
+   return(json_array);
+}
+*/
+QString GromacsDialog::readToString()
+{
+   QString s;
+   if (!m_networkReply) return(s);
    qint64 size(m_networkReply->bytesAvailable());
-   QString s = m_networkReply->read(size);
+   s = m_networkReply->read(size);
    qDebug() << "Reading" << size << " bytes to string" << s;
+   return(s);
 } 
 
 
@@ -107,6 +155,7 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
       return;
    }
 
+   //stageCalculation();
    qDebug() << "Generating Box";
    QString url(Preferences::GromacsServerAddress());
    url += "/editconf";
@@ -115,16 +164,38 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    QNetworkRequest request;
    request.setUrl(url);
 
+   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpPart jsonPart;
+   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
+   
+
+
    // Set header
-   request.setRawHeader("jobId", "");
+   //request.setRawHeader("jobId", "");
+   
+   //request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain; charset=UTF-8");
 
    QJsonObject payload(boxRequestPayload());
    QJsonDocument json;
    json.setObject(payload);
    qDebug() << "Request body:" << json.toJson();
 
-   m_networkReply = m_networkAccessManager->post(request,json.toJson());
 
+   jsonPart.setBody(json.toJson());
+
+   QHttpPart filePart;
+   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
+   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
+   QFile *file = new QFile("1AKI_processed.gro");
+   file->open(QIODevice::ReadOnly);
+   filePart.setBodyDevice(file);
+   file->setParent(multiPart); // we cannot delete the file now, so delete it with the multiPart
+   multiPart->append(jsonPart);
+   multiPart->append(filePart);
+
+
+   m_networkReply = m_networkAccessManager->post(request,multiPart);
+   qDebug() << "Request pending" ;
    connect(m_networkReply, SIGNAL(finished()),  this, SLOT(boxRequestFinished()) );
    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
 }
@@ -141,6 +212,8 @@ QJsonObject GromacsDialog::boxRequestPayload()
    if (m_dialog.rhombicDodecahedronButton->isChecked()) bt = RhombicDodecahedron;
    json.insert("boxType", toString(bt));
 
+   json.insert("-f","1AKI_processed.gro");
+   json.insert("-o","1AKI_newbox.gro");
    // Centered
    if (m_dialog.centerButton->isChecked()) {
       json.insert("centered", "true");
@@ -158,11 +231,20 @@ QJsonObject GromacsDialog::boxRequestPayload()
 
 void GromacsDialog::boxRequestFinished()
 {
-   enableRequestWidgets(true);    
-   QString msg("Request finished");
-   QMsgBox::information(this, "IQmol", msg);
+   enableRequestWidgets(true);
+   if(m_networkReply->error())
+    {
+      qDebug() << "ERROR!";
+      qDebug() << m_networkReply->errorString();
+      QString msg(m_networkReply->errorString());
+      QMsgBox::information(this, "IQmol", msg);
 
-   // do stuff
+    }else{  
+      QString msg("Request finished");
+      QMsgBox::information(this, "IQmol", msg);
+      QString outputdata = readToString();
+      // do stuff
+    }
 
    delete m_networkReply;
    m_networkReply = 0;

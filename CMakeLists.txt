@@ -8,12 +8,13 @@ set(targetName IQmol)
 project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 
 include(FortranCInterface)
-#FortranCInterface_VERIFY(CXX)
+
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fsanitize=address")
 set(CMAKE_MODULE_PATH ${IQmol_SOURCE_DIR}/cmake)
 
 
@@ -61,7 +62,6 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 #add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
 
 enable_testing()
-
 
 if(WITH_QARCHIVE)
    add_compile_definitions(WITH_AVIEW QARCHIVE)

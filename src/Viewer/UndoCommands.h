@@ -43,6 +43,7 @@ namespace Layer {
    class Atom;
    class Bond;
    class Molecule;
+   class System;
    class Constraint;
 }
 
@@ -120,6 +121,32 @@ namespace Command {
          QString m_msg;
          AnimatorList m_animatorList;
    };
+
+
+   class MoveSystemObjects : public QUndoCommand {
+      public:
+         MoveSystemObjects(Layer::System*, QString const& text = "Move items");
+
+         virtual void redo();
+         virtual void undo();
+
+         void setMessage(QString const& msg) { m_msg = msg; }
+
+      protected:
+         Layer::System* m_system;
+
+      private:
+         void loadFrames(QList<qglviewer::Frame> const& frames);
+         void saveFrames(QList<qglviewer::Frame>& frames);
+         QList<qglviewer::Frame> m_initialFrames;
+         QList<qglviewer::Frame> m_finalFrames;
+
+         GLObjectList m_objectList;
+         bool m_finalStateSaved;
+         QString m_msg;
+   };
+
+
 
 
 
@@ -238,6 +265,28 @@ namespace Command {
          Layer::Molecule* m_molecule;
          QStandardItem* m_parent;
          bool m_deleteMolecule;
+   };
+
+
+   class AddSystem: public QUndoCommand {
+      public:
+         AddSystem(Layer::System* system, QStandardItem* parent);
+         void redo();
+         void undo();
+      private:
+         Layer::System* m_system;
+         QStandardItem* m_parent;
+   };
+
+
+   class RemoveSystem: public QUndoCommand {
+      public:
+         RemoveSystem(Layer::System* system, QStandardItem* parent);
+         void redo();
+         void undo();
+      private:
+         Layer::System* m_system;
+         QStandardItem* m_parent;
    };
 
 

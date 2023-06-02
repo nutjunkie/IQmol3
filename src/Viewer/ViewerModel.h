@@ -1,5 +1,4 @@
-#ifndef IQMOL_VIEWERMODEL_H
-#define IQMOL_VIEWERMODEL_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2011-2015 Andrew Gilbert
@@ -61,8 +60,13 @@ namespace IQmol {
 
          void setForceField(QString const& forceField) { m_forceField = forceField; }
          double sceneRadius(bool visibleOnly = true);
+
          MoleculeList moleculeList(bool visibleOnly = true);
          Layer::Molecule* activeMolecule();
+
+         SystemList systemList(bool visibleOnly = true);
+         Layer::System* activeSystem();
+
          bool saveAllAndClose();
          bool saveRequired();
 
@@ -70,7 +74,6 @@ namespace IQmol {
          QStringList mimeTypes () const;
          bool dropMimeData(QMimeData const* data, Qt::DropAction action, int row, 
             int column, const QModelIndex & parent);
-
 
       public Q_SLOTS:
 		 /// Wrapper that creates a new Molecule and sets the Viewer in a 
@@ -118,9 +121,9 @@ namespace IQmol {
          void saveAll();
          void saveAs();
 
-         void open(QString const& fileName, QString const& filter,  void* moleculePointer);
-         void open(QString const& fileName);
          void fileOpenFinished();
+         void open(QString const& fileName, QString const& filter = QString(),  
+            void* moleculePointer = 0);
 
 
       Q_SIGNALS:
@@ -148,10 +151,14 @@ namespace IQmol {
 		 /// ViewerModel, but does not append the Molecule.  In most cases the
 		 /// Molecule should be appended via an AddMolecule Command.
          Layer::Molecule* newMolecule();
-         Layer::System* newSystem();
          void connectMolecule(Layer::Molecule*);
          void disconnectMolecule(Layer::Molecule*);
          void forAllMolecules(boost::function<void(Layer::Molecule&)> function);
+
+         Layer::System* newSystem();
+         void connectSystem(Layer::System*);
+         void disconnectSystem(Layer::System*);
+         void forAllSystems(boost::function<void(Layer::System&)> function);
 
          // default is to find only the topmost visible Layers
          template <class T> 
@@ -172,8 +179,10 @@ namespace IQmol {
             return list;
          }
 
-         void processConfigData(ParseJobFiles*);
+         void processConfigData(Data::Bank&);
          void processParsedData(ParseJobFiles*);
+         void processMoleculeData(ParseJobFiles*);
+         void processSystemData(ParseJobFiles*);
 
          QWidget* m_parent;
          Layer::Base m_global;
@@ -184,12 +193,9 @@ namespace IQmol {
 
          GLObjectList m_visibleObjects;
          GLObjectList m_selectedObjects;
-         double m_symmetryTolerance;
+         double m_symmetryTolerance;  // Hack, much.
          QString m_forceField;
          bool m_updateEnabled;
    };
 
-
 } // end namespace IQmol
-
-#endif

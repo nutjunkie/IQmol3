@@ -27,6 +27,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/export.hpp>
 
+#include <QDebug>
 
 /// The Data namespace includes POD classes that can be serialized.  The
 /// Data::Base class herein takes care of this serialization and also
@@ -44,7 +45,9 @@ namespace Data {
       enum ID { Undefined = 0, 
                /*---------------------  *---------------------  *--------------------- */
                 Atom,                   AtomList,               Bank, 
-                QmAtom,                 QmAtomList, 
+                QmAtom,                 QmAtomList,             MacroMolecule,
+                MmAtom,                 MmAtomList,             Group,
+                Pdb,
                 PointCharge,            PointChargeList,        EfpFragment, 
                 EfpFragmentList,        EfpFragmentLibrary,     GridData, 
                 GridDataList,           File,                   FileList, 
@@ -110,7 +113,10 @@ namespace Data {
 
       protected:
          /// This should delete any resources owned by the data object.
-         virtual void destroy() { }
+         virtual void destroy() 
+         {  
+             //qDebug() << "XXXXXXXXXX" << "  Destroying " << this << toString(typeID());
+         }
 
 		 /// The Base implementation is very general, but inefficient as it
 		 /// relies on serialization for the copy.  Over-ride if efficiency 

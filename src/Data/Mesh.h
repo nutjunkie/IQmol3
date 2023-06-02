@@ -137,6 +137,12 @@ namespace Data {
 
          void dump() const;
 
+         /// Computes the face centroids and updates the face normals
+         bool computeFaceNormals();
+
+         bool computeVertexNormals();
+
+
       protected:
           OMMesh const& data() const { return m_omMesh; } 
           OMMesh& data() { return m_omMesh; } 
@@ -154,9 +160,6 @@ namespace Data {
          static double const s_thresh;
 
          void copy(Mesh const& that);
-
-         /// Computes the face centroids and updates the face normals
-         bool computeFaceNormals();
 
          // This requests the properties that every mesh must have, all the time
          void requestDefaultProperties();

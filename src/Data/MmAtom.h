@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ATOM_H
-#define IQMOL_DATA_ATOM_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,23 +21,20 @@
 
 ********************************************************************************/
 
-#include "DataList.h"
-#include "Bank.h"
+#include "Atom.h"
 
 
 namespace IQmol {
 namespace Data {
 
-   class AtomicProperty;
-
    /// Data structure representing an atom.
-   class Atom : public Base {
+   class MmAtom : public Base {
 
       friend class boost::serialization::access;
 
       public:
-         Atom(unsigned const Z = 0) :  m_atomicNumber(Z) { }
-         Atom(QString const& symbol);
+         MmAtom(unsigned const Z = 0) : Atom(Z) { }
+         MmAtom(QString const& symbol);
 
          Type::ID typeID() const { return Type::Atom; }
          unsigned atomicNumber() const { return m_atomicNumber; }
@@ -62,44 +58,8 @@ namespace Data {
             return *p;
          }
 
-         template <class P>
-         bool hasProperty() const
-         {
-            P* p(0);
-            Bank::const_iterator iter;
-            for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-                if ( (p = dynamic_cast<P*>(*iter)) ) return true; 
-            }
-            return false;
-         }
-
-         template <class P>
-         QString getLabel() { return getProperty<P>().label(); }
- 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void dump() const;
-
-         static unsigned atomicNumber(QString const&);
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) 
-         {
-            ar & m_atomicNumber;
-            m_properties.serialize(ar);
-         }
-
-         unsigned m_atomicNumber;
-         Bank m_properties;
+         
    };
 
 
@@ -111,5 +71,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

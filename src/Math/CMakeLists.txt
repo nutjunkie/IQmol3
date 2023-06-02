@@ -1,15 +1,6 @@
 find_package(Qt5 COMPONENTS OpenGL Xml REQUIRED)
 set(LIB Math)
 
-set( HEADERS
-   Align.h
-   Axes.h
-   EulerAngles.h
-   Function.h
-   Matrix.h
-   Numerical.h
-   qcprot.h
-)
 
 set( SOURCES
    Align.C
@@ -17,6 +8,7 @@ set( SOURCES
    Function.C
    Matrix.C
    qcprot.C
+   Spline.C
 )
 
 add_library(${LIB} ${SOURCES})

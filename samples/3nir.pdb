@@ -11,14 +11,18 @@ SOURCE   5 STRAIN: SUBSP. ABYSSINICA
 KEYWDS    PLANT PROTEIN                                                         
 EXPDTA    X-RAY DIFFRACTION                                                     
 AUTHOR    A.SCHMIDT,M.TEETER,E.WECKERT,V.S.LAMZIN                               
+REVDAT   5   04-APR-18 3NIR    1       REMARK                                   
+REVDAT   4   24-JAN-18 3NIR    1       JRNL                                     
+REVDAT   3   08-NOV-17 3NIR    1       REMARK                                   
 REVDAT   2   02-MAR-16 3NIR    1       SEQADV SEQRES VERSN                      
 REVDAT   1   18-MAY-11 3NIR    0                                                
 JRNL        AUTH   A.SCHMIDT,M.TEETER,E.WECKERT,V.S.LAMZIN                      
 JRNL        TITL   CRYSTAL STRUCTURE OF SMALL PROTEIN CRAMBIN AT 0.48 A         
 JRNL        TITL 2 RESOLUTION                                                   
 JRNL        REF    ACTA CRYSTALLOGR.,SECT.F      V.  67   424 2011              
-JRNL        REFN                   ISSN 1744-3091                               
+JRNL        REFN                   ESSN 1744-3091                               
 JRNL        PMID   21505232                                                     
+JRNL        DOI    10.1107/S1744309110052607                                    
 REMARK   1                                                                      
 REMARK   1 REFERENCE 1                                                          
 REMARK   1  AUTH   C.JELSCH,M.M.TEETER,V.S.LAMZIN,V.PICHON-PESME,R.H.BLESSING,  
@@ -27,7 +31,7 @@ REMARK   1  TITL   ACCURATE PROTEIN CRYSTALLOGRAPHY AT ULTRA-HIGH RESOLUTION:
 REMARK   1  TITL 2 VALENCE ELECTRON DISTRIBUTION IN CRAMBIN.                    
 REMARK   1  REF    PROC.NATL.ACAD.SCI.USA        V.  97  3171 2000              
 REMARK   1  REFN                   ISSN 0027-8424                               
-REMARK   1  DOI    10737790                                                     
+REMARK   1  PMID   10737790                                                     
 REMARK   2                                                                      
 REMARK   2 RESOLUTION.    0.48 ANGSTROMS.                                       
 REMARK   3                                                                      
@@ -116,22 +120,22 @@ REMARK   3  PARAMETER FILE  1  : NULL
 REMARK   3  TOPOLOGY FILE  1   : NULL                                           
 REMARK   3                                                                      
 REMARK   3  OTHER REFINEMENT REMARKS:                                           
-REMARK   3  INITIAL REFINEMENT WITH REFMAC THEN SHELX, THEN MOPRO FOR MULTIPOLE 
-REMARK   3  REFINEMENT. ONLY DURING REFMAC CROSS VALIDATION WITH RFREE. IN THE  
-REMARK   3  LAST STAGES OF REFINEMENT THE SUM OF OCCUPANCIES FOR THE MULTIPLE   
-REMARK   3  CONFORMERS WAS NOT CONSTRAINED TO 1.00 AND ONLY WEAK STEREOCHEMICAL 
-REMARK   3  RESTRAINTS WERE APPLIED. ALTHOUGH OVERALL SUCH REFINEMENT OF THE    
-REMARK   3  MULTIPLE CONFORMERS WENT FINE, THERE WAS SOME INSTABILITY - FOR     
-REMARK   3  EXAMPLE THE REFINEMENT OF THE TEMPERATURE FACTORS FOR CA AND C      
-REMARK   3  ATOMS OF THE THIRD CONFORMER OF TYR A 29 DID NOT CONVERGE AND WERE  
-REMARK   3  TRUNCATED TO THE VALUE OF 50.                                       
+REMARK   3  INITIAL REFINEMENT WITH REFMAC THEN SHELX, THEN MOPRO FOR           
+REMARK   3  MULTIPOLE REFINEMENT. ONLY DURING REFMAC CROSS VALIDATION WITH      
+REMARK   3  RFREE. IN THE LAST STAGES OF REFINEMENT THE SUM OF OCCUPANCIES FOR  
+REMARK   3  THE MULTIPLE CONFORMERS WAS NOT CONSTRAINED TO 1.00 AND ONLY WEAK   
+REMARK   3  STEREOCHEMICAL RESTRAINTS WERE APPLIED. ALTHOUGH OVERALL SUCH       
+REMARK   3  REFINEMENT OF THE MULTIPLE CONFORMERS WENT FINE, THERE WAS SOME     
+REMARK   3  INSTABILITY - FOR EXAMPLE THE REFINEMENT OF THE TEMPERATURE         
+REMARK   3  FACTORS FOR CA AND C ATOMS OF THE THIRD CONFORMER OF TYR A 29 DID   
+REMARK   3  NOT CONVERGE AND WERE TRUNCATED TO THE VALUE OF 50.                 
 REMARK   3  BULK SOLVENT MODELING METHOD USED:BULK SOLVENT ENVELOPE METHOD      
 REMARK   3  FC(MOL)+FC(BULK)                                                    
 REMARK   4                                                                      
 REMARK   4 3NIR COMPLIES WITH FORMAT V. 3.30, 13-JUL-11                         
 REMARK 100                                                                      
-REMARK 100 THIS ENTRY HAS BEEN PROCESSED BY RCSB ON 14-APR-11.                  
-REMARK 100 THE RCSB ID CODE IS RCSB059880.                                      
+REMARK 100 THIS ENTRY HAS BEEN PROCESSED BY RCSB ON 21-JUN-10.                  
+REMARK 100 THE DEPOSITION ID IS D_1000059880.                                   
 REMARK 200                                                                      
 REMARK 200 EXPERIMENTAL DETAILS                                                 
 REMARK 200  EXPERIMENT TYPE                : X-RAY DIFFRACTION                  
@@ -141,8 +145,7 @@ REMARK 200  PH                             : 7
 REMARK 200  NUMBER OF CRYSTALS USED        : 3                                  
 REMARK 200                                                                      
 REMARK 200  SYNCHROTRON              (Y/N) : Y; Y                               
-REMARK 200  RADIATION SOURCE               : PETRA II STORAGE RING; PETRA II    
-REMARK 200                                   STORAGE RING                       
+REMARK 200  RADIATION SOURCE               : PETRA II, DESY; PETRA II, DESY     
 REMARK 200  BEAMLINE                       : PETRA1; PETRA1                     
 REMARK 200  X-RAY GENERATOR MODEL          : NULL; NULL                         
 REMARK 200  MONOCHROMATIC OR LAUE    (M/L) : M; M                               
@@ -154,7 +157,7 @@ REMARK 200
 REMARK 200  DETECTOR TYPE                  : CCD; CCD                           
 REMARK 200  DETECTOR MANUFACTURER          : MAR CCD 165 MM; MAR CCD 165 MM     
 REMARK 200  INTENSITY-INTEGRATION SOFTWARE : DENZO                              
-REMARK 200  DATA SCALING SOFTWARE          : SCALEPACK AND SCALA                
+REMARK 200  DATA SCALING SOFTWARE          : SCALEPACK, SCALA                   
 REMARK 200                                                                      
 REMARK 200  NUMBER OF UNIQUE REFLECTIONS   : 156860                             
 REMARK 200  RESOLUTION RANGE HIGH      (A) : 0.480                              
@@ -186,8 +189,8 @@ REMARK 200
 REMARK 200 REMARK: NULL                                                         
 REMARK 280                                                                      
 REMARK 280 CRYSTAL                                                              
-REMARK 280 SOLVENT CONTENT, VS   (%): NULL                                      
-REMARK 280 MATTHEWS COEFFICIENT, VM (ANGSTROMS**3/DA): NULL                     
+REMARK 280 SOLVENT CONTENT, VS   (%): 30.67                                     
+REMARK 280 MATTHEWS COEFFICIENT, VM (ANGSTROMS**3/DA): 1.77                     
 REMARK 280                                                                      
 REMARK 280 CRYSTALLIZATION CONDITIONS: 60% ETHANOL IN WATER, PH 7, VAPOR        
 REMARK 280  DIFFUSION, SITTING DROP, TEMPERATURE 293K                           
@@ -302,42 +305,17 @@ REMARK 500 EXPECTED VALUES PROTEIN: ENGH AND HUBER, 1999
 REMARK 500 EXPECTED VALUES NUCLEIC ACID: CLOWNEY ET AL 1996                     
 REMARK 500                                                                      
 REMARK 500  M RES CSSEQI ATM1   ATM2   ATM3                                     
+REMARK 500    VAL A   8   O   -  C   -  N   ANGL. DEV. = -10.2 DEGREES          
+REMARK 500    PHE A  13   CB  -  CG  -  CD2 ANGL. DEV. =  -4.3 DEGREES          
 REMARK 500    PHE A  13   CB  -  CG  -  CD1 ANGL. DEV. =  -4.6 DEGREES          
+REMARK 500    PHE A  13   CB  -  CG  -  CD1 ANGL. DEV. =   6.1 DEGREES          
+REMARK 500    PHE A  13   O   -  C   -  N   ANGL. DEV. = -11.1 DEGREES          
+REMARK 500    TYR A  29   CB  -  CG  -  CD2 ANGL. DEV. =  -3.8 DEGREES          
+REMARK 500    TYR A  29   CB  -  CG  -  CD2 ANGL. DEV. =  -7.8 DEGREES          
+REMARK 500    TYR A  29   CB  -  CG  -  CD1 ANGL. DEV. =   5.9 DEGREES          
+REMARK 500    TYR A  29   CG  -  CD1 -  CE1 ANGL. DEV. =  -5.0 DEGREES          
 REMARK 500                                                                      
 REMARK 500 REMARK: NULL                                                         
-REMARK 500                                                                      
-REMARK 500 GEOMETRY AND STEREOCHEMISTRY                                         
-REMARK 500 SUBTOPIC: CHIRAL CENTERS                                             
-REMARK 500                                                                      
-REMARK 500 UNEXPECTED CONFIGURATION OF THE FOLLOWING CHIRAL                     
-REMARK 500 CENTER(S) USING IMPROPER CA--C--CB--N CHIRALITY                      
-REMARK 500 FOR AMINO ACIDS AND C1'--O4'--N1(N9)--C2' FOR                        
-REMARK 500 NUCLEIC ACIDS OR EQUIVALENT ANGLE                                    
-REMARK 500 M=MODEL NUMBER; RES=RESIDUE NAME; C=CHAIN                            
-REMARK 500 IDENTIFIER; SSEQ=SEQUENCE NUMBER; I=INSERTION CODE                   
-REMARK 500                                                                      
-REMARK 500 STANDARD TABLE:                                                      
-REMARK 500 FORMAT: (10X,I3,1X,A3,1X,A1,I4,A1,6X,F5.1,6X,A1,10X,A1,3X,A16)       
-REMARK 500                                                                      
-REMARK 500  M RES CSSEQI    IMPROPER   EXPECTED   FOUND DETAILS                 
-REMARK 500    THR A   1        24.9      L          L   OUTSIDE RANGE           
-REMARK 500                                                                      
-REMARK 500 REMARK: NULL                                                         
-REMARK 525                                                                      
-REMARK 525 SOLVENT                                                              
-REMARK 525                                                                      
-REMARK 525 THE SOLVENT MOLECULES HAVE CHAIN IDENTIFIERS THAT                    
-REMARK 525 INDICATE THE POLYMER CHAIN WITH WHICH THEY ARE MOST                  
-REMARK 525 CLOSELY ASSOCIATED. THE REMARK LISTS ALL THE SOLVENT                 
-REMARK 525 MOLECULES WHICH ARE MORE THAN 5A AWAY FROM THE                       
-REMARK 525 NEAREST POLYMER CHAIN (M = MODEL NUMBER;                             
-REMARK 525 RES=RESIDUE NAME; C=CHAIN IDENTIFIER; SSEQ=SEQUENCE                  
-REMARK 525 NUMBER; I=INSERTION CODE):                                           
-REMARK 525                                                                      
-REMARK 525  M RES CSSEQI                                                        
-REMARK 525    HOH A3085        DISTANCE =  7.30 ANGSTROMS                       
-REMARK 525    HOH A3098        DISTANCE =  6.38 ANGSTROMS                       
-REMARK 525    HOH A3118        DISTANCE =  6.89 ANGSTROMS                       
 REMARK 800                                                                      
 REMARK 800 SITE                                                                 
 REMARK 800 SITE_IDENTIFIER: AC1                                                 
@@ -2037,5 +2015,5 @@ CONECT  908  904
 CONECT  909  910  911                                                           
 CONECT  910  909                                                                
 CONECT  911  909                                                                
-MASTER      348    0    4    1    2    0    8    6  451    1   24    4          
+MASTER      322    0    4    1    2    0    8    6  451    1   24    4          
 END                                                                             

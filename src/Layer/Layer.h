@@ -29,6 +29,7 @@
 #include <QString>
 #include <QAction>
 
+#include <QDebug>
 
 namespace IQmol {
 
@@ -108,7 +109,17 @@ namespace Layer {
          QList<T*> findLayers(unsigned int flags = (Nested | Children))
          {
             bool appendSelf(flags & IncludeSelf);
-            
+
+/*
+qDebug() << "Finding children for" << text() << flags;
+qDebug() << "  Visible:      " << bool(flags & Visible);
+qDebug() << "  Nested:       " << bool(flags & Nested);
+qDebug() << "  Children:     " << bool(flags & Children);
+qDebug() << "  Parents:      " << bool(flags & Parents);
+qDebug() << "  IncludeSelf:  " << bool(flags & IncludeSelf);
+qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
+*/
+
             if (flags & SelectedOnly) {
                appendSelf = appendSelf && hasProperty(Selected);
             }
@@ -129,7 +140,6 @@ namespace Layer {
             }else if (flags & Parents)  {
                findParents<T>(hits, flags);
             }
-            
             return hits;
          }
 

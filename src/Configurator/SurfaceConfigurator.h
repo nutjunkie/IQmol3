@@ -44,9 +44,10 @@ namespace Configurator{
       public:
          explicit Surface(Layer::Surface&);
          void setArea(double const);
+         void init();
 
       public Q_SLOTS:
-         void sync();
+         //void sync();
 
       private Q_SLOTS:
          void on_positiveColorButton_clicked(bool);

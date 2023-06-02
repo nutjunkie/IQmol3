@@ -34,6 +34,7 @@
 #include "Data/OrbitalsList.h"
 #include "Data/GeminalOrbitals.h"
 #include "Data/Vibronic.h"
+#include "Data/MacroMolecule.h"
 
 #include "LayerFactory.h"
 #include "AtomLayer.h"
@@ -58,6 +59,7 @@
 #include "NmrLayer.h"
 #include "RemLayer.h"
 #include "VibronicLayer.h"
+#include "MacroMoleculeLayer.h"
 
 #include "Util/QsLog.h"
 
@@ -179,9 +181,11 @@ Layer::List Factory::toLayers(Data::Base& data)
          } break;
 
          case Data::Type::Mesh: {
+            // Note we create  surface on the heap as otherwise it will
+            // go out of scope which can lead to seg faults
             Data::Mesh&  meshData(dynamic_cast<Data::Mesh&>(data));
-            Data::Surface surface(meshData);
-            Layer::Surface* surfaceLayer(new Surface(surface));
+            Data::Surface* surface(new Data::Surface(meshData));
+            Layer::Surface* surfaceLayer(new Surface(*surface));
             surfaceLayer->setCheckState(Qt::Checked);
             layers.append(surfaceLayer);
          } break;
@@ -212,6 +216,11 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(new Vibronic(vibronic));
          } break;
 
+         case Data::Type::MacroMolecule: {
+            Data::MacroMolecule& 
+               macroMolecule(dynamic_cast<Data::MacroMolecule&>(data));
+            layers.append(new MacroMolecule(macroMolecule));
+         } break;
 
 
          default:

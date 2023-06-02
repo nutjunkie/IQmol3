@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_GROUP_H
-#define IQMOL_LAYER_GROUP_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -60,12 +59,15 @@ namespace Layer {
          Atom* rootAtom() const;
          void dump() const;
 
+         void reperceiveBonds();
+
       protected:
          void addAtoms(AtomList const&);
          void addBonds(BondList const&);
          void addPrimitives(PrimitiveList const&);
 
       private:
+         Bond* createBond(Atom* begin, Atom* end, int order);
          AtomList m_atoms;
          BondList m_bonds;
    };
@@ -75,5 +77,3 @@ namespace Layer {
 typedef QList<Layer::Group*> GroupList;
 
 } // end namespace IQmol::Layer 
-
-#endif

@@ -46,7 +46,7 @@ Surface::Surface(Layer::Surface& surface) : m_surface(surface),
 
 
 // Should only be called when the surface is constructed
-void Surface::sync()
+void Surface::init()
 {
    if (m_initialized) return;
    m_initialized = true;

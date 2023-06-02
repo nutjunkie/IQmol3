@@ -47,6 +47,7 @@ Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_min(0.0), m_max(0.0)
 {
    m_description = "Mesh";
    m_meshPositive = mesh;
+
 // add isovalue info to description
    m_isSigned = false;
    m_colors << Preferences::NegativeSurfaceColor();
@@ -72,8 +73,7 @@ void Surface::computeIndexProperty()
 
 bool Surface::hasProperty() const 
 { 
-   return m_meshPositive.hasProperty(Mesh::ScalarField) || 
-          m_meshPositive.hasProperty(Mesh::ScalarField);
+   return m_meshPositive.hasProperty(Mesh::ScalarField);
 }
 
 
@@ -126,15 +126,19 @@ void Surface::setColors(QList<QColor> const& colors)
 
 double Surface::area() const
 {
-   return m_meshPositive.surfaceArea() + m_meshNegative.surfaceArea();
+   double area(m_meshPositive.surfaceArea());
+   if (m_isSigned) area += m_meshNegative.surfaceArea();
+   return area;
 }
 
 
 void Surface::dump() const
 {
    qDebug() << " --- Surface --- ";
+   qDebug() << "Data::Surface ptr" << this;
+   qDebug() << "Area:" << area();
    m_meshPositive.dump();   
-   m_meshNegative.dump();   
+   if (m_isSigned) m_meshNegative.dump();   
    qDebug() << "Color list has" << m_colors.size() << "colors:";
    qDebug() << m_colors;
    qDebug() << "Surface is visible?" << m_isVisible;

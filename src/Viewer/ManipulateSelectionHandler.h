@@ -39,7 +39,7 @@ namespace Handler {
    class ManipulateSelection : public Base {
 
       public: 
-         ManipulateSelection(Viewer* viewer) : Base(viewer) { }
+         ManipulateSelection(Viewer* viewer) : Base(viewer), m_cmd(0) { }
          Cursors::Type cursorType() const { return Cursors::OpenHandSelection; }
 
          void mousePressEvent(QMouseEvent *);

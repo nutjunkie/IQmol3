@@ -22,6 +22,7 @@
 
 #include "UndoCommands.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/SystemLayer.h"
 #include "Layer/AtomLayer.h"
 #include "Layer/BondLayer.h"
 #include "Layer/GroupLayer.h"
@@ -139,7 +140,6 @@ void EditPrimitives::undo()
 }
 
 
-
 // --------------- MoveObjects ---------------
 MoveObjects::MoveObjects(Layer::Molecule* molecule, QString const& text, bool const animate,
    bool const invalidateSymmetry) : QUndoCommand(text), m_molecule(molecule), 
@@ -242,6 +242,56 @@ void MoveObjects::loadFrames(QList<Frame> const& frames)
        m_objectList[i]->setFrame(frames[i]);
    }
    if (m_molecule) m_molecule->setReferenceFrame(frames.last());
+}
+
+
+
+// --------------- MoveSystemObjects ---------------
+MoveSystemObjects::MoveSystemObjects(Layer::System* system, QString const& text) :
+   QUndoCommand(text), 
+   m_system(system), 
+   m_finalStateSaved(false)
+{ 
+   m_objectList = m_system->findLayers<Layer::GLObject>(Layer::Children);
+   saveFrames(m_initialFrames);
+}
+
+
+void MoveSystemObjects::redo() 
+{
+   if (!m_finalStateSaved) {
+      saveFrames(m_finalFrames);
+      m_finalStateSaved = true;
+   }
+
+   loadFrames(m_finalFrames);
+   m_system->softUpdate();
+}
+
+
+void MoveSystemObjects::undo() 
+{
+   loadFrames(m_initialFrames);
+   m_system->softUpdate();
+}
+
+
+void MoveSystemObjects::saveFrames(QList<Frame>& frames)
+{
+   frames.clear();
+   for (int i = 0; i < m_objectList.size(); ++i) {
+       frames.append(m_objectList[i]->getFrame());
+   }
+   //if (m_system) frames.append(m_system->getReferenceFrame());
+}
+
+
+void MoveSystemObjects::loadFrames(QList<Frame> const& frames)
+{
+   for (int i = 0; i < m_objectList.size(); ++i) {
+       m_objectList[i]->setFrame(frames[i]);
+   }
+   //f (m_system) m_system->setReferenceFrame(frames.last());
 }
 
 
@@ -359,7 +409,6 @@ void ChangeBondOrder::undo()
 }
 
 
-
 // --------------- AddMolecule ---------------
 AddMolecule::AddMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
    : m_molecule(molecule), m_parent(parent), m_deleteMolecule(false)
@@ -441,6 +490,67 @@ void RemoveMolecule::undo()
    QLOG_INFO() << "Adding molecule" << m_molecule->text() << m_molecule;
    m_parent->appendRow(m_molecule);
    m_molecule->updated();
+}
+
+
+
+// --------------- AddSystem ---------------
+AddSystem::AddSystem(Layer::System* system, QStandardItem* parent) 
+   : m_system(system), m_parent(parent)
+{ 
+   QString s;
+   if (m_system->fileName().isEmpty()) {
+      s = "New molecule";
+   }else {
+      s = "Load file " + m_system->fileName();
+   }
+   setText(s);
+}
+
+
+void AddSystem::redo()
+{
+   QLOG_INFO() << "Adding system" << m_system->text() << m_system;
+   m_parent->appendRow(m_system);
+   m_system->updated();
+}
+
+
+void AddSystem::undo()
+{
+   QLOG_INFO() << "Removing system" << m_system->text() << m_system;
+   m_parent->takeRow(m_system->row());
+   m_system->updated();
+}
+
+
+// --------------- RemoveSystem ---------------
+RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent) 
+   : m_system(system), m_parent(parent)
+{ 
+   QString s;
+   if (m_system->fileName().isEmpty()) {
+      s = "Remove molecule";
+   }else {
+      s = "Remove " + m_system->fileName();
+   }
+   setText(s);
+}
+
+
+void RemoveSystem::redo()
+{
+   QLOG_INFO() << "Removing molecule" << m_system->text() << m_system;
+   m_parent->takeRow(m_system->row());
+   m_system->updated();
+}
+
+
+void RemoveSystem::undo()
+{
+   QLOG_INFO() << "Adding molecule" << m_system->text() << m_system;
+   m_parent->appendRow(m_system);
+   m_system->updated();
 }
 
 

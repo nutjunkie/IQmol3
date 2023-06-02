@@ -1680,7 +1680,7 @@ void Molecule::reindexAtomsAndBonds()
 }
 
 
-double Molecule::radius()
+double Molecule::radius() 
 {
    double radius(0);
    PrimitiveList primitives(findLayers<Primitive>(Children | Visible));

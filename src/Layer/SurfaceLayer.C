@@ -75,6 +75,7 @@ Surface::Surface(Data::Surface& surface) : m_surface(surface), m_configurator(*t
    setData(m_surface.description(), Qt::ToolTipRole);
 
    setAlpha(m_surface.opacity()); 
+   recompile();
    updated();
 }
 
@@ -163,7 +164,7 @@ void Surface::setColors(QColor const& negative, QColor const& positive)
    m_colorPositive[1] = positive.greenF();
    m_colorPositive[2] = positive.blueF();
 
-qDebug() << "Need to sync colors to Data::Surface";
+//qDebug() << "Need to sync colors to Data::Surface";
 return;
    // For some bizarre reason, calling the Data::Surface::setColors causes the
    // negative and positive colors (which are supposed to be const!) to

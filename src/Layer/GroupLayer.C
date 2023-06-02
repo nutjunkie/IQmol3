@@ -29,6 +29,11 @@
 #include "Util/QMsgBox.h"
 #include <QFileInfo>
 
+#include "openbabel/mol.h"
+#include "openbabel/atom.h"
+#include "openbabel/bond.h"
+#include "openbabel/obiter.h"
+
 #include <QtDebug>
 
 
@@ -36,6 +41,8 @@ using namespace qglviewer;
 
 namespace IQmol {
 namespace Layer {
+
+typedef QMap<OpenBabel::OBAtom*, Atom*>  AtomMap;
 
 
 Group::Group(QString const& label) : Primitive(label)
@@ -124,6 +131,7 @@ void Group::addPrimitives(PrimitiveList const& primitives)
 
    addAtoms(atoms);
    addBonds(bonds);
+   reperceiveBonds();
 }
 
 
@@ -133,6 +141,7 @@ void Group::addAtoms(AtomList const& atoms)
    AtomList::const_iterator atom;
    for (atom = atoms.begin(); atom != atoms.end(); ++atom) {
        (*atom)->setReferenceFrame(&m_frame);
+       (*atom)->setDrawMode(Primitive::Tubes);
        m_atoms.append(*atom);
    }
 }
@@ -206,6 +215,9 @@ PrimitiveList Group::ungroup()
 
 void Group::draw()
 {
+   // Only draw if selected
+   if (!isSelected()) return;
+
    glPushMatrix();
    glMultMatrixd(m_frame.matrix());
 
@@ -225,6 +237,7 @@ void Group::draw()
 
 void Group::drawSelected()
 {
+   return;
    glPushMatrix();
    glMultMatrixd(m_frame.matrix());
 
@@ -330,6 +343,61 @@ Atom* Group::rootAtom() const
    Atom* atom(0);
    if (!m_atoms.isEmpty()) atom = m_atoms.first();
    return atom;
+}
+
+
+Bond* Group::createBond(Atom* begin, Atom* end, int const order)
+{
+   double bondScale(1.0);
+   Bond* bond(new Bond(begin, end));
+   bond->setOrder(order);
+   bond->setDrawMode(m_drawMode);
+   bond->setScale(bondScale);
+   return bond;
+}
+
+
+void Group::reperceiveBonds()
+{
+   AtomMap atomMap;
+
+   OpenBabel::OBMol* obMol(new OpenBabel::OBMol());
+   obMol->BeginModify();
+
+   for (auto atomIter = m_atoms.begin(); atomIter != m_atoms.end(); ++atomIter) {
+       OpenBabel::OBAtom* obAtom = obMol->NewAtom();
+       atomMap.insert(obAtom, *atomIter);
+       qglviewer::Vec pos = (*atomIter)->getPosition();
+       int atomicNumber((*atomIter)->getAtomicNumber());
+       obAtom->SetAtomicNum(atomicNumber);
+       obAtom->SetVector(pos.x, pos.y, pos.z);
+   }
+
+   obMol->EndModify();
+   obMol->ConnectTheDots();
+   obMol->PerceiveBondOrders();
+
+   for (auto bond : m_bonds) delete bond;
+   m_bonds.clear();
+
+   FOR_BONDS_OF_MOL(obBond, obMol) {
+      Atom* begin = atomMap.value(obBond->GetBeginAtom());
+      Atom* end   = atomMap.value(obBond->GetEndAtom());
+      int   order = obBond->GetBondOrder();
+
+      if (!begin || !end) {
+         QString msg("Error encountered converting from OBMol object");
+         QMsgBox::critical(0, "IQmol", msg);
+         return;
+      }
+
+      Bond* bond(createBond(begin, end, order));
+      bond->setReferenceFrame(&m_frame);
+      bond->setDrawMode(Primitive::Tubes);
+      m_bonds.append(bond);
+   } 
+
+   delete obMol;
 }
 
 } } // end namespace IQmol::Layer

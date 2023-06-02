@@ -38,6 +38,11 @@ QString toString(ID const id)
       case AtomList:                   s = "Data::List<Atom>";                break;
       case QmAtom:                     s = "Data::QmAtom";                    break;
       case QmAtomList:                 s = "Data::List<QmAtom>";              break;
+      case MmAtom:                     s = "Data::MmAtom";                    break;
+      case MmAtomList:                 s = "Data::List<MmAtom>";              break;
+      case MacroMolecule:              s = "Data::MacroMolecule";             break;
+      case Group:                      s = "Data::Group";                     break;
+      case Pdb:                        s = "Data::Pdb";                       break;
 
       case Bank:                       s = "Data::Bank";                      break;
       case PointCharge:                s = "Data::PointCharge";               break;

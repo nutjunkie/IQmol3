@@ -21,46 +21,44 @@
 
 ********************************************************************************/
 
-#include "DataList.h"
+#include "Group.h"
 
 
 namespace IQmol {
 namespace Data {
 
-
-   // Base class for QM and MM atoms.  Note that position information is
-   // factored out into a geometry object.
-   class Atom : public Base {
+   // Data class representing a large system
+   class MacroMolecule: public Base {
 
       public:
-         Atom(unsigned const Z = 0, QString const& label = QString()) 
-          : m_atomicNumber(Z), m_label(label) { }
+         MacroMolecule(QString const& label) : m_charge(0), m_label(label) { }
 
-         Atom(QString const& symbol, QString const& label = QString());
+         Type::ID typeID() const { return Type::MacroMolecule; }
 
-         Type::ID typeID() const { return Type::Atom; }
+         QString const& label() const { return m_label; }
 
-         unsigned atomicNumber() const { return m_atomicNumber; }
-         QString getLabel() { return m_label; }
- 
-         static unsigned atomicNumber(QString const&);
+      
+         QList<Data::Group*> const& groups() const { return m_groups; }
 
+         void append(Data::Group* group) 
+         {
+            m_charge += group->charge();
+            m_groups.append(group);
+         }
+         
          void serialize(InputArchive& ar, unsigned const version = 0)  { }
          void serialize(OutputArchive& ar, unsigned const version = 0)  { }
 
-         void dump() const {  }
+         void dump() const 
+         {  
+             qDebug() <<  m_label;
+             for (auto group : m_groups) group->dump();
+         }
 
-      protected:
-         QString  m_label;
-         unsigned m_atomicNumber;
-   };
-
-
-   class AtomList : public List<Atom> 
-   {
-      public:
-         // Why is a fully qualified namespace required for Type with Qt >= 6.0
-         IQmol::Data::Type::ID typeID() const { return IQmol::Data::Type::AtomList; }
+      private:
+         int m_charge;
+         QString m_label;
+         QList<Data::Group*> m_groups;
    };
 
 } } // end namespace IQmol::Data

@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
 
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -20,23 +20,12 @@
 
 ********************************************************************************/
 
-#include "Atom.h"
-#include <openbabel/elements.h>
+#include "PdbData.h"
+#include <QDebug>
 
 
 namespace IQmol {
 namespace Data {
 
-unsigned Atom::atomicNumber(QString const& symbol)
-{
-   unsigned z(OpenBabel::OBElements::GetAtomicNum(symbol.toLatin1().data()));
-   return z;
-}
-
-
-Atom::Atom(QString const& symbol, QString const& label) : m_label(label)
-{
-   m_atomicNumber = atomicNumber(symbol);
-}
 
 } } // end namespace IQmol::Data

@@ -42,12 +42,15 @@ namespace Layer {
             Base(label, parent)
          {
             setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable );
+            setCheckState(Qt::Checked);
          }
 
          ~Component() { }
 
          //virtual void loadFromFile(QString const& filePath) = 0
          //void align(QList<qglviewer::Vec> const& current);
+
+		 virtual double radius() = 0;
 
          void draw() const
          {
@@ -57,15 +60,9 @@ namespace Layer {
             for (auto iter : m_visibleObjects) iter->draw();
          }
 
-         void select() 
-         {
-            for (auto iter : m_visibleObjects) iter->select();
-         }
+         void select() { for (auto iter : m_visibleObjects) iter->select(); }
 
-         void deselect()
-         {
-            for (auto iter : m_visibleObjects) iter->deselect();
-         }
+         void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
 
          void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
 
@@ -77,15 +74,28 @@ namespace Layer {
                Layer::Visible | Layer::Nested);
          }
 
+         qglviewer::Vec centerOfNuclearCharge();
+
+         void translate(qglviewer::Vec const& displacement);
+
+         void rotate(qglviewer::Quaternion const& rotation);
+
+         void alignToAxis(qglviewer::Vec const& point, qglviewer::Vec const& axis);
+
+         void rotateIntoPlane(qglviewer::Vec const& pt, qglviewer::Vec const& axis, 
+            qglviewer::Vec const& normal);
+
       Q_SIGNALS:
          void useShader(QString const&) const;
          void useDrawStyle(DrawStyle const) const;
          void useResolution(unsigned const) const;
-    
+         void softUpdate(); // Issue if the number of primitives does not change
+
       private:
-         QString  m_shaderKey;
-         unsigned m_resolution;
+         QString   m_shaderKey;
+         unsigned  m_resolution;
          DrawStyle m_drawStyle;
+         //qglviewer::Frame m_frame;
          GLObjectList m_visibleObjects;
    };
 

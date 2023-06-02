@@ -113,5 +113,4 @@ QStringList PrintMatrix(Matrix const& matrix, unsigned const columns)
    return list;
 }
 
-
 } // end namespace IQmol

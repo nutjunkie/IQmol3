@@ -26,6 +26,7 @@
 #include "Data/Mesh.h"
 #include "Math/Function.h"
 
+#include <QDebug>
 
 namespace IQmol {
 namespace Data {

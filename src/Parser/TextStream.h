@@ -155,7 +155,8 @@ namespace Parser {
              return m_previousLine;
          }
 
-
+         void rewind() { seek(0); }
+        
       private:
          int m_lineCount;
          QString m_previousLine;

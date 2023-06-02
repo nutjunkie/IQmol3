@@ -22,25 +22,73 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+#include "Data/Bank.h"
+#include <QFileInfo>
 
+
+using qglviewer::Vec;
+
+class QUndoCommand;
 
 namespace IQmol {
-namespace Layer {
 
-   // This is the top-level Layer to handle a collection of Components
-   class System : public Base {
+   namespace Layer {
 
-      Q_OBJECT
+      // This is the top-level Layer to handle a collection of Components. 
+      // It will eventually supercede the Molecule class
+      class System : public Base {
 
-      public:
-         explicit System(QString const& label = QString(), QObject* parent = 0);
+         Q_OBJECT
 
-         ~System();
+         public:
+            explicit System(QString const& label = QString(), QObject* parent = 0);
 
-         void draw() const;
+            QString fileName() const { return m_inputFile.fileName(); }
 
-      private:
-         ComponentList m_componentList;
-   };
+            void setFile(QString const& fileName) 
+            {
+               m_inputFile.setFile(fileName);
+               setText(m_inputFile.completeBaseName());
+            }
 
-} } // end namespace IQmol::Layer
+            double radius();
+
+            qglviewer::Vec center();
+
+            void appendData(Data::Bank&);
+
+            void translateToCenter(GLObjectList const& selection = GLObjectList());
+
+            //qglveiwer::Frame const& getReferenceFrame() const { return m_frame; }
+
+            //void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
+    
+
+         Q_SIGNALS:
+            void softUpdate(); // Issue when number of primitives does not change
+            void postCommand(QUndoCommand*);
+
+         private:
+            void translate(Vec const&);
+
+            void rotate(qglviewer::Quaternion const&);
+
+            void alignToAxis(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0, 0.0, 1.0));
+
+            void rotateIntoPlane(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0, 0.0, 1.0),
+               qglviewer::Vec const& normal = qglviewer::Vec(0.0, 1.0, 0.0));
+
+            void appendData(Layer::List& list);
+            QFileInfo m_inputFile;
+
+            //qglveiwer::Frame m_frame;
+            
+      };
+
+   } // end namespace Layer
+
+   typedef QList<Layer::System*> SystemList;
+
+} // end namespace IQmol

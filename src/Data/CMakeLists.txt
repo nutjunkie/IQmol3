@@ -39,6 +39,7 @@ set( SOURCES
    Orbitals.C
    OrbitalFactory.C
    OrbitalsList.C
+   PdbData.C
    PointCharge.C
    PointGroup.C
    PovRay.C

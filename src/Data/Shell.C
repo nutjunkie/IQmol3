@@ -285,7 +285,7 @@ Shell::Shell(AngularMomentum L, unsigned const atomIndex, Vec const& position,
       }
    }
 
-   m_values.reserve(nFunctions(L));
+   m_values.resize(nFunctions(L));
    // This is nasty.  All input data are in angstroms, except the contraction
    // coefficients as they need to be tweaked based on the exponent (in
    // angstroms), so we do it here.

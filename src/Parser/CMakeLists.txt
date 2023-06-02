@@ -8,6 +8,7 @@ set( HEADERS
 
 set( SOURCES
    CartesianCoordinatesParser.C
+   CPdbParser.C
    CubeParser.C
    EfpFragmentParser.C
    ExternalChargesParser.C

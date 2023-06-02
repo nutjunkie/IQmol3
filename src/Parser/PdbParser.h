@@ -27,20 +27,23 @@
 namespace IQmol {
 
 namespace Data {
-  class Geometry;
+  class Group;
 }
+
 
 namespace Parser {
 
-   /// Parses a PDB data file.  
-
+   // Parses a PDB data file.  
    class Pdb: public Base {
 
       public:
          bool parse(TextStream&);
 
       private:
-         bool parseATOM(QString const& line, Data::Geometry&);
+         QString m_label;
+         bool parseATOM(QString const& line, Data::Group&);
+         bool parseCOMPND(QString const& line);
+         bool parseCartoon(TextStream&);
    };
 
 } } // end namespace IQmol::Parser

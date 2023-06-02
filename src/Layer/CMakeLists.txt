@@ -31,7 +31,7 @@ set( HEADERS
    InfoLayer.h
    IsotopesLayer.h
    Layer.h
-   MacroMolecule.h
+   MacroMoleculeLayer.h
    MolecularSurfacesLayer.h
    MoleculeLayer.h
    NaturalBondOrbitalsLayer.h
@@ -52,6 +52,8 @@ set( SOURCES
    AxesMeshLayer.C
    BackgroundLayer.C
    BondLayer.C
+   Cartoon.C
+   ComponentLayer.C
    CanonicalOrbitalsLayer.C
    ChargeLayer.C
    ClippingPlaneLayer.C
@@ -73,6 +75,7 @@ set( SOURCES
    IsotopesLayer.C
    Layer.C
    LayerFactory.C
+   MacroMoleculeLayer.C
    MolecularSurfacesLayer.C
    MoleculeLayer.C
    NaturalBondOrbitalsLayer.C

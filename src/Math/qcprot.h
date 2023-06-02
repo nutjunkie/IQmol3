@@ -1,7 +1,6 @@
 /*******************************************************************************
  *  -/_|:|_|_\- 
- *
- *  File:           qcprot.h
+ * *  File:           qcprot.h
  *
  *  Function:       Rapid calculation of the least-squares rotation using a 
  *                  quaternion-based characteristic polynomial and 
