@@ -293,9 +293,9 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     char sheetChain[2];
     std::vector<Data::SS> secStructs;
 
-    Data::residue *currentResidue = NULL;
-    Data::chain *currentChain = NULL;
-    Data::atom *currentAtom = NULL;
+    Data::residue* currentResidue(0);
+    Data::chain*   currentChain(0);
+    Data::atom*    currentAtom(0);
     
     // Setting Parsing Options
     int chindex = 0;
@@ -348,11 +348,11 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
             if (currentChain == NULL || currentChain->id != chainId) {
                 Data::chain *myChain = (Data::chain *)calloc(1, sizeof(Data::chain));
                 myChain->id = chainId;
-                myChain->residues = NULL;
-                myChain->__capacity = 0;
+                //myChain->residues = NULL;
+                //myChain->__capacity = 0;
 
                 data->appendChain(*myChain);
-                currentChain = &(P->chains[P->size - 1]);
+                currentChain = &(P->chains[P->chains.size() - 1]);
                 currentAtom = NULL;
                 currentResidue = NULL;
             }
@@ -362,16 +362,16 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
                 Data::residue *myRes = (Data::residue *)calloc(1, sizeof(Data::residue));
                 myRes->id = resId;
                 myRes->idx = resIdx++;
-                myRes->atoms = NULL;
-                myRes->size = 0;
-                myRes->__capacity = 0;
+                //myRes->atoms = NULL;
+                //myRes->size = 0;
+                //myRes->__capacity = 0;
                 myRes->next = NULL;
                 myRes->prev = currentResidue;
                 myRes->ss = COIL;
 
                 data->appendResiduetoChain(currentChain, *myRes);
 
-                currentResidue = &(currentChain->residues[currentChain->size-1]);
+                currentResidue = &(currentChain->residues[currentChain->residues.size()-1]);
 
                 strncpy(currentResidue->type, resType, 5);
                 if (currentResidue->prev) currentResidue->prev->next=currentResidue;
@@ -389,13 +389,13 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
                 myAtom.prev = currentAtom;
                 myAtom.res = currentResidue;
                 data->appendAtomtoResidue(currentResidue, myAtom);
-                currentAtom = &(currentResidue->atoms[currentResidue->size-1]);
+                currentAtom = &(currentResidue->atoms[currentResidue->atoms.size()-1]);
                 strncpy(currentAtom->type, atomType, 5);
                 strncpy(currentAtom->element, atomElement, 3);
                 if (currentAtom->prev) currentAtom->prev->next = currentAtom;
             }
-            
         }
+
         if (!strncmp(line, "HELIX ", 6)) {
             getHelix(line, &helixStart, &helixStop, helixChain);
             Data::SS curSS; 
@@ -441,13 +441,13 @@ bool Pdb::parseCartoon(TextStream& textStream)
 
    parsePDB(fname, pdbData, options);
 
-   for (int chainId = 0; chainId < P->size; chainId++) {
+   for (int chainId = 0; chainId < P->chains.size(); chainId++) {
        Data::chain *C = &P->chains[chainId];
-       pdbData->addChain(C->size);
-       for (int r = 0; r < C->size; r++) {
+       pdbData->addChain(C->residues.size());
+       for (int r = 0; r < C->residues.size(); r++) {
            Data::residue *R = &C->residues[r];
-           Data::atom *CA = Data::Pdb::getAtom(*R, (char *)"CA");
-           Data::atom *O  = Data::Pdb::getAtom(*R, (char *)"O");
+           Data::atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
+           Data::atom const* O  = Data::Pdb::getAtom(*R, (char *)"O");
            char ss = R->ss;
 
            if (CA == 0 || O == 0) {

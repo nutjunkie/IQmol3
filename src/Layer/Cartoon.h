@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Math/v3.h"
 #include "Math/Spline.h"
-#include "Parser/PdbParser.h"
 #include "Data/CMesh.h"
 #include "Data/PdbData.h"
 
@@ -45,9 +44,9 @@ inline PeptidePlane NewPeptidePlane(const Data::residue &r1, const Data::residue
 {
     PeptidePlane newPP;
 
-    Data::atom *CA1 = Data::Pdb::getAtom(r1, (char *)"CA");
-    Data::atom *O1  = Data::Pdb::getAtom(r1, (char *)"O");
-    Data::atom *CA2 = Data::Pdb::getAtom(r2, (char *)"CA");
+    Data::atom const*CA1 = Data::Pdb::getAtom(r1, (char *)"CA");
+    Data::atom const*O1  = Data::Pdb::getAtom(r1, (char *)"O");
+    Data::atom const*CA2 = Data::Pdb::getAtom(r2, (char *)"CA");
 
     if(CA1 == NULL || O1 == NULL || CA2 == NULL){
         std::cerr<<"Failed to get all the atoms for residue "<<r1.id<<std::endl;
@@ -88,30 +87,20 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
     Data::residue *r1 = (Data::residue *)calloc(1, sizeof(Data::residue));
     r1->id = idr1;
     r1->idx = idr1++;
-    r1->atoms = NULL;
-    r1->size = 0;
-    r1->__capacity = 0;
-    r1->next = NULL;
+    r1->next = 0;
     r1->ss = ssr1;
 
     Data::residue *r2 = (Data::residue *)calloc(1, sizeof(Data::residue));
     r2->id = idr2;
     r2->idx = idr2++;
-    r2->atoms = NULL;
-    r2->size = 0;
-    r2->__capacity = 0;
-    r2->next = NULL;
+    r2->next = 0;
     r2->ss = ssr2;
 
     Data::residue *r3 = (Data::residue *)calloc(1, sizeof(Data::residue));
     r3->id = idr3;
     r3->idx = idr3++;
-    r3->atoms = NULL;
-    r3->size = 0;
-    r3->__capacity = 0;
-    r3->next = NULL;
+    r3->next = 0;
     r3->ss = ssr3;
-
 
     v3 ca1 = v3(r1CA[0], r1CA[1], r1CA[2]);
     v3 o1 = v3(r1O[0], r1O[1], r1O[2]);
@@ -135,8 +124,9 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
     return newPP;
 }
 
-inline void Transition(const PeptidePlane &pp, char &type1, char &type2) {
 
+inline void Transition(const PeptidePlane &pp, char &type1, char &type2) 
+{
     char t1 = pp.Residue1->ss;
     char t2 = pp.Residue2->ss;
     char t3 = pp.Residue3->ss;
@@ -150,7 +140,9 @@ inline void Transition(const PeptidePlane &pp, char &type1, char &type2) {
     }
 }
 
-inline void Flip(PeptidePlane &pp) {
+
+inline void Flip(PeptidePlane &pp) 
+{
     pp.Side = pp.Side * -1;
     pp.Normal = pp.Normal * -1;
     pp.Flipped = !pp.Flipped;

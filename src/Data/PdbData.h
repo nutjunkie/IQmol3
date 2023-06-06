@@ -51,25 +51,27 @@ namespace Data {
       int id;
       int idx;
       char type[5];
-      atom *atoms;
-      int size;
-      int __capacity;
+      //atom *atoms;
+      std::vector<atom> atoms;
+      //int size;
+      //int __capacity;
       char ss;
       residue *next, *prev;
    };
 
    struct chain {
       char id;
-      residue *residues;
-      int size;
-      int __capacity;
+      //residue *residues;
+      std::vector<residue> residues;
+      //int size;
+      //int __capacity;
    };
 
    struct pdb {
-      chain* chains;
-      int  size;
-      int  __capacity;
-//      char name[32];
+      std::vector<chain> chains;
+      //chain* chains;
+      //int  size;
+      //int  __capacity;
    };
 
    struct SS {
@@ -87,18 +89,17 @@ namespace Data {
       public:
          Type::ID typeID() const { return Type::Pdb; }
 
-         Pdb();
+         Pdb() { }
+         ~Pdb() { }
 
-         ~Pdb();
-
-         pdb* ptr() { return m_pdb; }
+         pdb* ptr() { return &m_pdb; }
          float* cao() { return &m_caoPositions[0]; }
          int*   nres() { return &m_nResPerChain[0]; }
          char*  ss() { return &m_secondaryStructure[0]; }
 
-         unsigned nChains() const { return m_pdb->size; }
+         unsigned nChains() const { return m_pdb.chains.size(); }
 
-         void dump() const { }
+         void dump() const;
 
          void addResidue(v3 const& posO, v3 const& posCA, char const secondaryStructure);
 
@@ -108,7 +109,7 @@ namespace Data {
          void appendResiduetoChain (Data::chain *C, Data::residue newResidue);
          void appendAtomtoResidue (Data::residue *R, Data::atom newAtom);
 
-         static Data::atom* getAtom (Data::residue const& resA, char const* atomType);
+         static Data::atom const* getAtom (Data::residue const& resA, char const* atomType);
 
          void fillSS(std::vector<Data::SS> secStructs);
 
@@ -120,9 +121,8 @@ namespace Data {
          {
          }
 
-         void writePDB (const char *filename, const IQmol::Data::pdb *P);
-         void writeFilePDB (FILE *F, const IQmol::Data::pdb *P);
-         void printPDB (IQmol::Data::pdb *P);
+         void write(const char *filename) const;
+         void writeFile(FILE *F) const;
 
       private:
          
@@ -130,7 +130,7 @@ namespace Data {
          void updateResiduePointers(Data::chain *C);
          Data::chain* getChain(char *c);
 
-         pdb* m_pdb;
+         pdb m_pdb;
 
          std::vector<int>   m_nResPerChain;
          std::vector<float> m_caoPositions;
