@@ -180,52 +180,63 @@ void InputDialog::initializeToolBoxOptions()
 }
 
 
-void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& jobInfo)
+void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobInfo)
 {
-   m_qchemJobInfo = jobInfo;
-
+  
+   m_qchemJobInfo = qchemJobInfo;
+   qDebug() << "Setting member qcheminfo";
    m_fileIn.setFile(m_qchemJobInfo.baseName() + ".inp");
+   qDebug() << "getting input file";
 
    m_ui.jobList->setCurrentIndex(0);
    if (!m_currentJob) {
       QLOG_DEBUG() << "Attempt to set JobInfo with no current Job";
       return;
    }
-
+   qDebug() << "trying coordinates";
    m_currentJob->setCoordinates(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::Coordinates));
-
+      m_qchemJobInfo.get("Coordinates"));
+   qDebug() << "getting coordinates";
    QString inputFileTemplate = 
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::InputFileTemplate);
+      m_qchemJobInfo.get("InputFileTemplate");
    if (!inputFileTemplate.isEmpty()) {
+      qDebug() << "inputfilenot empty";
       loadPreviewText(inputFileTemplate);
+      qDebug() << "load succes";
    }
 
    m_currentJob->setCoordinatesFsm(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::CoordinatesFsm));
+      m_qchemJobInfo.get("CoordinatesFsm"));
+   qDebug() << "coordinates fsm";
    m_currentJob->setEfpFragments(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::EfpFragments));
+      m_qchemJobInfo.get("EfpFragments"));
+    qDebug() << "coordinates efp";
    m_currentJob->setConstraints(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::Constraints));
+      m_qchemJobInfo.get("Constraints"));
+       qDebug() << "constraints";
    m_currentJob->setScanCoordinates(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::ScanCoordinates));
+      m_qchemJobInfo.get("ScanCoordinates"));
+    qDebug() << "scan coordinates ";
    m_currentJob->setEfpParameters(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::EfpParameters));
+      m_qchemJobInfo.get("EfpParameters"));
+       qDebug() << "coordinates efp parameters";
    m_currentJob->setExternalCharges(
-      m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::ExternalCharges));
+      m_qchemJobInfo.get("ExternalCharges"));
+       qDebug() << "external charges";
 
-
+   qDebug() << "getting known quantaties";
    // Solvent section
 
    // Add an update for the current solvent radius
-   QString s(m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::OnsagerRadius));
+   QString s(m_qchemJobInfo.get("OnsagerRadius"));
+   qDebug() << "onsager radius (not implemented?)";
    bool ok(true);
    double r(s.toDouble(&ok));
    Action* action = new Action(
       boost::bind(&QDoubleSpinBox::setValue, m_ui.qui_solvent_cavityradius, r) );
    m_resetActions.push_back(action);
 
-   QString isotopes(m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::Isotopes));
+   QString isotopes(m_qchemJobInfo.get("Isotopes"));
    m_currentJob->setGenericSection("isotopes", isotopes);
    
 
@@ -273,18 +284,18 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& jobInfo)
       m_currentJob->setOption("GUI",  "2");
       m_currentJob->setOption("EFP_FRAGMENTS_ONLY", "false");
 
-      QString frag(m_qchemJobInfo.get(IQmol::Process::QChemJobInfo::EfpFragments));
+      QString frag(m_qchemJobInfo.get("EfpFragments"));
       m_ui.efp_fragments_only->setEnabled(!frag.isEmpty());
    }
 
    // We need the temporaries as setting the charge will overwrite the
    // QChemJobInfo::multiplicity
-   int charge(m_qchemJobInfo.getCharge());
-   int multiplicity(m_qchemJobInfo.getMultiplicity());
+   int charge(m_qchemJobInfo.getInt("Charge"));
+   int multiplicity(m_qchemJobInfo.getInt("Multiplicity"));
    m_ui.qui_charge->setValue(charge);
    m_ui.qui_multiplicity->setValue(multiplicity);
 
-   int nElectrons(m_qchemJobInfo.getNElectrons());
+   int nElectrons(m_qchemJobInfo.getInt("NElectrons"));
    int nAlpha(nElectrons+multiplicity-1);
    nAlpha /= 2;
 
@@ -500,14 +511,16 @@ bool InputDialog::saveFile(bool prompt)
 void InputDialog::addNewJob() 
 {
    capturePreviewTextChanges();
-
    Job* job;
+   qDebug() << "pointer to job";
    if (m_currentJob) {
+       qDebug() << "current job exists";
       job = new Job(*m_currentJob);
       job->setCoordinates("read");
       job->setComment("");
    }else {
       job = new Job();
+       qDebug() << "current job does not exist";
    }
 
    addJobToList(job);
@@ -518,19 +531,26 @@ void InputDialog::addNewJob()
    // The default Molecule section is set to "read", but 
    // for the first job we specify things explicitly.
    if (m_jobs.size() == 1) {
+       qDebug() << "adding m_qchemjobinfo";
       setQChemJobInfo(m_qchemJobInfo); 
+       qDebug() << "adding qchem job worked";
    }
 }
 
 
 void InputDialog::resetInput() 
 {
-   m_qchemJobInfo.set(IQmol::Process::QChemJobInfo::InputFileTemplate, "");
+   
+   m_qchemJobInfo.set("InputFileTemplate", "");
+   qDebug() << "Setting QChemJobInfo field done";
    resetControls();
    bool prompt(false);
    deleteAllJobs(prompt);
+    qDebug() << "delete all jobs";
    addNewJob();
+   qDebug() << "added new job";
    updatePreviewText();
+   qDebug() << "settingtemplate";
 }
 
 
@@ -920,8 +940,11 @@ void InputDialog::submitJob()
    updatePreviewText();
 
    m_qchemJobInfo.set(
-      IQmol::Process::QChemJobInfo::InputString, generateInputString());
+      "InputString", generateInputString());
+   qDebug() << "writing input string";
    m_qchemJobInfo.setServerName(m_ui.serverCombo->currentText());
+   qDebug() << "writing servername string";
+
    submitJobRequest(m_qchemJobInfo);
 }
 

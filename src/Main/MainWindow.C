@@ -23,6 +23,7 @@
 #include "MainWindow.h"
 #include "ServerConfigurationListDialog.h"
 #include "JobMonitor.h"
+#include "QChemJobInfo.h"
 #include "ServerRegistry.h" 
 #include "InsertMoleculeDialog.h" 
 #include "QMsgBox.h"
@@ -982,9 +983,9 @@ void MainWindow::showQChemUI()
 }
 
 
-void MainWindow::submitJob(IQmol::Process::QChemJobInfo& qchemJobInfo)
+void MainWindow::submitJob(IQmol::Process::QChemJobInfo &qchemJobInfo)
 {
-   Process::JobMonitor::instance().submitJob(qchemJobInfo);
+   Process::JobMonitor::instance().submitJob(&qchemJobInfo);
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
    if (!mol) return;
    mol->qchemJobInfoChanged(qchemJobInfo);

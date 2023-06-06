@@ -30,9 +30,9 @@
 namespace IQmol {
 namespace Process {
 
-   /// QChemJobInfo holds information about the job to be run and forms the
+   /// GromacsjobInfo holds information about the job to be run and forms the
    /// interface between the options editor (QUI) and the JobMonitor.
-   class QChemJobInfo : public JobInfo {
+   class GromacsJobInfo : public JobInfo {
 
       public:
          /// InputFileName  - the input file name, no path
@@ -40,43 +40,13 @@ namespace Process {
          /// RunFileName    - the name of the submission script
          /// Note that not all these are serialized
 
-         /*
-         enum Field { 
-                 InputFileName,           // 0
-                 OutputFileName, 
-                 AuxFileName, 
-                 EspFileName, 
-                 MoFileName, 
-                 DensityFileName,         // 5
-                 ErrorFileName, 
-                 BatchFileName, 
-                 RunFileName, 
-                 LocalWorkingDirectory, 
-                 RemoteWorkingDirectory,  // 10
-                 InputString, 
-                 Charge, 
-                 Multiplicity, 
-                 Coordinates, 
-                 CoordinatesFsm,          // 15
-                 Constraints, 
-                 ScanCoordinates,
-                 EfpFragments, 
-                 EfpParameters, 
-                 ExternalCharges,         // 20
-                 OnsagerRadius,
-                 Isotopes,
-                 NElectrons,
-                 InputFileTemplate        // This effectively holds the contents of the 
-                                          // any input file loaded in the molecule.
-              };
-            
-         */
-         QChemJobInfo() : m_charge(0), m_multiplicity(1), m_nElectrons(0), 
+         
+         GromacsJobInfo() : m_charge(0), m_multiplicity(1), m_nElectrons(0), 
            m_localFilesExist(false),  m_promptOnOverwrite(true), m_efpOnlyJob(false), 
            m_moleculePointer(0) { }
           
 
-         QChemJobInfo(QChemJobInfo const& that) : JobInfo(that) { copy(that); }
+         GromacsJobInfo(GromacsJobInfo const& that) : JobInfo(that) { copy(that); }
 
          /// Serialization functions that are used to reconstruct the contents of the 
          /// ProcessMonitor on restarting IQmol.  Note that it is assumed that the
@@ -113,7 +83,7 @@ namespace Process {
 
          void dump() const;
 
-         QChemJobInfo& operator=(QChemJobInfo const& that) {
+         GromacsJobInfo& operator=(GromacsJobInfo const& that) {
             if (this != &that) copy(that); return *this;
          }
 
@@ -122,7 +92,7 @@ namespace Process {
 
 
       private:
-         void copy(QChemJobInfo const&);
+         void copy(GromacsJobInfo const&);
          /// Generic object to hold the data
          QMap<QString,QString> m_data;
          int  m_charge;

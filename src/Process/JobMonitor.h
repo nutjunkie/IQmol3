@@ -34,7 +34,7 @@ namespace Process {
 
    class Job;
    class Server;
-   class QChemJobInfo;
+   class JobInfo;
 
    /// The JobMonitor handles the submission and monitoring of external 
    /// calculations such as Q-Chem jobs.  Note that the JobMonitor takes 
@@ -49,7 +49,7 @@ namespace Process {
 
       public Q_SLOTS:
          // Namespace qualification is required as we call this from QUI
-         void submitJob(IQmol::Process::QChemJobInfo&);
+         void submitJob(IQmol::Process::JobInfo*);
          void jobSubmissionSuccessful(Job*);
          void jobSubmissionFailed(Job*);
          void loadJobListFromPreferences();
@@ -115,10 +115,10 @@ namespace Process {
          void viewOutput(Job* job);
          void openResults(Job* job);
 
-         bool getQueueResources(Server*, QChemJobInfo&);
+         bool getQueueResources(Server*, JobInfo*);
          Job* getSelectedJob(QTableWidgetItem* item = 0);
 
-         bool getWorkingDirectory(Server*, QChemJobInfo&);
+         bool getWorkingDirectory(Server*, JobInfo*);
          bool getRemoteWorkingDirectory(Server*, QString& suggestion);
          bool getLocalWorkingDirectory(QString& suggestion, bool allowSpace);
          bool renameFile(QString const& oldName, QString const& newName);

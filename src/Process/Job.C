@@ -48,11 +48,11 @@ QString Job::toString(Status const& status)
 }
 
 
-Job::Job(QChemJobInfo const& qchemJobInfo) : m_qchemJobInfo(qchemJobInfo)
+Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
 {
    m_julianDay  = QDate::currentDate().toJulianDay();
-   m_jobName    = m_qchemJobInfo.baseName();
-   m_serverName = m_qchemJobInfo.serverName();
+   m_jobName    = m_jobInfo->baseName();
+   m_serverName = m_jobInfo->serverName();
    m_status     = NotRunning;
 }
 
@@ -76,7 +76,7 @@ QVariant Job::toQVariant() const
    map.insert("RunTime",      runTime());  
    map.insert("Status",       (int)m_status);  
    map.insert("JulianDay",    m_julianDay);
-   map.insert("QChemJobInfo", m_qchemJobInfo.toQVariantList());
+   map.insert("jobInfo", m_jobInfo->toQVariantList());
 
    return QVariant(map);
 }
@@ -117,9 +117,9 @@ bool Job::fromQVariant(QVariant const& qvar)
       m_julianDay = map.value("JulianDay").toUInt(); 
    }
 
-   if (map.contains("QChemJobInfo")) {
-      if (!m_qchemJobInfo.fromQVariantList(map.value("QChemJobInfo").toList())) {
-         QLOG_WARN() << "Faild to convert QChemJobInfo from serialized Job";
+   if (map.contains("JobInfo")) {
+      if (!m_jobInfo->fromQVariantList(map.value("JobInfo").toList())) {
+         QLOG_WARN() << "Faild to convert JobInfo from serialized Job";
       }
    }
 
@@ -143,15 +143,15 @@ QString Job::substituteMacros(QString const& input) const
 {
    QString output(input);
    output.replace("${JOB_ID}",   m_jobId);
-   output.replace("${JOB_DIR}",  m_qchemJobInfo.get(QChemJobInfo::RemoteWorkingDirectory));
-   output.replace("${JOB_NAME}", m_qchemJobInfo.baseName());
+   output.replace("${JOB_DIR}",  m_jobInfo->get("RemoteWorkingDirectory"));
+   output.replace("${JOB_NAME}", m_jobInfo->baseName());
 
-   output.replace("${QUEUE}",    m_qchemJobInfo.queueName());
-   output.replace("${WALLTIME}", m_qchemJobInfo.wallTime());
-   output.replace("${MEMORY}",   QString::number(m_qchemJobInfo.memory()));
-   output.replace("${JOBFS}",    QString::number(m_qchemJobInfo.scratch()));
-   output.replace("${SCRATCH}",  QString::number(m_qchemJobInfo.scratch()));
-   output.replace("${NCPUS}",    QString::number(m_qchemJobInfo.ncpus()));
+   output.replace("${QUEUE}",    m_jobInfo->queueName());
+   output.replace("${WALLTIME}", m_jobInfo->wallTime());
+   output.replace("${MEMORY}",   QString::number(m_jobInfo->memory()));
+   output.replace("${JOBFS}",    QString::number(m_jobInfo->scratch()));
+   output.replace("${SCRATCH}",  QString::number(m_jobInfo->scratch()));
+   output.replace("${NCPUS}",    QString::number(m_jobInfo->ncpus()));
 
    // Check all the macros have been expanded
    if (output.contains("${")) {
@@ -271,7 +271,7 @@ bool Job::isActive(Status const status)
 
 bool Job::localFilesExist() const 
 { 
-   return m_qchemJobInfo.localFilesExist();
+   return m_jobInfo->localFilesExist();
 }
 
 } } // end namespaces IQmol::Process

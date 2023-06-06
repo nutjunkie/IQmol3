@@ -126,8 +126,10 @@ MoleculeSection* MoleculeSection::clone() const {
 
 
 void MoleculeSection::setCoordinates(QString const& coordinates) { 
-   m_coordinates = coordinates; 
+   m_coordinates = coordinates;
+    qDebug() << "coordinates set" << m_coordinates;
    parseCoordinates();
+   qDebug() << "parsed coordinates";
 }
 
 
