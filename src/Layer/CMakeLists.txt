@@ -39,6 +39,7 @@ set( HEADERS
    NmrLayer.h
    OrbitalsLayer.h
    PrimitiveLayer.h
+   ProteinLayer.h
    RemLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
@@ -83,6 +84,7 @@ set( SOURCES
    NmrLayer.C
    OrbitalsLayer.C
    PrimitiveLayer.C
+   ProteinLayer.C
    RemLayer.C
    SurfaceLayer.C
    SymmetryLayer.C

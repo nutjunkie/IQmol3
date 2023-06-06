@@ -43,6 +43,7 @@ QString toString(ID const id)
       case MacroMolecule:              s = "Data::MacroMolecule";             break;
       case Group:                      s = "Data::Group";                     break;
       case Pdb:                        s = "Data::Pdb";                       break;
+      case ProteinChain:               s = "Data::ProteinChain";              break;
 
       case Bank:                       s = "Data::Bank";                      break;
       case PointCharge:                s = "Data::PointCharge";               break;

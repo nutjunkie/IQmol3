@@ -3,7 +3,6 @@
 
 #include "Cartoon.h"
 #include "Math/Spline.h"
-#include "Parser/CPdbParser.h"
 
 using namespace std;
 
@@ -414,6 +413,7 @@ bool diffPP(int id1, int id2) {
     return false;
 }
 
+
 bool discontinuity(PeptidePlane pp1, PeptidePlane pp2, PeptidePlane pp3, PeptidePlane pp4) {
     int diff = 1;
     if (diffPP(pp1.Residue1->id, pp1.Residue2->id) || diffPP(pp1.Residue2->id, pp1.Residue3->id)) {
@@ -472,12 +472,12 @@ Mesh createChainMesh(const Data::chain &C) {
         //Make sure to start at the first CA position
         if (i <= 0) {
 
-            Data::atom *CA = getAtom(r1, (char *)"CA");
+            Data::atom *CA = Data::Pdb::getAtom(r1, (char *)"CA");
             plane.Position = CA->coor;
         }
         //Make sure to end at the last CA position
         if (i >= C.size - 2) {
-            Data::atom *CA = getAtom(r3, (char *)"CA");
+            Data::atom *CA = Data::Pdb::getAtom(r3, (char *)"CA");
             plane.Position = CA->coor;
         }
 

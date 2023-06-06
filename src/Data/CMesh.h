@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Math/v3.h"
+
+using namespace IQmol;
+
 namespace cpdb {
 
 struct cmpFloat3 {

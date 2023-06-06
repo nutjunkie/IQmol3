@@ -18,36 +18,128 @@
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
+  Based off the CPDB code by:
+  Gokhan SELAMET on 28/09/2016.
+  Copyright Â© 2016 Gokhan SELAMET. All rights reserved.
+
 ********************************************************************************/
 
 #include "PdbParser.h"
-#include "CPdbParser.h"
-#include "Data/CMesh.h"
-#include "Layer/Cartoon.h"
 #include "TextStream.h"
 
-#include "Grid/MeshDecimator.h"
-
-#include "Data/GridSize.h"
-#include "Data/MacroMolecule.h"
-#include "Data/Group.h"
+#include "Math/v3.h"
 #include "Data/Atom.h"
-#include "Data/Mesh.h"
+#include "Data/Group.h"
+#include "Data/PdbData.h"
+#include "Data/ProteinChain.h"
 
 #include <QDebug>
+
+#include <stdlib.h>
+#include <vector>
+
 
 
 namespace IQmol {
 namespace Parser {
 
 
+int extractStr(char *dest, const char *src, int begin, int end) {
+    int length;
+    while (src[begin] == ' ') begin++;
+    while (src[end] == ' ') end--;
+    length = end - begin + 1;
+    strncpy(dest, src + begin, length);
+    dest[length] = 0;
+    return length;
+}
+
+void getCoordinates (const char *line, v3 *out) {
+    char coorx[9] = {0};
+    char coory[9] = {0};
+    char coorz[9] = {0};
+    strncpy (coorx, &line[30], 8);
+    strncpy (coory, &line[38], 8);
+    strncpy (coorz, &line[46], 8);
+    out->x = atof (coorx);
+    out->y = atof (coory);
+    out->z = atof (coorz);
+}
+
+void getAtomType (const char *line, char *out) {
+    extractStr(out, line, 12, 16);
+}
+
+void getResType (const char *line, char *out) {
+    extractStr(out, line, 17, 19);
+}
+
+void getAtomElement (const char *line, char *out) {
+    extractStr(out, line, 76, 78);
+}
+
+void getAtomId (const char *line, int *atomId) {
+    char _temp[6]={0};
+    extractStr(_temp, line, 6, 10);
+    *atomId = atoi(_temp);
+}
+
+void getResidueId (const char *line, int *residueId) {
+    char _temp[5]={0};
+    extractStr(_temp, line, 22, 25);
+    *residueId = atoi(_temp);
+}
+
+void getAlternativeLoc(const char *line, char *altLoc) {
+    *altLoc = line[16];
+}
+
+void getChainId(const char *line, char *chainId) {
+    *chainId = line[21];
+}
+
+void getOccupancy (const char *line, float *occupancy) {
+    char _temp[7]={0};
+    extractStr(_temp, line, 54, 59);
+    *occupancy = atof(_temp);
+}
+
+void getTempFactor (const char *line, float *tempFactor){
+    char _temp[7]={0};
+    extractStr(_temp, line, 60, 65);
+    *tempFactor = atof(_temp);
+}
+
+void getHelix(const char *line, int *start, int *stop, char *chain){
+    if(strlen(line) >= 37){
+        extractStr(chain, line, 19, 20);
+        char _temp[5]={0};
+        extractStr(_temp, line, 21, 24);
+        *start = atoi(_temp);
+        extractStr(_temp, line, 33, 36);
+        *stop = atoi(_temp);
+    }
+}
+
+void getSheet(const char *line, int *start, int *stop, char *chain){
+    if(strlen(line) >= 38){
+        extractStr(chain, line, 21, 22);
+        char _temp[5]={0};
+        extractStr(_temp, line, 23, 26);
+        *start = atoi(_temp);
+        extractStr(_temp, line, 34, 37);
+        *stop = atoi(_temp);
+    }
+}
+
+
 bool Pdb::parse(TextStream& textStream)
 {
    bool ok(true);
    
-   QMap<QString, Data::MacroMolecule*> chains;
+   QMap<QString, Data::ProteinChain*> chains;
 
-   Data::MacroMolecule* chain(0);
+   Data::ProteinChain* chain(0);
    Data::Group* group(0);
 
    QString line, key;
@@ -71,7 +163,7 @@ bool Pdb::parse(TextStream& textStream)
             if (chains.contains(currentChain)) {
                chain = chains[currentChain];
             }else {
-               chain = new Data::MacroMolecule(currentChain);
+               chain = new Data::ProteinChain(QString("Chain ") + currentChain);
                chains.insert(currentChain, chain);
             }
          }
@@ -93,7 +185,7 @@ bool Pdb::parse(TextStream& textStream)
    }
 
    if (!chains.isEmpty()) {
-      QList<Data::MacroMolecule*> list(chains.values());
+      QList<Data::ProteinChain*> list(chains.values());
       for (auto chain : chains.values()) m_dataBank.append(chain);
    } 
    
@@ -170,76 +262,168 @@ bool Pdb::parseATOM(QString const& line, Data::Group& group)
 }
 
 
-std::vector<cpdb::Mesh> computeCartoonMesh(int nbChain, int *nbResPerChain, 
-   float *CA_OPositions, char *ssTypePerRes) 
+/*
+ by default, parsePDB function do not parse 'Hydrogene' atoms and 'Alternate Location' atoms.
+ To parse these atoms you can pass `options` variable with these characters
+    h: for parsing hydrogen atoms
+    l: for parsing alternate locations
+    a: is equal to h and l both on
+*/
+int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options) 
 {
-    std::vector<cpdb::Mesh> meshes(nbChain);
-    if (nbChain <= 0) {
-        return meshes;
+    Data::pdb *P(data->ptr());
+    Data::chain *C;
+    char altLocFlag = 1; // Default: skip alternate location atoms on
+    char hydrogenFlag = 0; // Default: skip hydrogene atoms off
+    int errorcode = 0;
+    C = (Data::chain *)calloc(1, sizeof (Data::chain) );
+    char line[128];
+    FILE* pdbFile;
+    char resType[5], atomType[5], atomElement[3], chainId, altLoc ;
+    int resId, atomId, length;
+    float tempFactor, occupancy;
+    int resIdx = 0;
+    int atomIdx = 0;
+    v3 coor;
+    int helixStart = 0;
+    int helixStop = 0;
+    char helixChain[2];
+    int sheetStart = 0;
+    int sheetStop = 0;
+    char sheetChain[2];
+    std::vector<Data::SS> secStructs;
+
+    Data::residue *currentResidue = NULL;
+    Data::chain *currentChain = NULL;
+    Data::atom *currentAtom = NULL;
+    
+    // Setting Parsing Options
+    int chindex = 0;
+    char ch = options[chindex++];
+
+    while (ch) {
+        switch( ch ) {
+            case 'h' :
+                hydrogenFlag = 0;
+                break;
+            case 'l' :
+                altLocFlag = 0;
+                break;
+            case 'a':
+                hydrogenFlag = 0;
+                altLocFlag = 0;
+                break;
+            default:
+                fprintf(stderr, "invalid option: %c \n", ch );
+                errorcode ++;
+        }
+        ch=options[chindex++];
     }
 
-#if USEOMP
-    #pragma omp parallel for num_threads(nbChain)
-    for (int chainId = 0; chainId < nbChain; chainId++) {
-        cpdb::Mesh m = cpdb::createChainMesh(chainId, nbResPerChain, CA_OPositions, ssTypePerRes);
-        meshes[omp_get_thread_num()] = m;
+    pdbFile = fopen(pdbFilePath, "r");
+    length = 0;
+    
+    if (pdbFile == NULL) {
+        perror("pdb file cannnot be read");
+        exit (2);
     }
-#else
-    for (int chainId = 0; chainId < nbChain; chainId++) {
-        cpdb::Mesh m = cpdb::createChainMesh(chainId, nbResPerChain, CA_OPositions, ssTypePerRes);
-        meshes[chainId] = m;
-    }
-#endif
+    while (fgets(line, sizeof(line), pdbFile)) {
+        if (!strncmp(line, "ATOM  ", 6)) {
 
-    return meshes;
+            getCoordinates(line, &coor);
+            getAtomType(line, atomType);
+            getResType(line, resType);
+            getAtomElement(line, atomElement);
+            getAtomId(line, &atomId);
+
+            getResidueId(line, &resId);
+            getChainId(line, &chainId);
+            getAlternativeLoc(line, &altLoc);
+            getTempFactor(line, &tempFactor);
+            getOccupancy(line, &occupancy);
+            if ( hydrogenFlag && !strncmp(atomElement, "H", 3) ) continue;
+            if ( altLocFlag && !(altLoc == 'A' || altLoc == ' ' ) ) continue;
+            
+            // Chain Related
+            if (currentChain == NULL || currentChain->id != chainId) {
+                Data::chain *myChain = (Data::chain *)calloc(1, sizeof(Data::chain));
+                myChain->id = chainId;
+                myChain->residues = NULL;
+                myChain->__capacity = 0;
+
+                data->appendChain(*myChain);
+                currentChain = &(P->chains[P->size - 1]);
+                currentAtom = NULL;
+                currentResidue = NULL;
+            }
+            
+            // Residue Related
+            if (currentResidue == NULL || currentResidue->id != resId) {
+                Data::residue *myRes = (Data::residue *)calloc(1, sizeof(Data::residue));
+                myRes->id = resId;
+                myRes->idx = resIdx++;
+                myRes->atoms = NULL;
+                myRes->size = 0;
+                myRes->__capacity = 0;
+                myRes->next = NULL;
+                myRes->prev = currentResidue;
+                myRes->ss = COIL;
+
+                data->appendResiduetoChain(currentChain, *myRes);
+
+                currentResidue = &(currentChain->residues[currentChain->size-1]);
+
+                strncpy(currentResidue->type, resType, 5);
+                if (currentResidue->prev) currentResidue->prev->next=currentResidue;
+            }
+            
+            //Atom Related
+            if (currentAtom == NULL || currentAtom->id != atomId) {
+                Data::atom myAtom;
+                myAtom.id = atomId;
+                myAtom.idx = atomIdx++;
+                myAtom.coor = coor;
+                myAtom.tfactor = tempFactor;
+                myAtom.occupancy = occupancy;
+                myAtom.next = NULL;
+                myAtom.prev = currentAtom;
+                myAtom.res = currentResidue;
+                data->appendAtomtoResidue(currentResidue, myAtom);
+                currentAtom = &(currentResidue->atoms[currentResidue->size-1]);
+                strncpy(currentAtom->type, atomType, 5);
+                strncpy(currentAtom->element, atomElement, 3);
+                if (currentAtom->prev) currentAtom->prev->next = currentAtom;
+            }
+            
+        }
+        if (!strncmp(line, "HELIX ", 6)) {
+            getHelix(line, &helixStart, &helixStop, helixChain);
+            Data::SS curSS; 
+            curSS.start = helixStart; 
+            curSS.stop = helixStop; 
+            strncpy(curSS.chain, helixChain, 2);
+            curSS.type = HELIX;
+            secStructs.push_back(curSS);
+        }
+        if (!strncmp(line, "SHEET ", 6)) {
+            getSheet(line, &sheetStart, &sheetStop, sheetChain);
+            Data::SS curSS; 
+            curSS.start = sheetStart; 
+            curSS.stop = sheetStop; 
+            strncpy(curSS.chain, sheetChain, 2);
+            curSS.type = STRAND;
+            secStructs.push_back(curSS);
+        }
+        else if (!strncmp(line, "ENDMDL", 6)  || !strncmp(line, "END", 3)) {
+            break;
+        }
+    }
+    fclose(pdbFile);
+
+    data->fillSS(secStructs);
+    return errorcode;
 }
 
-
-Data::MeshList fromCpdb(std::vector<cpdb::Mesh> const& meshes) 
-{
-   Data::MeshList meshList;
-
-   for (int i = 0; i < meshes.size(); i++) {
-       Data::Mesh* mesh(new Data::Mesh);
-       std::vector<v3> verts  = meshes[i].vertices;
-       std::vector<v3> colors = meshes[i].colors;
-       std::vector<Data::Mesh::Vertex> vertices;
-
-       for (int j = 0; j < verts.size(); j++) {
-           Data::Mesh::Vertex v(mesh->addVertex(verts[j].x, verts[j].y, verts[j].z));
-           vertices.push_back(v);
-           //colors[j].x, colors[j].y, colors[j].z);
-       }   
-
-       qDebug() << "Number of vertices" << vertices.size();
-
-       std::vector<int> tri = meshes[i].triangles;
-       for (unsigned j = 0; j < tri.size(); j += 3) {
-           unsigned j0(tri[j  ]);
-           unsigned j1(tri[j+1]);
-           unsigned j2(tri[j+2]);
-
-           // Avoid adding degenerate faces
-           if (j0 != j1 && j0 != j2 && j1 != j2) {
-              Data::Mesh::Vertex v0(vertices[j0]);
-              Data::Mesh::Vertex v1(vertices[j1]);
-              Data::Mesh::Vertex v2(vertices[j2]);
-              mesh->addFace(v0, v1, v2);
-           }
-       }   
-       mesh->computeFaceNormals();
-       mesh->computeVertexNormals();
-
-       double delta(Data::GridSize::stepSize(2));
-       MeshDecimator decimator(*mesh);
-       if (!decimator.decimate(delta)) {
-          qDebug() <<"Mesh decimation failed: " + decimator.error();
-       }
-       meshList.append(mesh);
-   }   
-
-   return meshList;
-}
 
 
 bool Pdb::parseCartoon(TextStream& textStream)
@@ -247,51 +431,39 @@ bool Pdb::parseCartoon(TextStream& textStream)
    textStream.rewind(); 
    qDebug() << "In the cartoon PDB parser";
 
-   Data::pdb *P;
-   P = cpdb::initPDB();
+   Data::Pdb* pdbData = new Data::Pdb;
+
+   Data::pdb *P = pdbData->ptr();
 
    std::string str(m_filePath.toStdString());
    const char* fname(str.c_str());
+   char options[0];
 
-   cpdb::parsePDB(fname, P, (char *)"");
-
-   std::vector<int> nbResPerChain(P->size);
-   std::vector<float> CAOPos;
-   std::vector<char> allSS;
+   parsePDB(fname, pdbData, options);
 
    for (int chainId = 0; chainId < P->size; chainId++) {
        Data::chain *C = &P->chains[chainId];
-       nbResPerChain[chainId] = C->size;
+       pdbData->addChain(C->size);
        for (int r = 0; r < C->size; r++) {
            Data::residue *R = &C->residues[r];
-           Data::atom *CA = cpdb::getAtom(*R, (char *)"CA");
-           Data::atom *O = cpdb::getAtom(*R, (char *)"O");
+           Data::atom *CA = Data::Pdb::getAtom(*R, (char *)"CA");
+           Data::atom *O  = Data::Pdb::getAtom(*R, (char *)"O");
            char ss = R->ss;
 
-           if (CA == NULL || O == NULL) {
-               QString msg("CA or O not found in chain ");
+           if (CA == 0 || O == 0) {
+               QString msg("CA/O not found in chain ");
                msg + C->id + " residue " + R->type + "_"  + R->id;
                m_errors.append(msg);
                return false;
            }   
-           CAOPos.push_back(CA->coor.x);
-           CAOPos.push_back(CA->coor.y);
-           CAOPos.push_back(CA->coor.z);
-           CAOPos.push_back(O->coor.x);
-           CAOPos.push_back(O->coor.y);
-           CAOPos.push_back(O->coor.z);
-           allSS.push_back(ss);
+
+           pdbData->addResidue(CA->coor, O->coor, ss);
        }   
    }   
 
-   std::vector<cpdb::Mesh> meshes = 
-      computeCartoonMesh(P->size, &nbResPerChain[0], &CAOPos[0], &allSS[0]);
-
-   Data::MeshList list(fromCpdb(meshes));
-   for (auto mesh : list) m_dataBank.append(mesh);
+   m_dataBank.append(pdbData);
 
    return true;
 }
-
 
 } } // end namespace IQmol::Parser

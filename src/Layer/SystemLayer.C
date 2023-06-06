@@ -57,6 +57,8 @@ void System::appendData(Data::Bank& bank)
 
        switch ((*iter)->typeID()) {
           case Data::Type::MacroMolecule: 
+          case Data::Type::ProteinChain: 
+          case Data::Type::Pdb: 
           case Data::Type::FileList: 
              for (auto layer : list) appendLayer(layer);
 

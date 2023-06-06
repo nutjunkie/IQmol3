@@ -19,9 +19,37 @@
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
+  Based off the CPDB code by:
+  Gokhan SELAMET on 28/09/2016.
+  Copyright Â© 2016 Gokhan SELAMET. All rights reserved.
+
 ********************************************************************************/
 
 #include "Parser.h"
+
+
+namespace IQmol {
+   namespace Data {
+      class Pdb;
+      class pdb;
+      class atom;
+      class chain;
+      class residue;
+   }
+}
+
+
+namespace cpdb {
+
+
+//void appendChaintoPdb (IQmol::Data::pdb *P, IQmol::Data::chain newChain);
+//void appendResiduetoChain (IQmol::Data::chain *C, IQmol::Data::residue newResidue);
+//void appendAtomtoResidue (IQmol::Data::residue *R, IQmol::Data::atom newAtom);
+
+//IQmol::Data::atom* getAtom (const IQmol::Data::residue &resA, const char *atomType);
+
+} // end namespace cpdb
+
 
 
 namespace IQmol {
@@ -44,6 +72,7 @@ namespace Parser {
          bool parseATOM(QString const& line, Data::Group&);
          bool parseCOMPND(QString const& line);
          bool parseCartoon(TextStream&);
+         int  parsePDB (char const* pdbFilePath, Data::Pdb *P , char *options);
    };
 
 } } // end namespace IQmol::Parser

@@ -20,46 +20,49 @@
 
 ********************************************************************************/
 
-#include "Data/File.h"
-#include "Data/Data.h"
 #include "Data/Bank.h"
-#include "Data/Mesh.h"
-#include "Data/NmrData.h"
-#include "Data/PointCharge.h"
+#include "Data/CubeData.h"
+#include "Data/Data.h"
 #include "Data/EfpFragment.h"
 #include "Data/ExcitedStates.h"
-#include "Data/Surface.h"
-#include "Data/CubeData.h"
+#include "Data/File.h"
 #include "Data/Frequencies.h"
-#include "Data/OrbitalsList.h"
 #include "Data/GeminalOrbitals.h"
-#include "Data/Vibronic.h"
 #include "Data/MacroMolecule.h"
+#include "Data/Mesh.h"
+#include "Data/NmrData.h"
+#include "Data/PdbData.h"
+#include "Data/PointCharge.h"
+#include "Data/ProteinChain.h"
+#include "Data/OrbitalsList.h"
+#include "Data/Surface.h"
+#include "Data/Vibronic.h"
 
 #include "LayerFactory.h"
 #include "AtomLayer.h"
 #include "BondLayer.h"
 #include "CanonicalOrbitalsLayer.h"
-#include "DysonOrbitalsLayer.h"
-#include "NaturalBondOrbitalsLayer.h"
-#include "NaturalTransitionOrbitalsLayer.h"
 #include "ChargeLayer.h"
 #include "CubeDataLayer.h"
-#include "FileLayer.h"
 #include "DipoleLayer.h"
-#include "GeometryLayer.h"
-#include "GeometryListLayer.h"
+#include "DysonOrbitalsLayer.h"
+#include "FileLayer.h"
 #include "EfpFragmentListLayer.h"
 #include "EfpFragmentLayer.h"
-#include "FrequenciesLayer.h"
 #include "ExcitedStatesLayer.h"
-#include "MoleculeLayer.h"
-#include "OrbitalsLayer.h"
+#include "FrequenciesLayer.h"
+#include "GeometryLayer.h"
+#include "GeometryListLayer.h"
 #include "GeminalOrbitalsLayer.h"
+#include "MacroMoleculeLayer.h"
+#include "MoleculeLayer.h"
+#include "NaturalBondOrbitalsLayer.h"
+#include "NaturalTransitionOrbitalsLayer.h"
+#include "OrbitalsLayer.h"
+#include "ProteinLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
 #include "VibronicLayer.h"
-#include "MacroMoleculeLayer.h"
 
 #include "Util/QsLog.h"
 
@@ -190,6 +193,12 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(surfaceLayer);
          } break;
 
+         case Data::Type::Pdb: {
+            Data::Pdb& pdbData(dynamic_cast<Data::Pdb&>(data));
+            Layer::Protein* proteinLayer(new Protein(pdbData));
+            layers.append(proteinLayer);
+         } break;
+
          case Data::Type::Surface: {
             Data::Surface&  surfaceData(dynamic_cast<Data::Surface&>(data));
             Layer::Surface* surfaceLayer(new Surface(surfaceData));
@@ -214,6 +223,12 @@ Layer::List Factory::toLayers(Data::Base& data)
             Data::Vibronic& 
                vibronic(dynamic_cast<Data::Vibronic&>(data));
             layers.append(new Vibronic(vibronic));
+         } break;
+
+         case Data::Type::ProteinChain: {
+            Data::ProteinChain& 
+               proteinChain(dynamic_cast<Data::ProteinChain&>(data));
+            layers.append(new MacroMolecule(proteinChain));
          } break;
 
          case Data::Type::MacroMolecule: {

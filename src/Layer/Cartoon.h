@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Math/v3.h"
 #include "Math/Spline.h"
-#include "Parser/CPdbParser.h"
+#include "Parser/PdbParser.h"
 #include "Data/CMesh.h"
 #include "Data/PdbData.h"
 
@@ -45,9 +45,9 @@ inline PeptidePlane NewPeptidePlane(const Data::residue &r1, const Data::residue
 {
     PeptidePlane newPP;
 
-    Data::atom *CA1 = getAtom(r1, (char *)"CA");
-    Data::atom *O1  = getAtom(r1, (char *)"O");
-    Data::atom *CA2 = getAtom(r2, (char *)"CA");
+    Data::atom *CA1 = Data::Pdb::getAtom(r1, (char *)"CA");
+    Data::atom *O1  = Data::Pdb::getAtom(r1, (char *)"O");
+    Data::atom *CA2 = Data::Pdb::getAtom(r2, (char *)"CA");
 
     if(CA1 == NULL || O1 == NULL || CA2 == NULL){
         std::cerr<<"Failed to get all the atoms for residue "<<r1.id<<std::endl;
