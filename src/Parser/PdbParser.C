@@ -44,7 +44,8 @@ namespace IQmol {
 namespace Parser {
 
 
-int extractStr(char *dest, const char *src, int begin, int end) {
+int extractStr(char *dest, const char *src, int begin, int end) 
+{
     int length;
     while (src[begin] == ' ') begin++;
     while (src[end] == ' ') end--;
@@ -53,6 +54,7 @@ int extractStr(char *dest, const char *src, int begin, int end) {
     dest[length] = 0;
     return length;
 }
+
 
 void getCoordinates (const char *line, v3 *out) {
     char coorx[9] = {0};
@@ -66,51 +68,62 @@ void getCoordinates (const char *line, v3 *out) {
     out->z = atof (coorz);
 }
 
-void getAtomType (const char *line, char *out) {
+
+void getAtomType (const char *line, char *out) 
+{
     extractStr(out, line, 12, 16);
 }
 
-void getResType (const char *line, char *out) {
+void getResType (const char *line, char *out) 
+{
     extractStr(out, line, 17, 19);
 }
 
-void getAtomElement (const char *line, char *out) {
+void getAtomElement (const char *line, char *out) 
+{
     extractStr(out, line, 76, 78);
 }
 
-void getAtomId (const char *line, int *atomId) {
+void getAtomId (const char *line, int *atomId) 
+{
     char _temp[6]={0};
     extractStr(_temp, line, 6, 10);
     *atomId = atoi(_temp);
 }
 
-void getResidueId (const char *line, int *residueId) {
+void getResidueId (const char *line, int *residueId) 
+{
     char _temp[5]={0};
     extractStr(_temp, line, 22, 25);
     *residueId = atoi(_temp);
 }
 
-void getAlternativeLoc(const char *line, char *altLoc) {
+void getAlternativeLoc(const char *line, char *altLoc) 
+{
     *altLoc = line[16];
 }
 
-void getChainId(const char *line, char *chainId) {
+void getChainId(const char *line, char *chainId) 
+{
     *chainId = line[21];
 }
 
-void getOccupancy (const char *line, float *occupancy) {
+void getOccupancy (const char *line, float *occupancy) 
+{
     char _temp[7]={0};
     extractStr(_temp, line, 54, 59);
     *occupancy = atof(_temp);
 }
 
-void getTempFactor (const char *line, float *tempFactor){
+void getTempFactor (const char *line, float *tempFactor)
+{
     char _temp[7]={0};
     extractStr(_temp, line, 60, 65);
     *tempFactor = atof(_temp);
 }
 
-void getHelix(const char *line, int *start, int *stop, char *chain){
+void getHelix(const char *line, int *start, int *stop, char *chain)
+{
     if(strlen(line) >= 37){
         extractStr(chain, line, 19, 20);
         char _temp[5]={0};
@@ -137,8 +150,6 @@ bool Pdb::parse(TextStream& textStream)
 {
    bool ok(true);
    
-   QMap<QString, Data::ProteinChain*> chains;
-
    Data::ProteinChain* chain(0);
    Data::Group* group(0);
 
@@ -160,11 +171,11 @@ bool Pdb::parse(TextStream& textStream)
          s = line.mid(21, 1);
          if (s != currentChain) {
             currentChain = s;
-            if (chains.contains(currentChain)) {
-               chain = chains[currentChain];
+            if (m_chains.contains(currentChain)) {
+               chain = m_chains[currentChain];
             }else {
                chain = new Data::ProteinChain(QString("Chain ") + currentChain);
-               chains.insert(currentChain, chain);
+               m_chains.insert(currentChain, chain);
             }
          }
 
@@ -184,14 +195,14 @@ bool Pdb::parse(TextStream& textStream)
       
    }
 
-   if (!chains.isEmpty()) {
-      QList<Data::ProteinChain*> list(chains.values());
-      for (auto chain : chains.values()) m_dataBank.append(chain);
-   } 
-   
+  
    // This must go last as it rewinds the TextStream!
    ok = parseCartoon(textStream);
 
+   if (!m_chains.isEmpty()) {
+      for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   } 
+ 
    return ok;
 
    error:
@@ -271,26 +282,26 @@ bool Pdb::parseATOM(QString const& line, Data::Group& group)
 */
 int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options) 
 {
-    Data::pdb *P(data->ptr());
-    Data::chain *C;
-    char altLocFlag = 1; // Default: skip alternate location atoms on
-    char hydrogenFlag = 0; // Default: skip hydrogene atoms off
-    int errorcode = 0;
-    C = (Data::chain *)calloc(1, sizeof (Data::chain) );
-    char line[128];
+    Data::pdb& P(data->ref());
+
+    char  altLocFlag = 1; // Default: skip alternate location atoms on
+    char  hydrogenFlag = 0; // Default: skip hydrogene atoms off
+    int   errorcode = 0;
+    char  line[128];
     FILE* pdbFile;
-    char resType[5], atomType[5], atomElement[3], chainId, altLoc ;
-    int resId, atomId, length;
+    char  resType[5], atomType[5], atomElement[3], chainId, altLoc ;
+    int   resId, atomId, length;
     float tempFactor, occupancy;
-    int resIdx = 0;
-    int atomIdx = 0;
-    v3 coor;
-    int helixStart = 0;
-    int helixStop = 0;
-    char helixChain[2];
-    int sheetStart = 0;
-    int sheetStop = 0;
-    char sheetChain[2];
+    int   resIdx = 0;
+    int   atomIdx = 0;
+    v3    coor;
+    int   helixStart = 0;
+    int   helixStop = 0;
+    char  helixChain[2];
+    int   sheetStart = 0;
+    int   sheetStop = 0;
+    char  sheetChain[2];
+
     std::vector<Data::SS> secStructs;
 
     Data::residue* currentResidue(0);
@@ -323,10 +334,11 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     pdbFile = fopen(pdbFilePath, "r");
     length = 0;
     
-    if (pdbFile == NULL) {
+    if (pdbFile == 0) {
         perror("pdb file cannnot be read");
         exit (2);
     }
+
     while (fgets(line, sizeof(line), pdbFile)) {
         if (!strncmp(line, "ATOM  ", 6)) {
 
@@ -345,47 +357,39 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
             if ( altLocFlag && !(altLoc == 'A' || altLoc == ' ' ) ) continue;
             
             // Chain Related
-            if (currentChain == NULL || currentChain->id != chainId) {
-                Data::chain *myChain = (Data::chain *)calloc(1, sizeof(Data::chain));
-                myChain->id = chainId;
-                //myChain->residues = NULL;
-                //myChain->__capacity = 0;
-
-                data->appendChain(*myChain);
-                currentChain = &(P->chains[P->chains.size() - 1]);
-                currentAtom = NULL;
-                currentResidue = NULL;
+            if (currentChain == 0 || currentChain->id != chainId) {
+                Data::chain myChain;
+                myChain.id = chainId;
+                data->appendChain(myChain);
+                currentChain = &P.chains.back();
+                currentAtom = 0;
+                currentResidue = 0;
             }
             
             // Residue Related
-            if (currentResidue == NULL || currentResidue->id != resId) {
-                Data::residue *myRes = (Data::residue *)calloc(1, sizeof(Data::residue));
-                myRes->id = resId;
-                myRes->idx = resIdx++;
-                //myRes->atoms = NULL;
-                //myRes->size = 0;
-                //myRes->__capacity = 0;
-                myRes->next = NULL;
-                myRes->prev = currentResidue;
-                myRes->ss = COIL;
-
-                data->appendResiduetoChain(currentChain, *myRes);
+            if (currentResidue == 0 || currentResidue->id != resId) {
+                Data::residue myRes;
+                myRes.id = resId;
+                myRes.idx = resIdx++;
+                myRes.next = 0;
+                myRes.prev = currentResidue;
+                myRes.ss = COIL;
+                data->appendResiduetoChain(currentChain, myRes);
 
                 currentResidue = &(currentChain->residues[currentChain->residues.size()-1]);
-
                 strncpy(currentResidue->type, resType, 5);
-                if (currentResidue->prev) currentResidue->prev->next=currentResidue;
+                if (currentResidue->prev) currentResidue->prev->next = currentResidue;
             }
             
             //Atom Related
-            if (currentAtom == NULL || currentAtom->id != atomId) {
+            if (currentAtom == 0 || currentAtom->id != atomId) {
                 Data::atom myAtom;
                 myAtom.id = atomId;
                 myAtom.idx = atomIdx++;
                 myAtom.coor = coor;
                 myAtom.tfactor = tempFactor;
                 myAtom.occupancy = occupancy;
-                myAtom.next = NULL;
+                myAtom.next = 0;
                 myAtom.prev = currentAtom;
                 myAtom.res = currentResidue;
                 data->appendAtomtoResidue(currentResidue, myAtom);
@@ -405,6 +409,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
             curSS.type = HELIX;
             secStructs.push_back(curSS);
         }
+
         if (!strncmp(line, "SHEET ", 6)) {
             getSheet(line, &sheetStart, &sheetStop, sheetChain);
             Data::SS curSS; 
@@ -429,11 +434,9 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
 bool Pdb::parseCartoon(TextStream& textStream)
 {
    textStream.rewind(); 
-   qDebug() << "In the cartoon PDB parser";
 
    Data::Pdb* pdbData = new Data::Pdb;
-
-   Data::pdb *P = pdbData->ptr();
+   Data::pdb& P(pdbData->ref());
 
    std::string str(m_filePath.toStdString());
    const char* fname(str.c_str());
@@ -441,9 +444,12 @@ bool Pdb::parseCartoon(TextStream& textStream)
 
    parsePDB(fname, pdbData, options);
 
-   for (int chainId = 0; chainId < P->chains.size(); chainId++) {
-       Data::chain *C = &P->chains[chainId];
+   for (int chainId = 0; chainId < P.chains.size(); chainId++) {
+       Data::chain *C = &P.chains[chainId];
        pdbData->addChain(C->residues.size());
+       QString id(C->id);
+       Data::ProteinChain* proteinChain(m_chains[id]);
+
        for (int r = 0; r < C->residues.size(); r++) {
            Data::residue *R = &C->residues[r];
            Data::atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
@@ -457,11 +463,12 @@ bool Pdb::parseCartoon(TextStream& textStream)
                return false;
            }   
 
+           proteinChain->addResidue(CA->coor, O->coor, ss);
            pdbData->addResidue(CA->coor, O->coor, ss);
        }   
    }   
 
-   m_dataBank.append(pdbData);
+   //m_dataBank.append(pdbData);
 
    return true;
 }

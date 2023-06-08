@@ -51,27 +51,18 @@ namespace Data {
       int id;
       int idx;
       char type[5];
-      //atom *atoms;
       std::vector<atom> atoms;
-      //int size;
-      //int __capacity;
       char ss;
       residue *next, *prev;
    };
 
    struct chain {
       char id;
-      //residue *residues;
       std::vector<residue> residues;
-      //int size;
-      //int __capacity;
    };
 
    struct pdb {
       std::vector<chain> chains;
-      //chain* chains;
-      //int  size;
-      //int  __capacity;
    };
 
    struct SS {
@@ -92,9 +83,10 @@ namespace Data {
          Pdb() { }
          ~Pdb() { }
 
-         pdb* ptr() { return &m_pdb; }
-         float* cao() { return &m_caoPositions[0]; }
+         pdb& ref() { return m_pdb; }
+
          int*   nres() { return &m_nResPerChain[0]; }
+         float* cao() { return &m_caoPositions[0]; }
          char*  ss() { return &m_secondaryStructure[0]; }
 
          unsigned nChains() const { return m_pdb.chains.size(); }
@@ -102,7 +94,6 @@ namespace Data {
          void dump() const;
 
          void addResidue(v3 const& posO, v3 const& posCA, char const secondaryStructure);
-
          void addChain(int const size);
 
          void appendChain(Data::chain newChain);
@@ -113,13 +104,8 @@ namespace Data {
 
          void fillSS(std::vector<Data::SS> secStructs);
 
-         void serialize(InputArchive& ar, unsigned int const /*version*/) 
-         {
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
-         {
-         }
+         void serialize(InputArchive& ar, unsigned int const /*version*/) { }
+         void serialize(OutputArchive& ar, unsigned int const /*version*/) { }
 
          void write(const char *filename) const;
          void writeFile(FILE *F) const;

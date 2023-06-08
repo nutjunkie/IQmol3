@@ -59,6 +59,7 @@
 #include "NaturalBondOrbitalsLayer.h"
 #include "NaturalTransitionOrbitalsLayer.h"
 #include "OrbitalsLayer.h"
+#include "ProteinChainLayer.h"
 #include "ProteinLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
@@ -228,7 +229,7 @@ Layer::List Factory::toLayers(Data::Base& data)
          case Data::Type::ProteinChain: {
             Data::ProteinChain& 
                proteinChain(dynamic_cast<Data::ProteinChain&>(data));
-            layers.append(new MacroMolecule(proteinChain));
+            layers.append(new ProteinChain(proteinChain));
          } break;
 
          case Data::Type::MacroMolecule: {

@@ -28,7 +28,6 @@
 #include "Exception.h"
 #include "QsLog.h"
 #include "GLSLmath.h"
-#include "Parser/ParseFile.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QOpenGLFramebufferObject>

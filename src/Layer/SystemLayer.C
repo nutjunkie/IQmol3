@@ -60,7 +60,10 @@ void System::appendData(Data::Bank& bank)
           case Data::Type::ProteinChain: 
           case Data::Type::Pdb: 
           case Data::Type::FileList: 
-             for (auto layer : list) appendLayer(layer);
+             for (auto layer : list) {
+                 connect(layer, SIGNAL(updated()), this, SIGNAL(updated()));
+                 appendLayer(layer);
+             }
 
              break;
 

@@ -59,7 +59,6 @@ namespace Layer {
       SelectedOnly = 0x020
    };
 
-      
 
    /// Model item for the ViewerModel class.  
    /// Layers can be thought of as nodes of the tree which is represented in

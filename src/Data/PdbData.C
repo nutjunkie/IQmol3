@@ -50,14 +50,12 @@ void Pdb::addResidue(v3 const& posCA, v3 const& posO, char const secondaryStruct
 void Pdb::appendChain(Data::chain newChain) 
 {
     m_pdb.chains.push_back(newChain);    
-    //m_pdb.size = m_pdb.chains.size();
 }
 
 
 void Pdb::appendResiduetoChain(Data::chain *C, Data::residue newResidue) 
 {
    C->residues.push_back(newResidue);
-   //C->size = C->residues.size();
    updateResiduePointers(C);
 }
 
@@ -65,7 +63,6 @@ void Pdb::appendResiduetoChain(Data::chain *C, Data::residue newResidue)
 void Pdb::appendAtomtoResidue (Data::residue *R, Data::atom newAtom) 
 {
    R->atoms.push_back(newAtom);
-   //R->size = R->atoms.size();
    updateAtomPointers(R);
 }
 
@@ -184,7 +181,6 @@ void Pdb::write(const char *filename) const
     writeFile(out); 
     fclose(out);
 }
-
 
 
 void Pdb::dump() const

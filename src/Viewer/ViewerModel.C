@@ -106,12 +106,18 @@ ViewerModel::ViewerModel(QWidget* parent) :
    connect(this, SIGNAL(itemChanged(QStandardItem*)), 
       this, SLOT(checkItemChanged(QStandardItem*)));
 
+#if 0
    Layer::System* system(newSystem());
    qDebug() << "print appending System Layer" << system;
    appendRow(system);
  
    Layer::Molecule* mol(newMolecule());
    system->appendLayer(mol);
+#else
+   Layer::Molecule* mol(newMolecule());
+   appendRow(mol);
+#endif
+
 
    changeActiveViewerMode(Viewer::BuildAtom);
    sceneRadiusChanged(Preferences::DefaultSceneRadius());
@@ -479,9 +485,8 @@ void ViewerModel::newMoleculeMenu()
 
 Layer::System* ViewerModel::newSystem()
 {
-   qDebug() << "About to create new System Layer";
    Layer::System* system = new Layer::System(DefaultMoleculeName, m_parent);
-   qDebug() << "About to create new System Layer" << system;
+   connectSystem(system);
    return system;
 }
 
@@ -543,6 +548,7 @@ void ViewerModel::connectSystem(Layer::System* system)
 {
    connect(system, SIGNAL(updated()), 
       this, SLOT(updateVisibleObjects()));
+
    connect(system, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
 }
@@ -552,6 +558,7 @@ void ViewerModel::disconnectSystem(Layer::System* system)
 {
    disconnect(system, SIGNAL(updated()), 
       this, SLOT(updateVisibleObjects()));
+
    disconnect(system, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
 }

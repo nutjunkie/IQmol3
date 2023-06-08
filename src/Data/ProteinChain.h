@@ -35,7 +35,28 @@ namespace Data {
 
          Type::ID typeID() const { return Type::ProteinChain; }
 
+         int    nres() const { return m_secondaryStructure.size(); }
+         float const* cao() const { return &m_caoPositions[0]; }
+         char const*  ss() const { return &m_secondaryStructure[0]; }
+
+         inline void addResidue(v3 const& posCA, v3 const& posO,
+            char const secondaryStructure)
+         {
+             m_caoPositions.push_back(posCA.x);
+             m_caoPositions.push_back(posCA.y);
+             m_caoPositions.push_back(posCA.z);
+             m_caoPositions.push_back(posO.x);
+             m_caoPositions.push_back(posO.y);
+             m_caoPositions.push_back(posO.z);
+
+             m_secondaryStructure.push_back(secondaryStructure); 
+         }
+
       private:
+         // Data for generataing the cartoon representation
+         unsigned           m_nResidues;
+         std::vector<float> m_caoPositions;
+         std::vector<char>  m_secondaryStructure;
    };
 
 } } // end namespace IQmol::Data
