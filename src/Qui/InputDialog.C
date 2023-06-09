@@ -74,8 +74,8 @@ InputDialog::InputDialog(QWidget* parent) : QMainWindow(parent),
    m_propertiesTab(this),
    m_reactionPathTab(this),
    m_transitionStateTab(this),
-//   m_libopt3Tab(this),
-//   m_optimizeTab(this),
+   m_libopt3Tab(this),
+   m_optimizeTab(this),
    m_db(OptionDatabase::instance()), m_reg(OptionRegister::instance()), 
    m_taint(false), m_currentJob(0), m_fileIn("")
 {
@@ -103,7 +103,7 @@ bool InputDialog::init()
    initializeMenus();
 
    // this must be called before the logic is initialized
-   initializeToolBoxOptions();
+   initializeStackedWidgets();
 
    initializeQuiLogic();
    if (!initializeControls()) {
@@ -136,7 +136,7 @@ InputDialog::~InputDialog()
 }
 
 
-void InputDialog::initializeToolBoxOptions() 
+void InputDialog::initializeStackedWidgets() 
 {
    m_toolBoxOptions.insert("ADC",                   &m_adcTab);
    m_adcTab.hide();
@@ -165,13 +165,11 @@ void InputDialog::initializeToolBoxOptions()
    m_toolBoxOptions.insert("Transition State",      &m_transitionStateTab);
    m_transitionStateTab.hide();
 
-/*
-   m_toolBoxOptions.insert("Optimize",  &m_optimizeTab);
-   m_optimizeTab.hide();
-   m_toolBoxOptions.insert("Libopt3",   &m_lTab);
-   m_libopt3Tab.hide();
-*/
+   m_geometryTab.m_ui.geomOptStack->addWidget(&m_optimizeTab);
+   m_geometryTab.m_ui.geomOptStack->addWidget(&m_libopt3Tab);
+   on_qui_libopt3_toggled(true);
 }
+
 
 
 void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& jobInfo)
@@ -1075,13 +1073,13 @@ void InputDialog::on_qui_multiplicity_valueChanged(int value)
 
 void InputDialog::on_qui_optimize_toggled(bool on)
 {
-   toggleStack(m_ui.geomOptStack, on, "Optimize");
+   if (on) m_geometryTab.m_ui.geomOptStack->setCurrentIndex(0);
 }
 
 
-void InputDialog::on_qui_libopt3e_toggled(bool on)
+void InputDialog::on_qui_libopt3_toggled(bool on)
 {
-   toggleStack(m_ui.geomOptStack, on, "Libopt3");
+   if (on) m_geometryTab.m_ui.geomOptStack->setCurrentIndex(1);
 }
 
 

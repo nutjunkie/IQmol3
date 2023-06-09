@@ -375,6 +375,16 @@ void InputDialog::initializeQuiLogic()
    geom_opt_driver.addRule(rule);
    job_type.addRule(rule);
 
+   QtNode& recompute_hessian(reg.get("QUI_GEOM_OPT_RECOMPUTE_HESSIAN"));
+   recompute_hessian.addRule(
+      If (recompute_hessian == QtTrue, 
+         Enable(m_libopt3Tab.m_ui.qui_geom_opt_recompute_hessian_cycles),
+         Disable(m_libopt3Tab.m_ui.qui_geom_opt_recompute_hessian_cycles)
+      )
+   );
+
+
+
    // -----------------------------------------------------------------
 
    s = "Transition State";

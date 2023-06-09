@@ -134,6 +134,9 @@ void Mesh::copy(Mesh const& that)
    }
 
    m_omMesh = that.m_omMesh;
+   m_faceCentroidsHandle = that.m_faceCentroidsHandle;
+   m_scalarFieldHandle = that.m_scalarFieldHandle;
+   m_meshIndexHandle = that.m_meshIndexHandle;
 }
 
 
@@ -454,13 +457,16 @@ Mesh::Face Mesh::addFace(Vertex const& v0, Vertex const& v1, Vertex const& v2)
 {
    Face face(m_omMesh.add_face(v0, v1, v2));
 
-   Point A(m_omMesh.point(v0));
-   Point B(m_omMesh.point(v1));
-   Point C(m_omMesh.point(v2));
+   if (face != OpenMesh::PolyConnectivity::InvalidFaceHandle) {
+
+      Point A(m_omMesh.point(v0));
+      Point B(m_omMesh.point(v1));
+      Point C(m_omMesh.point(v2));
        
-   m_omMesh.property(m_faceCentroidsHandle, face) = (A+B+C)/3.0;
-   A = (B-A)%(C-A);
-   m_omMesh.set_normal(face, A.normalize());
+      m_omMesh.property(m_faceCentroidsHandle, face) = (A+B+C)/3.0;
+      A = (B-A)%(C-A);
+      m_omMesh.set_normal(face, A.normalize());
+   }
 
    return face;
 } 
@@ -476,6 +482,7 @@ void Mesh::setNormal(Vertex const& handle, Normal const& normal)
 {
    m_omMesh.set_normal(handle, normal);
 }
+
 
 void Mesh::setPoint(Vertex const& handle, Point const& p)
 {
@@ -529,6 +536,12 @@ bool Mesh::computeFaceNormals()
    m_omMesh.update_face_normals();
 
    return true;
+}
+
+
+bool Mesh::computeVertexNormals()
+{
+   m_omMesh.update_vertex_normals();
 }
 
 

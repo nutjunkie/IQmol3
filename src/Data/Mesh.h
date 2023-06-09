@@ -158,6 +158,8 @@ namespace Data {
          /// Computes the face centroids and updates the face normals
          bool computeFaceNormals();
 
+         bool computeVertexNormals();
+
          // This requests the properties that every mesh must have, all the time
          void requestDefaultProperties();
 
