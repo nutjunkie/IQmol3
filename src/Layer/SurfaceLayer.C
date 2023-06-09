@@ -572,7 +572,6 @@ void Surface::decimate()
       m_surface.meshNegative().data());
 
    connect(m_decimator, SIGNAL(finished()), this, SLOT(decimateFinished()));
-   QLOG_INFO() << "Commencing mesh decimation";
    m_decimator->start();
 }
 
