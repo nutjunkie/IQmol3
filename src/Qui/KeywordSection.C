@@ -12,16 +12,16 @@
 #include "OptSection.h"
 #include "MoleculeSection.h"
 #include "ExternalChargesSection.h"
+#include "LJParametersSection.h"
 #include "KeyValueSection.h"
 
 
 namespace Qui {
 
-
 // Factory - we use this to generate a derived KeywordSection based on its
 // name.  Note that if you add additional specialized KeywordSections, this
 // Factory needs to be made aware of them.
-KeywordSection* KeywordSectionFactory(QString const& type) 
+KeywordSection* KeywordSection::Factory(QString const& type) 
 {
    QString t(type.toLower());
 
@@ -33,6 +33,8 @@ KeywordSection* KeywordSectionFactory(QString const& type)
       return new OptSection();
    }else if (t == "external_charges") {
       return new ExternalChargesSection();
+   }else if (t == "lj_parameters") {
+      return new LJParametersSection();
    }else if (t == "pcm") {
       return new KeyValueSection("pcm");
    }else if (t == "solvent") {
@@ -41,45 +43,11 @@ KeywordSection* KeywordSectionFactory(QString const& type)
       return new KeyValueSection("smx");
    }else if (t == "chemsol") {
       return new KeyValueSection("chemsol");
+   }else if (t == "geom_opt") {
+      return new KeyValueSection("geom_opt");
    }else {
-      return new GenericSection(t);
+      return new KeywordSection(t);
    }
 }
-
-
-QString KeywordSection::format() {
-   return m_print ? dump() + "\n" : QString();
-}
-
-
-
-// ---------- GenericSection ----------
-
-// This a fallback section that simply holds the data in a string.  It is
-// useful when no other formating or processing is required.
-
-QString GenericSection::dump() const 
-{
-   QString s;
-   s += "$" + name() + "\n";
-   if (!m_data.isEmpty()) s += m_data + "\n";
-   s += "$end\n";
-   return s;
-}
-
-QString GenericSection::rawData() {
-   return m_data;
-}
-
-void GenericSection::read(QString const& data) {
-    m_data = data.trimmed();
-    if (m_data.isEmpty()) m_print = false;
-}
-
-
-GenericSection* GenericSection::clone() const {
-   return new GenericSection(name(), m_data, m_print);
-}
-
 
 } // end namespace Qui

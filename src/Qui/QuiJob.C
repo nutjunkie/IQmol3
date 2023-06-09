@@ -10,7 +10,6 @@
 #include "QuiJob.h"
 #include "OptionDatabase.h"
 #include "Option.h"
-#include "QuiMolecule.h"
 #include "RemSection.h"
 #include "MoleculeSection.h"
 #include "KeyValueSection.h"
@@ -29,6 +28,7 @@ Job::Job() {
    m_pcmSection           = new KeyValueSection("pcm",false);
    m_smxSection           = new KeyValueSection("smx",false);
    m_chemsolSection       = new KeyValueSection("chemsol",false);
+   m_geomOptSection       = new KeyValueSection("geom_opt",false, false);
 
    m_sections["rem"]      = m_remSection;
    m_sections["molecule"] = m_moleculeSection;
@@ -36,6 +36,7 @@ Job::Job() {
    m_sections["pcm"]      = m_pcmSection;
    m_sections["smx"]      = m_smxSection;
    m_sections["chemsol"]  = m_chemsolSection;
+   m_sections["geom_opt"] = m_geomOptSection;
 
    // A hack to ensure the corresponding $blocks have something inside them
    // when they are printed.
@@ -167,18 +168,6 @@ bool Job::isReadCoordinates()
 }
 
 
-Molecule* Job::getMolecule() 
-{
-   if (m_moleculeSection)  {
-      return m_moleculeSection->getMolecule();
-   }else {
-      return 0;
-   }
-}
-
-
-
-
 void Job::setCharge(int value) 
 {
    if (m_moleculeSection) m_moleculeSection->setCharge(value);
@@ -221,14 +210,14 @@ void Job::setScanCoordinates(QString const& scan)
 void Job::setEfpFragments(QString const& efpFragments) 
 {
    KeywordSection* efp = addSection("efp_fragments", efpFragments);
-   efp->print(!efpFragments.isEmpty());
+   efp->visible(!efpFragments.isEmpty());
 }
 
 
 void Job::setEfpParameters(QString const& efpParameters) 
 {
    KeywordSection* efp = addSection("efp_parameters", efpParameters);
-   efp->print(!efpParameters.isEmpty());
+   efp->visible(!efpParameters.isEmpty());
 }
 
 
@@ -237,22 +226,14 @@ void Job::setExternalCharges(QString const& charges)
    if (charges.isEmpty()) return;
    ExternalChargesSection* externalCharges(new ExternalChargesSection(charges));
    addSection(externalCharges);
-   externalCharges->print(!charges.isEmpty());
+   externalCharges->visible(!charges.isEmpty());
 }
 
 
 void Job::setGenericSection(QString const& name, QString const& contents)
 {
    KeywordSection* section = addSection(name, contents);
-   section->print(false);
-}
-
-
-void Job::setMolecule(Molecule* mol) 
-{
-   if (m_moleculeSection) {
-      m_moleculeSection->setMolecule(mol);
-   }
+   section->visible(false);
 }
 
 
@@ -271,6 +252,9 @@ void Job::setOption(QString const& name, QString const& value)
    }else if (name.startsWith("QUI_CHEMSOL_", Qt::CaseInsensitive)) {
       if (m_chemsolSection) m_chemsolSection->setOption(name, value);
 
+   }else if (name.startsWith("QUI_GEOM_OPT", Qt::CaseInsensitive)) {
+      if (m_geomOptSection) m_geomOptSection->setOption(name, value);
+
    }else if (m_remSection) {
       m_remSection->setOption(name, value);
       if (name.toUpper() == "JOB_TYPE" && m_moleculeSection) {
@@ -288,11 +272,14 @@ void Job::printOption(QString const& name, bool doPrint)
    }else if (name.startsWith("QUI_PCM")) {
       if (m_pcmSection) m_pcmSection->printOption(name, doPrint);
 
-   }else if (name.startsWith("QUI_SMX_", Qt::CaseInsensitive)) {
+   }else if (name.startsWith("QUI_SMX", Qt::CaseInsensitive)) {
       if (m_smxSection) m_smxSection->printOption(name, doPrint);
 
-   }else if (name.startsWith("QUI_CHEMSOL_", Qt::CaseInsensitive)) {
+   }else if (name.startsWith("QUI_CHEMSOL", Qt::CaseInsensitive)) {
       if (m_chemsolSection) m_chemsolSection->printOption(name, doPrint);
+
+   }else if (name.startsWith("QUI_GEOM_OPT", Qt::CaseInsensitive)) {
+      if (m_geomOptSection) m_geomOptSection->printOption(name, doPrint);
 
    }else {
       if (m_remSection) m_remSection->printOption(name, doPrint);
@@ -302,7 +289,7 @@ void Job::printOption(QString const& name, bool doPrint)
 
 KeywordSection* Job::addSection(QString const& name, QString const& value) 
 {
-   KeywordSection* section(KeywordSectionFactory(name));
+   KeywordSection* section(KeywordSection::Factory(name));
    section->read(value);
    addSection(section);
    return section;
@@ -311,14 +298,14 @@ KeywordSection* Job::addSection(QString const& name, QString const& value)
 
 QString Job::getComment() 
 {
-   GenericSection* comment = dynamic_cast<GenericSection*>(getSection("comment"));
-   return comment ? comment->rawData() : QString();
+   KeywordSection* comment = getSection("comment");
+   return comment ? comment->formatContents() : QString();
 }
 
 
 void Job::setComment(QString const& s) 
 {
-   GenericSection* comment = dynamic_cast<GenericSection*>(getSection("comment"));
+   KeywordSection* comment = getSection("comment");
    if (comment) {
       comment->read(s);
    }else {
@@ -359,12 +346,12 @@ int Job::getNumberOfAtoms() {
 }
 
 
-void Job::printSection(QString const& name, bool doPrint) {
-   if (doPrint && m_sections.count(name) == 0) {
+void Job::printSection(QString const& name, bool isVisible) {
+   if (isVisible && m_sections.count(name) == 0) {
       // if we should print a section then there should be one there.
-      addSection(KeywordSectionFactory(name)); 
+      addSection(KeywordSection::Factory(name)); 
    }
-   if (m_sections.count(name)) m_sections[name]->print(doPrint);
+   if (m_sections.count(name)) m_sections[name]->visible(isVisible);
 }
 
 
@@ -373,32 +360,20 @@ QString Job::format(bool const preview)
    QMap<QString,KeywordSection*>::iterator iter, 
       begin(m_sections.begin()), end(m_sections.end());
 
-   QString s, name;
+   QString s;
 
+   // Ensure standard ordering of common sections
    iter = m_sections.find("comment");
-   if (iter != end) s += iter.value()->format();
+   if (iter != end) s += iter.value()->format(preview);
    iter = m_sections.find("molecule");
-   if (iter != end) s += iter.value()->format();
+   if (iter != end) s += iter.value()->format(preview);
    iter = m_sections.find("rem");
-   if (iter != end) s += iter.value()->format();
-
-
-   iter = m_sections.find("external_charges");
-   if (iter != end) {
-      if (preview) {
-         ExternalChargesSection* x;
-         x = dynamic_cast<ExternalChargesSection*>(iter.value());
-         s += x->previewFormat();
-      }else {
-         s += iter.value()->format();
-      }
-   }
+   if (iter != end) s += iter.value()->format(preview);
 
    for (iter = begin; iter != end; ++iter) {
-	   name = iter.key();
-	   if (name != "comment" && name != "molecule" && 
-           name != "rem"     && name != "external_charges") {
-           s += iter.value()->format();
+	   QString name = iter.key();
+	   if (name != "comment" && name != "molecule" && name != "rem") {
+           s += iter.value()->format(preview);
 	   }
    }
 

@@ -18,7 +18,6 @@
 #include <QString>
 
 
-
 namespace Qui {
 
 typedef QMap<QString,QString> StringMap;
@@ -27,7 +26,7 @@ class RemSection;
 class KeywordSection;
 class KeyValueSection;
 class MoleculeSection;
-class Molecule;
+
 
 class Job {
 
@@ -35,7 +34,6 @@ class Job {
       Job();
 
       ~Job();
-
 
       Job(Job const& that) { copy(that); }
 
@@ -65,7 +63,6 @@ class Job {
       void setEfpFragments(QString const&);
       void setEfpParameters(QString const&);
       void setExternalCharges(QString const&);
-      void setMolecule(Molecule*);
 
       void setGenericSection(QString const& name, QString const& contents);
 
@@ -79,7 +76,7 @@ class Job {
       void setComment(QString const&);
 
       KeywordSection* getSection(QString const& name);
-      Molecule* getMolecule();
+//      Molecule* getMolecule();
 
    private:
 	  //! We keep pointers to the RemSection and the Molecules section handy as
@@ -92,6 +89,7 @@ class Job {
       KeyValueSection* m_pcmSection;
       KeyValueSection* m_smxSection;
       KeyValueSection* m_chemsolSection;
+      KeyValueSection* m_geomOptSection;
 
 	  //! This contains a list of all the sections, including the RemSection
 	  //! and MoleculeSection

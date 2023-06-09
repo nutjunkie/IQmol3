@@ -10,7 +10,6 @@
 
 #include "QtVersionHacks.h"
 #include "MoleculeSection.h"
-#include "QuiMolecule.h"
 
 #include <QRegularExpression>
 #include <QStringList>
@@ -46,8 +45,6 @@ void MoleculeSection::read(QString const& input)
          m_multiplicity = tokens[1].toInt(&m);
          okay = c && m;
          setCoordinates(lines.join("\n"));
-        // m_molecule = new Molecule();
-        // m_molecule->setCoordinates(input);
       }
       
    }
@@ -68,29 +65,11 @@ bool MoleculeSection::isReadCoordinates() const
 }
 
 
-//! Returns a Molecule object corresponding to the current contents of the
-//! $molecule section
-Molecule* MoleculeSection::getMolecule() 
-{
-   if (m_molecule == 0) {
-      m_molecule = new Molecule();
-      m_molecule->setCoordinates(myDump());
-      qDebug() << "Creating new molecule from";
-      qDebug() << myDump();
-      qDebug() << "--------------------------";
-   }
-   return m_molecule;
-}
-
-
 QString MoleculeSection::myDump() const
 {
    QString s;
    if (isReadCoordinates()) {
       s += "read\n";
-   }else if (m_molecule) {
-      s = m_molecule->formatForQui(Coordinates::Cartesian);
-      s += "\n";
    }else {
       s += QString::number(m_charge) + " ";
       s += QString::number(m_multiplicity) + "\n";
@@ -110,12 +89,9 @@ QString MoleculeSection::myDump() const
 }
 
 
-QString MoleculeSection::dump() const
+QString MoleculeSection::formatContents() const
 {
-   QString s("$molecule\n");
-   s += myDump();
-   s += "$end\n";
-   return s;
+   return myDump(); 
 }
 
 
@@ -136,13 +112,6 @@ void MoleculeSection::setCoordinatesFsm(QString const& coordinates) {
 }
 
 
-
-
-void MoleculeSection::setMolecule(Molecule* mol) { 
-   m_molecule = mol; 
-}
-
-
 // TODO: this should be smartened up a bit, for the time being all I want is
 // the number of atoms.
 void MoleculeSection::parseCoordinates() {
@@ -158,13 +127,11 @@ void MoleculeSection::parseCoordinates() {
 
 void MoleculeSection::setCharge(int charge) {
    m_charge = charge;
-   if (m_molecule) m_molecule->SetTotalCharge(charge);
 }
 
 
 void MoleculeSection::setMultiplicity(int multiplicity) {
    m_multiplicity = multiplicity;
-   if (m_molecule) m_molecule->SetTotalSpinMultiplicity(multiplicity);
 }
 
 } // end namespace Qui

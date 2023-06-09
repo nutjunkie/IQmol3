@@ -1,80 +1,91 @@
-#ifndef QUI_KEYWORDSECTION_H
-#define QUI_KEYWORDSECTION_H
+#pragma once
+/*******************************************************************************
 
-/*!
- *  \class KeywordSection
- *
- *  \brief An abstract base class representing containers for holding $section
- *  data.  This base class primarily defines the I/O interface.
- *   
- *  \author Andrew Gilbert
- *  \date January 2008
- */
+  Copyright (C) 2023 Andrew Gilbert
+
+  This file is part of IQmol, a free molecular visualization program. See
+  <http://iqmol.org> for more details.
+
+  IQmol is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+  details.
+
+  You should have received a copy of the GNU General Public License along
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+
+********************************************************************************/
 
 #include <QString>
 
-
 namespace Qui {
+
+// An base class representing containers for holding $section data.  
+// in the simplest case this is just a string holding the data.
 
 class KeywordSection {
 
    public:
-      KeywordSection(QString const& name, bool print = true) 
-       : m_print(print), m_name(name) { }
-
-      virtual ~KeywordSection() { }
-
+      KeywordSection(QString const& name, bool visible = true, 
+         bool visibleWhenEmpty = true, QString const& contents = QString())
+       : m_visible(visible), m_name(name), m_contents(contents.trimmed()), 
+         m_visibleWhenEmpty(visibleWhenEmpty) 
+      { }
+         
       QString name() const { return m_name; }
-      void print(bool print) { m_print = print; }
-      bool print() const { return m_print; }
 
-	  //! This is just a wrapper for dump() which checks the m_print flag and
-	  //! is what should be called.
-      QString format();
+      void visible(bool visible) { m_visible = visible; }
+      bool visible() const { return m_visible; }
 
-      virtual void read(QString const&) = 0;
-      virtual KeywordSection* clone() const = 0;
+      QString format(bool preview = false) const
+      {
+         if (!m_visible) return QString();
+         QString s(preview ? previewContents() : formatContents());
+         if (!s.isEmpty() || m_visibleWhenEmpty) {
+            s = "$" + name() + "\n" + s + "$end\n\n";
+         }
+         return s;
+      }
 
+      virtual QString formatContents() const 
+      { 
+         return m_contents.isEmpty() ? m_contents : m_contents + "\n"; 
+      }
+
+      virtual void read(QString const& contents) 
+      {
+         m_contents = contents.trimmed(); 
+         if (m_contents.isEmpty()) m_visible = false;
+      }
+
+      virtual KeywordSection* clone() const
+      {
+          return new KeywordSection(m_name, m_visible, m_visibleWhenEmpty, m_contents);
+      }
+
+      static KeywordSection* Factory(QString const& type);
 
    protected:
-      virtual QString dump() const = 0;  
-      bool    m_print;
+	  // Allows for trunction of large contents in the preview window
+      virtual QString previewContents() const
+      {
+         return formatContents();
+      }
+
+      bool    m_visible;
+      bool    m_visibleWhenEmpty;
       QString m_name;
+      QString m_contents;
 
 
    private:
-      // This should prevent copying sections
       KeywordSection(KeywordSection const& that);
       KeywordSection const& operator=(KeywordSection const& that);
 };
 
-
-
-// Non-member functions
-//! A factory for generating KeywordSections
-KeywordSection* KeywordSectionFactory(QString const& type);
-
-
-
-//! GenericSection is used in cases where no specialized section exists.
-class GenericSection :  public KeywordSection {
-   public:
-      GenericSection(QString const& name, QString const& data = "", bool print = true) 
-        : KeywordSection(name, print), m_data(data) { }
-
-      void read(QString const& data);
-
-      QString rawData();
-
-      GenericSection* clone() const;
-
-    protected: 
-	  QString dump() const;
-
-    private:
-      QString m_data;
-};
-
-
 } // end namespace Qui
-#endif

@@ -10,10 +10,10 @@
  *  \date   August 2008
  */
 
-#include "OptionRegister.h"
 #include "Actions.h"
 #include "Conditions.h"
 #include "InputDialog.h"
+#include "OptionRegister.h"
 
 #include <QDebug>
 
@@ -38,17 +38,20 @@ bool False()
    return false; 
 }
 
+typedef QString S;
+
 
 bool isCompoundFunctional() 
 {
    OptionRegister& reg(OptionRegister::instance());
    QtNode& exchange(reg.get("EXCHANGE"));
    QString value(exchange.getValue().toUpper());
-   return (value != "HF")     && (value != "Slater") && (value != "B86")  &&
+   return (value != "HF")     && (value != "SLATER") && (value != "B86")  &&
           (value != "B88")    && (value != "B97-D")  && (value != "GG99") &&
-          (value != "Gill96") && (value != "PBE")    && (value != "PW86") &&
-          (value != "PW91")   && (value != "revPBE") && (value != "rPW86");
+          (value != "GILL96") && (value != "PBE")    && (value != "PW86") &&
+          (value != "PW91")   && (value != "REVPBE") && (value != "RPW86");
 }
+
 
 bool isPostHF() 
 {
@@ -82,6 +85,18 @@ bool requiresFirstDerivatives()
 }
 
 
+bool isOptimizationJob() 
+{
+   OptionRegister& reg(OptionRegister::instance());
+   QtNode& job_type(reg.get("JOB_TYPE"));
+   QString value(job_type.getValue().toUpper());
+   return (value == "GEOMETRY") ||  
+          (value == "TRANSITION STATE") ||  
+          (value == "REACTION PATH") ||  
+          (value == "AB INITIO MD");
+}
+
+
 bool requiresSecondDerivatives() 
 {
    OptionRegister& reg(OptionRegister::instance());
@@ -112,16 +127,16 @@ bool requiresAuxBasis()
    QString value(correlation.getValue().toUpper());
 
    bool tf((value == "RI-MP2")     ||  (value == "SOSMP2")      || 
-           (value == "ATTMP2")    ||
+           (value == "ATTMP2")     ||
            (value == "MOSMP2")     ||  (value == "RI-CIS(D)")   ||
            (value == "SOS-CIS(D)") ||  (value == "SOS-CIS(D0)") ||
-           (value == "CCD")        ||  (value == "CCD(2)")     ||
-           (value == "CCSD")       ||  (value == "CCSD(T)")    ||
-           (value == "CCSD(2)")    ||  (value == "CCSD(dT)")   ||
-           (value == "CCSD(fT)")   ||  (value == "QCCD")       ||
-           (value == "QCISD")      ||  (value == "QCISD(T)")   || 
-           (value == "OD")         ||  (value == "OD(T)")      ||
-           (value == "OD(2)")      ||  (value == "VOD")        ||
+           (value == "CCD")        ||  (value == "CCD(2)")      ||
+           (value == "CCSD")       ||  (value == "CCSD(T)")     ||
+           (value == "CCSD(2)")    ||  (value == "CCSD(dT)")    ||
+           (value == "CCSD(fT)")   ||  (value == "QCCD")        ||
+           (value == "QCISD")      ||  (value == "QCISD(T)")    || 
+           (value == "OD")         ||  (value == "OD(T)")       ||
+           (value == "OD(2)")      ||  (value == "VOD")         ||
            (value == "VOD(2)")     ||  (value == "VQCCD"));
 
    QtNode& exchange(reg.get("EXCHANGE"));
@@ -328,6 +343,39 @@ void InputDialog::initializeQuiLogic()
          + AddPage(m_ui.toolBoxOptions, m_toolBoxOptions.value(s), s)
       )
    );
+
+   // -----------------------------------------------------------------
+
+   QtNode& qui_libopt3(reg.get("QUI_LIBOPT3"));
+   QtNode& qui_optimize(reg.get("QUI_OPTIMIZE"));
+   QtNode& geom_opt_driver(reg.get("GEOM_OPT_DRIVER"));
+
+   qui_libopt3.addRule(
+      If (qui_libopt3 == QtTrue, geom_opt_driver.shouldBe("LIBOPT3"))
+   );
+
+   qui_optimize.addRule(
+      If (qui_optimize == QtTrue, geom_opt_driver.shouldBe("OPTIMIZE"))
+   );
+
+   s = "Optimization";
+   job_type.addRule(
+      If (isOptimizationJob, 
+         AddPage(m_ui.toolBoxOptions, m_toolBoxOptions.value(s), s) + 
+            Enable(m_ui.geom_opt_driver),
+         RemovePage(m_ui.toolBoxOptions, s) + Disable(m_ui.geom_opt_driver)
+      )
+   );
+
+   rule = If(Condition(isOptimizationJob) && (geom_opt_driver == "LIBOPT3"),
+      boost::bind(&InputDialog::printSection, this, "geom_opt", true),
+      boost::bind(&InputDialog::printSection, this, "geom_opt", false)
+   );
+
+   geom_opt_driver.addRule(rule);
+   job_type.addRule(rule);
+
+   // -----------------------------------------------------------------
 
    s = "Transition State";
    job_type.addRule(
@@ -1084,7 +1132,6 @@ void InputDialog::initializeQuiLogic()
 
    QtNode* node;
    QtNode* node2;
-   typedef QString S;
 
 
    // Advanced -> Wavefunction Analysis -> Plots

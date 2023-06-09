@@ -1,12 +1,25 @@
-#ifndef QUI_KEYVALUESECTION_H
-#define QUI_KEYVALUESECTION_H
+#pragma once
+/*******************************************************************************
 
-/*!
- *  \class KeyValueSection 
- *
- *  \brief A KeywordSection made up of keys and values, such as $rem and $solvent.
- *   
- */
+  Copyright (C) 2023 Andrew Gilbert
+
+  This file is part of IQmol, a free molecular visualization program. See
+  <http://iqmol.org> for more details.
+
+  IQmol is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+  details.
+
+  You should have received a copy of the GNU General Public License along
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+
+********************************************************************************/
 
 #include <QMap>
 #include <set>
@@ -19,12 +32,12 @@ namespace Qui {
 typedef QMap<QString, QString> StringMap;
 
 
+// A KeywordSection made up of keys and values, such as $rem and $solvent.
 class KeyValueSection : public KeywordSection 
 {
    public:
-      KeyValueSection(QString const& name, bool print = true);
-
-      virtual ~KeyValueSection();
+      KeyValueSection(QString const& name, bool visible = true, bool visibleWhenEmpty = true) 
+       : KeywordSection(name, visible, visibleWhenEmpty) { }
 
       void read(QString const& input);
 
@@ -46,12 +59,10 @@ class KeyValueSection : public KeywordSection
 
       KeyValueSection* clone() const;
 
-      QString format() const;
-
       static void addAdHoc(QString const& rem, QString const& v1, QString const& v2);
 
    protected:
-      QString dump() const;
+      QString formatContents() const;
 
    private:
       /// An ad-hoc map which converts values in the QUI to values used in
@@ -75,4 +86,3 @@ class KeyValueSection : public KeywordSection
 };
 
 } // end namespace Qui
-#endif

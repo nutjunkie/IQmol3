@@ -17,22 +17,22 @@
 
 namespace Qui {
 
-void ExternalChargesSection::processData() 
+void ExternalChargesSection::processContents() 
 {
-   int numberOfCharges = m_data.count(QRegularExpression("\\n"));
+   int numberOfCharges = m_contents.count(QRegularExpression("\\n"));
 
    // This is a hack switch to undo the charge truncation
    if (numberOfCharges > 0) {
-   //if (numberOfCharges < 10) {
-      m_truncatedData = m_data;
+ //if (numberOfCharges < 10) {
+      m_truncatedData = m_contents;
 
    }else {
       int n(0);
 
       for (int i = 0; i < 5; ++i) {
-         n = m_data.indexOf("\n",n+1);
+         n = m_contents.indexOf("\n",n+1);
       }
-      m_truncatedData = m_data.left(n+1);
+      m_truncatedData = m_contents.left(n+1);
 
       m_truncatedData += "< ... +";
       m_truncatedData += QString::number(numberOfCharges-5);
@@ -41,34 +41,23 @@ void ExternalChargesSection::processData()
 }
 
 
-QString ExternalChargesSection::dump() const
-{
-   QString s("$external_charges\n");
-   if (!m_data.isEmpty()) s += m_data + "\n";
-   s += "$end\n";
-   return s;
-}
-
-
 void ExternalChargesSection::read(QString const& data) 
 {
-    m_data = data.trimmed();
-    processData();
+    m_contents = data.trimmed();
+    if (m_contents.isEmpty()) m_visible = false;
+    processContents();
 }
 
 
 ExternalChargesSection* ExternalChargesSection::clone() const 
 {
-   return new ExternalChargesSection(m_data, m_print);
+   return new ExternalChargesSection(m_contents, m_visible);
 }
 
 
-QString ExternalChargesSection::previewFormat() const 
+QString ExternalChargesSection::previewContents() const 
 {
-   QString s("$external_charges\n");
-   if (!m_truncatedData.isEmpty()) s += m_truncatedData + "\n";
-   s += "$end\n";
-   return s;
+   return m_truncatedData.isEmpty() ? m_truncatedData: m_truncatedData + "\n";
 }
 
 } // end namespace Qui

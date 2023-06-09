@@ -124,12 +124,11 @@ void RemSection::read(QString const& input) {
 
 
 
-QString RemSection::dump() const
+QString RemSection::formatContents() const
 {
-   QString s("$rem\n");
    QMap<QString,QString>::const_iterator iter;
-   QString name, value;
-
+   QString name, value, s;
+   
    for (iter = m_options.begin(); iter != m_options.end(); ++iter) {
        name  = iter.key();
        value = iter.value();
@@ -138,10 +137,8 @@ QString RemSection::dump() const
        }
    }
 
-   s += "$end\n";
    return s;
 }
-
 
 
 RemSection* RemSection::clone() const 
@@ -371,7 +368,6 @@ bool RemSection::fixOptionForQChem(QString& name, QString& value) const
       value += ", " + m_options["QUI_XOPT_IRREP2"] + ", "
                     + m_options["QUI_XOPT_STATE2"] + "]";
    }
- 
 
    //qDebug() << "Fixing option for QChem" << name << "=" << value << "print = " << shouldPrint;
    return shouldPrint;

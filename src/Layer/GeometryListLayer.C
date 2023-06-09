@@ -26,6 +26,7 @@
 #include "AtomLayer.h"
 
 #include "Configurator/GeometryListConfigurator.h"
+#include "Configurator/GenerateConformersDialog.h"
 #include "Data/Geometry.h"
 #include "Data/Energy.h"
 #include "Data/GeometryList.h"
@@ -66,6 +67,9 @@ GeometryList::GeometryList(Data::GeometryList& geometryList)
    if (geometryList.size() < 2) {
       connect(newAction("Copy Geometry"), SIGNAL(triggered()), 
          this, SLOT(cloneLastGeometry()));
+      connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+         this, SLOT(generateConformers()));
+
       m_allowModifications = true;
    }else {
       m_configurator = new Configurator::GeometryList(*this);
@@ -123,6 +127,18 @@ void GeometryList::cloneLastGeometry()
    appendRow(geometry);
 
    setCurrentGeometry(m_geometryList.defaultIndex());
+}
+
+
+void GeometryList::generateConformers()
+{
+   if (m_molecule == 0) return;
+   GenerateConformersDialog* dialog(
+     new GenerateConformersDialog(m_molecule)
+   ); 
+
+   dialog->show();
+   dialog->raise();
 }
 
 

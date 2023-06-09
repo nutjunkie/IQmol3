@@ -90,7 +90,7 @@ void OptSection::read(QString const& input) {
 
 
 
-QString OptSection::dump() const
+QString OptSection::formatContents() const
 {
    QString s;
 

@@ -16,6 +16,7 @@ set( HEADERS
    FileConfigurator.h
    FrequenciesConfigurator.h
    GeminalOrbitalsConfigurator.h
+   GenerateConformersDialog.h
    GeometryListConfigurator.h
    InfoConfigurator.h
    IsotopesConfigurator.h
@@ -43,6 +44,7 @@ set( SOURCES
    FileConfigurator.C
    FrequenciesConfigurator.C
    GeminalOrbitalsConfigurator.C
+   GenerateConformersDialog.C
    GeometryListConfigurator.C
    InfoConfigurator.C
    IsotopesConfigurator.C
@@ -69,6 +71,7 @@ set( UI_FILES
    FileConfigurator.ui
    FrequenciesConfigurator.ui
    GeminalOrbitalsConfigurator.ui
+   GenerateConformersDialog.ui
    GeometryListConfigurator.ui
    InfoConfigurator.ui
    IsotopesConfigurator.ui
