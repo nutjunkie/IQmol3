@@ -412,6 +412,8 @@ void Molecule::writeToFile(QString const& filePath)
    Preferences::LastFileAccessed(filePath);
 
    QString tmpName(filePath + ".iqmoltmp");
+   qDebug() << "file path reached";
+   qDebug() << "file path = " << tmpName;
    std::ofstream ofs;
    ofs.open(QFile::encodeName(tmpName).data());
    if (!ofs) { 

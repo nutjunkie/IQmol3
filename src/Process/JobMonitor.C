@@ -156,13 +156,17 @@ void JobMonitor::closeEvent(QCloseEvent* event)
 
 void JobMonitor::saveJobListToPreferences() const
 {
+   QLOG_DEBUG() << "in save Joblist to preferences";
    JobList jobs(s_jobMap.keys());
+   QLOG_DEBUG() << "create joblists";
    JobList::iterator iter;
    QVariantList list;
-
+   QLOG_DEBUG() << "iterating Joblist ";
    for (iter = jobs.begin(); iter != jobs.end(); ++iter) {
+      QLOG_DEBUG() << "iterating";
        list.append((*iter)->toQVariant());
    }   
+   QLOG_DEBUG() << "iterating works as well";
 
    //qDebug() <<"Saving JobMonitorList" << list;
    Preferences::JobMonitorList(list);
@@ -191,10 +195,13 @@ void JobMonitor::loadJobListFromPreferences()
                 QDate date(QDate::fromJulianDay(job->julianDay()));
                 job->setSubmitTime(date.toString("d MMM"));
              }
+             QLOG_DEBUG() << "adding job to table";
              addToTable(job);
-
+            QLOG_DEBUG() << "succesfully added job to table";
              if (job->isActive()) {
+               QLOG_DEBUG() << "job is active";
                 Server* server = ServerRegistry::instance().find(job->serverName());
+                QLOG_DEBUG() << "Got job from registry";
                 if (server) {
                    server->watchJob(job);
                    if (server->isLocal()) {
@@ -561,6 +568,7 @@ void JobMonitor::jobSubmissionFailed(Job* job)
 
 void JobMonitor::addToTable(Job* job) 
 {
+   QLOG_DEBUG() << "entering addtable routine";
    if (!job) return;
    QTableWidget* table(m_ui.processTable);
    int row(table->rowCount());
@@ -580,17 +588,18 @@ void JobMonitor::addToTable(Job* job)
    table->item(row, 2)->setText(job->submitTime());
    unsigned time(job->runTime());
    if (time) table->item(row, 3)->setText(Util::Timer::formatTime(time));
-
+   QLOG_DEBUG() << "still in the addtable routine";
    QString status(Job::toString(job->status()));
    table->item(row, 4)->setText(status);
    table->item(row, 4)->setToolTip(job->message());
    table->item(row, 4)->setText(job->message());
 
    s_jobMap.insert(job, table->item(row,0));
-
+   QLOG_DEBUG() << "succesfull inserts";
    connect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
    //connect(job, SIGNAL(error()),    this, SLOT(jobError()));
+   QLOG_DEBUG() << "connectings slots work";
    saveJobListToPreferences();
 }
 
@@ -1109,7 +1118,7 @@ void JobMonitor::queryJob()
 void JobMonitor::queryJob(Job* job)
 {    
    if (!job) return;
-
+// add query for gromacs here
    try {
       Server* server = ServerRegistry::instance().find(job->serverName());
       if (!server) throw Exception("Invalid server");

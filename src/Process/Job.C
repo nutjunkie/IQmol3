@@ -66,6 +66,7 @@ Job::~Job()
 
 QVariant Job::toQVariant() const
 {
+   QLOG_DEBUG() << "doing to Q variant";
    QVariantMap map;
 
    map.insert("JobName",      m_jobName);  
@@ -76,8 +77,9 @@ QVariant Job::toQVariant() const
    map.insert("RunTime",      runTime());  
    map.insert("Status",       (int)m_status);  
    map.insert("JulianDay",    m_julianDay);
+   QLOG_DEBUG() << "normal part works";
    map.insert("jobInfo", m_jobInfo->toQVariantList());
-
+   QLOG_DEBUG() << "in save Joblist to preferences";
    return QVariant(map);
 }
 

@@ -818,6 +818,7 @@ void Server::killFinished()
 // ---------- Copy ----------
 void Server::copyResults(Job* job)
 {
+   //intercept here, check if it is a gromacs job
    if (isLocal()) return;
 
    QList<Network::Reply*> keys(m_activeRequests.keys(job));
