@@ -2826,7 +2826,7 @@ void Molecule::generateConformersDialog()
 {
    
    qDebug() << "Opening generate conformers dialog";
-   GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, m_molecule));
+   GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, this));
 
    dialog->setWindowModality(Qt::WindowModal);
    dialog->show();
