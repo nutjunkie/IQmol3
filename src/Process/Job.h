@@ -98,7 +98,7 @@ namespace Process {
       protected:
          /// Job construction should only be done via the JobMonitor, 
          /// hence we protect the constructor and destructor.
-         Job() { }
+         Job();
          Job(JobInfo*);
 
 		 /// Note that deleting a Job will not result in the termination 

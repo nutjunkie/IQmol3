@@ -48,8 +48,14 @@ QString Job::toString(Status const& status)
 }
 
 
+Job::Job() : m_jobInfo(0)
+{
+}
+
+
 Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
 {
+   qDebug() << "Initializing job with info object" << jobInfo;
    m_julianDay  = QDate::currentDate().toJulianDay();
    m_jobName    = m_jobInfo->baseName();
    m_serverName = m_jobInfo->serverName();
@@ -66,7 +72,7 @@ Job::~Job()
 
 QVariant Job::toQVariant() const
 {
-   QLOG_DEBUG() << "doing to Q variant";
+   QLOG_DEBUG() << "doing to Q variant" << m_jobInfo;
    QVariantMap map;
 
    map.insert("JobName",      m_jobName);  
@@ -78,7 +84,7 @@ QVariant Job::toQVariant() const
    map.insert("Status",       (int)m_status);  
    map.insert("JulianDay",    m_julianDay);
    QLOG_DEBUG() << "normal part works";
-   map.insert("jobInfo", m_jobInfo->toQVariantList());
+if (m_jobInfo)   map.insert("jobInfo", m_jobInfo->toQVariantList());
    QLOG_DEBUG() << "in save Joblist to preferences";
    return QVariant(map);
 }
