@@ -41,7 +41,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="SetupTab">
        <attribute name="title">
@@ -669,7 +669,7 @@ QToolButton:checked {
                  <x>0</x>
                  <y>0</y>
                  <width>588</width>
-                 <height>288</height>
+                 <height>301</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -944,7 +944,7 @@ QToolButton:checked {
            <enum>QFrame::Sunken</enum>
           </property>
           <property name="currentIndex">
-           <number>24</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="AdvancedSCFControl">
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -4560,7 +4560,7 @@ widgets.</string>
                   </sizepolicy>
                  </property>
                  <property name="currentIndex">
-                  <number>2</number>
+                  <number>3</number>
                  </property>
                  <widget class="QWidget" name="SolventNone"/>
                  <widget class="QWidget" name="SolventOnsager">
@@ -5514,7 +5514,7 @@ Eventually this should go.</string>
      <x>0</x>
      <y>0</y>
      <width>1062</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

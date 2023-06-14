@@ -54,6 +54,7 @@
 #include "VibronicLayer.h"
 
 
+#include "Configurator/GenerateConformersDialog.h"
 #include "Grid/SpatialProperty.h"
 #include "Viewer/UndoCommands.h"
 
@@ -71,6 +72,7 @@
 #include "openbabel/obiter.h"
 #include "openbabel/format.h"
 #include "openbabel/obconversion.h"
+#include "openbabel/conformersearch.h"
 #include "openbabel/generic.h"
 #include "openbabel/forcefield.h"
 #include "openbabel/plugin.h"
@@ -149,6 +151,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(selectAll()));
    connect(newAction("Reperceive Bonds"), SIGNAL(triggered()), 
       this, SLOT(reperceiveBonds()));
+   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+      this, SLOT(generateConformersDialog()));
 
    m_addGeometryMenu = newAction("Duplicate Geometry");
 
@@ -2816,6 +2820,80 @@ qDebug() << "Need to check if surface needs to be oriented to the molecular fram
    m_surfaceList.appendLayer(surfaceLayer);
    updated();
 }
+
+
+void Molecule::generateConformersDialog()
+{
+   
+   qDebug() << "Opening generate conformers dialog";
+   GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, m_molecule));
+
+   dialog->setWindowModality(Qt::WindowModal);
+   dialog->show();
+   dialog->raise();
+
+   connect(dialog, SIGNAL(accepted()), this, SLOT(generateConformers()));
+}
+
+
+void Molecule::generateConformers()
+{
+   GenerateConformersDialog* dialog(qobject_cast<GenerateConformersDialog*>(sender()));
+
+   bool sortEnergy(dialog->sortEnergy);
+   bool noBreakyBonds(dialog->noBreakyBonds);
+   int  numberOfConformers(dialog->numberOfConformers);
+   int  numberOfChildren(dialog->numberOfChildren);
+   int  mutability(dialog->mutability);
+   int  maximumGenerations(dialog->maximumGenerations);
+
+   qDebug() << "Do the biz" << sortEnergy;
+
+   AtomMap atomMap;
+   BondMap bondMap;
+
+   OBMol* obMol(toOBMol(&atomMap, &bondMap));
+
+   OBConformerSearch* obConformerSearch = new OBConformerSearch;
+
+   OBConformerScore* score;
+
+   if (sortEnergy) {
+      score = new  OBEnergyConformerScore();
+   }else {
+      score = new  OBRMSDConformerScore();
+   }
+
+
+   obConformerSearch->Setup(*obMol, numberOfConformers, numberOfChildren, 
+       mutability, maximumGenerations);
+   obConformerSearch->SetScore(score);
+   obConformerSearch->Search();
+   obConformerSearch->GetConformers(*obMol);
+
+   std::vector<double> energies = obMol->GetEnergies();
+   for (auto e : energies) {
+       qDebug() << "Conformer energy: " << e;
+   }
+
+   qDebug() << "Number of conformers: " << obMol->NumConformers();
+
+
+
+
+   delete score;
+   delete obConformerSearch;
+ 
+   Atom* atom;
+   FOR_ATOMS_OF_MOL(obAtom, obMol) {
+      atom = atomMap.value(&*obAtom); 
+      //if (atom) charges << obAtom->GetPartialCharge();
+   }
+
+   delete obMol;
+
+}
+
 
 
 } } // end namespace IQmol::Layer

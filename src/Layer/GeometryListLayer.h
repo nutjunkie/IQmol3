@@ -61,7 +61,6 @@ namespace Layer {
          void setCurrentGeometry(unsigned const index);
          void resetGeometry();
          void cloneLastGeometry();
-         void generateConformers();
 
       protected:
          void setPlay(bool const play);
