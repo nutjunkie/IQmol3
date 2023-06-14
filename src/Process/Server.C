@@ -242,11 +242,11 @@ void Server::submit(Job* job)
 
    if (!open()) return;
 
-   QString contents(job->jobInfo().get(QChemJobInfo::InputString));
+   QString contents(job->jobInfo()->get("InputString"));
    QString fileName(Util::WriteToTemporaryFile(contents));
    QLOG_DEBUG() << "Input file contents written to" << fileName;
 
-   if (isLocal()) job->jobInfo().localFilesExist(true);
+   if (isLocal()) job->jobInfo()->localFilesExist(true);
 
    // In the case of an HTTP server, we can simply POST the contents of the
    // input file and we're done.  Other servers need the run file and a 
@@ -259,7 +259,7 @@ void Server::submit(Job* job)
       m_activeRequests.insert(reply, job);
       reply->start();
    }else {
-      QString destination(job->jobInfo().getRemoteFilePath(QChemJobInfo::InputFileName));
+      QString destination(job->jobInfo()->getRemoteFilePath("InputFileName"));
       Network::Reply* reply(m_connection->putFile(fileName, destination));
       connect(reply, SIGNAL(finished()), this, SLOT(copyRunFile()));
       m_activeRequests.insert(reply, job);
@@ -299,9 +299,9 @@ void Server::copyRunFile()
 
       qDebug() << "Run file contents written to" << fileName;
 
-      QString destination(job->jobInfo().getRemoteFilePath(QChemJobInfo::RunFileName));
+      QString destination(job->jobInfo()->getRemoteFilePath("RunFileName"));
 #ifdef Q_OS_WIN32
-      if (isLocal()) destination = job->jobInfo().getRemoteFilePath(QChemJobInfo::BatchFileName);
+      if (isLocal()) destination = job->jobInfo()->getRemoteFilePath("BatchFileName");
 #endif
       reply = m_connection->putFile(fileName, destination);
       connect(reply, SIGNAL(finished()), this, SLOT(queueJob()));
@@ -340,7 +340,7 @@ void Server::queueJob()
       submit = substituteMacros(submit);
       submit = job->substituteMacros(submit);
 
-      QString workingDirectory(job->jobInfo().get(QChemJobInfo::RemoteWorkingDirectory));
+      QString workingDirectory(job->jobInfo()->get("RemoteWorkingDirectory"));
 
       if (isBasic()) {
          // Cache a list of currently running qchem jobs so we can identify the new one
@@ -818,6 +818,7 @@ void Server::killFinished()
 // ---------- Copy ----------
 void Server::copyResults(Job* job)
 {
+   //intercept here, check if it is a gromacs job
    if (isLocal()) return;
 
    QList<Network::Reply*> keys(m_activeRequests.keys(job));
@@ -872,7 +873,7 @@ void Server::listFinished()
       // of the directory that holds the FSM files.
       unsigned pos(fileList.indexOf(QRegularExpression(".*input.files")));
       if (pos >= 0) fileList.removeAt(pos);
-      QString destination(job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory));
+      QString destination(job->jobInfo()->get("LocalWorkingDirectory"));
       //reply->deleteLater();
 
       reply = m_connection->getFiles(fileList, destination);
@@ -936,8 +937,8 @@ void Server::copyResultsFinished()
       }
 
       QString msg("Results in: ");
-      msg += job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory);
-      job->jobInfo().localFilesExist(true);
+      msg += job->jobInfo()->get("LocalWorkingDirectory");
+      job->jobInfo()->localFilesExist(true);
       job->setStatus(Job::Finished, msg);
       //reply->deleteLater();
 

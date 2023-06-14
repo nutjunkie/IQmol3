@@ -23,6 +23,7 @@
 #include "MainWindow.h"
 #include "ServerConfigurationListDialog.h"
 #include "JobMonitor.h"
+#include "QChemJobInfo.h"
 #include "ServerRegistry.h" 
 #include "InsertMoleculeDialog.h" 
 #include "QMsgBox.h"
@@ -703,9 +704,16 @@ void MainWindow::createMenus()
       connect(action, SIGNAL(triggered()), this, SLOT(showGromacsDialog()));
       action->setShortcut(Qt::CTRL | Qt::Key_G );
 
+      name = "Edit Gromacs Config";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showGromacsConfigDialog()));
+
       name = "Edit Gomacs Server";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(showGromacsServerDialog()));
+
+
+
 #endif
 
 
@@ -975,9 +983,9 @@ void MainWindow::showQChemUI()
 }
 
 
-void MainWindow::submitJob(IQmol::Process::QChemJobInfo& qchemJobInfo)
+void MainWindow::submitJob(IQmol::Process::QChemJobInfo &qchemJobInfo)
 {
-   Process::JobMonitor::instance().submitJob(qchemJobInfo);
+   Process::JobMonitor::instance().submitJob(&qchemJobInfo);
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
    if (!mol) return;
    mol->qchemJobInfoChanged(qchemJobInfo);
@@ -1013,6 +1021,20 @@ void MainWindow::showGromacsDialog()
 #endif
 }
 
+void MainWindow::showGromacsConfigDialog()
+{
+#ifdef GROMACS
+   Gmx::GromacsConfigDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      Preferences::GromacsTopologyFile(dialog.getTopology());
+      Preferences::GromacsPositionsFile(dialog.getPositions());
+
+   }
+   
+#endif
+}
+
 
 void MainWindow::showGromacsServerDialog()
 {
@@ -1024,6 +1046,8 @@ void MainWindow::showGromacsServerDialog()
    }
 #endif
 }
+
+
 
 
 void MainWindow::insertMoleculeDialog() 

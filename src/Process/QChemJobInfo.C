@@ -31,9 +31,9 @@ namespace Process {
 QVariantList QChemJobInfo::toQVariantList() const
 {
    QVariantList list;
-   list << QVariant(m_data[LocalWorkingDirectory]);
-   list << QVariant(m_data[RemoteWorkingDirectory]);
-   list << QVariant(m_data[InputString]);
+   list << QVariant(m_data["LocalWorkingDirectory"]);
+   list << QVariant(m_data["RemoteWorkingDirectory"]);
+   list << QVariant(m_data["InputString"]);
    list << QVariant(m_charge);
    list << QVariant(m_multiplicity);
    list << QVariant(m_localFilesExist);
@@ -48,13 +48,13 @@ bool QChemJobInfo::fromQVariantList(QVariantList const& list)
    bool ok(list.size() >= 6);            if (!ok) return false;
 
    ok = list[0].canConvert<QString>();   if (!ok) return false;
-   m_data.insert(LocalWorkingDirectory,  list[0].toString());
+   m_data.insert("LocalWorkingDirectory",  list[0].toString());
 
    ok = list[1].canConvert<QString>();   if (!ok) return false;
-   m_data.insert(RemoteWorkingDirectory, list[1].toString());
+   m_data.insert("RemoteWorkingDirectory", list[1].toString());
 
    ok = list[2].canConvert<QString>();   if (!ok) return false;
-   m_data.insert(InputString,            list[2].toString());
+   m_data.insert("InputString",            list[2].toString());
              
    ok = list[3].canConvert<int>();       if (!ok) return false;
    m_multiplicity = list[3].toInt();
@@ -69,73 +69,94 @@ bool QChemJobInfo::fromQVariantList(QVariantList const& list)
 }
 
 
-void QChemJobInfo::set(Field const field, QString const& value) 
+void QChemJobInfo::set(QString const key, QString const& value) 
 {
-   //qDebug() << "Setting QChemJobInfo field" << field << "to" << value;
-   switch (field) {
-      case LocalWorkingDirectory:
-      case RemoteWorkingDirectory:
-      case InputString:
-      case Coordinates:
-      case CoordinatesFsm:
-      case Constraints:
-      case ScanCoordinates:
-      case ExternalCharges:
-      case EfpFragments:
-      case EfpParameters:
-      case OnsagerRadius:
-      case InputFileTemplate:
-      case Isotopes:
-         m_data[field] = value;
-         break;
-      default:
-         QLOG_WARN() << "Attempt to set invalid field in QChemJobInfo::set()";
-      break;
-   }
-   //updated();
+   qDebug() << "Setting QChemJobInfo field" << key << "to" << value;
+   m_data[key] = value;
 }
 
 
-void QChemJobInfo::set(Field const field, int const& value) 
+void QChemJobInfo::set(QString const key, int const& value)
 {
-   switch (field) {
-      case Charge:       
-         m_charge = value;        
-         break;
-      case Multiplicity:  
-         m_multiplicity = value;  
-         break;
-      case NElectrons:  
-         m_nElectrons = value;  
-         break;
-      default: 
-         m_data[field] = QString::number(value);
-         break;
+
+   if(key == "Charge"){       
+      m_charge = value;
+   } else if(key == "Multiplicity"){ 
+      m_multiplicity = value;  
+   } else if (key == " NElectrons"){
+      m_nElectrons = value;  
+   }else{
+      m_data[key] = QString::number(value);
    }            
-   //updated();
 }
 
 
 // Obviously this will return rubbish if a non-file field is specified
-QString QChemJobInfo::getLocalFilePath(Field const field) const
+QString QChemJobInfo::getLocalFilePath(QString const key) const
 {
-   QString path(get(LocalWorkingDirectory));
+   QString path(get("LocalWorkingDirectory"));
    if (!path.endsWith("/")) path += "/";
-   path += get(field);
+   path += get(key);
    return path;
 }
 
 
 // Obviously this will return rubbish if a non-file field is specified
-QString QChemJobInfo::getRemoteFilePath(Field const field) const
+QString QChemJobInfo::getRemoteFilePath(QString const key) const
 {
-   QString path(get(RemoteWorkingDirectory));
+   QString path(get("RemoteWorkingDirectory"));
    if (!path.endsWith("/")) path += "/";
-   path += get(field);
+   path += get(key);
    return path;
 }
 
+QString QChemJobInfo::get(QString const key) const
+{ 
+   QString value(baseName());
+  
+   if (key == "InputFileName"){
+         value += ".inp";
+   } else if (key == "OutputFileName"){
+      value += ".out";
+   } else if (key == "AuxFileName"){
+      value += ".FChk";
+   } else if (key == "EspFileName"){
+      value += ".esp";
+   } else if (key == "MoFileName"){
+      value += ".mo";
+   } else if (key == "DensityFileName"){
+      value += ".hf";
+   } else if (key == "RunFileName"){
+      value += ".run";
+   } else if (key == "BatchFileName"){
+      value += ".bat";
+   } else if (key == "ErrorFileName"){
+      value += ".err";
+   }else{
+      qDebug() << "trying key" << key ;
+      value = m_data[key];
+      qDebug() << "returning value" << value;
+   }
 
+   return value;
+}
+
+int QChemJobInfo::getInt(QString const key) const
+{
+   
+   if(key == "Charge"){       
+      return m_charge;  
+   } else if(key == "Multiplicity"){ 
+      return  m_multiplicity;
+   } else if (key == " NElectrons"){
+      return m_nElectrons;  
+   }else{
+      return 0;
+   }            
+}
+
+
+/*
 QString QChemJobInfo::get(Field const field) const
 { 
    QString value(baseName());
@@ -176,13 +197,13 @@ QString QChemJobInfo::get(Field const field) const
 
    return value;
 }
-
+*/
 
 QStringList QChemJobInfo::outputFiles() const
 {
    QStringList files;
-   files.append(get(LocalWorkingDirectory) + "/" + get(OutputFileName));
-   files.append(get(LocalWorkingDirectory) + "/" + get(AuxFileName));
+   files.append(get("LocalWorkingDirectory") + "/" + get("OutputFileName"));
+   files.append(get("LocalWorkingDirectory") + "/" + get("AuxFileName"));
    return files;
 }
 
@@ -190,12 +211,12 @@ QStringList QChemJobInfo::outputFiles() const
 void QChemJobInfo::dump() const
 {
    QLOG_DEBUG() << "QChemJobInfo info:";
-   QLOG_DEBUG() << "   InputFileName         " << get(InputFileName);
-   QLOG_DEBUG() << "   OutputFileName        " << get(OutputFileName);
-   QLOG_DEBUG() << "   AuxFileName           " << get(AuxFileName);
-   QLOG_DEBUG() << "   RunFileName           " << get(RunFileName);
-   QLOG_DEBUG() << "   LocalWorkingDirectory " << get(LocalWorkingDirectory);
-   QLOG_DEBUG() << "   RemoteWorkingDirectory" << get(RemoteWorkingDirectory);
+   QLOG_DEBUG() << "   InputFileName         " << get("InputFileName");
+   QLOG_DEBUG() << "   OutputFileName        " << get("OutputFileName");
+   QLOG_DEBUG() << "   AuxFileName           " << get("AuxFileName");
+   QLOG_DEBUG() << "   RunFileName           " << get("RunFileName");
+   QLOG_DEBUG() << "   LocalWorkingDirectory " << get("LocalWorkingDirectory");
+   QLOG_DEBUG() << "   RemoteWorkingDirectory" << get("RemoteWorkingDirectory");
    QLOG_DEBUG() << "   Molecule pointer      " << m_moleculePointer;
    JobInfo::dump();
 }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IQMOL_GROMACSCONFIG_H
+#define IQMOL_GROMACSCONFIG_H
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -21,49 +22,28 @@
    
 ********************************************************************************/
  
-#include "Gromacs/ui_GromacsDialog.h"
 #include <QDialog>
-#include <QJsonObject>
-#include <QJsonArray>
+#include "Gromacs/ui_GromacsConfigDialog.h"
 
-
-class QNetworkAccessManager;
-class QNetworkReply;
 
 namespace IQmol {
+
 namespace Gmx {
 
-   enum BoxType { Cubic = 0, 
-                  TruncatedOctahedron, 
-                  HexagonalPrism,
-                  RhombicDodecahedron };
-
-   class GromacsDialog: public QDialog {
+   class GromacsConfigDialog: public QDialog {
 
       Q_OBJECT
 
       public:
-         GromacsDialog(QWidget* parent);
-         ~GromacsDialog();
+         GromacsConfigDialog(QWidget* parent);
 
-      private Q_SLOTS:
-         void on_generateBoxButton_clicked(bool);
-
-         //QJsonArray readToJson();
-         //void stageCalculation();   
-         void boxRequestFinished();
-         void solvateRequestFinished();
-         void on_solvateButton_clicked(bool);
-         QString readToString();
+         QString getTopology() const;
+         QString getPositions() const;
       
       private:
-         QJsonObject boxRequestPayload();
-         QJsonObject solvateRequestPayload();
- 
-         void enableRequestWidgets(bool);
-         Ui::GromacsDialog  m_dialog;
-         QNetworkAccessManager* m_networkAccessManager;
-         QNetworkReply* m_networkReply; 
+         Ui::GromacsConfigDialog  m_dialog;
    };
 
 } } // end namespace IQmol::Gmx
+
+#endif

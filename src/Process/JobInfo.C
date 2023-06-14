@@ -74,7 +74,7 @@ bool JobInfo::isActive(Status const status)
 QVariantList JobInfo::toQVariantList() const
 {
    QVariantList list;
-
+   QLOG_DEBUG() << "in QVariant to list";
    list << QVariant((int)m_jobStatus);
    list << QVariant(m_baseName);
    list << QVariant(m_serverName);

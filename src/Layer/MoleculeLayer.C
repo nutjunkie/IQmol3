@@ -60,7 +60,8 @@
 #include "Util/QsLog.h"
 #include "Util/QMsgBox.h"
 #include "Util/Constants.h"
-#include "Process/QChemJobInfo.h" 
+#include "Process/JobInfo.h" 
+#include "Process/QChemJobInfo.h"
 #include "Util/Preferences.h"
 #include "Parser/IQmolParser.h"
 
@@ -407,6 +408,8 @@ void Molecule::writeToFile(QString const& filePath)
    Preferences::LastFileAccessed(filePath);
 
    QString tmpName(filePath + ".iqmoltmp");
+   qDebug() << "file path reached";
+   qDebug() << "file path = " << tmpName;
    std::ofstream ofs;
    ofs.open(QFile::encodeName(tmpName).data());
    if (!ofs) { 
@@ -1760,49 +1763,49 @@ bool Molecule::sanityCheck()
 
 Process::QChemJobInfo Molecule::qchemJobInfo()
 {
-   Process::QChemJobInfo jobInfo;
+   Process::QChemJobInfo qchemJobInfo;
 
-   jobInfo.set(Process::QChemJobInfo::Charge,          totalCharge());
-   jobInfo.set(Process::QChemJobInfo::Multiplicity,    multiplicity());
-   jobInfo.set(Process::QChemJobInfo::Coordinates,     coordinatesAsString());
-   jobInfo.set(Process::QChemJobInfo::CoordinatesFsm,  coordinatesAsStringFsm());
-   jobInfo.set(Process::QChemJobInfo::Constraints,     constraintsAsString());
-   jobInfo.set(Process::QChemJobInfo::ScanCoordinates, scanCoordinatesAsString());
-   jobInfo.set(Process::QChemJobInfo::EfpFragments,    efpFragmentsAsString());
-   jobInfo.set(Process::QChemJobInfo::EfpParameters,   efpParametersAsString());
-   jobInfo.set(Process::QChemJobInfo::ExternalCharges, externalChargesAsString());
-   jobInfo.set(Process::QChemJobInfo::OnsagerRadius,   QString::number(onsagerRadius(),'f',4));
-   jobInfo.set(Process::QChemJobInfo::Isotopes,        isotopesAsString());
-   jobInfo.set(Process::QChemJobInfo::NElectrons,      m_info.numberOfElectrons());
+   qchemJobInfo.set("Charge",          totalCharge());
+   qchemJobInfo.set("Multiplicity",    multiplicity());
+   qchemJobInfo.set("Coordinates",     coordinatesAsString());
+   qchemJobInfo.set("CoordinatesFsm",  coordinatesAsStringFsm());
+   qchemJobInfo.set("Constraints",     constraintsAsString());
+   qchemJobInfo.set("ScanCoordinates", scanCoordinatesAsString());
+   qchemJobInfo.set("EfpFragments",    efpFragmentsAsString());
+   qchemJobInfo.set("EfpParameters",   efpParametersAsString());
+   qchemJobInfo.set("ExternalCharges", externalChargesAsString());
+   qchemJobInfo.set("OnsagerRadius",   QString::number(onsagerRadius(),'f',4));
+   qchemJobInfo.set("Isotopes",        isotopesAsString());
+   qchemJobInfo.set("NElectrons",      m_info.numberOfElectrons());
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
-   if (atomList.isEmpty()) jobInfo.setEfpOnlyJob(true);
+   if (atomList.isEmpty()) qchemJobInfo.setEfpOnlyJob(true);
 
    QString name;
 
    if (m_inputFile.filePath().isEmpty()) {
       QFileInfo fileInfo(Preferences::LastFileAccessed());
-      jobInfo.set(Process::QChemJobInfo::LocalWorkingDirectory, fileInfo.path());
-      jobInfo.setBaseName(text());
+      qchemJobInfo.set("LocalWorkingDirectory", fileInfo.path());
+      qchemJobInfo.setBaseName(text());
    }else {
-      jobInfo.set(Process::QChemJobInfo::LocalWorkingDirectory, m_inputFile.path());
-      jobInfo.setBaseName(m_inputFile.completeBaseName());
+      qchemJobInfo.set("LocalWorkingDirectory", m_inputFile.path());
+      qchemJobInfo.setBaseName(m_inputFile.completeBaseName());
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   jobInfo.setMoleculePointer(this);
+   qchemJobInfo.setMoleculePointer(this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));
    FileList::iterator file;
    for (file = fileList.begin(); file != fileList.end(); ++file) {
        if ((*file)->fileName().endsWith(".inp")) {
-          jobInfo.set(Process::QChemJobInfo::InputFileTemplate, (*file)->contents());
+          qchemJobInfo.set("InputFileTemplate", (*file)->contents());
           break;
        }
    }
 
-   return jobInfo;
+   return qchemJobInfo;
 }
 
 
@@ -1810,8 +1813,8 @@ void Molecule::qchemJobInfoChanged(Process::QChemJobInfo const& qchemJobInfo)
 { 
    if (text() == DefaultMoleculeName) {
       setText(qchemJobInfo.baseName());
-      m_info.setCharge(qchemJobInfo.getCharge());
-      m_info.setMultiplicity(qchemJobInfo.getMultiplicity());
+      m_info.setCharge(qchemJobInfo.getInt("Charge"));
+      m_info.setMultiplicity(qchemJobInfo.getInt("Multiplicity"));
    }
 }
 

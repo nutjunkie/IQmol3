@@ -130,6 +130,7 @@ void GeometryList::cloneLastGeometry()
 }
 
 
+
 void GeometryList::generateConformers()
 {
    if (m_molecule == 0) return;

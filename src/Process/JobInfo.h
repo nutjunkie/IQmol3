@@ -46,6 +46,8 @@ namespace Process {
 
          static QString toString(Status const);
 
+  
+
          JobInfo() : m_jobStatus(NotRunning), m_submitTime(0), m_memory(0), 
             m_scratch(0), m_ncpus(1) { }
 
@@ -99,6 +101,21 @@ namespace Process {
          virtual bool fromQVariantList(QVariantList const&);
 
          virtual void dump() const;
+         ///Virtual functions which must be specified by calculation type
+
+         virtual void set(QString const key,QString const& value) = 0;
+         virtual void set(QString const key, int const& value) = 0;
+         virtual QString get(QString const key) const = 0;
+         virtual int getInt(QString const key) const = 0;
+         virtual QStringList outputFiles() const = 0;
+         virtual void localFilesExist(bool const tf) = 0;
+         virtual bool localFilesExist() const = 0;
+         virtual bool efpOnlyJob() const = 0;
+         virtual void setEfpOnlyJob(bool const tf) = 0;
+         virtual void setMoleculePointer(void* moleculePointer) = 0;
+         virtual void* moleculePointer() const = 0;
+         virtual QString getRemoteFilePath(QString const key) const = 0;
+         virtual QString getLocalFilePath(QString const key) const = 0;
 
       protected:
          virtual void copy(JobInfo const&);

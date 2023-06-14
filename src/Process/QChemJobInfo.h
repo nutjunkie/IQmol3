@@ -39,6 +39,8 @@ namespace Process {
          /// InputString    - the entire input file as a string 
          /// RunFileName    - the name of the submission script
          /// Note that not all these are serialized
+
+         /*
          enum Field { 
                  InputFileName,           // 0
                  OutputFileName, 
@@ -68,7 +70,7 @@ namespace Process {
                                           // any input file loaded in the molecule.
               };
             
-
+         */
          QChemJobInfo() : m_charge(0), m_multiplicity(1), m_nElectrons(0), 
            m_localFilesExist(false),  m_promptOnOverwrite(true), m_efpOnlyJob(false), 
            m_moleculePointer(0) { }
@@ -84,19 +86,21 @@ namespace Process {
          QVariantList toQVariantList() const;
          bool fromQVariantList(QVariantList const&);
 
-         void set(Field const field, QString const& value);
-         void set(Field const field, int const& value);
+         void set(QString const key, QString const& value);
+         void set(QString const key, int const& value);
 
-         QString get(Field const field) const;
+         QString get(QString const key) const;
 
-         QString getRemoteFilePath(Field const) const;
-         QString getLocalFilePath(Field const) const;
+         QString getRemoteFilePath(QString const key) const;
+         QString getLocalFilePath(QString const key) const;
 
          QStringList outputFiles() const;
 
-         int getCharge() const { return m_charge; }
-         int getMultiplicity() const { return m_multiplicity; }
-         int getNElectrons() const { return m_nElectrons; }
+         int getInt(QString const key) const;
+
+         //int getCharge() const { return m_charge; }
+         //int getMultiplicity() const { return m_multiplicity; }
+         //int getNElectrons() const { return m_nElectrons; }
 
          bool efpOnlyJob() const { return m_efpOnlyJob; }
          void setEfpOnlyJob(bool const tf) { m_efpOnlyJob = tf; }
@@ -120,7 +124,7 @@ namespace Process {
       private:
          void copy(QChemJobInfo const&);
          /// Generic object to hold the data
-         QMap<Field,QString> m_data;
+         QMap<QString,QString> m_data;
          int  m_charge;
          int  m_multiplicity;
          int  m_nElectrons;

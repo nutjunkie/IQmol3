@@ -182,7 +182,9 @@ void Job::setMultiplicity(int value)
 
 void Job::setCoordinates(QString const& coords) 
 {
+   qDebug() << "set coordinates";
    if (m_moleculeSection) {
+      qDebug() << " has molecule";
       m_moleculeSection->setCoordinates(coords);
    }
 }
@@ -190,6 +192,7 @@ void Job::setCoordinates(QString const& coords)
 
 void Job::setCoordinatesFsm(QString const& coords) 
 {
+   qDebug() << "setCoordinatesFsm";
    if (m_moleculeSection) m_moleculeSection->setCoordinatesFsm(coords);
 }
 
@@ -209,6 +212,7 @@ void Job::setScanCoordinates(QString const& scan)
 
 void Job::setEfpFragments(QString const& efpFragments) 
 {
+   qDebug() << "adding efpFragments type" ;
    KeywordSection* efp = addSection("efp_fragments", efpFragments);
    efp->visible(!efpFragments.isEmpty());
 }
@@ -289,6 +293,7 @@ void Job::printOption(QString const& name, bool doPrint)
 
 KeywordSection* Job::addSection(QString const& name, QString const& value) 
 {
+   qDebug() << "adding section" ;
    KeywordSection* section(KeywordSection::Factory(name));
    section->read(value);
    addSection(section);

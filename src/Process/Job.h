@@ -24,6 +24,7 @@
 
 #include "Timer.h"
 #include "QChemJobInfo.h"
+#include "JobInfo.h"
 #include <QStringList>
 
 
@@ -82,7 +83,7 @@ namespace Process {
          /// query command and update the status accordingly
          virtual void parseQueryOutput(QString const&);
 
-         QChemJobInfo& jobInfo() { return m_qchemJobInfo; }
+         JobInfo* jobInfo() { return m_jobInfo; }
 
       public Q_SLOTS:
          //void copyProgress();
@@ -98,7 +99,7 @@ namespace Process {
          /// Job construction should only be done via the JobMonitor, 
          /// hence we protect the constructor and destructor.
          Job() { }
-         Job(QChemJobInfo const&);
+         Job(JobInfo*);
 
 		 /// Note that deleting a Job will not result in the termination 
 		 /// of the process.  This allows jobs to continue running even 
@@ -128,7 +129,7 @@ namespace Process {
          QString const& copyProgressString() const { return m_copyProgress; }
 
       private:
-         QChemJobInfo m_qchemJobInfo;
+         JobInfo* m_jobInfo;
 
          QString  m_jobName;
          QString  m_serverName;
