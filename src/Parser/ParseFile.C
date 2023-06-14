@@ -161,6 +161,9 @@ void ParseFile::run()
 
 bool ParseFile::parse(QString const& filePath, bool& addToFileList)
 {
+   QElapsedTimer timer;
+   timer.start();
+
    QFileInfo fileInfo(filePath);
    addToFileList = true;
    
@@ -274,6 +277,9 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
 
    runParser(parser, filePath);
    delete parser;
+
+   QLOG_INFO() << "File parsed in" << double(timer.elapsed()) /1000.0  << "s";
+
    return m_errorList.isEmpty();
 }
 

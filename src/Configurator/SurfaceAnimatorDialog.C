@@ -510,6 +510,4 @@ void SurfaceAnimatorDialog::animationStopped()
    on_playButton_clicked(false);
 }
 
-
-
 } // end namespace IQmol

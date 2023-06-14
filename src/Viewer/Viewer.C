@@ -127,8 +127,8 @@ void Viewer::setSurfaceFormat()
    //format.setAlphaBufferSize(8);
    format.setSamples(8);
    format.setVersion(2,1);
-   //format.setProfile(QSurfaceFormat::CoreProfile);
-   format.setProfile(QSurfaceFormat::CompatibilityProfile);
+   format.setProfile(QSurfaceFormat::CoreProfile);
+   //format.setProfile(QSurfaceFormat::CompatibilityProfile);
 
    QSurfaceFormat::setDefaultFormat(format);
    setFormat(format);

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_MOLECULE_H
-#define IQMOL_LAYER_MOLECULE_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -88,6 +87,7 @@ namespace IQmol {
       class Surface;
       class Group;
       class Info;
+
       typedef QMap<OpenBabel::OBAtom*, Atom*>  AtomMap;
       typedef QMap<OpenBabel::OBBond*, Bond*>  BondMap;
       typedef QMap<OpenBabel::OBAtom*, Group*> GroupMap;
@@ -308,6 +308,8 @@ namespace IQmol {
             void dumpData() { m_bank.dump(); }
             void setAtomicCharges(Data::Type::ID type);
             void updateAtomicCharges();
+            void generateConformersDialog();
+            void generateConformers();
    
          private:
             static bool s_autoDetectSymmetry;
@@ -382,6 +384,7 @@ namespace IQmol {
             void initProperties();
 
             void saveToGeometry(Data::Geometry&);
+
    
             QFileInfo m_inputFile;
    
@@ -443,5 +446,3 @@ namespace IQmol {
    typedef QList<Layer::Molecule*> MoleculeList;
 
 } // end namespace IQmol
-
-#endif
