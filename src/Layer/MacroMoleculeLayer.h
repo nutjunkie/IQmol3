@@ -27,22 +27,11 @@
 //#include "Util/octree/octree.h"
 //#include "Util/octree/point3d.h"
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Kd_tree.h>
-#include <CGAL/point_generators_3.h>
-#include <CGAL/algorithm.h>
-#include <CGAL/Fuzzy_sphere.h>
-#include <CGAL/Search_traits_3.h>
+
 
 
 namespace IQmol {
 
-typedef CGAL::Simple_cartesian<double>          K;  
-typedef K::Point_3                              Point_d;
-typedef CGAL::Random_points_in_cube_3<Point_d>  Random_points_iterator;
-typedef CGAL::Search_traits_3<K>                Traits;
-typedef CGAL::Fuzzy_sphere<Traits>              Fuzzy_circle;
-typedef CGAL::Kd_tree<Traits>                   Tree;
 
 
 namespace Layer {
@@ -68,7 +57,6 @@ namespace Layer {
     
       private:
          double m_radius;
-         Tree m_tree;
 //         Octree< Point3D<double> >  m_octree;
    };
 

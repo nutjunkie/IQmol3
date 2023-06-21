@@ -34,7 +34,7 @@ namespace Layer {
 
 
 MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* parent) : 
-   Component(macroMolecule.label(), parent), m_tree(1), m_radius(0)
+   Component(macroMolecule.label(), parent), m_radius(0)
 {
    QList<Data::Group*> const& groups(macroMolecule.groups());
 

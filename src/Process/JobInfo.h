@@ -108,6 +108,8 @@ namespace Process {
          virtual QString get(QString const key) const = 0;
          virtual int getInt(QString const key) const = 0;
          virtual QStringList outputFiles() const = 0;
+
+         // move local files exist and local file directory
          virtual void localFilesExist(bool const tf) = 0;
          virtual bool localFilesExist() const = 0;
          virtual bool efpOnlyJob() const = 0;
