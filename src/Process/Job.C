@@ -59,6 +59,10 @@ Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
    m_julianDay  = QDate::currentDate().toJulianDay();
    m_jobName    = m_jobInfo->baseName();
    m_serverName = m_jobInfo->serverName();
+   m_localFilesExist = m_jobInfo->localFilesExist();
+   m_localWorkingDirectory = m_jobInfo->get("LocalWorkingDirectory");
+
+
    m_status     = NotRunning;
 }
 
@@ -72,7 +76,7 @@ Job::~Job()
 
 QVariant Job::toQVariant() const
 {
-   QLOG_DEBUG() << "doing to Q variant" << m_jobInfo;
+   QLOG_DEBUG() << "doing to Q variant" ;
    QVariantMap map;
 
    map.insert("JobName",      m_jobName);  
@@ -83,6 +87,8 @@ QVariant Job::toQVariant() const
    map.insert("RunTime",      runTime());  
    map.insert("Status",       (int)m_status);  
    map.insert("JulianDay",    m_julianDay);
+   map.insert("LocalFilesExist", m_localFilesExist);
+   map.insert("LocalWorkingDirectory", m_localWorkingDirectory);
    QLOG_DEBUG() << "normal part works";
 if (m_jobInfo)   map.insert("jobInfo", m_jobInfo->toQVariantList());
    QLOG_DEBUG() << "in save Joblist to preferences";
@@ -123,6 +129,12 @@ bool Job::fromQVariant(QVariant const& qvar)
 
    if (map.contains("JulianDay")) {
       m_julianDay = map.value("JulianDay").toUInt(); 
+   }
+   if (map.contains("LocalFilesExist")) {
+      m_localFilesExist = map.value("LocalFilesExist").toString(); 
+   }
+   if (map.contains("LocalWorkingDirectory")) {
+      m_localWorkingDirectory = map.value("LocalWorkingDirectory").toString(); 
    }
 
    if (map.contains("JobInfo")) {
@@ -279,7 +291,7 @@ bool Job::isActive(Status const status)
 
 bool Job::localFilesExist() const 
 { 
-   return m_jobInfo->localFilesExist();
+   return m_localFilesExist;
 }
 
 } } // end namespaces IQmol::Process

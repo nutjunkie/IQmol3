@@ -246,7 +246,7 @@ void Server::submit(Job* job)
    QString fileName(Util::WriteToTemporaryFile(contents));
    QLOG_DEBUG() << "Input file contents written to" << fileName;
 
-   if (isLocal()) job->jobInfo()->localFilesExist(true);
+   if (isLocal()) job->localFilesExist(true);
 
    // In the case of an HTTP server, we can simply POST the contents of the
    // input file and we're done.  Other servers need the run file and a 
@@ -938,7 +938,7 @@ void Server::copyResultsFinished()
 
       QString msg("Results in: ");
       msg += job->jobInfo()->get("LocalWorkingDirectory");
-      job->jobInfo()->localFilesExist(true);
+      job->localFilesExist(true);
       job->setStatus(Job::Finished, msg);
       //reply->deleteLater();
 
