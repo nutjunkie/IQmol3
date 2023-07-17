@@ -42,6 +42,10 @@ Surface::Surface(Layer::Surface& surface) : m_surface(surface),
 
    m_ui.minValue->setVisible(false);
    m_ui.maxValue->setVisible(false);
+
+   m_ui.swapColorsButton->setEnabled(m_surface.isSigned());
+   m_ui.negativeColorButton->setVisible(m_surface.isSigned());
+   m_ui.negativeLabel->setVisible(m_surface.isSigned());
 }
 
 
@@ -104,11 +108,6 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
          this, SLOT(on_positiveColorButton_clicked(bool)));
 
-      if (m_surface.isSigned()) {
-         m_ui.negativeColorButton->setVisible(true);
-         m_ui.swapColorsButton->setEnabled(true);
-      }
- 
       m_surface.clearPropertyData();
 
    }else if (type == "Nuclei") {
