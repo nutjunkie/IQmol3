@@ -55,7 +55,9 @@ void ProteinChain::cartoonAvailable()
    Data::Surface* data(generateCartoon->getSurface());
    Layer::Surface* surfaceLayer(new Surface(*data));
    surfaceLayer->setCheckState(Qt::Checked);
-   appendLayer(surfaceLayer);
+   surfaceLayer->setText("Ribbon");
+qDebug() << "***************** isSigned() *********** " << data->isSigned();
+   prependLayer(surfaceLayer);
    updated();
 
    generateCartoon->deleteLater();;

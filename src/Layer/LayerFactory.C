@@ -36,6 +36,7 @@
 #include "Data/ProteinChain.h"
 #include "Data/OrbitalsList.h"
 #include "Data/Surface.h"
+#include "Data/Solvent.h"
 #include "Data/Vibronic.h"
 
 #include "LayerFactory.h"
@@ -61,6 +62,7 @@
 #include "OrbitalsLayer.h"
 #include "ProteinChainLayer.h"
 #include "ProteinLayer.h"
+#include "SolventLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
 #include "VibronicLayer.h"
@@ -238,6 +240,11 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(new MacroMolecule(macroMolecule));
          } break;
 
+         case Data::Type::Solvent: {
+            Data::Solvent& 
+               solvent(dynamic_cast<Data::Solvent&>(data));
+            layers.append(new Solvent(solvent));
+         } break;
 
          default:
             QLOG_WARN() << "Unimplemented data type in Layer::Factory"

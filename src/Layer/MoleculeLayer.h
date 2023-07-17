@@ -151,7 +151,6 @@ namespace IQmol {
             /// converting an atom to a functional group (click on atom event)
             qglviewer::Vec getBuildAxis(Atom*);
 
-            void addHydrogens();
 
             void symmetrize(double tolerance, bool updateCoordinates = true);
 
@@ -272,6 +271,8 @@ namespace IQmol {
             void autoDetectSymmetry();
             void invalidateSymmetry();
             void saveToCurrentGeometry();
+
+            void addHydrogens();
    
          Q_SIGNALS:
             void softUpdate(); // issue if the number of primitives does not change

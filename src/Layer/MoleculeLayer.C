@@ -151,6 +151,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(selectAll()));
    connect(newAction("Reperceive Bonds"), SIGNAL(triggered()), 
       this, SLOT(reperceiveBonds()));
+   connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
+      this, SLOT(addHydrogens()));
    connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
       this, SLOT(generateConformersDialog()));
 
@@ -1850,6 +1852,7 @@ void Molecule::addHydrogens()
    AtomMap::iterator iter;
    for (iter = atomMap.begin(); iter != atomMap.end(); ++iter) {
        int hybrid(iter.value()->getHybridization());
+/*
        qDebug() << "hybrid = " << hybrid;
        qDebug() << "GetAtomicNum       = " << iter.key()->GetAtomicNum();
        qDebug() << "GetImplicitHCount  = " << iter.key()->GetImplicitHCount();
@@ -1859,9 +1862,9 @@ void Molecule::addHydrogens()
        qDebug() << "GetTotalValence    = " << iter.key()->GetTotalValence();
        qDebug() << "GetHyb             = " << iter.key()->GetHyb();         
        qDebug() << "ExplicitHydrogenCoun " << iter.key()->ExplicitHydrogenCount();
-       if (hybrid > 0) {
-          iter.key()->SetHyb(hybrid);
-       }
+*/
+
+       if (hybrid > 0) iter.key()->SetHyb(hybrid);
    }
 
    obMol->AddHydrogens(false,false);

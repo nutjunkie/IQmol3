@@ -91,6 +91,8 @@ namespace Layer {
 		 /// preference to QStandardItem::appendRow()
          virtual void appendLayer(Base* child);
 
+         virtual void prependLayer(Base* child);
+
 		 /// Removes a child Layer from this, if it exists.  Note that deletion
 		 /// of the Layer must be handled explicitly.
          virtual void removeLayer(Base* child);
