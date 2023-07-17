@@ -162,6 +162,9 @@ namespace Data {
          unsigned getNAlpha() const { return m_nAlpha; }
          unsigned getNBeta()  const { return m_nBeta; }
 
+         QString const& name() const { return m_name; }
+         void name(QString const& name) { m_name = name; }
+
       private:
          template <class Archive>
          void privateSerialize(Archive& ar, unsigned const /* version */) {
@@ -183,6 +186,7 @@ namespace Data {
          unsigned m_nAlpha;
          unsigned m_nBeta;
          Bank m_properties;
+         QString m_name;
    };
 
 } } // end namespace IQmol::Data
