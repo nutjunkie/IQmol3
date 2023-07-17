@@ -47,7 +47,7 @@ namespace Data {
                 Atom,                   AtomList,               Bank, 
                 QmAtom,                 QmAtomList,             MacroMolecule,
                 MmAtom,                 MmAtomList,             Group,
-                Pdb,                    ProteinChain,
+                Pdb,                    ProteinChain,           Solvent,
                 PointCharge,            PointChargeList,        EfpFragment, 
                 EfpFragmentList,        EfpFragmentLibrary,     GridData, 
                 GridDataList,           File,                   FileList, 

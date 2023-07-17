@@ -44,6 +44,7 @@ QString toString(ID const id)
       case Group:                      s = "Data::Group";                     break;
       case Pdb:                        s = "Data::Pdb";                       break;
       case ProteinChain:               s = "Data::ProteinChain";              break;
+      case Solvent:                    s = "Data::Solvent";                   break;
 
       case Bank:                       s = "Data::Bank";                      break;
       case PointCharge:                s = "Data::PointCharge";               break;

@@ -54,6 +54,7 @@ SurfaceType::SurfaceType(int const kind)
       case MullikenAtomic:          m_kind = MullikenAtomic;          break;
       case MullikenDiatomic:        m_kind = MullikenDiatomic;        break;
       case GenericOrbital:          m_kind = GenericOrbital;          break;
+      case Ribbon:                  m_kind = Ribbon;                  break;
       default:
          qDebug() << "Unknown surface type" << kind;
          m_kind = Custom;
@@ -109,6 +110,7 @@ QString SurfaceType::toString() const
       case MullikenAtomic:         label = "Mulliken Atomic";         break;
       case MullikenDiatomic:       label = "Mulliken Diatomic";       break;
       case GenericOrbital:         label = "Orbital";                 break;
+      case Ribbon:                 label = "Ribbon";                  break;
    }
 
    if (isIndexed()) label += " " + QString::number(m_index+1);
