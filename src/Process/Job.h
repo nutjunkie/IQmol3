@@ -65,13 +65,12 @@ namespace Process {
          QString  const& jobName()    const { return m_jobName; }
          QString  const& serverName() const { return m_serverName; }
          QString  const& submitTime() const { return m_submitTime; }
-         QString  const& localWorkingDirectory() const { return m_localWorkingDirectory; }
          unsigned julianDay()  const { return m_julianDay; }
 
-         void localWorkingDirectory(QString const& string) { m_localWorkingDirectory = string; }    
-         void setSubmitTime(QString const& string) { m_submitTime = string; }
-         void localFilesExist(bool const tf) { m_localFilesExist = tf; }
+  
          bool localFilesExist() const;
+         void setSubmitTime(QString const& string) { m_submitTime = string; }
+
 
          /// The run time in seconds.  Use Util::Timer::formatTime() 
          /// to turn it into hh:mm:ss

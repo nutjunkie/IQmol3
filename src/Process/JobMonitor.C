@@ -1002,7 +1002,7 @@ void JobMonitor::copyResults(Job* job)
       JobInfo* jobInfo(job->jobInfo());
       QLOG_DEBUG() << "trying to get jobinfo local working directory" ;
 
-      QString dirPath(job->localWorkingDirectory());
+      QString dirPath(jobInfo->get("LocalWorkingDirectory"));
       QFileInfo info(dirPath);
       QLOG_DEBUG() << "got local working directory" ;
 
