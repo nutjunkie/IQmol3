@@ -1,12 +1,11 @@
-#ifndef IQMOL_PROCESS_JOB_H
-#define IQMOL_PROCESS_JOB_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,14 +15,13 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
 ********************************************************************************/
 
 #include "Timer.h"
-#include "QChemJobInfo.h"
 #include "JobInfo.h"
 #include <QStringList>
 
@@ -45,19 +43,13 @@ namespace Process {
       friend class Server;
 
       public:
-         enum Status { NotRunning = 0, Queued, Running, Suspended, Killed,  
-                       Error, Finished, Copying, Unknown };
-
-         static QString toString(Status const& status);
-
 		 /// This is the message that is displayed in the status
 		 /// column of the JobMonitor.
          QString const& message() const { return m_message; }
          //void setMessage(QString const& message) { m_message = message; }
 
-         Status status() const { return m_status; }
-         bool isActive() const { return isActive(m_status); }
-         static bool isActive(Status const);
+         JobInfo::Status status() const { return m_status; }
+         bool isActive() const { return JobInfo::isActive(m_status); }
 
          /// This is an external handle for the process, either a
          /// PID or PBS/SGE job number.
@@ -66,7 +58,6 @@ namespace Process {
          QString  const& serverName() const { return m_serverName; }
          QString  const& submitTime() const { return m_submitTime; }
          unsigned julianDay()  const { return m_julianDay; }
-
   
          bool localFilesExist() const;
          void setSubmitTime(QString const& string) { m_submitTime = string; }
@@ -114,7 +105,7 @@ namespace Process {
          /// ...and back again
          bool fromQVariant(QVariant const&);
 
-         void setStatus(Status const status, QString const& message = QString());
+         void setStatus(JobInfo::Status const status, QString const& message = QString());
 
          //void setJobName(QString const& jobName) { m_jobName = jobName; }
          //void setServerName(QString const& serverName) { m_serverName = serverName; }
@@ -134,7 +125,7 @@ namespace Process {
 
          QString  m_jobName;
          QString  m_serverName;
-         Status   m_status;
+         JobInfo::Status   m_status;
          QString  m_message;
          QString  m_submitTime;
          QString  m_jobId;
@@ -151,5 +142,3 @@ namespace Process {
    typedef QList<Job*> JobList;
 
 } } // end namespaces IQmol::Process
-
-#endif

@@ -283,7 +283,7 @@ void Server::copyRunFile()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, reply->message());
+         job->setStatus(JobInfo::Error, reply->message());
          JobMonitor::instance().jobSubmissionFailed(job);
          //reply->deleteLater();
          return;
@@ -329,7 +329,7 @@ void Server::queueJob()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, reply->message());
+         job->setStatus(JobInfo::Error, reply->message());
          JobMonitor::instance().jobSubmissionFailed(job);
          //reply->deleteLater();
          return;
@@ -376,11 +376,11 @@ void Server::submitFinished()
       if (job) {
          if (reply->status() == Network::Reply::Finished && 
               parseSubmitMessage(job, reply->message())) {
-            job->setStatus(Job::Queued);
+            job->setStatus(JobInfo::Queued);
             JobMonitor::instance().jobSubmissionSuccessful(job);
             watchJob(job);
          }else {
-            job->setStatus(Job::Error, reply->message());
+            job->setStatus(JobInfo::Error, reply->message());
             JobMonitor::instance().jobSubmissionFailed(job);
          }
       }else {
@@ -587,7 +587,7 @@ void Server::queryFinished()
       if (job) {
          if (reply->status() != Network::Reply::Finished || 
             !parseQueryMessage(job, reply->message())) {
-            job->setStatus(Job::Unknown, reply->message());
+            job->setStatus(JobInfo::Unknown, reply->message());
           }
       }else {
          QLOG_WARN() << "Invalid Job pointer";
@@ -605,7 +605,7 @@ void Server::queryFinished()
 bool Server::parseQueryMessage(Job* job, QString const& message)
 {  
    bool ok(false);
-   Job::Status status(Job::Unknown);
+   JobInfo::Status status(JobInfo::Unknown);
    QString statusMessage;
 
    switch (m_configuration.queueSystem()) {
@@ -614,7 +614,7 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
 
          if (message.isEmpty()) {
             // assume finished, but need to check for errors
-            status = Job::Finished;
+            status = JobInfo::Finished;
             ok = true;
          }else {
 
@@ -628,13 +628,13 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
                    tokens = (*iter).split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
                    if (tokens.size() >= 3) {
                       if (tokens[2] == "R" || tokens[2] == "E") {
-                         status = Job::Running;
+                         status = JobInfo::Running;
                       }else if (tokens[2] == "S" || tokens[2] == "H") {
-                         status = Job::Suspended;
+                         status = JobInfo::Suspended;
                       }else if (tokens[2] == "Q" || tokens[2] == "W") {
-                         status = Job::Queued;
+                         status = JobInfo::Queued;
                       }else if (tokens[2] == "F") {
-                         status = Job::Finished;
+                         status = JobInfo::Finished;
                       }
                       ok = true;
                    }
@@ -655,18 +655,18 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
          QRegularExpressionMatch match(rx.match(message));
          if (message.contains("Qchemserv-Status::OK") && match.hasMatch()) {
             QString rv(match.captured(1));
-            if (rv == "DONE")    status = Job::Finished;
-            if (rv == "RUNNING") status = Job::Running;
-            if (rv == "QUEUED")  status = Job::Queued;
-            if (rv == "NEW")     status = Job::Queued;
-            if (rv == "ERROR")   status = Job::Error;
+            if (rv == "DONE")    status = JobInfo::Finished;
+            if (rv == "RUNNING") status = JobInfo::Running;
+            if (rv == "QUEUED")  status = JobInfo::Queued;
+            if (rv == "NEW")     status = JobInfo::Queued;
+            if (rv == "ERROR")   status = JobInfo::Error;
             ok = true;
           }
       } break;
 
       case ServerConfiguration::SGE: {
          if (message.isEmpty() || message.contains("not exist")) {
-            status = Job::Finished;
+            status = JobInfo::Finished;
          }else {
             int nTokens;
             QString input(message);
@@ -680,11 +680,11 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
                if (nTokens >= 5 && tokens.first().contains(job->jobId())) {
                   QString s(tokens[4]);
                   if (s.contains("q", Qt::CaseSensitive)) {
-                     status = Job::Queued;
+                     status = JobInfo::Queued;
                   }else if (s.contains("s", Qt::CaseInsensitive)) {
-                     status = Job::Suspended;
+                     status = JobInfo::Suspended;
                   }else if (s.contains("r", Qt::CaseSensitive)) {
-                     status = Job::Running;
+                     status = JobInfo::Running;
                   }
                   ok = true;
                }else if ( (nTokens > 1) && 
@@ -704,34 +704,34 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
 
       case ServerConfiguration::SLURM: {
          if (message.isEmpty() || message.contains("COMPLETED") ) {
-            status = Job::Finished;
+            status = JobInfo::Finished;
 
          }else if (message.contains("PENDING") || message.contains("REQUEUED")) {
-            status = Job::Queued;
+            status = JobInfo::Queued;
 
          }else if (message.contains("RUNNING")) {
-            status = Job::Running;
+            status = JobInfo::Running;
 
          }else if (message.contains("SUSPENDED")) {
-            status = Job::Suspended;
+            status = JobInfo::Suspended;
 
          }else {
             statusMessage = message;
-            status = Job::Error;
+            status = JobInfo::Error;
          }
       } break;
 
       case ServerConfiguration::Basic: {
          if (message.isEmpty()) {
-            status = Job::Finished;
+            status = JobInfo::Finished;
          }else if (message.contains("No tasks are running")) { // Windows
-            status = Job::Finished;
+            status = JobInfo::Finished;
          }else if (message.contains("ERROR")) { // Windows
-            status = Job::Finished;
+            status = JobInfo::Finished;
          }else if (message.contains(Preferences::ServerQueryJobFinished())) { // Windows
-            status = Job::Finished;
+            status = JobInfo::Finished;
          }else {
-            status = Job::Running;
+            status = JobInfo::Running;
          }
          ok = true;
       } break;
@@ -746,10 +746,10 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
    // Only print message if there has been a change in status
    if (job->status() != status) {
       QLOG_TRACE() << "Query returned:" << message;
-      QLOG_TRACE() << "parseQueryMessage setting status to " << Job::toString(status) << ok;
+      QLOG_TRACE() << "parseQueryMessage setting status to " << JobInfo::toString(status) << ok;
    }
 
-   if (!Job::isActive(status)) unwatchJob(job);
+   if (!JobInfo::isActive(status)) unwatchJob(job);
    job->setStatus(status, statusMessage); 
 
    return ok;
@@ -805,7 +805,7 @@ void Server::killFinished()
       }
 
       unwatchJob(job);
-      job->setStatus(Job::Killed, reply->message());
+      job->setStatus(JobInfo::Killed, reply->message());
       //reply->deleteLater();
 
    }else {
@@ -840,7 +840,7 @@ void Server::copyResults(Job* job)
    listCmd = job->substituteMacros(listCmd);
    qDebug() << "list File command :" << listCmd;
 
-   job->setStatus(Job::Copying);
+   job->setStatus(JobInfo::Copying);
    Network::Reply* reply(m_connection->execute(listCmd));
    connect(reply, SIGNAL(finished()), this, SLOT(listFinished()));
    m_activeRequests.insert(reply, job);
@@ -861,7 +861,7 @@ void Server::listFinished()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, "Copy failed");
+         job->setStatus(JobInfo::Error, "Copy failed");
          return;
       }
 
@@ -932,14 +932,14 @@ void Server::copyResultsFinished()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, "Copy failed");
+         job->setStatus(JobInfo::Error, "Copy failed");
          return;
       }
 
       QString msg("Results in: ");
       msg += job->jobInfo()->get("LocalWorkingDirectory");
       job->jobInfo()->localFilesExist(true);
-      job->setStatus(Job::Finished, msg);
+      job->setStatus(JobInfo::Finished, msg);
       //reply->deleteLater();
 
    }else {
@@ -960,7 +960,7 @@ void Server::cancelCopy(Job* job)
 
    if (reply && m_activeRequests.contains(reply)) {
       m_activeRequests.remove(reply);
-      job->setStatus(Job::Error, "Copy canceled");
+      job->setStatus(JobInfo::Error, "Copy canceled");
       reply->interrupt();
       //reply->deleteLater();
    }else {

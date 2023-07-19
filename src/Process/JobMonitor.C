@@ -23,7 +23,6 @@
 #include "JobMonitor.h"
 #include "Job.h"
 #include "JobInfo.h"
-#include "QChemJobInfo.h"
 #include "QChemOutputParser.h"
 #include "QueueResourcesList.h"
 #include "QueueResourcesDialog.h"
@@ -213,7 +212,7 @@ void JobMonitor::loadJobListFromPreferences()
                 }else {
                    QLOG_WARN() << "Unable to find server for existing job";
                 }
-                job->setStatus(Job::Unknown);
+                job->setStatus(JobInfo::Unknown);
              }
           }else {
              delete job;
@@ -593,7 +592,7 @@ void JobMonitor::addToTable(Job* job)
    unsigned time(job->runTime());
    if (time) table->item(row, 3)->setText(Util::Timer::formatTime(time));
    QLOG_DEBUG() << "still in the addtable routine";
-   QString status(Job::toString(job->status()));
+   QString status(JobInfo::toString(job->status()));
    table->item(row, 4)->setText(status);
    table->item(row, 4)->setToolTip(job->message());
    table->item(row, 4)->setText(job->message());
@@ -698,13 +697,13 @@ void JobMonitor::reloadJob(Job* job)
    // these according to the updateInterval
    unsigned time(job->runTime());
    if (time) table->item(item->row(), 3)->setText(Util::Timer::formatTime(time));
-   if (job->status() == Job::Copying) {
+   if (job->status() == JobInfo::Copying) {
       //QProgressBar* bar = new QProgressBar();
       //bar->setValue(50);
       //table->setCellWidget(item->row(), 4, bar);
       table->item(item->row(), 4)->setText(job->copyProgressString());
    }else {
-      QString status(Job::toString(job->status()));
+      QString status(JobInfo::toString(job->status()));
       table->item(item->row(), 4)->setText(status);
    }
    table->item(item->row(), 4)->setToolTip(job->message());
@@ -737,7 +736,7 @@ void JobMonitor::jobFinished()
 
    if (job->localFilesExist()) {
       cleanUp(job);
-      if (job->status() == Job::Error) {
+      if (job->status() == JobInfo::Error) {
          QString msg(job->jobName() + " failed:\n");
          msg += job->message();
          QMsgBox::warning(0, "IQmol", msg);
@@ -772,13 +771,13 @@ void JobMonitor::contextMenu(QPoint const& pos)
 
    QMenu *menu = new QMenu(this);
    QAction* kill;
-   Job::Status status(job->status());
+   JobInfo::Status status(job->status());
 
    switch (status) {
-      case Job::Queued:   
+      case JobInfo::Queued:   
          kill = menu->addAction("Delete Job From Queue", this, SLOT(killJob()));
          break;
-      case Job::Copying:   
+      case JobInfo::Copying:   
          kill = menu->addAction("Cancel Copy", this, SLOT(cancelCopy()));
          break;
       default:
@@ -800,44 +799,44 @@ void JobMonitor::contextMenu(QPoint const& pos)
    copy->setEnabled(false);
 
    switch (status) {
-      case Job::NotRunning:
+      case JobInfo::NotRunning:
          break;
 
-      case Job::Queued:
+      case JobInfo::Queued:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Running:
+      case JobInfo::Running:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Suspended:
+      case JobInfo::Suspended:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Unknown:
+      case JobInfo::Unknown:
          remove->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Killed:
+      case JobInfo::Killed:
          remove->setEnabled(true);
          break;
 
-      case Job::Error:
+      case JobInfo::Error:
          remove->setEnabled(true);
          copy->setEnabled(true);
          break;
 
-      case Job::Finished:
+      case JobInfo::Finished:
          remove->setEnabled(true);
          copy->setEnabled(true);
          break;
 
-      case Job::Copying:
+      case JobInfo::Copying:
          kill->setEnabled(true);
          break;
    }
@@ -849,7 +848,7 @@ void JobMonitor::contextMenu(QPoint const& pos)
 
    if (job->localFilesExist()) {
       view->setEnabled(true);
-      if (status == Job::Finished) open->setEnabled(true);
+      if (status == JobInfo::Finished) open->setEnabled(true);
    }
 
    menu->exec(table->mapToGlobal(pos));
@@ -867,7 +866,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
    QLOG_DEBUG() << "got local files" << localFiles;
 
    switch (job->status()) {
-      case Job::Error:
+      case JobInfo::Error:
          if (localFiles) {
             viewOutput(job);
          }else {
@@ -877,7 +876,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          }
          break;
 
-      case Job::Finished:
+      case JobInfo::Finished:
          if (localFiles) {
             openResults(job);
          }else {
@@ -901,8 +900,8 @@ void JobMonitor::cancelCopy()
    Job* job(getSelectedJob());
    if (!job) return;
 
-   Job::Status status(job->status());
-   if (status != Job::Copying) {
+   JobInfo::Status status(job->status());
+   if (status != JobInfo::Copying) {
       QLOG_DEBUG() << "Cancel copy called on non-copy job";
       return;
    }
@@ -921,10 +920,10 @@ void JobMonitor::killJob()
    Job* job(getSelectedJob());
    if (!job) return;
   
-   Job::Status status(job->status());
+   JobInfo::Status status(job->status());
 
    QString msg;
-   if (status == Job::Queued) {
+   if (status == JobInfo::Queued) {
       msg = "Are you sure you want to remove the job ";
       msg += job->jobName() + " from the queue?";
    }else {
@@ -980,7 +979,7 @@ void JobMonitor::viewOutput(Job* job)
 
    Layer::File* file = new Layer::File(output.filePath());
 
-   if (job->status() == Job::Running) {
+   if (job->status() == JobInfo::Running) {
       file->tail();
    }else {
       file->configure();
@@ -1114,7 +1113,7 @@ void JobMonitor::cleanUp(Job* job)
    QLOG_DEBUG() << "Errors in file:" << errors;
 
    if (!errors.isEmpty()) {
-      job->setStatus(Job::Error, errors.join("\n")); 
+      job->setStatus(JobInfo::Error, errors.join("\n")); 
       reloadJob(job);
    }
 }

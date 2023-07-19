@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -29,24 +29,6 @@
 namespace IQmol {
 namespace Process {
 
-QString Job::toString(Status const& status) 
-{
-   QString s;
-
-   switch (status) {
-      case NotRunning:  s = "Not Running";  break;
-      case Queued:      s = "Queued";       break;
-      case Running:     s = "Running";      break;
-      case Suspended:   s = "Suspended";    break;
-      case Killed:      s = "Killed";       break;
-      case Error:       s = "Error";        break;
-      case Finished:    s = "Finished";     break;
-      case Copying:     s = "Copying";      break;
-      default:          s = "Unknown";      break;
-   }
-   return s;
-}
-
 
 Job::Job() : m_jobInfo(0)
 {
@@ -60,9 +42,7 @@ Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
    m_jobName    = m_jobInfo->baseName();
    m_serverName = m_jobInfo->serverName();
 
-
-
-   m_status     = NotRunning;
+   m_status     = JobInfo::NotRunning;
 }
 
 
@@ -105,7 +85,7 @@ bool Job::fromQVariant(QVariant const& qvar)
    if (m_serverName.isEmpty()) return false;
 
    if (!map.contains("Status")) return false;
-   m_status = static_cast<Status>(map.value("Status").toInt()); 
+   m_status = static_cast<JobInfo::Status>(map.value("Status").toInt()); 
 
    if (map.contains("Message")) {
       m_message = map.value("Message").toString(); 
@@ -198,7 +178,7 @@ void Job::copyProgress(double fraction)
 }
 
 
-void Job::setStatus(Status const status, QString const& message)
+void Job::setStatus(JobInfo::Status const status, QString const& message)
 {
    if (m_status == status) {
       if (!message.isEmpty()) m_message = message;
@@ -208,74 +188,49 @@ void Job::setStatus(Status const status, QString const& message)
    m_status = status;
 
    switch (m_status) {
-      case NotRunning:
+      case JobInfo::NotRunning:
          m_message = "Job has not yet started";
          break;
 
-      case Queued:
+      case JobInfo::Queued:
          m_message = "Job ID: " + jobId();
          m_submitTime = QTime::currentTime().toString("h:mm:ss");
          break;
 
-      case Running:
+      case JobInfo::Running:
          m_timer.start();
          break;
 
-      case Suspended:
+      case JobInfo::Suspended:
          m_timer.stop();
          break;
 
-      case Killed:
+      case JobInfo::Killed:
          m_timer.stop();
          break;
 
-      case Error:
+      case JobInfo::Error:
          m_timer.stop();
          error();
          break;
 
-      case Finished:
+      case JobInfo::Finished:
          m_timer.stop();
          finished();
          break;
 
-      case Copying:
+      case JobInfo::Copying:
          m_copyProgress = "Copying";
          break;
 
-      case Unknown:
+      case JobInfo::Unknown:
          m_timer.stop();
          break;
    }
 
    if (!message.isEmpty()) m_message = message;
-   qDebug() << "Setting Job status to" << toString(m_status) << m_message;
+   qDebug() << "Setting Job status to" << JobInfo::toString(m_status) << m_message;
    updated();
-}
-
-
-bool Job::isActive(Status const status)
-{
-   bool active(true);
-
-   switch (status) {
-      case NotRunning:
-      case Queued:
-      case Running:
-      case Suspended:
-      case Unknown:
-      case Copying:
-         active = true;
-         break;
-
-      case Killed:
-      case Error:
-      case Finished:
-         active = false;
-         break;
-   }
-
-   return active;
 }
 
 

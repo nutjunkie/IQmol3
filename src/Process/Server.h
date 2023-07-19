@@ -1,5 +1,4 @@
-#ifndef IQMOL_PROCESS_SERVER_H
-#define IQMOL_PROCESS_SERVER_H
+#pragma once
 /*******************************************************************************
          
   Copyright (C) 2022 Andrew Gilbert
@@ -143,5 +142,3 @@ namespace Process {
 
 
 } } // end namespace IQmol::Process
-
-#endif
