@@ -24,6 +24,7 @@
 #include "MainWindow.h"
 #include "JobMonitor.h"
 #include "ServerRegistry.h"
+#include "Preferences.h"
 #include "QMsgBox.h"
 #include "QsLog.h"
 #include <QDir>
@@ -33,6 +34,7 @@
 #include <QFileOpenEvent>
 #include <QSplashScreen>
 
+#include <QDebug>
 #include <QThread>
 #include <QThreadPool>
 
@@ -49,6 +51,13 @@ IQmolApplication::IQmolApplication(int &argc, char **argv )
 {
    setOrganizationDomain("iqmol.org");
    setApplicationName("IQmol");
+   if (argc > 1) {
+      QString arg(argv[1]);
+      if (arg == "--clear-jobs") {
+         qDebug() << "Clearing past jobs from preferences";
+         Preferences::JobMonitorList(QVariantList());
+      }
+  }
    // Can't log anything yet as the logger hasn't been initialized
 }
 
