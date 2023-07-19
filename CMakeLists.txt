@@ -27,7 +27,7 @@ endif()
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
-#find_package(CGAL    REQUIRED)
+
 
   
 # No CMakeLists.txt for libQGLViewer
@@ -52,6 +52,7 @@ add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 #include_directories(modules/openscenegraph/include)
 #add_subdirectory(modules/openscenegraph EXCLUDE_FROM_ALL)
 #add_subdirectory(tests)
+
 
 #set(HDF5_USE_STATIC_LIBRARIES 1)
 #include_directories(modules/hdf5/src)

@@ -59,6 +59,9 @@ Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
    m_julianDay  = QDate::currentDate().toJulianDay();
    m_jobName    = m_jobInfo->baseName();
    m_serverName = m_jobInfo->serverName();
+
+
+
    m_status     = NotRunning;
 }
 
@@ -72,7 +75,6 @@ Job::~Job()
 
 QVariant Job::toQVariant() const
 {
-   QLOG_DEBUG() << "doing to Q variant" << m_jobInfo;
    QVariantMap map;
 
    map.insert("JobName",      m_jobName);  

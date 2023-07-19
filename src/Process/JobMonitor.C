@@ -220,9 +220,8 @@ void JobMonitor::loadJobListFromPreferences()
              job = 0;
           }
       }
-      QLOG_DEBUG() << "In the try block";
       updateTable();
-
+      QLOG_DEBUG() << "After Update table";
       if (remoteJobsActive) {
          QString msg("IQmol found processes on remote servers that were still active "
            "in the last session. \n\nWould you like to reconnect to the server(s)?");
@@ -241,6 +240,7 @@ void JobMonitor::loadJobListFromPreferences()
       postUpdateMessage("");
       QMsgBox::warning(this, "IQmol", "Error encountered");
    }
+   QLOG_DEBUG() << "End try block";
 
 }
 
@@ -248,7 +248,8 @@ void JobMonitor::loadJobListFromPreferences()
 Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
 {
    QTableWidget* table(m_ui.processTable);
-
+   
+   QLOG_DEBUG() << "Getting Selected Job";
    if (item == 0) {
       QList<QTableWidgetItem*> items(table->selectedItems());
       if (items.isEmpty()) return 0;
@@ -256,7 +257,9 @@ Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
    }
 
    item = table->item(item->row(), 0);
+   QLOG_DEBUG() << "Before jobmap";
    JobList list(s_jobMap.keys(item));
+   QLOG_DEBUG() << "After jobmap";
 
    return list.isEmpty() ? 0 : list.first();  // and only
 }
@@ -763,7 +766,7 @@ void JobMonitor::contextMenu(QPoint const& pos)
    QTableWidget* table(m_ui.processTable);
    QTableWidgetItem* item(table->itemAt(pos));
    if (!item) return;
-
+   QLOG_DEBUG() << "context menu action";
    Job* job(getSelectedJob(item));
    if (!job) return;
 
@@ -856,10 +859,12 @@ void JobMonitor::contextMenu(QPoint const& pos)
 
 void JobMonitor::on_processTable_cellDoubleClicked(int, int)
 {
+   QLOG_DEBUG() << "double clicked";
    Job* job(getSelectedJob());
    if (!job) return;
-
-   bool localFiles(job->jobInfo()->localFilesExist());
+  QLOG_DEBUG() << "got job";
+   bool localFiles(job->localFilesExist());
+   QLOG_DEBUG() << "got local files" << localFiles;
 
    switch (job->status()) {
       case Job::Error:
@@ -884,6 +889,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          break;
 
       default:
+         QLOG_DEBUG() << "enterdefault";
          queryJob(job);
          break;
    }
@@ -939,6 +945,7 @@ void JobMonitor::killJob()
 
 void JobMonitor::openResults()
 {
+   QLOG_DEBUG() << "Open results of Job";
   openResults(getSelectedJob());
 }
 
@@ -954,6 +961,7 @@ void JobMonitor::openResults(Job* job)
 
 void JobMonitor::viewOutput()
 {    
+   QLOG_DEBUG() << "View output of Job";
   viewOutput(getSelectedJob());
 }
 
@@ -992,9 +1000,11 @@ void JobMonitor::copyResults(Job* job)
 
    try {
       JobInfo* jobInfo(job->jobInfo());
+      QLOG_DEBUG() << "trying to get jobinfo local working directory" ;
 
       QString dirPath(jobInfo->get("LocalWorkingDirectory"));
       QFileInfo info(dirPath);
+      QLOG_DEBUG() << "got local working directory" ;
 
       if (jobInfo->localFilesExist() && info.exists()) {
          QString msg("Results are in the directory:\n\n");
@@ -1111,7 +1121,8 @@ void JobMonitor::cleanUp(Job* job)
 
 
 void JobMonitor::queryJob()
-{    
+{  
+   QLOG_DEBUG() << "Querying Job";
   queryJob(getSelectedJob());
 }
 

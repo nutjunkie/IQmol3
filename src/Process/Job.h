@@ -67,9 +67,10 @@ namespace Process {
          QString  const& submitTime() const { return m_submitTime; }
          unsigned julianDay()  const { return m_julianDay; }
 
+  
+         bool localFilesExist() const;
          void setSubmitTime(QString const& string) { m_submitTime = string; }
 
-         bool localFilesExist() const;
 
          /// The run time in seconds.  Use Util::Timer::formatTime() 
          /// to turn it into hh:mm:ss
@@ -138,6 +139,9 @@ namespace Process {
          QString  m_submitTime;
          QString  m_jobId;
          qint64   m_julianDay;
+         bool     m_localFilesExist;
+         QString  m_localWorkingDirectory;
+
 
          Util::Timer m_timer;
 

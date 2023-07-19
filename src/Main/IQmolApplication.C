@@ -170,6 +170,7 @@ void IQmolApplication::open(QString const& file)
    // Now we can load jobs from the preferences, if we try to do it 
    // before now, the dialog appears under the splash screen
    Process::JobMonitor::instance().loadJobListFromPreferences();
+   
 
    static bool connected(false);
    if (!connected) {
