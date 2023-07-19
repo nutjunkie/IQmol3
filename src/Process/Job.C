@@ -133,15 +133,15 @@ QString Job::substituteMacros(QString const& input) const
 {
    QString output(input);
    output.replace("${JOB_ID}",   m_jobId);
-   output.replace("${JOB_DIR}",  m_jobInfo->get("RemoteWorkingDirectory"));
+   output.replace("${JOB_DIR}",  m_jobInfo->get<QString>("RemoteWorkingDirectory"));
    output.replace("${JOB_NAME}", m_jobInfo->baseName());
 
    output.replace("${QUEUE}",    m_jobInfo->queueName());
    output.replace("${WALLTIME}", m_jobInfo->wallTime());
-   output.replace("${MEMORY}",   QString::number(m_jobInfo->memory()));
-   output.replace("${JOBFS}",    QString::number(m_jobInfo->scratch()));
-   output.replace("${SCRATCH}",  QString::number(m_jobInfo->scratch()));
-   output.replace("${NCPUS}",    QString::number(m_jobInfo->ncpus()));
+   output.replace("${MEMORY}",   QString::number(m_jobInfo->get<qint64>("Memory")));
+   output.replace("${JOBFS}",    QString::number(m_jobInfo->get<qint64>("Scratch")));
+   output.replace("${SCRATCH}",  QString::number(m_jobInfo->get<qint64>("Scratch")));
+   output.replace("${NCPUS}",    QString::number(m_jobInfo->get<qint64>("Ncpus")));
 
    // Check all the macros have been expanded
    if (output.contains("${")) {
@@ -236,7 +236,7 @@ void Job::setStatus(JobInfo::Status const status, QString const& message)
 
 bool Job::localFilesExist() const 
 { 
-   return m_jobInfo->localFilesExist();
+   return m_jobInfo->get<bool>("LocalFilesExist");
 }
 
 } } // end namespaces IQmol::Process

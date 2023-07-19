@@ -1785,7 +1785,7 @@ Process::QChemJobInfo Molecule::qchemJobInfo()
    qchemJobInfo.set("NElectrons",      m_info.numberOfElectrons());
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
-   if (atomList.isEmpty()) qchemJobInfo.setEfpOnlyJob(true);
+   if (atomList.isEmpty()) qchemJobInfo.set("EfpOnly", true);
 
    QString name;
 
@@ -1799,7 +1799,7 @@ Process::QChemJobInfo Molecule::qchemJobInfo()
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   qchemJobInfo.setMoleculePointer(this);
+   qchemJobInfo.set("MoleculePointer", (qint64)this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));
@@ -1819,8 +1819,8 @@ void Molecule::qchemJobInfoChanged(Process::QChemJobInfo const& qchemJobInfo)
 { 
    if (text() == DefaultMoleculeName) {
       setText(qchemJobInfo.baseName());
-      m_info.setCharge(qchemJobInfo.getInt("Charge"));
-      m_info.setMultiplicity(qchemJobInfo.getInt("Multiplicity"));
+      m_info.setCharge(qchemJobInfo.get<int>("Charge"));
+      m_info.setMultiplicity(qchemJobInfo.get<int>("Multiplicity"));
    }
 }
 

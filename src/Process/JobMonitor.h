@@ -56,7 +56,7 @@ namespace Process {
 
       Q_SIGNALS:
          /// This signal is emitted only when a job has finished successfully.
-         void resultsAvailable(QString const& path, QString const& filter, void* molPtr);
+         void resultsAvailable(QString const& path, QString const& filter, qint64 molPtr);
          void jobAccepted();
 
          void postUpdateMessage(QString const&);

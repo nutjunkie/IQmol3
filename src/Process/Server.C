@@ -242,11 +242,11 @@ void Server::submit(Job* job)
 
    if (!open()) return;
 
-   QString contents(job->jobInfo()->get("InputString"));
+   QString contents(job->jobInfo()->get<QString>("InputString"));
    QString fileName(Util::WriteToTemporaryFile(contents));
    QLOG_DEBUG() << "Input file contents written to" << fileName;
 
-   if (isLocal()) job->jobInfo()->localFilesExist(true);
+   if (isLocal()) job->jobInfo()->set("LocalFilesExist", true);
 
    // In the case of an HTTP server, we can simply POST the contents of the
    // input file and we're done.  Other servers need the run file and a 
@@ -340,7 +340,7 @@ void Server::queueJob()
       submit = substituteMacros(submit);
       submit = job->substituteMacros(submit);
 
-      QString workingDirectory(job->jobInfo()->get("RemoteWorkingDirectory"));
+      QString workingDirectory(job->jobInfo()->get<QString>("RemoteWorkingDirectory"));
 
       if (isBasic()) {
          // Cache a list of currently running qchem jobs so we can identify the new one
@@ -873,7 +873,7 @@ void Server::listFinished()
       // of the directory that holds the FSM files.
       unsigned pos(fileList.indexOf(QRegularExpression(".*input.files")));
       if (pos >= 0) fileList.removeAt(pos);
-      QString destination(job->jobInfo()->get("LocalWorkingDirectory"));
+      QString destination(job->jobInfo()->get<QString>("LocalWorkingDirectory"));
       //reply->deleteLater();
 
       reply = m_connection->getFiles(fileList, destination);
@@ -937,8 +937,8 @@ void Server::copyResultsFinished()
       }
 
       QString msg("Results in: ");
-      msg += job->jobInfo()->get("LocalWorkingDirectory");
-      job->jobInfo()->localFilesExist(true);
+      msg += job->jobInfo()->get<QString>("LocalWorkingDirectory");
+      job->jobInfo()->set("LocalFilesExist", true);
       job->setStatus(JobInfo::Finished, msg);
       //reply->deleteLater();
 

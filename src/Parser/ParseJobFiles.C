@@ -25,7 +25,7 @@
 
 namespace IQmol {
 
-ParseJobFiles::ParseJobFiles(QString const& filePath, QString const& filter, void* molPtr) : 
+ParseJobFiles::ParseJobFiles(QString const& filePath, QString const& filter, qint64 molPtr) : 
    Parser::ParseFile(filePath, filter), 
    m_moleculePointer(molPtr)
 {

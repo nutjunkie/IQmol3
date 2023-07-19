@@ -1,12 +1,11 @@
-#ifndef IQMOL_PROCESS_QCHEMJOBINFO_H
-#define IQMOL_PROCESS_QCHEMJOBINFO_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,14 +15,12 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
 ********************************************************************************/
 
-#include <QStringList>
-#include <QMap>
 #include "JobInfo.h"
 
 
@@ -40,7 +37,7 @@ namespace Process {
          /// RunFileName    - the name of the submission script
          /// Note that not all these are serialized
 
-         /*
+#if 0
          enum Field { 
                  InputFileName,           // 0
                  OutputFileName, 
@@ -69,74 +66,22 @@ namespace Process {
                  InputFileTemplate        // This effectively holds the contents of the 
                                           // any input file loaded in the molecule.
               };
-            
-         */
-         QChemJobInfo() : m_charge(0), m_multiplicity(1), m_nElectrons(0), 
-           m_localFilesExist(false),  m_promptOnOverwrite(true), m_efpOnlyJob(false), 
-           m_moleculePointer(0) { }
-          
+#endif
 
-         QChemJobInfo(QChemJobInfo const& that) : JobInfo(that) { copy(that); }
-
-         /// Serialization functions that are used to reconstruct the contents of the 
-         /// ProcessMonitor on restarting IQmol.  Note that it is assumed that the
-         /// Process has been submitted which means we have finished with the input
-         /// generator.  This obviates the need to serialize the Coordinates and 
-         /// Constraints fields which are currently only requred by the input generator.
-         QVariantList toQVariantList() const;
-         bool fromQVariantList(QVariantList const&);
-
-         void set(QString const key, QString const& value);
-         void set(QString const key, int const& value);
-
-         QString get(QString const key) const;
-
-         QString getRemoteFilePath(QString const key) const;
-         QString getLocalFilePath(QString const key) const;
-
-         QStringList outputFiles() const;
-
-         int getInt(QString const key) const;
-
-         //int getCharge() const { return m_charge; }
-         //int getMultiplicity() const { return m_multiplicity; }
-         //int getNElectrons() const { return m_nElectrons; }
-
-         bool efpOnlyJob() const { return m_efpOnlyJob; }
-         void setEfpOnlyJob(bool const tf) { m_efpOnlyJob = tf; }
-
-         bool localFilesExist() const { return m_localFilesExist; }
-         void localFilesExist(bool const tf) { m_localFilesExist = tf; }
-
-         bool promptOnOverwrite() const { return m_promptOnOverwrite; }
-         void promptOnOverwrite(bool const tf) { m_promptOnOverwrite = tf; }
-
-         void dump() const;
-
-         QChemJobInfo& operator=(QChemJobInfo const& that) {
-            if (this != &that) copy(that); return *this;
+         QChemJobInfo()
+         { 
+            set("Charge", 0);
+            set("Multiplicity", 1);
+            set("NumElectrons", 0);
+            set("EfpOnly", false);
+            set("LocalFilesExist", false);
+            set("PromptOnOverwrite", true);
+            set("MoleculePointer", 0);
          }
 
-         void  setMoleculePointer(void* moleculePointer) { m_moleculePointer = moleculePointer; }
-         void* moleculePointer() const { return m_moleculePointer; }
 
-
-      private:
-         void copy(QChemJobInfo const&);
-         /// Generic object to hold the data
-         QMap<QString,QString> m_data;
-         int  m_charge;
-         int  m_multiplicity;
-         int  m_nElectrons;
-         bool m_localFilesExist;
-         bool m_promptOnOverwrite;
-         bool m_efpOnlyJob;
-
-         void* m_moleculePointer;
+         QString fileExtension(QString const&) const;
 
    };
 
 } } // end namespace IQmol::Process
-
-
-#endif

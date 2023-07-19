@@ -186,10 +186,10 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    }
    qDebug() << "trying coordinates";
    m_currentJob->setCoordinates(
-      m_qchemJobInfo.get("Coordinates"));
+      m_qchemJobInfo.get<QString>("Coordinates"));
    qDebug() << "getting coordinates";
    QString inputFileTemplate = 
-      m_qchemJobInfo.get("InputFileTemplate");
+      m_qchemJobInfo.get<QString>("InputFileTemplate");
    if (!inputFileTemplate.isEmpty()) {
       qDebug() << "inputfilenot empty";
       loadPreviewText(inputFileTemplate);
@@ -197,43 +197,40 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    }
 
    m_currentJob->setCoordinatesFsm(
-      m_qchemJobInfo.get("CoordinatesFsm"));
+      m_qchemJobInfo.get<QString>("CoordinatesFsm"));
    qDebug() << "coordinates fsm";
    m_currentJob->setEfpFragments(
-      m_qchemJobInfo.get("EfpFragments"));
+      m_qchemJobInfo.get<QString>("EfpFragments"));
     qDebug() << "coordinates efp";
    m_currentJob->setConstraints(
-      m_qchemJobInfo.get("Constraints"));
+      m_qchemJobInfo.get<QString>("Constraints"));
        qDebug() << "constraints";
    m_currentJob->setScanCoordinates(
-      m_qchemJobInfo.get("ScanCoordinates"));
+      m_qchemJobInfo.get<QString>("ScanCoordinates"));
     qDebug() << "scan coordinates ";
    m_currentJob->setEfpParameters(
-      m_qchemJobInfo.get("EfpParameters"));
+      m_qchemJobInfo.get<QString>("EfpParameters"));
        qDebug() << "coordinates efp parameters";
    m_currentJob->setExternalCharges(
-      m_qchemJobInfo.get("ExternalCharges"));
+      m_qchemJobInfo.get<QString>("ExternalCharges"));
        qDebug() << "external charges";
 
    qDebug() << "getting known quantaties";
    // Solvent section
 
    // Add an update for the current solvent radius
-   QString s(m_qchemJobInfo.get("OnsagerRadius"));
-   qDebug() << "onsager radius (not implemented?)";
-   bool ok(true);
-   double r(s.toDouble(&ok));
+   double r(m_qchemJobInfo.get<double>("OnsagerRadius"));
    Action* action = new Action(
       boost::bind(&QDoubleSpinBox::setValue, m_ui.qui_solvent_cavityradius, r) );
    m_resetActions.push_back(action);
 
-   QString isotopes(m_qchemJobInfo.get("Isotopes"));
+   QString isotopes(m_qchemJobInfo.get<QString>("Isotopes"));
    m_currentJob->setGenericSection("isotopes", isotopes);
    
 
    // This is a bit of a hack.  We (re)set these variables to ensure they are
    // printed whenever their enclosing $blocks are printed.
-   m_currentJob->setOption(  "QUI_SOLVENT_CAVITYRADIUS", s);
+   m_currentJob->setOption(  "QUI_SOLVENT_CAVITYRADIUS", QString::number(r));
    m_currentJob->printOption("QUI_SOLVENT_CAVITYRADIUS", true);
 
    QString svp("RHOISO=0.001, DIELST=78.36, NPTLEB=1202,\n"
@@ -254,7 +251,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    //QString chemsol("EField   1");
    //m_currentJob->setGenericSection("chemsol", chemsol);
 
-   if (m_qchemJobInfo.efpOnlyJob()) {
+   if (m_qchemJobInfo.get<bool>("EfpOnly")) {
       m_ui.basis->setEnabled(false);
       m_ui.label_basis->setEnabled(false);
       m_ui.ecp->setEnabled(false);
@@ -275,18 +272,18 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
       m_currentJob->setOption("GUI",  "2");
       m_currentJob->setOption("EFP_FRAGMENTS_ONLY", "false");
 
-      QString frag(m_qchemJobInfo.get("EfpFragments"));
+      QString frag(m_qchemJobInfo.get<QString>("EfpFragments"));
       m_ui.efp_fragments_only->setEnabled(!frag.isEmpty());
    }
 
    // We need the temporaries as setting the charge will overwrite the
    // QChemJobInfo::multiplicity
-   int charge(m_qchemJobInfo.getInt("Charge"));
-   int multiplicity(m_qchemJobInfo.getInt("Multiplicity"));
+   int charge(m_qchemJobInfo.get<int>("Charge"));
+   int multiplicity(m_qchemJobInfo.get<int>("Multiplicity"));
    m_ui.qui_charge->setValue(charge);
    m_ui.qui_multiplicity->setValue(multiplicity);
 
-   int nElectrons(m_qchemJobInfo.getInt("NElectrons"));
+   int nElectrons(m_qchemJobInfo.get<int>("NElectrons"));
    int nAlpha(nElectrons+multiplicity-1);
    nAlpha /= 2;
 
@@ -299,7 +296,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    TAINT(false);
    m_reg.get("JOB_TYPE").applyRules();
 
-   if (m_currentJob && m_qchemJobInfo.efpOnlyJob()) {
+   if (m_currentJob && m_qchemJobInfo.get<bool>("EfpOnly")) {
       m_currentJob->printOption("BASIS", false);
    }
 

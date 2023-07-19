@@ -287,6 +287,9 @@ void JobMonitor::submitJob(JobInfo* jobInfo)
 {
    Job* job(0);
 
+   qDebug() << "Dumping out the job info contents";
+   jobInfo->dump();
+
    QString serverName(jobInfo->serverName());
    Server* server(ServerRegistry::instance().find(serverName));
 
@@ -543,9 +546,9 @@ bool JobMonitor::getQueueResources(Server* server, JobInfo* jobInfo)
 
    jobInfo->setQueueName(dialog.queue());
    jobInfo->setWallTime(dialog.walltime());
-   jobInfo->setMemory(dialog.memory());
-   jobInfo->setScratch(dialog.scratch());
-   jobInfo->setNcpus(dialog.ncpus());
+   jobInfo->set("Memory", dialog.memory());
+   jobInfo->set("Scratch", dialog.scratch());
+   jobInfo->set("Ncpus", dialog.ncpus());
 
    return true;
 }
@@ -741,9 +744,9 @@ void JobMonitor::jobFinished()
          msg += job->message();
          QMsgBox::warning(0, "IQmol", msg);
       }else {
-         resultsAvailable(job->jobInfo()->get("LocalWorkingDirectory"),
+         resultsAvailable(job->jobInfo()->get<QString>("LocalWorkingDirectory"),
                           job->jobInfo()->baseName(),
-                          job->jobInfo()->moleculePointer());
+                          job->jobInfo()->get<qint64>("MoleculePointer"));
       }
      
    }else {
@@ -952,9 +955,9 @@ void JobMonitor::openResults()
 void JobMonitor::openResults(Job* job)
 {
    if (!job) return;
-   resultsAvailable(job->jobInfo()->get("LocalWorkingDirectory"),
+   resultsAvailable(job->jobInfo()->get<QString>("LocalWorkingDirectory"),
                     job->jobInfo()->baseName(),
-                    job->jobInfo()->moleculePointer());
+                    job->jobInfo()->get<qint64>("MoleculePointer"));
 }
 
 
@@ -973,7 +976,7 @@ void JobMonitor::viewOutput(Job* job)
 
    if (!output.exists()) {
       QMsgBox::warning(this,"IQmol", "Output file no longer exists");
-      job->jobInfo()->localFilesExist(false);
+      job->jobInfo()->set("LocalFilesExist", false);
       return;
    }   
 
@@ -1001,11 +1004,11 @@ void JobMonitor::copyResults(Job* job)
       JobInfo* jobInfo(job->jobInfo());
       QLOG_DEBUG() << "trying to get jobinfo local working directory" ;
 
-      QString dirPath(jobInfo->get("LocalWorkingDirectory"));
+      QString dirPath(jobInfo->get<QString>("LocalWorkingDirectory"));
       QFileInfo info(dirPath);
       QLOG_DEBUG() << "got local working directory" ;
 
-      if (jobInfo->localFilesExist() && info.exists()) {
+      if (jobInfo->get<bool>("LocalFilesExist") && info.exists()) {
          QString msg("Results are in the directory:\n\n");
          msg += dirPath;
          msg += "\n\nDownload results again?";
@@ -1042,7 +1045,7 @@ void JobMonitor::cleanUp(Job* job)
       return;
    }
     
-   QDir dir (job->jobInfo()->get("LocalWorkingDirectory"));
+   QDir dir (job->jobInfo()->get<QString>("LocalWorkingDirectory"));
    if (!dir.exists()) {
       QMsgBox::warning(this, "IQmol", QString("Unable to find results for") + job->jobName());
       return;
@@ -1052,21 +1055,21 @@ void JobMonitor::cleanUp(Job* job)
 
    // Rename Http files
    QString oldName("input"); 
-   QString newName(jobInfo->get("InputFileName"));
+   QString newName(jobInfo->get<QString>("InputFileName"));
    if (dir.exists(oldName)) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
    }
 
    oldName = "output";
-   newName = jobInfo->get("OutputFileName");
+   newName = jobInfo->get<QString>("OutputFileName");
    if (dir.exists(oldName)) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
    }
 
    oldName = "input.FChk";
-   newName = jobInfo->get("AuxFileName");
+   newName = jobInfo->get<QString>("AuxFileName");
    if (dir.exists(oldName) && oldName != newName) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
@@ -1078,7 +1081,7 @@ void JobMonitor::cleanUp(Job* job)
       dir.rename(oldName, newName);
    }
 
-   oldName = jobInfo->get("InputFileName") + ".fchk";
+   oldName = jobInfo->get<QString>("InputFileName") + ".fchk";
    if (dir.exists(oldName) && oldName != newName) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);

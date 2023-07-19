@@ -219,8 +219,8 @@ void MainWindow::createConnections()
       this, SLOT(fileOpened(QString const&)));
 
    connect(&(Process::JobMonitor::instance()), 
-       SIGNAL(resultsAvailable(QString const&, QString const&, void*)),
-       &m_viewerModel, SLOT(open(QString const&, QString const&, void*)));
+       SIGNAL(resultsAvailable(QString const&, QString const&, qint64)),
+       &m_viewerModel, SLOT(open(QString const&, QString const&, qint64)));
 
 
    // Viewer

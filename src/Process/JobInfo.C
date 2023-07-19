@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -82,10 +82,10 @@ QVariantList JobInfo::toQVariantList() const
    list << QVariant(m_message);
    list << QVariant(m_queueName);
    list << QVariant(m_wallTime);
-   list << QVariant(m_submitTime);
-   list << QVariant(m_memory);
-   list << QVariant(m_scratch);
-   list << QVariant(m_ncpus);
+//   list << QVariant(m_submitTime);
+//   list << QVariant(m_memory);
+///   list << QVariant(m_scratch);
+//   list << QVariant(m_ncpus);
 
    return list;
 }
@@ -116,17 +116,19 @@ bool JobInfo::fromQVariantList(QVariantList const& list)
    ok = list[6].canConvert<QString>();  if (!ok) return false;
    m_wallTime = list[6].toString();
 
-   ok = list[7].canConvert<qint64>();   if (!ok) return false;
-   m_submitTime = list[7].toLongLong();
+//   ok = list[7].canConvert<qint64>();   if (!ok) return false;
+//   m_submitTime = list[7].toLongLong();
+
+//   ok = list[8].canConvert<unsigned>(); if (!ok) return false;
+ //  m_memory = list[8].toUInt();
+
+/*
+   ok = list[7].canConvert<unsigned>(); if (!ok) return false;
+   m_scratch = list[7].toUInt();
 
    ok = list[8].canConvert<unsigned>(); if (!ok) return false;
-   m_memory = list[8].toUInt();
-
-   ok = list[9].canConvert<unsigned>(); if (!ok) return false;
-   m_scratch = list[9].toUInt();
-
-   ok = list[10].canConvert<unsigned>(); if (!ok) return false;
-   m_ncpus = list[10].toUInt();
+   m_ncpus = list[8].toUInt();
+*/
 
    return ok;
 }
@@ -135,21 +137,46 @@ bool JobInfo::fromQVariantList(QVariantList const& list)
 void JobInfo::copy(JobInfo const& that)
 {
    m_jobStatus  = that.m_jobStatus;
+   m_jobData    = that.m_jobData;
+
    m_baseName   = that.m_baseName;
    m_serverName = that.m_serverName;
    m_jobId      = that.m_jobId;
    m_message    = that.m_message;
    m_queueName  = that.m_queueName;
    m_wallTime   = that.m_wallTime;
-   m_submitTime = that.m_submitTime;
-   m_memory     = that.m_memory;
-   m_scratch    = that.m_scratch;
-   m_ncpus      = that.m_ncpus;
+//   m_submitTime = that.m_submitTime;
+//   m_memory     = that.m_memory;
+//   m_scratch    = that.m_scratch;
+//   m_ncpus      = that.m_ncpus;
+}
+
+
+QString JobInfo::getRemoteFilePath(QString const& key) const
+{
+   QString path(get<QString>("RemoteWorkingDirectory"));
+   if (!path.endsWith("/")) path += "/";
+   path += get<QString>(key);
+   return path;
+}
+
+
+QString JobInfo::getLocalFilePath(QString const& key) const
+{
+   QString path(get<QString>("LocalWorkingDirectory"));
+   if (!path.endsWith("/")) path += "/";
+   path += get<QString>("BaseName");
+   return path;
 }
 
 
 void JobInfo::dump() const
 {
+   QLOG_DEBUG() << "--- New JobInfo ---";
+   
+   for (auto i = m_jobData.begin(); i != m_jobData.end(); ++i) {
+       QLOG_DEBUG() << i.key() << " = " << i.value();
+   }
    QLOG_DEBUG() << "--- JobInfo ---";
    QLOG_DEBUG() << "jobStatus  = " << m_jobStatus;
    QLOG_DEBUG() << "baseName   = " << m_baseName;
@@ -158,10 +185,10 @@ void JobInfo::dump() const
    QLOG_DEBUG() << "message    = " << m_message;
    QLOG_DEBUG() << "queueName  = " << m_queueName;
    QLOG_DEBUG() << "wallTime   = " << m_wallTime;
-   QLOG_DEBUG() << "submitTime = " << m_submitTime;
-   QLOG_DEBUG() << "memory     = " << m_memory;
-   QLOG_DEBUG() << "scratch    = " << m_scratch;
-   QLOG_DEBUG() << "ncpus      = " << m_ncpus;
+//   QLOG_DEBUG() << "submitTime = " << m_submitTime;
+//   QLOG_DEBUG() << "memory     = " << m_memory;
+//   QLOG_DEBUG() << "scratch    = " << m_scratch;
+//   QLOG_DEBUG() << "ncpus      = " << m_ncpus;
 }
 
 } } // end namespace IQmol::Process
