@@ -23,7 +23,6 @@
 
 #include "Timer.h"
 #include "JobInfo.h"
-#include <QStringList>
 
 
 class QProcess;
@@ -33,9 +32,8 @@ namespace Process {
 
    class JobMonitor;
 
-   /// The Job class is used to interface beteen the JobMonitor 
-   /// and the Servers.  
-   class Job : public QObject {
+   /// The Job class augments the JobInfo class with signals, slots and timers.
+   class Job : public QObject, public JobInfo {
 
       Q_OBJECT
 
@@ -46,18 +44,19 @@ namespace Process {
 		 /// This is the message that is displayed in the status
 		 /// column of the JobMonitor.
          QString const& message() const { return m_message; }
+
          //void setMessage(QString const& message) { m_message = message; }
 
-         JobInfo::Status status() const { return m_status; }
-         bool isActive() const { return JobInfo::isActive(m_status); }
+         JobInfo::Status status() const { return jobStatus(); }
+         bool isActive() const { return JobInfo::isActive(jobStatus()); }
 
          /// This is an external handle for the process, either a
          /// PID or PBS/SGE job number.
-         QString  const& jobId()      const { return m_jobId; }
-         QString  const& jobName()    const { return m_jobName; }
-         QString  const& serverName() const { return m_serverName; }
-         QString  const& submitTime() const { return m_submitTime; }
-         unsigned julianDay()  const { return m_julianDay; }
+         QString jobId()      const { return get<QString>("JobId"); }
+         QString jobName()    const { return get<QString>("JobName"); }
+         QString serverName() const { return get<QString>("ServerName"); }
+         QString submitTime() const { return get<QString>("SubmitTime"); }
+         unsigned julianDay() const { return get<unsigned>("JulianDay"); }
   
          bool localFilesExist() const;
          void setSubmitTime(QString const& string) { m_submitTime = string; }
@@ -75,7 +74,7 @@ namespace Process {
          /// query command and update the status accordingly
          virtual void parseQueryOutput(QString const&);
 
-         JobInfo* jobInfo() { return m_jobInfo; }
+//         JobInfo& jobInfo() { return m_jobInfo; }
 
       public Q_SLOTS:
          //void copyProgress();
@@ -90,13 +89,15 @@ namespace Process {
       protected:
          /// Job construction should only be done via the JobMonitor, 
          /// hence we protect the constructor and destructor.
-         Job();
-         Job(JobInfo*);
+         Job() { }
+         Job(JobInfo const&);
 
 		 /// Note that deleting a Job will not result in the termination 
 		 /// of the process.  This allows jobs to continue running even 
          /// after IQmol has terminated.
          ~Job();
+
+         void setStatus(JobInfo::Status const status, QString const& message = QString());
 
 		 /// Converts the job information into a form suitable 
 		 /// for writing to the Preferences...
@@ -105,12 +106,12 @@ namespace Process {
          /// ...and back again
          bool fromQVariant(QVariant const&);
 
-         void setStatus(JobInfo::Status const status, QString const& message = QString());
+
 
          //void setJobName(QString const& jobName) { m_jobName = jobName; }
          //void setServerName(QString const& serverName) { m_serverName = serverName; }
 
-         void setJobId(QString const& id) { m_jobId = id; }
+//         void setJobId(QString const& id) { m_jobId = id; }
 
 		 /// The Job timer runs independantly of the actual process and so
 		 /// may get out of sync if, for example, the process is suspended. 
@@ -121,21 +122,19 @@ namespace Process {
          QString const& copyProgressString() const { return m_copyProgress; }
 
       private:
-         JobInfo* m_jobInfo;
 
          QString  m_jobName;
          QString  m_serverName;
-         JobInfo::Status   m_status;
          QString  m_message;
          QString  m_submitTime;
          QString  m_jobId;
-         qint64   m_julianDay;
-         bool     m_localFilesExist;
-         QString  m_localWorkingDirectory;
+//         qint64   m_julianDay;
+//         bool     m_localFilesExist;
+//         QString  m_localWorkingDirectory;
+
 
 
          Util::Timer m_timer;
-
          QString m_copyProgress;
    };
 

@@ -22,15 +22,13 @@
 ********************************************************************************/
 
 #include <QVariant>
-#include "Util/QsLog.h"
+#include "QsLog.h"
 
 
 namespace IQmol {
 namespace Process {
 
-   /// ABC for objects that hold information about a Server job.  It 
-   /// is essentially a data class that contains everything needed to
-   /// serialize the Job.
+   /// Data class that holds information about a Server job.  
    class JobInfo {
 
       public:
@@ -51,14 +49,15 @@ namespace Process {
 
          JobInfo(JobInfo const& that) { copy(that); }
 
-         JobInfo& operator=(JobInfo const& that) {
+         JobInfo& operator=(JobInfo const& that) 
+         {
             if (this != &that) copy(that);  return *this;
          }
 
-         // Status is a a special case as we don't want to have to register the
-         // Status enum with QVariant
-         Status jobStatus() const { return m_status; }
-         void setJobStatus(Status const jobStatus) { m_status = jobStatus; }
+         // Treat Status as a special case so we don't have to register the
+         // enum with QVariant
+         Status jobStatus() const { return m_jobStatus; }
+         void setJobStatus(Status const jobStatus) { m_jobStatus = jobStatus; }
 
          template <typename T>
          void set(QString const key, T const& value) 
@@ -83,88 +82,24 @@ namespace Process {
 
          QString getLocalFilePath(QString const& key) const;
 
-      private:
-         Status m_status;
-         QVariantMap m_jobData;
+		 // Serialization functions, note that we filter fields such as
+		 // InputFile as these are not required on reload.
+         QVariantList toQVariantList() const;
 
-
-      public:
-
-         /// Used to flag jobs for update when loaded from file
-         static bool isActive(Status const);
-         bool isActive() const { return isActive(m_status); }
-
-         QString const& baseName() const { return m_baseName; }
-         void setBaseName(QString const& baseName) { m_baseName = baseName; }
-
-         QString const& serverName() const { return m_serverName; }
-         void setServerName(QString const& serverName) { m_serverName = serverName; }
-
-         QString const& jobId() const { return m_jobId; }
-         void setJobId(QString const& jobId) { m_jobId = jobId; }
-
-         QString const& message() const { return m_message; }
-         void setMessage(QString const& message) { m_message = message; }
-
-         QString const& queueName() const { return m_queueName; }
-         void setQueueName(QString const& queueName) { m_queueName = queueName; }
-
-         QString wallTime() const { return m_wallTime; }
-         void setWallTime(QString const& wallTime) { m_wallTime = wallTime; }
-
-//         qint64 submitTime() const { return get<qint64>("SubmitTime"); } 
-//         void setSubmitTime(qint64 submitTime) { set("SubmitTime", submitTime); }
-
-//         unsigned memory() const { return m_memory; }
-//         void setMemory(unsigned const memory) { m_memory = memory; }
-
-//         unsigned scratch() const { return m_scratch; }
-//         void setScratch(unsigned const scratch) { m_scratch = scratch; }
-
-//         unsigned ncpus() const { return m_ncpus; }
-//         void setNcpus(unsigned const ncpus) { m_ncpus = ncpus; }
-
-
-         /// Serialization functions used to reconstruct the contents of the 
-         /// ProcessMonitor on restarting IQmol. 
-         virtual QVariantList toQVariantList() const;
-         virtual bool fromQVariantList(QVariantList const&);
+         bool fromQVariantList(QVariantList const&);
 
          virtual void dump() const;
 
-         ///Virtual functions which must be specified by calculation type
-
-         //virtual void set(QString const key,QString const& value) = 0;
-         //virtual void set(QString const key, int const& value) = 0;
-
-         //virtual QString get(QString const key) const = 0;
-         //virtual int getInt(QString const key) const = 0;
-
-//         virtual QStringList outputFiles() const = 0;
-//         virtual void localFilesExist(bool const tf) = 0;
-//         virtual bool localFilesExist() const = 0;
-//         virtual bool efpOnlyJob() const = 0;
-//        virtual void setEfpOnlyJob(bool const tf) = 0;
-//         virtual void setMoleculePointer(void* moleculePointer) = 0;
-//         virtual void* moleculePointer() const = 0;
+         // The following need deprecating:
+         static bool isActive(Status const);
+         bool isActive() const { return isActive(m_jobStatus); }
 
       protected:
-         virtual void copy(JobInfo const&);
-
+         void copy(JobInfo const&);
 
       private:
-         // Not the ordering of these is needed for the to/fromQVarientList functions.
-         Status    m_jobStatus;                        // 0
-         QString   m_baseName;                         // 1
-         QString   m_serverName;                       // 2
-         QString   m_jobId;                            // 3
-         QString   m_message;                          // 4
-         QString   m_queueName;                        // 5
-         QString   m_wallTime;    // hh:mm:ss          // 6
-//         qint64    m_submitTime;  // msec since epoch  // 7
-//        unsigned  m_memory;      // in Mb             // 8
-//         unsigned  m_scratch;     // in Mb             // 9
-//         unsigned  m_ncpus;                            // 10
+         Status m_jobStatus;
+         QVariantMap m_jobData;
    };
 
 } } // end namespace IQmol::Process

@@ -242,11 +242,11 @@ void Server::submit(Job* job)
 
    if (!open()) return;
 
-   QString contents(job->jobInfo()->get<QString>("InputString"));
+   QString contents(job->get<QString>("InputString"));
    QString fileName(Util::WriteToTemporaryFile(contents));
    QLOG_DEBUG() << "Input file contents written to" << fileName;
 
-   if (isLocal()) job->jobInfo()->set("LocalFilesExist", true);
+   if (isLocal()) job->set("LocalFilesExist", true);
 
    // In the case of an HTTP server, we can simply POST the contents of the
    // input file and we're done.  Other servers need the run file and a 
@@ -259,7 +259,7 @@ void Server::submit(Job* job)
       m_activeRequests.insert(reply, job);
       reply->start();
    }else {
-      QString destination(job->jobInfo()->getRemoteFilePath("InputFileName"));
+      QString destination(job->getRemoteFilePath("InputFileName"));
       Network::Reply* reply(m_connection->putFile(fileName, destination));
       connect(reply, SIGNAL(finished()), this, SLOT(copyRunFile()));
       m_activeRequests.insert(reply, job);
@@ -299,9 +299,9 @@ void Server::copyRunFile()
 
       qDebug() << "Run file contents written to" << fileName;
 
-      QString destination(job->jobInfo()->getRemoteFilePath("RunFileName"));
+      QString destination(job->getRemoteFilePath("RunFileName"));
 #ifdef Q_OS_WIN32
-      if (isLocal()) destination = job->jobInfo()->getRemoteFilePath("BatchFileName");
+      if (isLocal()) destination = job->getRemoteFilePath("BatchFileName");
 #endif
       reply = m_connection->putFile(fileName, destination);
       connect(reply, SIGNAL(finished()), this, SLOT(queueJob()));
@@ -340,7 +340,7 @@ void Server::queueJob()
       submit = substituteMacros(submit);
       submit = job->substituteMacros(submit);
 
-      QString workingDirectory(job->jobInfo()->get<QString>("RemoteWorkingDirectory"));
+      QString workingDirectory(job->get<QString>("RemoteWorkingDirectory"));
 
       if (isBasic()) {
          // Cache a list of currently running qchem jobs so we can identify the new one
@@ -409,8 +409,8 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
          // A successful submission returns a single token containing the job ID
          QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
          if (tokens.size() >= 1) {
-            job->setJobId(tokens.first());
-            QLOG_DEBUG() << "PBS job submitted with id" << job->jobId();
+            job->set("JobId",tokens.first());
+            QLOG_DEBUG() << "PBS job submitted with id" << tokens.first();
             ok = true;
          } 
       } break;
@@ -419,7 +419,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
          QRegularExpression rx("Qchemserv-Jobid::([0-9a-zA-Z\\-_]+)");
          QRegularExpressionMatch match(rx.match(message));
          if (message.contains("Qchemserv-Status::OK") && match.hasMatch()) {
-            job->setJobId(match.captured(1));
+            job->set("JobId", match.captured(1));
             ok = true;
          }
       } break;
@@ -431,7 +431,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
          if (message.contains("has been submitted")) {
             if (tokens.size() >= 3) {
                int id(tokens[2].toInt(&ok));
-               if (ok) job->setJobId(QString::number(id));
+               if (ok) job->set("JobId",QString::number(id));
                ok = true;
             }
          }
@@ -444,7 +444,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
          if (message.contains("Submitted batch job")) {
             if (tokens.size() >= 4) {
                int id(tokens[3].toInt(&ok));
-               if (ok) job->setJobId(QString::number(id));
+               if (ok) job->set("JobId", QString::number(id));
                ok = true;
             }
          }
@@ -458,7 +458,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
             QRegularExpression rx("JobId:\\s+([0-9]+)");
             QRegularExpressionMatch match(rx.match(message));
             if (match.hasMatch()) {
-               job->setJobId(match.captured(1));
+               job->set("JobId", match.captured(1));
                ok = true;
                QLOG_DEBUG() << "PID captured from return message" << match.captured(1);
             }
@@ -496,7 +496,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
                       break;
                    }
                }
-               job->setJobId(QString::number(jobid));
+               job->set("JobId", QString::number(jobid));
                ok = true;
             }
 
@@ -504,10 +504,10 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
             QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
             if (tokens.size() == 1) {  // bash returns only the pid
                int id(tokens[0].toInt(&ok));
-               if (ok) job->setJobId(QString::number(id));
+               if (ok) job->set("JobId", QString::number(id));
             }else if (tokens.size() >= 2) { // skip csh initial [1] 
                int id(tokens[1].toInt(&ok));
-               if (ok) job->setJobId(QString::number(id));
+               if (ok) job->set("JobId", QString::number(id));
             }
          }
 /*
@@ -524,7 +524,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
             QRegularExpression rx("ProcessId =\\s+(\\d+)\\s+=");
             if (rx.indexIn(message) != -1) {
                int id(rx.cap(1).toInt(&ok));
-               if (ok) job->setJobId(QString::number(id));
+               if (ok) job->set("JobId", QString::number(id));
             }else {
                // It is possible that the job has completed before the batch file
                // determines its PID, so we let this slide.
@@ -873,7 +873,7 @@ void Server::listFinished()
       // of the directory that holds the FSM files.
       unsigned pos(fileList.indexOf(QRegularExpression(".*input.files")));
       if (pos >= 0) fileList.removeAt(pos);
-      QString destination(job->jobInfo()->get<QString>("LocalWorkingDirectory"));
+      QString destination(job->get<QString>("LocalWorkingDirectory"));
       //reply->deleteLater();
 
       reply = m_connection->getFiles(fileList, destination);
@@ -937,8 +937,8 @@ void Server::copyResultsFinished()
       }
 
       QString msg("Results in: ");
-      msg += job->jobInfo()->get<QString>("LocalWorkingDirectory");
-      job->jobInfo()->set("LocalFilesExist", true);
+      msg += job->get<QString>("LocalWorkingDirectory");
+      job->set("LocalFilesExist", true);
       job->setStatus(JobInfo::Finished, msg);
       //reply->deleteLater();
 

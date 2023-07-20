@@ -176,7 +176,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
   
    m_qchemJobInfo = qchemJobInfo;
    qDebug() << "Setting member qcheminfo";
-   m_fileIn.setFile(m_qchemJobInfo.baseName() + ".inp");
+   m_fileIn.setFile(m_qchemJobInfo.get<QString>("BaseName") + ".inp");
    qDebug() << "getting input file";
 
    m_ui.jobList->setCurrentIndex(0);
@@ -953,7 +953,7 @@ void InputDialog::submitJob()
    m_qchemJobInfo.set(
       "InputString", generateInputString());
    qDebug() << "writing input string";
-   m_qchemJobInfo.setServerName(m_ui.serverCombo->currentText());
+   m_qchemJobInfo.set("ServerName", m_ui.serverCombo->currentText());
    qDebug() << "writing servername string";
 
    submitJobRequest(m_qchemJobInfo);

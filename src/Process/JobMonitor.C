@@ -174,9 +174,10 @@ void JobMonitor::saveJobListToPreferences() const
 
 void JobMonitor::loadJobListFromPreferences()
 {
-   QLOG_DEBUG() << "Loading jobs from preferences file";
    QVariantList list(Preferences::JobMonitorList());
+   QLOG_INFO() << "Loading" << list.size() << "jobs from preferences file";
    if (list.isEmpty()) return;
+
    bool remoteJobsActive(false);
    Job* job(0);
    try {
@@ -240,7 +241,6 @@ void JobMonitor::loadJobListFromPreferences()
       QMsgBox::warning(this, "IQmol", "Error encountered");
    }
    QLOG_DEBUG() << "End try block";
-
 }
 
 
@@ -290,7 +290,7 @@ void JobMonitor::submitJob(JobInfo* jobInfo)
    qDebug() << "Dumping out the job info contents";
    jobInfo->dump();
 
-   QString serverName(jobInfo->serverName());
+   QString serverName(jobInfo->get<QString>("ServerName"));
    Server* server(ServerRegistry::instance().find(serverName));
 
    if (!server) {
@@ -328,7 +328,7 @@ void JobMonitor::submitJob(JobInfo* jobInfo)
 
       postUpdateMessage("Submitting job");
 
-      job = new Job(jobInfo);
+      job = new Job(*jobInfo);
       server->submit(job);
       jobAccepted();  // Closes the QUI window
 
@@ -372,18 +372,18 @@ bool JobMonitor::getWorkingDirectory(Server* server, JobInfo* jobInfo)
       QFileInfo info(dirPath);
       if (info.isFile()) dirPath = info.path();
 #ifndef Q_OS_WIN32
-      dirPath += "/" + jobInfo->baseName();
+      dirPath += "/" + jobInfo->get<QString>("BaseName");
 #endif
       bool allowSpace(false);
       if (!getLocalWorkingDirectory(dirPath, allowSpace)) return false;
    }else {
-      dirPath = jobInfo->baseName();
+      dirPath = jobInfo->get<QString>("BaseName");
       if (!getRemoteWorkingDirectory(server, dirPath)) return false;
    }
 
    QDir dir(dirPath);
 
-   jobInfo->setBaseName(dir.dirName());
+   jobInfo->set("BaseName",dir.dirName());
    jobInfo->set("RemoteWorkingDirectory", dirPath);
    if (server->isLocal()) {
       jobInfo->set("LocalWorkingDirectory", dirPath);
@@ -544,8 +544,8 @@ bool JobMonitor::getQueueResources(Server* server, JobInfo* jobInfo)
    configuration.setValue(ServerConfiguration::QueueResources,list.toQVariantList());
    ServerRegistry::save();
 
-   jobInfo->setQueueName(dialog.queue());
-   jobInfo->setWallTime(dialog.walltime());
+   jobInfo->set("QueueName", dialog.queue());
+   jobInfo->set("WallTime",dialog.walltime());
    jobInfo->set("Memory", dialog.memory());
    jobInfo->set("Scratch", dialog.scratch());
    jobInfo->set("Ncpus", dialog.ncpus());
@@ -744,9 +744,9 @@ void JobMonitor::jobFinished()
          msg += job->message();
          QMsgBox::warning(0, "IQmol", msg);
       }else {
-         resultsAvailable(job->jobInfo()->get<QString>("LocalWorkingDirectory"),
-                          job->jobInfo()->baseName(),
-                          job->jobInfo()->get<qint64>("MoleculePointer"));
+         resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
+                          job->get<QString>("BaseName"),
+                          job->get<qint64>("MoleculePointer"));
       }
      
    }else {
@@ -955,9 +955,9 @@ void JobMonitor::openResults()
 void JobMonitor::openResults(Job* job)
 {
    if (!job) return;
-   resultsAvailable(job->jobInfo()->get<QString>("LocalWorkingDirectory"),
-                    job->jobInfo()->baseName(),
-                    job->jobInfo()->get<qint64>("MoleculePointer"));
+   resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
+                    job->get<QString>("BaseName"),
+                    job->get<qint64>("MoleculePointer"));
 }
 
 
@@ -972,11 +972,11 @@ void JobMonitor::viewOutput(Job* job)
 {
    if (!job) return;
 
-   QFileInfo output(job->jobInfo()->getLocalFilePath("OutputFileName"));
+   QFileInfo output(job->getLocalFilePath("OutputFileName"));
 
    if (!output.exists()) {
       QMsgBox::warning(this,"IQmol", "Output file no longer exists");
-      job->jobInfo()->set("LocalFilesExist", false);
+      job->set("LocalFilesExist", false);
       return;
    }   
 
@@ -1001,14 +1001,10 @@ void JobMonitor::copyResults(Job* job)
    if (!job) return;
 
    try {
-      JobInfo* jobInfo(job->jobInfo());
-      QLOG_DEBUG() << "trying to get jobinfo local working directory" ;
-
-      QString dirPath(jobInfo->get<QString>("LocalWorkingDirectory"));
+      QString dirPath(job->get<QString>("LocalWorkingDirectory"));
       QFileInfo info(dirPath);
-      QLOG_DEBUG() << "got local working directory" ;
 
-      if (jobInfo->get<bool>("LocalFilesExist") && info.exists()) {
+      if (job->get<bool>("LocalFilesExist") && info.exists()) {
          QString msg("Results are in the directory:\n\n");
          msg += dirPath;
          msg += "\n\nDownload results again?";
@@ -1022,7 +1018,7 @@ void JobMonitor::copyResults(Job* job)
       bool allowSpace(true);
       if (!getLocalWorkingDirectory(dirPath, allowSpace)) return;
 
-      jobInfo->set("LocalWorkingDirectory", dirPath);
+      job->set("LocalWorkingDirectory", dirPath);
 
       Server* server = ServerRegistry::instance().find(job->serverName());
       if (!server) throw Exception("Invalid server");
@@ -1045,31 +1041,29 @@ void JobMonitor::cleanUp(Job* job)
       return;
    }
     
-   QDir dir (job->jobInfo()->get<QString>("LocalWorkingDirectory"));
+   QDir dir (job->get<QString>("LocalWorkingDirectory"));
    if (!dir.exists()) {
       QMsgBox::warning(this, "IQmol", QString("Unable to find results for") + job->jobName());
       return;
    }
 
-   const JobInfo* jobInfo(job->jobInfo());
-
    // Rename Http files
    QString oldName("input"); 
-   QString newName(jobInfo->get<QString>("InputFileName"));
+   QString newName(job->get<QString>("InputFileName"));
    if (dir.exists(oldName)) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
    }
 
    oldName = "output";
-   newName = jobInfo->get<QString>("OutputFileName");
+   newName = job->get<QString>("OutputFileName");
    if (dir.exists(oldName)) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
    }
 
    oldName = "input.FChk";
-   newName = jobInfo->get<QString>("AuxFileName");
+   newName = job->get<QString>("AuxFileName");
    if (dir.exists(oldName) && oldName != newName) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
@@ -1081,7 +1075,7 @@ void JobMonitor::cleanUp(Job* job)
       dir.rename(oldName, newName);
    }
 
-   oldName = jobInfo->get<QString>("InputFileName") + ".fchk";
+   oldName = job->get<QString>("InputFileName") + ".fchk";
    if (dir.exists(oldName) && oldName != newName) {
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
@@ -1099,7 +1093,7 @@ void JobMonitor::cleanUp(Job* job)
    if (dir.exists("pathtable")) dir.remove("pathtable");
 
    // Check for errors and update the run time
-   QString output(jobInfo->getLocalFilePath("OutputFileName"));
+   QString output(job->getLocalFilePath("OutputFileName"));
    QStringList errors(Parser::QChemOutput::parseForErrors(output));
 
    if (!errors.isEmpty()) {
@@ -1116,7 +1110,7 @@ void JobMonitor::cleanUp(Job* job)
    QLOG_DEBUG() << "Errors in file:" << errors;
 
    if (!errors.isEmpty()) {
-      job->setStatus(JobInfo::Error, errors.join("\n")); 
+      job->setStatus(Job::Error, errors.join("\n")); 
       reloadJob(job);
    }
 }
