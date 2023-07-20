@@ -68,7 +68,7 @@ namespace Process {
               };
 #endif
 
-         QChemJobInfo()
+         QChemJobInfo() : JobInfo()
          { 
             set("Charge", 0);
             set("Multiplicity", 1);
@@ -79,9 +79,7 @@ namespace Process {
             set("MoleculePointer", 0);
          }
 
-
          QString fileExtension(QString const&) const;
-
    };
 
 } } // end namespace IQmol::Process

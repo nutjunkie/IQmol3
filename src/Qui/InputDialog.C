@@ -283,7 +283,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    m_ui.qui_charge->setValue(charge);
    m_ui.qui_multiplicity->setValue(multiplicity);
 
-   int nElectrons(m_qchemJobInfo.get<int>("NElectrons"));
+   int nElectrons(m_qchemJobInfo.get<int>("NumElectrons"));
    int nAlpha(nElectrons+multiplicity-1);
    nAlpha /= 2;
 

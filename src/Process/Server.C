@@ -744,7 +744,7 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
    }
 
    // Only print message if there has been a change in status
-   if (job->status() != status) {
+   if (job->jobStatus() != status) {
       QLOG_TRACE() << "Query returned:" << message;
       QLOG_TRACE() << "parseQueryMessage setting status to " << JobInfo::toString(status) << ok;
    }

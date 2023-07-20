@@ -45,7 +45,9 @@ namespace Process {
 
          static QString toString(Status const);
 
-         JobInfo() : m_jobStatus(NotRunning) { }
+         static bool isActive(Status const);
+
+         JobInfo();
 
          JobInfo(JobInfo const& that) { copy(that); }
 
@@ -58,6 +60,8 @@ namespace Process {
          // enum with QVariant
          Status jobStatus() const { return m_jobStatus; }
          void setJobStatus(Status const jobStatus) { m_jobStatus = jobStatus; }
+
+         bool exists(QString const& key) const { return m_jobData.contains(key); }
 
          template <typename T>
          void set(QString const key, T const& value) 
@@ -88,11 +92,10 @@ namespace Process {
 
          bool fromQVariantList(QVariantList const&);
 
+         bool isActive() const { return isActive(m_jobStatus); }
+
          virtual void dump() const;
 
-         // The following need deprecating:
-         static bool isActive(Status const);
-         bool isActive() const { return isActive(m_jobStatus); }
 
       protected:
          void copy(JobInfo const&);

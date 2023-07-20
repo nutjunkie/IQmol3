@@ -21,6 +21,8 @@
 ********************************************************************************/
 
 #include "JobInfo.h"
+#include "QMapRange.h"
+#include <QDate>
 
 
 namespace IQmol {
@@ -70,6 +72,15 @@ bool JobInfo::isActive(Status const status)
 }
 
 
+
+JobInfo::JobInfo() 
+{
+   m_jobStatus = NotRunning;
+   set("JulianDay", QDate::currentDate().toJulianDay());
+}
+
+
+
 QVariantList JobInfo::toQVariantList() const
 {
    QVariantList list;
@@ -79,6 +90,7 @@ QVariantList JobInfo::toQVariantList() const
    QStringList filterFields = { 
        "InputString", 
        "Coordinates", 
+       "Constraints", 
        "CoordinatesFsm", 
        "ScanCoordinates",
        "OnsagerRadius",
@@ -86,7 +98,8 @@ QVariantList JobInfo::toQVariantList() const
        "EfpFragments",
        "ExternalCharges",
        "Charge",
-       "Multiplicity"
+       "Multiplicity",
+       "NumElectrons", 
    };
 
    QVariantMap map(m_jobData);
@@ -95,8 +108,11 @@ QVariantList JobInfo::toQVariantList() const
    }
 
    list << QVariant(map);
+
    QLOG_DEBUG() << "------ Serializing JobInfo ------";
-   QLOG_DEBUG() << map;
+   for (auto [key, value] : QMapRange<QVariantMap>(map)) {
+       QLOG_DEBUG() << key << " -> " << value;
+   }
    return list;
 }
 

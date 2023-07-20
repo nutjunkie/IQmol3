@@ -1770,19 +1770,29 @@ bool Molecule::sanityCheck()
 Process::QChemJobInfo Molecule::qchemJobInfo()
 {
    Process::QChemJobInfo qchemJobInfo;
+   QString s;
 
-   qchemJobInfo.set("Charge",          totalCharge());
-   qchemJobInfo.set("Multiplicity",    multiplicity());
-   qchemJobInfo.set("Coordinates",     coordinatesAsString());
-   qchemJobInfo.set("CoordinatesFsm",  coordinatesAsStringFsm());
-   qchemJobInfo.set("Constraints",     constraintsAsString());
-   qchemJobInfo.set("ScanCoordinates", scanCoordinatesAsString());
-   qchemJobInfo.set("EfpFragments",    efpFragmentsAsString());
-   qchemJobInfo.set("EfpParameters",   efpParametersAsString());
-   qchemJobInfo.set("ExternalCharges", externalChargesAsString());
-   qchemJobInfo.set("OnsagerRadius",   QString::number(onsagerRadius(),'f',4));
-   qchemJobInfo.set("Isotopes",        isotopesAsString());
-   qchemJobInfo.set("NElectrons",      m_info.numberOfElectrons());
+   qchemJobInfo.set("Charge",        totalCharge());
+   qchemJobInfo.set("Multiplicity",  multiplicity());
+   qchemJobInfo.set("Coordinates",   coordinatesAsString());
+   qchemJobInfo.set("NumElectrons",  m_info.numberOfElectrons());
+   qchemJobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+
+   s = coordinatesAsStringFsm();
+   if (!s.isEmpty()) qchemJobInfo.set("CoordinatesFsm", s);
+   s = constraintsAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("Constraints", s);
+
+   s = scanCoordinatesAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("ScanCoordinates", s);
+   s = efpFragmentsAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("EfpFragments", s);
+   s = efpParametersAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("EfpParameters", s);
+   s = externalChargesAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("ExternalCharges", s);
+   s = isotopesAsString();
+   if (!s.isEmpty()) qchemJobInfo.set("Isotopes", s);
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
    if (atomList.isEmpty()) qchemJobInfo.set("EfpOnly", true);

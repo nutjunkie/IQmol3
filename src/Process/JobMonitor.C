@@ -155,17 +155,13 @@ void JobMonitor::closeEvent(QCloseEvent* event)
 
 void JobMonitor::saveJobListToPreferences() const
 {
-   QLOG_DEBUG() << "in save Joblist to preferences";
    JobList jobs(s_jobMap.keys());
-   QLOG_DEBUG() << "create joblists";
    JobList::iterator iter;
    QVariantList list;
-   QLOG_DEBUG() << "iterating Joblist ";
+
    for (iter = jobs.begin(); iter != jobs.end(); ++iter) {
-      QLOG_DEBUG() << "iterating";
        list.append((*iter)->toQVariant());
    }   
-   QLOG_DEBUG() << "iterating works as well";
 
    //qDebug() <<"Saving JobMonitorList" << list;
    Preferences::JobMonitorList(list);
@@ -180,28 +176,25 @@ void JobMonitor::loadJobListFromPreferences()
 
    bool remoteJobsActive(false);
    Job* job(0);
+
    try {
-      QLOG_DEBUG() << "Enter the try block";
       QVariantList::iterator iter;
       qint64 currentJulianDay(QDate::currentDate().toJulianDay());
       qint64 cutOffDay(currentJulianDay - Preferences::DaysToRememberJobs());
 
       for (iter = list.begin(); iter != list.end(); ++iter) {
-         QLOG_DEBUG() << "Try to make new job";
           job = new Job();
-         QLOG_DEBUG() << "Made new job";
+
           if (job->fromQVariant(*iter) && job->julianDay() >= cutOffDay ) {
+
              if (job->julianDay() != currentJulianDay) {
                 QDate date(QDate::fromJulianDay(job->julianDay()));
                 job->setSubmitTime(date.toString("d MMM"));
              }
-             QLOG_DEBUG() << "adding job to table";
+
              addToTable(job);
-            QLOG_DEBUG() << "succesfully added job to table";
              if (job->isActive()) {
-               QLOG_DEBUG() << "job is active";
                 Server* server = ServerRegistry::instance().find(job->serverName());
-                QLOG_DEBUG() << "Got job from registry";
                 if (server) {
                    server->watchJob(job);
                    if (server->isLocal()) {
@@ -221,7 +214,6 @@ void JobMonitor::loadJobListFromPreferences()
           }
       }
       updateTable();
-      QLOG_DEBUG() << "After Update table";
       if (remoteJobsActive) {
          QString msg("IQmol found processes on remote servers that were still active "
            "in the last session. \n\nWould you like to reconnect to the server(s)?");
@@ -240,7 +232,6 @@ void JobMonitor::loadJobListFromPreferences()
       postUpdateMessage("");
       QMsgBox::warning(this, "IQmol", "Error encountered");
    }
-   QLOG_DEBUG() << "End try block";
 }
 
 
@@ -248,7 +239,6 @@ Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
 {
    QTableWidget* table(m_ui.processTable);
    
-   QLOG_DEBUG() << "Getting Selected Job";
    if (item == 0) {
       QList<QTableWidgetItem*> items(table->selectedItems());
       if (items.isEmpty()) return 0;
@@ -256,9 +246,7 @@ Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
    }
 
    item = table->item(item->row(), 0);
-   QLOG_DEBUG() << "Before jobmap";
    JobList list(s_jobMap.keys(item));
-   QLOG_DEBUG() << "After jobmap";
 
    return list.isEmpty() ? 0 : list.first();  // and only
 }
@@ -574,7 +562,6 @@ void JobMonitor::jobSubmissionFailed(Job* job)
 
 void JobMonitor::addToTable(Job* job) 
 {
-   QLOG_DEBUG() << "entering addtable routine";
    if (!job) return;
    QTableWidget* table(m_ui.processTable);
    int row(table->rowCount());
@@ -594,18 +581,15 @@ void JobMonitor::addToTable(Job* job)
    table->item(row, 2)->setText(job->submitTime());
    unsigned time(job->runTime());
    if (time) table->item(row, 3)->setText(Util::Timer::formatTime(time));
-   QLOG_DEBUG() << "still in the addtable routine";
-   QString status(JobInfo::toString(job->status()));
+   QString status(JobInfo::toString(job->jobStatus()));
    table->item(row, 4)->setText(status);
    table->item(row, 4)->setToolTip(job->message());
    table->item(row, 4)->setText(job->message());
 
    s_jobMap.insert(job, table->item(row,0));
-   QLOG_DEBUG() << "succesfull inserts";
    connect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
    //connect(job, SIGNAL(error()),    this, SLOT(jobError()));
-   QLOG_DEBUG() << "connectings slots work";
    saveJobListToPreferences();
 }
 
@@ -700,13 +684,13 @@ void JobMonitor::reloadJob(Job* job)
    // these according to the updateInterval
    unsigned time(job->runTime());
    if (time) table->item(item->row(), 3)->setText(Util::Timer::formatTime(time));
-   if (job->status() == JobInfo::Copying) {
+   if (job->jobStatus() == JobInfo::Copying) {
       //QProgressBar* bar = new QProgressBar();
       //bar->setValue(50);
       //table->setCellWidget(item->row(), 4, bar);
       table->item(item->row(), 4)->setText(job->copyProgressString());
    }else {
-      QString status(JobInfo::toString(job->status()));
+      QString status(JobInfo::toString(job->jobStatus()));
       table->item(item->row(), 4)->setText(status);
    }
    table->item(item->row(), 4)->setToolTip(job->message());
@@ -737,9 +721,9 @@ void JobMonitor::jobFinished()
    Job* job = qobject_cast<Job*>(sender());
    if (!job) return;
 
-   if (job->localFilesExist()) {
+   if (job->get<bool>("LocalFilesExist")) {
       cleanUp(job);
-      if (job->status() == JobInfo::Error) {
+      if (job->jobStatus() == JobInfo::Error) {
          QString msg(job->jobName() + " failed:\n");
          msg += job->message();
          QMsgBox::warning(0, "IQmol", msg);
@@ -768,13 +752,12 @@ void JobMonitor::contextMenu(QPoint const& pos)
    QTableWidget* table(m_ui.processTable);
    QTableWidgetItem* item(table->itemAt(pos));
    if (!item) return;
-   QLOG_DEBUG() << "context menu action";
    Job* job(getSelectedJob(item));
    if (!job) return;
 
    QMenu *menu = new QMenu(this);
    QAction* kill;
-   JobInfo::Status status(job->status());
+   JobInfo::Status status(job->jobStatus());
 
    switch (status) {
       case JobInfo::Queued:   
@@ -849,7 +832,7 @@ void JobMonitor::contextMenu(QPoint const& pos)
       copy->setEnabled(false);
    }
 
-   if (job->localFilesExist()) {
+   if (job->get<bool>("LocalFilesExist")) {
       view->setEnabled(true);
       if (status == JobInfo::Finished) open->setEnabled(true);
    }
@@ -861,14 +844,11 @@ void JobMonitor::contextMenu(QPoint const& pos)
 
 void JobMonitor::on_processTable_cellDoubleClicked(int, int)
 {
-   QLOG_DEBUG() << "double clicked";
    Job* job(getSelectedJob());
    if (!job) return;
-  QLOG_DEBUG() << "got job";
-   bool localFiles(job->localFilesExist());
-   QLOG_DEBUG() << "got local files" << localFiles;
+   bool localFiles(job->get<bool>("LocalFilesExist"));
 
-   switch (job->status()) {
+   switch (job->jobStatus()) {
       case JobInfo::Error:
          if (localFiles) {
             viewOutput(job);
@@ -891,7 +871,6 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          break;
 
       default:
-         QLOG_DEBUG() << "enterdefault";
          queryJob(job);
          break;
    }
@@ -903,7 +882,7 @@ void JobMonitor::cancelCopy()
    Job* job(getSelectedJob());
    if (!job) return;
 
-   JobInfo::Status status(job->status());
+   JobInfo::Status status(job->jobStatus());
    if (status != JobInfo::Copying) {
       QLOG_DEBUG() << "Cancel copy called on non-copy job";
       return;
@@ -923,7 +902,7 @@ void JobMonitor::killJob()
    Job* job(getSelectedJob());
    if (!job) return;
   
-   JobInfo::Status status(job->status());
+   JobInfo::Status status(job->jobStatus());
 
    QString msg;
    if (status == JobInfo::Queued) {
@@ -947,7 +926,6 @@ void JobMonitor::killJob()
 
 void JobMonitor::openResults()
 {
-   QLOG_DEBUG() << "Open results of Job";
   openResults(getSelectedJob());
 }
 
@@ -963,7 +941,6 @@ void JobMonitor::openResults(Job* job)
 
 void JobMonitor::viewOutput()
 {    
-   QLOG_DEBUG() << "View output of Job";
   viewOutput(getSelectedJob());
 }
 
@@ -974,6 +951,8 @@ void JobMonitor::viewOutput(Job* job)
 
    QFileInfo output(job->getLocalFilePath("OutputFileName"));
 
+   qDebug() << "Attempting to open output" << output.filePath();
+
    if (!output.exists()) {
       QMsgBox::warning(this,"IQmol", "Output file no longer exists");
       job->set("LocalFilesExist", false);
@@ -982,7 +961,7 @@ void JobMonitor::viewOutput(Job* job)
 
    Layer::File* file = new Layer::File(output.filePath());
 
-   if (job->status() == JobInfo::Running) {
+   if (job->jobStatus() == JobInfo::Running) {
       file->tail();
    }else {
       file->configure();
@@ -1036,7 +1015,7 @@ void JobMonitor::cleanUp(Job* job)
    if (job->isActive()) {
       QLOG_WARN() << "Active Job passed to CleanUp" << job->jobName();
       return;
-   }else if (!job->localFilesExist()) {
+   }else if (!job->get<bool>("LocalFilesExist")) {
       QLOG_WARN() << "Local files DNE in CleanUp" << job->jobName();
       return;
    }
@@ -1118,7 +1097,6 @@ void JobMonitor::cleanUp(Job* job)
 
 void JobMonitor::queryJob()
 {  
-   QLOG_DEBUG() << "Querying Job";
   queryJob(getSelectedJob());
 }
 

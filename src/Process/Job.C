@@ -29,17 +29,6 @@
 namespace IQmol {
 namespace Process {
 
-
-
-Job::Job(JobInfo const& jobInfo) 
-{
-   set("JulianDay",QDate::currentDate().toJulianDay());
-   copy(jobInfo); 
-   //m_jobName    = get<QString>("BaseName");
-   //m_serverName = get<QString>("ServerName");
-}
-
-
 Job::~Job()
 {
   // Let the server know we don't exist any more.
@@ -50,71 +39,17 @@ Job::~Job()
 QVariant Job::toQVariant() const
 {
    return QVariant(toQVariantList());
-#if 0
-   QVariantMap map;
-
-   map.insert("JobName",      m_jobName);  
-   map.insert("ServerName",   m_serverName);  
-   map.insert("Message",      m_message);  
-   map.insert("JobId",        m_jobId);  
-   map.insert("SubmitTime",   m_submitTime);  
-   map.insert("RunTime",      runTime());  
-//   map.insert("Status",       (int)m_status);  
-   map.insert("JulianDay",    m_julianDay);
-   QLOG_DEBUG() << "normal part works";
-if (m_jobInfo)   map.insert("jobInfo", m_jobInfo->toQVariantList());
-   QLOG_DEBUG() << "in save Joblist to preferences";
-   return QVariant(map);
-#endif
 }
 
 
 bool Job::fromQVariant(QVariant const& qvar)
 {
    QVariantList list(qvar.toList());
-   return fromQVariantList(list);
+   bool ok(fromQVariantList(list));
 
-#if 0
-   if (!map.contains("JobName")) return false;
-   m_jobName = map.value("JobName").toString(); 
-   if (m_jobName.isEmpty()) return false;
+   if (exists("RunTime")) resetTimer(get<unsigned>("RunTime"));
 
-   if (!map.contains("ServerName")) return false;
-   m_serverName = map.value("ServerName").toString(); 
-   if (m_serverName.isEmpty()) return false;
-
-   if (!map.contains("Status")) return false;
-//   m_status = static_cast<JobInfo::Status>(map.value("Status").toInt()); 
-
-   if (map.contains("Message")) {
-      m_message = map.value("Message").toString(); 
-   }
-
-   if (map.contains("SubmitTime")) {
-      m_submitTime = map.value("SubmitTime").toString(); 
-   }
-
-   if (map.contains("JobId")) {
-      m_jobId = map.value("JobId").toString(); 
-   }
-
-   if (map.contains("RunTime")) {
-      resetTimer(map.value("RunTime").toUInt()); 
-   }
-
-   if (map.contains("JulianDay")) {
-      m_julianDay = map.value("JulianDay").toUInt(); 
-   }
-
-   if (map.contains("JobInfo")) {
-      if (!m_jobInfo->fromQVariantList(map.value("JobInfo").toList())) {
-         QLOG_WARN() << "Faild to convert JobInfo from serialized Job";
-      }
-   }
-
-   return true;
-
-#endif
+   return ok;
 }
 
 
@@ -138,7 +73,7 @@ QString Job::substituteMacros(QString const& input) const
    output.replace("${JOB_NAME}", get<QString>("BaseName"));
 
    output.replace("${QUEUE}",    get<QString>("QueueName"));
-   output.replace("${WALLTIME}", get<QString>("wWllTime"));
+   output.replace("${WALLTIME}", get<QString>("WallTime"));
    output.replace("${MEMORY}",   QString::number(get<qint64>("Memory")));
    output.replace("${JOBFS}",    QString::number(get<qint64>("Scratch")));
    output.replace("${SCRATCH}",  QString::number(get<qint64>("Scratch")));
@@ -184,7 +119,7 @@ void Job::setStatus(JobInfo::Status const status, QString const& message)
 
       case JobInfo::Queued:
          m_message = "Job ID: " + jobId();
-         m_submitTime = QTime::currentTime().toString("h:mm:ss");
+         set("SubmitTime", QTime::currentTime().toString("h:mm:ss"));
          break;
 
       case JobInfo::Running:
@@ -221,12 +156,6 @@ void Job::setStatus(JobInfo::Status const status, QString const& message)
    if (!message.isEmpty()) m_message = message;
    qDebug() << "Setting Job status to" << JobInfo::toString(status) << m_message;
    updated();
-}
-
-
-bool Job::localFilesExist() const 
-{ 
-   return get<bool>("LocalFilesExist");
 }
 
 } } // end namespaces IQmol::Process
