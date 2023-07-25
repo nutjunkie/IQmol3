@@ -863,7 +863,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
    Job* job(getSelectedJob());
    if (!job) return;
   QLOG_DEBUG() << "got job";
-   bool localFiles(job->localFilesExist());
+   bool localFiles(job->jobInfo()->localFilesExist());
    QLOG_DEBUG() << "got local files" << localFiles;
 
    switch (job->status()) {

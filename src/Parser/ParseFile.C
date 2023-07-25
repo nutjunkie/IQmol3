@@ -39,6 +39,7 @@
 #include "FormattedCheckpointParser.h"
 #include "OpenBabelParser.h"
 #include "PdbParser.h"
+#include "GroParser.h"
 #include "VibronicParser.h"
 #include "YamlParser.h"
 
@@ -241,6 +242,10 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
 
    if (extension == "pdb") {
       parser = new Pdb;
+   }
+
+   if (extension == "gro"){
+      parser = new Gro;
    }
 
    if (extension == "ply" || extension == "obj" || 
