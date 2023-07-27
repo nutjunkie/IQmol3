@@ -47,7 +47,7 @@ namespace Process {
 
          static bool isActive(Status const);
 
-         JobInfo();
+         JobInfo() : m_jobStatus(NotRunning) { }
 
          JobInfo(JobInfo const& that) { copy(that); }
 
@@ -63,10 +63,13 @@ namespace Process {
 
          bool exists(QString const& key) const { return m_jobData.contains(key); }
 
+         void remove(QString const& key) { m_jobData.remove(key); }
+
          template <typename T>
          void set(QString const key, T const& value) 
          {
-            qDebug() << "Inserting job info:" << key << "->" << value;
+            T t;
+            //qDebug() << "Inserting job info:" << key << "->" << value;
             m_jobData.insert(key, QVariant(value));
          }
 
@@ -77,7 +80,7 @@ namespace Process {
             if (m_jobData.contains(key) && m_jobData[key].canConvert<T>()) {
                t = m_jobData[key].value<T>();
             }else {
-               QLOG_WARN() << "Failed to find key in JobInfo object:" << key;
+               //qDebug() << "Failed to find key in JobInfo object:" << key;
             }
             return t;
          }
@@ -94,8 +97,7 @@ namespace Process {
 
          bool isActive() const { return isActive(m_jobStatus); }
 
-         virtual void dump() const;
-
+         void dump() const;
 
       protected:
          void copy(JobInfo const&);

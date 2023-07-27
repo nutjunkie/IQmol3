@@ -1,12 +1,11 @@
-#ifndef IQMOL_PROCESS_JOBMONITOR_H
-#define IQMOL_PROCESS_JOBMONITOR_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,13 +15,15 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
-   
+
 ********************************************************************************/
 
 #include "ui_JobMonitor.h"
+#include "Job.h"
+
 #include <QTimer>
 
 
@@ -32,13 +33,11 @@ class QShowEvent;
 namespace IQmol {
 namespace Process {
 
-   class Job;
    class Server;
-   class JobInfo;
 
-   /// The JobMonitor handles the submission and monitoring of external 
-   /// calculations such as Q-Chem jobs.  Note that the JobMonitor takes 
-   /// ownership of the Job objects.
+   // The JobMonitor handles the submission and monitoring of external 
+   // calculations such as Q-Chem jobs.  These jobs could be run on 
+   // either the local or remote machine.
 
    class JobMonitor : public QMainWindow {
 
@@ -46,13 +45,10 @@ namespace Process {
 
       public:
          static JobMonitor& instance();
+         void   loadJobListFromPreferences();
 
       public Q_SLOTS:
-         // Namespace qualification is required as we call this from QUI
-         void submitJob(IQmol::Process::JobInfo*);
-         void jobSubmissionSuccessful(Job*);
-         void jobSubmissionFailed(Job*);
-         void loadJobListFromPreferences();
+         void submitJob(JobInfo*);
 
       Q_SIGNALS:
          /// This signal is emitted only when a job has finished successfully.
@@ -66,6 +62,9 @@ namespace Process {
          void showEvent(QShowEvent* event);
 
       private Q_SLOTS:
+
+         void jobSubmissionSuccessful(Job*);
+         void jobSubmissionFailed(Job*);
          void on_clearListButton_clicked(bool);
          void on_processTable_cellDoubleClicked(int, int);
 
@@ -81,14 +80,9 @@ namespace Process {
          /// allows network requests to be minimized.  
          void updateTable();
 
-         /// This should be called when a job has completed, and the result
-         /// files are located locally. 
-         void cleanUp(Job*);
-
          void reconnectServers();
          void jobUpdated();
          void jobFinished();
-         void jobError();
 
          // Context menu actions
          void contextMenu(QPoint const& position);
@@ -107,7 +101,8 @@ namespace Process {
          void initializeMenus();
          void saveJobListToPreferences() const;
 
-         void addToTable(Job*);
+         void appendToTable(Job*);
+         void appendToTable(JobList&);
          void reloadJob(Job* job);
          void removeJob(Job*);
          void queryJob(Job* job);
@@ -128,9 +123,8 @@ namespace Process {
          void clearJobTable(bool const finishedOnly);
 
          // Singleton stuff
-         JobMonitor() { }
-         JobMonitor(QWidget* parent);
-         explicit JobMonitor(JobMonitor const&);
+         JobMonitor(QWidget* parent = 0);
+         explicit JobMonitor(JobMonitor const&); // prevent copying
          ~JobMonitor() { }
          static JobMonitor* s_instance;
          static void destroy();
@@ -140,5 +134,3 @@ namespace Process {
    };
 
 } } // end namespace IQmol::Process
-
-#endif

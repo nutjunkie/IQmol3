@@ -36,8 +36,9 @@ Job::~Job()
 }
 
 
-QVariant Job::toQVariant() const
+QVariant Job::toQVariant()
 {
+   set("RunTime", runTime());
    return QVariant(toQVariantList());
 }
 
@@ -89,12 +90,6 @@ QString Job::substituteMacros(QString const& input) const
 }
 
 
-void Job::parseQueryOutput(QString const&)
-{
-   qDebug() << "Need to parse query string";
-}
-
-
 void Job::copyProgress(double fraction)
 {
    int pc(100*fraction);
@@ -119,7 +114,7 @@ void Job::setStatus(JobInfo::Status const status, QString const& message)
 
       case JobInfo::Queued:
          m_message = "Job ID: " + jobId();
-         set("SubmitTime", QTime::currentTime().toString("h:mm:ss"));
+         set("SubmitTime", QDateTime::currentSecsSinceEpoch());
          break;
 
       case JobInfo::Running:

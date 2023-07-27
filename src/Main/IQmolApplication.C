@@ -180,7 +180,6 @@ void IQmolApplication::open(QString const& file)
    // before now, the dialog appears under the splash screen
    Process::JobMonitor::instance().loadJobListFromPreferences();
    
-
    static bool connected(false);
    if (!connected) {
       connect(this, SIGNAL(lastWindowClosed()), this, SLOT(quitRequest()));

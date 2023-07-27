@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -62,7 +62,6 @@
 #include "Util/QMsgBox.h"
 #include "Util/Constants.h"
 #include "Process/JobInfo.h" 
-#include "Process/QChemJobInfo.h"
 #include "Util/Preferences.h"
 #include "Parser/IQmolParser.h"
 
@@ -1767,70 +1766,75 @@ bool Molecule::sanityCheck()
 }
 
 
-Process::QChemJobInfo Molecule::qchemJobInfo()
+Process::JobInfo Molecule::qchemJobInfo()
 {
-   Process::QChemJobInfo qchemJobInfo;
+   Process::JobInfo jobInfo;
    QString s;
 
-   qchemJobInfo.set("Charge",        totalCharge());
-   qchemJobInfo.set("Multiplicity",  multiplicity());
-   qchemJobInfo.set("Coordinates",   coordinatesAsString());
-   qchemJobInfo.set("NumElectrons",  m_info.numberOfElectrons());
-   qchemJobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+   jobInfo.set("Charge",        totalCharge());
+   jobInfo.set("Multiplicity",  multiplicity());
+   jobInfo.set("Coordinates",   coordinatesAsString());
+   jobInfo.set("NumElectrons",  m_info.numberOfElectrons());
+   jobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+
+   jobInfo.set("LocalFilesExist", false);
+   jobInfo.set("PromptOnOverwrite", true);
 
    s = coordinatesAsStringFsm();
-   if (!s.isEmpty()) qchemJobInfo.set("CoordinatesFsm", s);
+   if (!s.isEmpty()) jobInfo.set("CoordinatesFsm", s);
    s = constraintsAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("Constraints", s);
+   if (!s.isEmpty()) jobInfo.set("Constraints", s);
 
    s = scanCoordinatesAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("ScanCoordinates", s);
+   if (!s.isEmpty()) jobInfo.set("ScanCoordinates", s);
    s = efpFragmentsAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("EfpFragments", s);
+   if (!s.isEmpty()) jobInfo.set("EfpFragments", s);
    s = efpParametersAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("EfpParameters", s);
+   if (!s.isEmpty()) jobInfo.set("EfpParameters", s);
    s = externalChargesAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("ExternalCharges", s);
+   if (!s.isEmpty()) jobInfo.set("ExternalCharges", s);
    s = isotopesAsString();
-   if (!s.isEmpty()) qchemJobInfo.set("Isotopes", s);
+   if (!s.isEmpty()) jobInfo.set("Isotopes", s);
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
-   if (atomList.isEmpty()) qchemJobInfo.set("EfpOnly", true);
+   if (atomList.isEmpty()) jobInfo.set("EfpOnly", true);
 
    QString name;
 
    if (m_inputFile.filePath().isEmpty()) {
       QFileInfo fileInfo(Preferences::LastFileAccessed());
-      qchemJobInfo.set("LocalWorkingDirectory", fileInfo.path());
-      qchemJobInfo.set("BaseName",text());
+      jobInfo.set("LocalWorkingDirectory", fileInfo.path());
+      jobInfo.set("BaseName",text());
    }else {
-      qchemJobInfo.set("LocalWorkingDirectory", m_inputFile.path());
-      qchemJobInfo.set("BaseName", m_inputFile.completeBaseName());
+      jobInfo.set("LocalWorkingDirectory", m_inputFile.path());
+      jobInfo.set("BaseName", m_inputFile.completeBaseName());
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   qchemJobInfo.set("MoleculePointer", (qint64)this);
+   jobInfo.set("MoleculePointer", (qint64)this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));
    FileList::iterator file;
    for (file = fileList.begin(); file != fileList.end(); ++file) {
        if ((*file)->fileName().endsWith(".inp")) {
-          qchemJobInfo.set("InputFileTemplate", (*file)->contents());
+          jobInfo.set("InputFileTemplate", (*file)->contents());
           break;
        }
    }
 
-   return qchemJobInfo;
+   
+
+   return jobInfo;
 }
 
 
-void Molecule::qchemJobInfoChanged(Process::QChemJobInfo const& qchemJobInfo)
+void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 { 
    if (text() == DefaultMoleculeName) {
-      setText(qchemJobInfo.get<QString>("BaseName"));
-      m_info.setCharge(qchemJobInfo.get<int>("Charge"));
-      m_info.setMultiplicity(qchemJobInfo.get<int>("Multiplicity"));
+      setText(jobInfo.get<QString>("BaseName"));
+      m_info.setCharge(jobInfo.get<int>("Charge"));
+      m_info.setMultiplicity(jobInfo.get<int>("Multiplicity"));
    }
 }
 

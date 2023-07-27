@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -31,9 +31,9 @@
 #include "WriteToTemporaryFile.h"
 #include "SystemDependent.h"
 #include "TextStream.h"
-#include "JobMonitor.h"
 #include "Preferences.h"
 #include "QsLog.h"
+
 #include <QDebug>
 #include <QRegularExpression>
 
@@ -284,7 +284,7 @@ void Server::copyRunFile()
 
       if (reply->status() != Network::Reply::Finished) {
          job->setStatus(JobInfo::Error, reply->message());
-         JobMonitor::instance().jobSubmissionFailed(job);
+         jobSubmissionFailed(job);
          //reply->deleteLater();
          return;
       }
@@ -330,7 +330,7 @@ void Server::queueJob()
 
       if (reply->status() != Network::Reply::Finished) {
          job->setStatus(JobInfo::Error, reply->message());
-         JobMonitor::instance().jobSubmissionFailed(job);
+         jobSubmissionFailed(job);
          //reply->deleteLater();
          return;
       }
@@ -377,11 +377,11 @@ void Server::submitFinished()
          if (reply->status() == Network::Reply::Finished && 
               parseSubmitMessage(job, reply->message())) {
             job->setStatus(JobInfo::Queued);
-            JobMonitor::instance().jobSubmissionSuccessful(job);
+            jobSubmissionSuccessful(job);
             watchJob(job);
          }else {
             job->setStatus(JobInfo::Error, reply->message());
-            JobMonitor::instance().jobSubmissionFailed(job);
+            jobSubmissionFailed(job);
          }
       }else {
          QLOG_WARN() << "Invalid Job pointer";

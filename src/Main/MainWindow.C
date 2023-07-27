@@ -23,7 +23,7 @@
 #include "MainWindow.h"
 #include "ServerConfigurationListDialog.h"
 #include "JobMonitor.h"
-#include "QChemJobInfo.h"
+#include "JobInfo.h"
 #include "ServerRegistry.h" 
 #include "InsertMoleculeDialog.h" 
 #include "QMsgBox.h"
@@ -940,8 +940,8 @@ void MainWindow::showQChemUI()
          return;
       }
 
-      connect(m_quiInputDialog, SIGNAL(submitJobRequest(IQmol::Process::QChemJobInfo&)),
-         this, SLOT(submitJob(IQmol::Process::QChemJobInfo&)));
+      connect(m_quiInputDialog, SIGNAL(submitJobRequest(IQmol::Process::JobInfo&)),
+         this, SLOT(submitJob(IQmol::Process::JobInfo&)));
  
       connect(&(Process::JobMonitor::instance()), SIGNAL(jobAccepted()),
          m_quiInputDialog, SLOT(closeDialog()));
@@ -967,8 +967,8 @@ void MainWindow::showQChemUI()
       if (mbox.exec() == QMessageBox::Cancel) return;
    }
 
-   Process::QChemJobInfo jobInfo(mol->qchemJobInfo());
-   m_quiInputDialog->setQChemJobInfo(jobInfo);
+   Process::JobInfo jobInfo(mol->qchemJobInfo());
+   m_quiInputDialog->setJobInfo(jobInfo);
 
    // (Re-)Load the servers here in case the user has made any modifications
    QStringList serverList(Process::ServerRegistry::instance().availableServers());
@@ -983,12 +983,12 @@ void MainWindow::showQChemUI()
 }
 
 
-void MainWindow::submitJob(IQmol::Process::QChemJobInfo &qchemJobInfo)
+void MainWindow::submitJob(IQmol::Process::JobInfo &jobInfo)
 {
-   Process::JobMonitor::instance().submitJob(&qchemJobInfo);
+   Process::JobMonitor::instance().submitJob(&jobInfo);
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
    if (!mol) return;
-   mol->qchemJobInfoChanged(qchemJobInfo);
+   mol->jobInfoChanged(jobInfo);
 }
 
 

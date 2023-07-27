@@ -38,9 +38,6 @@
 #include "LJParametersSection.h"
 #include "KeyValueSection.h"
 
-//#include "Job.h" 
-//#include <QClipboard>
-
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QFontDialog>
@@ -171,7 +168,7 @@ void InputDialog::initializeStackedWidgets()
 }
 
 
-void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobInfo)
+void InputDialog::setJobInfo(IQmol::Process::JobInfo const& qchemJobInfo)
 {
   
    m_qchemJobInfo = qchemJobInfo;
@@ -184,10 +181,12 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
       QLOG_DEBUG() << "Attempt to set JobInfo with no current Job";
       return;
    }
+
    qDebug() << "trying coordinates";
    m_currentJob->setCoordinates(
       m_qchemJobInfo.get<QString>("Coordinates"));
    qDebug() << "getting coordinates";
+
    QString inputFileTemplate = 
       m_qchemJobInfo.get<QString>("InputFileTemplate");
    if (!inputFileTemplate.isEmpty()) {
@@ -251,7 +250,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    //QString chemsol("EField   1");
    //m_currentJob->setGenericSection("chemsol", chemsol);
 
-   if (m_qchemJobInfo.get<bool>("EfpOnly")) {
+   if (m_qchemJobInfo.exists("EfpOnly") && m_qchemJobInfo.get<bool>("EfpOnly")) {
       m_ui.basis->setEnabled(false);
       m_ui.label_basis->setEnabled(false);
       m_ui.ecp->setEnabled(false);
@@ -277,7 +276,7 @@ void InputDialog::setQChemJobInfo(IQmol::Process::QChemJobInfo const& qchemJobIn
    }
 
    // We need the temporaries as setting the charge will overwrite the
-   // QChemJobInfo::multiplicity
+   // JobInfo::multiplicity
    int charge(m_qchemJobInfo.get<int>("Charge"));
    int multiplicity(m_qchemJobInfo.get<int>("Multiplicity"));
    m_ui.qui_charge->setValue(charge);
@@ -525,7 +524,7 @@ void InputDialog::addNewJob()
    // for the first job we specify things explicitly.
    if (m_jobs.size() == 1) {
        qDebug() << "adding m_qchemjobinfo";
-      setQChemJobInfo(m_qchemJobInfo); 
+      setJobInfo(m_qchemJobInfo); 
        qDebug() << "adding qchem job worked";
    }
 }
@@ -535,7 +534,7 @@ void InputDialog::resetInput()
 {
    
    m_qchemJobInfo.set("InputFileTemplate", "");
-   qDebug() << "Setting QChemJobInfo field done";
+   qDebug() << "Setting JobInfo field done";
    resetControls();
    bool prompt(false);
    deleteAllJobs(prompt);
@@ -784,7 +783,7 @@ void InputDialog::on_deleteJobButton_clicked(bool)
       addNewJob();
    }else {
       if (index == 0) {
-         setQChemJobInfo(m_qchemJobInfo); 
+         setJobInfo(m_qchemJobInfo); 
       }else {
          m_ui.jobList->setCurrentIndex(index-1);
       }

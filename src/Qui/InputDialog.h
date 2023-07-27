@@ -27,7 +27,7 @@
 #include "Logic.h"
 #include "OptionRegister.h"
 #include "ui_InputDialog.h"
-#include "QChemJobInfo.h"
+#include "JobInfo.h"
 
 #include "ui_AdcTab.h"
 #include "ui_AimdTab.h"
@@ -53,10 +53,10 @@ class QFont;
 
 namespace Qui {
 
+class Job;
 class QtNode;
 class Option;
 class Molecule;
-class Job;
 class OptionDatabase;
 
 template<class K, class T> class Register;
@@ -82,7 +82,7 @@ class InputDialog : public QMainWindow {
 
 	  /// The JobInfo object encapsulates the communication 
 	  /// between the QUI and IQmol.
-      void setQChemJobInfo(IQmol::Process::QChemJobInfo const&);
+      void setJobInfo(IQmol::Process::JobInfo const&);
 
       /// Allows the update of the servers in the server ComboBox
       void setServerList(QStringList const& servers);
@@ -92,7 +92,7 @@ class InputDialog : public QMainWindow {
       void closeDialog();
 
    Q_SIGNALS:
-      void submitJobRequest(IQmol::Process::QChemJobInfo&);
+      void submitJobRequest(IQmol::Process::JobInfo&);
 
 
    private Q_SLOTS:
@@ -172,7 +172,7 @@ class InputDialog : public QMainWindow {
       Tab<Ui::OptimizeTab>             m_optimizeTab;
       Tab<Ui::Libopt3Tab>              m_libopt3Tab;
 
-      IQmol::Process::QChemJobInfo m_qchemJobInfo;
+      IQmol::Process::JobInfo m_qchemJobInfo;
 
       OptionDatabase& m_db;
       OptionRegister& m_reg;

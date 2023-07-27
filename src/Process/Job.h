@@ -49,14 +49,11 @@ namespace Process {
 
          // This is an external handle for the process, either a
          // PID or PBS/SGE job number.
+         // These are used frequently enough that we have special access functions.
          QString jobId()      const { return get<QString>("JobId"); }
          QString jobName()    const { return get<QString>("BaseName"); }
          QString serverName() const { return get<QString>("ServerName"); }
-         QString submitTime() const { return get<QString>("SubmitTime"); }
-         qint64  julianDay()  const { return get<qint64>("JulianDay"); }
   
-         void setSubmitTime(QString const& string) { set("SubmitTime", string); }
-
          // The run time in seconds.  Use Util::Timer::formatTime() 
          // to turn it into hh:mm:ss
          unsigned runTime() const;
@@ -65,9 +62,13 @@ namespace Process {
          // appropriate for the job.
          QString substituteMacros(QString const& string) const;
 
-         // This function needs to parse whatever is returned by the 
-         // query command and update the status accordingly
-         virtual void parseQueryOutput(QString const&);
+         void setStatus(JobInfo::Status const status, QString const& message = QString());
+
+		 // The Job timer runs independantly of the actual process and so
+		 // may get out of sync if, for example, the process is suspended. 
+         // This function can be used to set the timer to the actual run 
+		 // time when it is known.
+         void resetTimer(unsigned const seconds);
 
       public Q_SLOTS:
          void copyProgress(double);
@@ -83,26 +84,19 @@ namespace Process {
          // hence we protect the constructor and destructor.
          Job() { };
          Job(JobInfo const& jobInfo) { copy(jobInfo); }
+         Job(QVariant const& qvar) { fromQVariant(qvar); }
 
 		 // Note that deleting a Job will not result in the termination 
 		 // of the process.  This allows jobs to continue running even 
          // after IQmol has terminated.
          ~Job();
 
-         void setStatus(JobInfo::Status const status, QString const& message = QString());
-
 		 // Converts the job information into a form suitable 
 		 // for writing to the Preferences...
-         virtual QVariant toQVariant() const;
+         QVariant toQVariant();
 
          // ...and back again
          bool fromQVariant(QVariant const&);
-
-		 // The Job timer runs independantly of the actual process and so
-		 // may get out of sync if, for example, the process is suspended. 
-         // This function can be used to set the timer to the actual run 
-		 // time when it is known.
-         void resetTimer(unsigned const seconds);
 
          QString const& copyProgressString() const { return m_copyProgress; }
 

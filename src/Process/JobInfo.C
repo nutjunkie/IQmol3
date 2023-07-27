@@ -72,47 +72,11 @@ bool JobInfo::isActive(Status const status)
 }
 
 
-
-JobInfo::JobInfo() 
-{
-   m_jobStatus = NotRunning;
-   set("JulianDay", QDate::currentDate().toJulianDay());
-}
-
-
-
 QVariantList JobInfo::toQVariantList() const
 {
    QVariantList list;
    list << QVariant((int)m_jobStatus);
-
-   // These are the fields that we do not need to serialize
-   QStringList filterFields = { 
-       "InputString", 
-       "Coordinates", 
-       "Constraints", 
-       "CoordinatesFsm", 
-       "ScanCoordinates",
-       "OnsagerRadius",
-       "EfpParameters",
-       "EfpFragments",
-       "ExternalCharges",
-       "Charge",
-       "Multiplicity",
-       "NumElectrons", 
-   };
-
-   QVariantMap map(m_jobData);
-   for (auto field : filterFields) {
-       map.remove(field);
-   }
-
-   list << QVariant(map);
-
-   QLOG_DEBUG() << "------ Serializing JobInfo ------";
-   for (auto [key, value] : QMapRange<QVariantMap>(map)) {
-       QLOG_DEBUG() << key << " -> " << value;
-   }
+   list << QVariant(m_jobData);
    return list;
 }
 
@@ -130,9 +94,11 @@ bool JobInfo::fromQVariantList(QVariantList const& list)
    if (!ok) return false;
    m_jobData = list[1].toMap();
 
-   QLOG_DEBUG() << "------ Reading JobInfo ------";
-   QLOG_DEBUG() << toString(m_jobStatus);
-   QLOG_DEBUG() << m_jobData;
+/*
+   for (auto [key, value] : QMapRange<QVariantMap>(m_jobData)) {
+       QLOG_DEBUG() << key << " -> " << value;
+   }
+*/
 
    return ok;
 }
@@ -156,18 +122,20 @@ QString JobInfo::getRemoteFilePath(QString const& key) const
 
 QString JobInfo::getLocalFilePath(QString const& key) const
 {
+   QLOG_WARN() << "Calling JobInfo::getLocalFilePath with key" << key;
    QString path(get<QString>("LocalWorkingDirectory"));
    if (!path.endsWith("/")) path += "/";
-   path += get<QString>("BaseName");
+   path += get<QString>(key);
    return path;
 }
 
 
 void JobInfo::dump() const
 {
-   QLOG_DEBUG() << "--- JobInfo ---";
+   QLOG_DEBUG() << "------ JobInfo Contents ------";
+   QLOG_DEBUG() << toString(m_jobStatus);
    for (auto i = m_jobData.begin(); i != m_jobData.end(); ++i) {
-       QLOG_DEBUG() << i.key() << " = " << i.value();
+       QLOG_DEBUG() << i.key().leftJustified(24, QLatin1Char(' ')) << " = " << i.value();
    }
 }
 

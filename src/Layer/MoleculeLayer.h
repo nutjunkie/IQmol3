@@ -1,11 +1,11 @@
 #pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -15,14 +15,13 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
-   
+
 ********************************************************************************/
 
 #include "ComponentLayer.h"
-#include "Data/Bank.h"
 #include "InfoLayer.h"
 #include "FileLayer.h"
 #include "AtomLayer.h"
@@ -34,6 +33,7 @@
 #include "MolecularSurfacesLayer.h"
 #include "Configurator/SurfaceAnimatorDialog.h"
 #include "Viewer/Animator.h"
+
 #include <QFileInfo>
 #include <QMap>
 #include <QItemSelectionModel>
@@ -55,7 +55,7 @@ namespace IQmol {
    QString const DefaultMoleculeName = "Untitled";
 
    namespace Process {
-      class  QChemJobInfo;
+      class  JobInfo;
    }
 
    namespace Command {
@@ -144,8 +144,8 @@ namespace IQmol {
             QString fileName() const { return m_inputFile.fileName(); }
    
             bool sanityCheck();
-            Process::QChemJobInfo qchemJobInfo();
-            void qchemJobInfoChanged(Process::QChemJobInfo const&);
+            Process::JobInfo qchemJobInfo();
+            void jobInfoChanged(Process::JobInfo const&);
    
             /// Attempts to determine the best axis for the functional group when
             /// converting an atom to a functional group (click on atom event)
