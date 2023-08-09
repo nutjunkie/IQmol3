@@ -13,6 +13,7 @@ set( SOURCES
    ExternalChargesParser.C
    FormattedCheckpointParser.C
    GdmaParser.C
+   GroParser.C
    IQmolParser.C
    MeshParser.C
    OpenBabelParser.C
