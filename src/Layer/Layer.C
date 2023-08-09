@@ -56,6 +56,14 @@ void Base::appendLayer(Base* child)
 }
 
 
+void Base::prependLayer(Base* child)
+{
+   child->setPersistentParent(this);
+   if (!hasChildren() && (m_propertyFlags & RemoveWhenChildless)) adopt();
+   insertRow(0,child);
+}
+
+
 void Base::removeLayer(Base* child)
 {
    child->orphan();

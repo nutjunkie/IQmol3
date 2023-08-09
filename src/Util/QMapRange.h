@@ -1,7 +1,8 @@
+#pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
- 
+  Copyright (C) 2011-2015 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
 
@@ -16,24 +17,24 @@
   details.
 
   You should have received a copy of the GNU General Public License along
-  with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
 
 ********************************************************************************/
 
-#include "ParseJobFiles.h"
-
+#include <QDir>
 
 namespace IQmol {
 
-ParseJobFiles::ParseJobFiles(QString const& filePath, QString const& filter, qint64 molPtr) : 
-   Parser::ParseFile(filePath, filter), 
-   m_moleculePointer(molPtr)
-{
-   if (filter.isEmpty()) {
-      m_flags = MakeActive;
-   }else {
-      m_flags = Overwrite | AddStar;
-   }
-}
+template <typename T>
+class QMapRange {
+
+   public:
+      QMapRange(T& data) : m_data(data) { }
+      auto begin() { return m_data.keyValueBegin();}
+      auto end() { return m_data.keyValueEnd();}
+
+   private:
+      T& m_data;
+};
 
 } // end namespace IQmol

@@ -1,7 +1,8 @@
+#pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
- 
+  Copyright (C) 2023 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
 
@@ -16,24 +17,44 @@
   details.
 
   You should have received a copy of the GNU General Public License along
-  with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
 
 ********************************************************************************/
 
-#include "ParseJobFiles.h"
+#include "GLObjectLayer.h"
+#include "Data/Solvent.h"
+#include <QMap>
 
+
+class QColor;
 
 namespace IQmol {
 
-ParseJobFiles::ParseJobFiles(QString const& filePath, QString const& filter, qint64 molPtr) : 
-   Parser::ParseFile(filePath, filter), 
-   m_moleculePointer(molPtr)
-{
-   if (filter.isEmpty()) {
-      m_flags = MakeActive;
-   }else {
-      m_flags = Overwrite | AddStar;
-   }
-}
+namespace Layer {
 
-} // end namespace IQmol
+   class Solvent : public GLObject {
+
+      Q_OBJECT
+
+      public:
+         Solvent(Data::Solvent const& solvent);
+
+         void draw();
+         void drawFast() { draw(); }
+         void drawSelected() { draw(); }
+
+         QColor color() const { 
+             QColor col;
+             col.setRgbF(m_color[0],m_color[1],m_color[2],m_color[3]); 
+             return col;
+         }
+
+      protected:
+         GLfloat m_color[4];
+
+      private:
+         void setAlpha(double const alpha);
+         Data::Solvent const& m_solvent;
+   };
+
+} } // end namespace IQmol::Layer

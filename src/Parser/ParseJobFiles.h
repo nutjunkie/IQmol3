@@ -39,15 +39,15 @@ namespace IQmol {
          };
 
          ParseJobFiles(QString const& filePath, QString const& filter = QString(), 
-            void* moleculePointer = 0);
+            qint64 moleculePointer = 0);
 
          void setFlags(unsigned flags) { m_flags = flags; }
          unsigned flags() const { return m_flags; }
-         void* moleculePointer() const { return m_moleculePointer; }
+         qint64 moleculePointer() const { return m_moleculePointer; }
 
       private:
          unsigned m_flags;
-         void* m_moleculePointer;
+         qint64 m_moleculePointer;
    };
 
 } // end namespace IQmol

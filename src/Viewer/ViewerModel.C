@@ -174,7 +174,7 @@ bool ViewerModel::dropMimeData(QMimeData const* data, Qt::DropAction, int, int,
 }
 
 
-void ViewerModel::open(QString const& filePath, QString const& filter, void* moleculePointer)
+void ViewerModel::open(QString const& filePath, QString const& filter, qint64 moleculePointer)
 {
    QString path(filePath);
    while (path.endsWith("/")) {
@@ -265,7 +265,7 @@ void ViewerModel::processSystemData(ParseJobFiles* parser)
    QStandardItem* child;
    QStandardItem* root(invisibleRootItem());
 
-   void* systemPointer(parser->moleculePointer());
+   qint64 systemPointer(parser->moleculePointer());
 
    if (overwrite && systemPointer) {
       for (int row = 0; row < root->rowCount(); ++row) {
@@ -274,7 +274,7 @@ void ViewerModel::processSystemData(ParseJobFiles* parser)
              Layer::Base*  base = QVariantPtr<Layer::Base>::toPointer(child->data());
              Layer::System* sys = qobject_cast<Layer::System*>(base);
 
-             if (system && system == systemPointer) {
+             if (system && (qint64)system == systemPointer) {
                 QLOG_TRACE() << "Found existing system";
                 system->setCheckState(sys->checkState());
                 // makeActive = makeActive || (mol->checkState() == Qt::Checked);
@@ -339,7 +339,7 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
    QStandardItem* child;
    QStandardItem* root(invisibleRootItem());
 
-   void* moleculePointer(parser->moleculePointer());
+   qint64 moleculePointer(parser->moleculePointer());
 
    if (overwrite && moleculePointer) {
       for (int row = 0; row < root->rowCount(); ++row) {
@@ -348,7 +348,7 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
              Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
              Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
 
-             if (mol && mol == moleculePointer) {
+             if (mol && (qint64)mol == moleculePointer) {
                 QLOG_TRACE() << "Found existing molecule";
                 molecule->setCheckState(mol->checkState());
                 // makeActive = makeActive || (mol->checkState() == Qt::Checked);

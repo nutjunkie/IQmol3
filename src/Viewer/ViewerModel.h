@@ -123,7 +123,7 @@ namespace IQmol {
 
          void fileOpenFinished();
          void open(QString const& fileName, QString const& filter = QString(),  
-            void* moleculePointer = 0);
+            qint64 moleculePointer = 0);
 
 
       Q_SIGNALS:

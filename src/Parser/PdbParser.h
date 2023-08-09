@@ -1,7 +1,7 @@
 #pragma once
 /*******************************************************************************
        
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
            
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -33,6 +33,7 @@ namespace IQmol {
 namespace Data {
   class Pdb;
   class Group;
+  class Geometry;
   class ProteinChain;
 }
 
@@ -48,8 +49,13 @@ namespace Parser {
          QString m_label;
 
          QMap<QString, Data::ProteinChain*> m_chains;
+         QMap<QString, Data::Geometry*> m_geometries;
+         
 
          bool parseATOM(QString const& line, Data::Group&);
+         bool parseHETATM(QString const& line, Data::Geometry&);
+
+         bool parseHOH(QString const& line, Data::Group&);
          bool parseCOMPND(QString const& line);
          bool parseCartoon(TextStream&);
          int  parsePDB(char const* pdbFilePath, Data::Pdb *P , char *options);

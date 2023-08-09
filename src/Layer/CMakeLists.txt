@@ -42,6 +42,7 @@ set( HEADERS
    ProteinChainLayer.h
    ProteinLayer.h
    RemLayer.h
+   SolventLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
    SystemLayer.h
@@ -88,6 +89,7 @@ set( SOURCES
    ProteinChainLayer.C
    ProteinLayer.C
    RemLayer.C
+   SolventLayer.C
    SurfaceLayer.C
    SymmetryLayer.C
    SystemLayer.C

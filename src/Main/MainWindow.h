@@ -1,5 +1,4 @@
-#ifndef IQMOL_MAINWINDOW_H
-#define IQMOL_MAINWINDOW_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -102,7 +101,7 @@ namespace Gmx {
          void showGromacsConfigDialog();
          void showJobMonitor();
          void testInternetConnection();
-         void submitJob(IQmol::Process::QChemJobInfo&);
+         void submitJob(IQmol::Process::JobInfo&);
          void insertMoleculeDialog();
 
          void newViewer();
@@ -159,6 +158,3 @@ namespace Gmx {
    };
 
 } // end namespace IQmol
-
-
-#endif

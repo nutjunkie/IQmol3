@@ -22,6 +22,26 @@
   Gokhan SELAMET on 28/09/2016.
   Copyright Â© 2016 Gokhan SELAMET. All rights reserved.
 
+  http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
+
+  COLUMNS        DATA  TYPE    FIELD        DEFINITION
+  -------------------------------------------------------------------------------------
+   1 -  6        Record name   "ATOM  "
+   7 - 11        Integer       serial       Atom  serial number.
+  13 - 16        Atom          name         Atom name.
+  17 - 17        Character     altLoc       Alternate location indicator.
+  18 - 20        Residue name  resName      Residue name.
+  22 - 22        Character     chainID      Chain identifier.
+  23 - 26        Integer       resSeq       Residue sequence number.
+  27 - 30        AChar         iCode        Code for insertion of residues.
+  31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
+  39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
+  47 - 54        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
+  55 - 60        Real(6.2)     occupancy    Occupancy.
+  61 - 66        Real(6.2)     tempFactor   Temperature  factor.
+  77 - 78        LString(2)    element      Element symbol, right-justified.
+  79 - 80        LString(2)    charge       Charge  on the atom.
+
 ********************************************************************************/
 
 #include "PdbParser.h"
@@ -32,6 +52,10 @@
 #include "Data/Group.h"
 #include "Data/PdbData.h"
 #include "Data/ProteinChain.h"
+#include "Data/Solvent.h"
+
+#include "Data/Geometry.h"
+#include "Data/Atom.h"
 
 #include <QDebug>
 
@@ -151,11 +175,14 @@ bool Pdb::parse(TextStream& textStream)
    bool ok(true);
    
    Data::ProteinChain* chain(0);
+   Data::Geometry* geometry(0);
+   Data::Solvent* solvent(0);
    Data::Group* group(0);
 
    QString line, key;
    QString currentChain;
    QString currentGroup;
+   QString currentGeometry;
 
    while (!textStream.atEnd()) {
       line = textStream.nextLine();
@@ -165,29 +192,59 @@ bool Pdb::parse(TextStream& textStream)
       key = key.trimmed().toUpper();
 
       if (key == "ATOM" || key == "HETATM") {
-         QString s;
 
-         // Chain Id
-         s = line.mid(21, 1);
-         if (s != currentChain) {
-            currentChain = s;
-            if (m_chains.contains(currentChain)) {
-               chain = m_chains[currentChain];
-            }else {
-               chain = new Data::ProteinChain(QString("Chain ") + currentChain);
-               m_chains.insert(currentChain, chain);
+         QString label(line.mid(12, 4).trimmed());  // eg. CHA
+         QString res(line.mid(17, 3).trimmed());    // eg. HIS
+         QString id (line.mid(21, 1));              // eg. A
+         QString grp(line.mid(22, 4).trimmed());    // eg. 143
+         QString sym(line.mid(76, 2).trimmed());    // eg. C
+
+         double x = line.mid(30, 8).toFloat(&ok);  if (!ok) goto error;
+         double y = line.mid(38, 8).toFloat(&ok);  if (!ok) goto error;
+         double z = line.mid(46, 8).toFloat(&ok);  if (!ok) goto error;
+
+         qglviewer::Vec v(x,y,z);
+
+         if (key == "ATOM") {
+
+            if (id != currentChain) {
+               currentChain = id;
+               if (m_chains.contains(currentChain)) {
+                  chain = m_chains[currentChain];
+               }else {
+                  chain = new Data::ProteinChain(QString("Chain ") + currentChain);
+                  m_chains.insert(currentChain, chain);
+               }
             }
-         }
 
-         s = line.mid(22, 4); // Res seq
-         if (s != currentGroup) {
-            currentGroup = s;
-            group = new Data::Group(s.trimmed() + " " +line.mid(17, 3).trimmed());
-            chain->append(group);
-         }
+            if (grp != currentGroup) {
+               currentGroup = grp;
+               group = new Data::Group(grp.trimmed() + " " + res);
+               chain->append(group);
+            }
+   
+            Data::Atom* atom(new Data::Atom(sym, label));
+            group->addAtom(atom, v);
 
-         ok = ok && parseATOM(line, *group);
-         if (!ok) goto error;
+         }else if (res == "HOH") {
+            if (!solvent) solvent = new Data::Solvent("Water");
+            solvent->addSolvent(v);
+
+         }else {
+            grp = id+grp;
+            if (grp != currentGeometry) {
+               currentGeometry = grp;
+               if (m_geometries.contains(currentGeometry)) {
+                  geometry = m_geometries[currentGeometry];
+               }else {
+                  geometry = new Data::Geometry();
+                  geometry->name(res);
+                  m_geometries.insert(currentGeometry, geometry);
+               }
+            }
+            
+            geometry->append(sym, v);
+         }         
 
       }else if (key == "COMPND") {
          parseCOMPND(line);
@@ -195,17 +252,19 @@ bool Pdb::parse(TextStream& textStream)
       
    }
 
-  
    // This must go last as it rewinds the TextStream!
    ok = parseCartoon(textStream);
 
-   if (!m_chains.isEmpty()) {
-      for (auto chain : m_chains.values()) m_dataBank.append(chain);
-   } 
+   for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   if (solvent) m_dataBank.append(solvent);
+   for (auto geom: m_geometries.values()) m_dataBank.append(geom);
  
    return ok;
 
    error:
+      if (solvent) delete solvent;
+      for (auto chain : m_chains.values()) delete chain;
+
       QString msg("Error parsing PDB file around line number ");
       msg +=  QString::number(textStream.lineNumber());
       msg +=  "\n" + line;
@@ -224,27 +283,6 @@ bool Pdb::parseCOMPND(QString const& line)
   return true;
 }
 
-
-/* http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
-
-COLUMNS        DATA  TYPE    FIELD        DEFINITION
--------------------------------------------------------------------------------------
- 1 -  6        Record name   "ATOM  "
- 7 - 11        Integer       serial       Atom  serial number.
-13 - 16        Atom          name         Atom name.
-17 - 17        Character     altLoc       Alternate location indicator.
-18 - 20        Residue name  resName      Residue name.
-22 - 22        Character     chainID      Chain identifier.
-23 - 26        Integer       resSeq       Residue sequence number.
-27 - 30        AChar         iCode        Code for insertion of residues.
-31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
-47 - 54        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
-55 - 60        Real(6.2)     occupancy    Occupancy.
-61 - 66        Real(6.2)     tempFactor   Temperature  factor.
-77 - 78        LString(2)    element      Element symbol, right-justified.
-79 - 80        LString(2)    charge       Charge  on the atom.
-*/
 
 
 bool Pdb::parseATOM(QString const& line, Data::Group& group)
@@ -273,8 +311,9 @@ bool Pdb::parseATOM(QString const& line, Data::Group& group)
 }
 
 
+
 /*
- by default, parsePDB function do not parse 'Hydrogene' atoms and 'Alternate Location' atoms.
+ by default, parsePDB function do not parse Hydrogen atoms and 'Alternate Location' atoms.
  To parse these atoms you can pass `options` variable with these characters
     h: for parsing hydrogen atoms
     l: for parsing alternate locations
@@ -284,8 +323,8 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
 {
     Data::pdb& P(data->ref());
 
-    char  altLocFlag = 1; // Default: skip alternate location atoms on
-    char  hydrogenFlag = 0; // Default: skip hydrogene atoms off
+    char  altLocFlag = 1;   // Default: skip alternate location atoms on
+    char  hydrogenFlag = 0; // Default: skip hydrogen  atoms off
     int   errorcode = 0;
     char  line[128];
     FILE* pdbFile;

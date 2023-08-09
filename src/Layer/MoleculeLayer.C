@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -62,7 +62,6 @@
 #include "Util/QMsgBox.h"
 #include "Util/Constants.h"
 #include "Process/JobInfo.h" 
-#include "Process/QChemJobInfo.h"
 #include "Util/Preferences.h"
 #include "Parser/IQmolParser.h"
 
@@ -151,6 +150,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(selectAll()));
    connect(newAction("Reperceive Bonds"), SIGNAL(triggered()), 
       this, SLOT(reperceiveBonds()));
+   connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
+      this, SLOT(addHydrogens()));
    connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
       this, SLOT(generateConformersDialog()));
 
@@ -1765,60 +1766,75 @@ bool Molecule::sanityCheck()
 }
 
 
-Process::QChemJobInfo Molecule::qchemJobInfo()
+Process::JobInfo Molecule::qchemJobInfo()
 {
-   Process::QChemJobInfo qchemJobInfo;
+   Process::JobInfo jobInfo;
+   QString s;
 
-   qchemJobInfo.set("Charge",          totalCharge());
-   qchemJobInfo.set("Multiplicity",    multiplicity());
-   qchemJobInfo.set("Coordinates",     coordinatesAsString());
-   qchemJobInfo.set("CoordinatesFsm",  coordinatesAsStringFsm());
-   qchemJobInfo.set("Constraints",     constraintsAsString());
-   qchemJobInfo.set("ScanCoordinates", scanCoordinatesAsString());
-   qchemJobInfo.set("EfpFragments",    efpFragmentsAsString());
-   qchemJobInfo.set("EfpParameters",   efpParametersAsString());
-   qchemJobInfo.set("ExternalCharges", externalChargesAsString());
-   qchemJobInfo.set("OnsagerRadius",   QString::number(onsagerRadius(),'f',4));
-   qchemJobInfo.set("Isotopes",        isotopesAsString());
-   qchemJobInfo.set("NElectrons",      m_info.numberOfElectrons());
+   jobInfo.set("Charge",        totalCharge());
+   jobInfo.set("Multiplicity",  multiplicity());
+   jobInfo.set("Coordinates",   coordinatesAsString());
+   jobInfo.set("NumElectrons",  m_info.numberOfElectrons());
+   jobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+
+   jobInfo.set("LocalFilesExist", false);
+   jobInfo.set("PromptOnOverwrite", true);
+
+   s = coordinatesAsStringFsm();
+   if (!s.isEmpty()) jobInfo.set("CoordinatesFsm", s);
+   s = constraintsAsString();
+   if (!s.isEmpty()) jobInfo.set("Constraints", s);
+
+   s = scanCoordinatesAsString();
+   if (!s.isEmpty()) jobInfo.set("ScanCoordinates", s);
+   s = efpFragmentsAsString();
+   if (!s.isEmpty()) jobInfo.set("EfpFragments", s);
+   s = efpParametersAsString();
+   if (!s.isEmpty()) jobInfo.set("EfpParameters", s);
+   s = externalChargesAsString();
+   if (!s.isEmpty()) jobInfo.set("ExternalCharges", s);
+   s = isotopesAsString();
+   if (!s.isEmpty()) jobInfo.set("Isotopes", s);
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
-   if (atomList.isEmpty()) qchemJobInfo.setEfpOnlyJob(true);
+   if (atomList.isEmpty()) jobInfo.set("EfpOnly", true);
 
    QString name;
 
    if (m_inputFile.filePath().isEmpty()) {
       QFileInfo fileInfo(Preferences::LastFileAccessed());
-      qchemJobInfo.set("LocalWorkingDirectory", fileInfo.path());
-      qchemJobInfo.setBaseName(text());
+      jobInfo.set("LocalWorkingDirectory", fileInfo.path());
+      jobInfo.set("BaseName",text());
    }else {
-      qchemJobInfo.set("LocalWorkingDirectory", m_inputFile.path());
-      qchemJobInfo.setBaseName(m_inputFile.completeBaseName());
+      jobInfo.set("LocalWorkingDirectory", m_inputFile.path());
+      jobInfo.set("BaseName", m_inputFile.completeBaseName());
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   qchemJobInfo.setMoleculePointer(this);
+   jobInfo.set("MoleculePointer", (qint64)this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));
    FileList::iterator file;
    for (file = fileList.begin(); file != fileList.end(); ++file) {
        if ((*file)->fileName().endsWith(".inp")) {
-          qchemJobInfo.set("InputFileTemplate", (*file)->contents());
+          jobInfo.set("InputFileTemplate", (*file)->contents());
           break;
        }
    }
 
-   return qchemJobInfo;
+   
+
+   return jobInfo;
 }
 
 
-void Molecule::qchemJobInfoChanged(Process::QChemJobInfo const& qchemJobInfo)
+void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 { 
    if (text() == DefaultMoleculeName) {
-      setText(qchemJobInfo.baseName());
-      m_info.setCharge(qchemJobInfo.getInt("Charge"));
-      m_info.setMultiplicity(qchemJobInfo.getInt("Multiplicity"));
+      setText(jobInfo.get<QString>("BaseName"));
+      m_info.setCharge(jobInfo.get<int>("Charge"));
+      m_info.setMultiplicity(jobInfo.get<int>("Multiplicity"));
    }
 }
 
@@ -1850,6 +1866,7 @@ void Molecule::addHydrogens()
    AtomMap::iterator iter;
    for (iter = atomMap.begin(); iter != atomMap.end(); ++iter) {
        int hybrid(iter.value()->getHybridization());
+/*
        qDebug() << "hybrid = " << hybrid;
        qDebug() << "GetAtomicNum       = " << iter.key()->GetAtomicNum();
        qDebug() << "GetImplicitHCount  = " << iter.key()->GetImplicitHCount();
@@ -1859,9 +1876,9 @@ void Molecule::addHydrogens()
        qDebug() << "GetTotalValence    = " << iter.key()->GetTotalValence();
        qDebug() << "GetHyb             = " << iter.key()->GetHyb();         
        qDebug() << "ExplicitHydrogenCoun " << iter.key()->ExplicitHydrogenCount();
-       if (hybrid > 0) {
-          iter.key()->SetHyb(hybrid);
-       }
+*/
+
+       if (hybrid > 0) iter.key()->SetHyb(hybrid);
    }
 
    obMol->AddHydrogens(false,false);

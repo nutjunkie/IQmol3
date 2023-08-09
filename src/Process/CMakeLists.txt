@@ -16,7 +16,7 @@ set( SOURCES
    Job.C
    JobInfo.C
    JobMonitor.C
-   QChemJobInfo.C
+   QChemJob.C
    QueueOptionsDialog.C
    QueueResources.C
    QueueResourcesDialog.C

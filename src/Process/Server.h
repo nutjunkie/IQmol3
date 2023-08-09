@@ -1,5 +1,4 @@
-#ifndef IQMOL_PROCESS_SERVER_H
-#define IQMOL_PROCESS_SERVER_H
+#pragma once
 /*******************************************************************************
          
   Copyright (C) 2022 Andrew Gilbert
@@ -92,6 +91,10 @@ namespace Process {
          void stopUpdates()  { m_updateTimer.stop(); }
          void startUpdates() { m_updateTimer.start(); }
 
+      Q_SIGNALS:
+         void jobSubmissionSuccessful(Job*);
+         void jobSubmissionFailed(Job*);
+
       public Q_SLOTS:
          void watchJob(Job*);
          void unwatchJob(Job*);
@@ -111,7 +114,6 @@ namespace Process {
          void killFinished();
          void copyResultsFinished();
          void queryAllJobs();
-
 
       private:
          QString substituteMacros(QString const&);
@@ -143,5 +145,3 @@ namespace Process {
 
 
 } } // end namespace IQmol::Process
-
-#endif

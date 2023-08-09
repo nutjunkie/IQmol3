@@ -55,18 +55,29 @@ void System::appendData(Data::Bank& bank)
    for (auto iter = bank.begin(); iter != bank.end(); ++iter) {
        Layer::List list(factory.toLayers(**iter));
 
+       qDebug() << "Processing Layer:" << Data::Type::toString((*iter)->typeID());
+
        switch ((*iter)->typeID()) {
           case Data::Type::MacroMolecule: 
           case Data::Type::ProteinChain: 
+          case Data::Type::Solvent: 
           case Data::Type::Pdb: 
           case Data::Type::FileList: 
              for (auto layer : list) {
                  connect(layer, SIGNAL(updated()), this, SIGNAL(updated()));
                  appendLayer(layer);
              }
-
              break;
 
+          case Data::Type::Geometry: {
+             molecule = new Molecule();
+             Data::Geometry* geom = dynamic_cast<Data::Geometry*>(*iter);
+             molecule->setText("Molecule");
+             if (geom)  molecule->setText(geom->name());
+             molecule->appendData(list);
+             appendLayer(molecule);
+          }; break;
+             
           default:
              if (!molecule) {
                  molecule = new Molecule();

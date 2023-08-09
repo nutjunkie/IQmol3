@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -29,43 +29,6 @@
 namespace IQmol {
 namespace Process {
 
-QString Job::toString(Status const& status) 
-{
-   QString s;
-
-   switch (status) {
-      case NotRunning:  s = "Not Running";  break;
-      case Queued:      s = "Queued";       break;
-      case Running:     s = "Running";      break;
-      case Suspended:   s = "Suspended";    break;
-      case Killed:      s = "Killed";       break;
-      case Error:       s = "Error";        break;
-      case Finished:    s = "Finished";     break;
-      case Copying:     s = "Copying";      break;
-      default:          s = "Unknown";      break;
-   }
-   return s;
-}
-
-
-Job::Job() : m_jobInfo(0)
-{
-}
-
-
-Job::Job(JobInfo* jobInfo) : m_jobInfo(jobInfo)
-{
-   qDebug() << "Initializing job with info object" << jobInfo;
-   m_julianDay  = QDate::currentDate().toJulianDay();
-   m_jobName    = m_jobInfo->baseName();
-   m_serverName = m_jobInfo->serverName();
-
-
-
-   m_status     = NotRunning;
-}
-
-
 Job::~Job()
 {
   // Let the server know we don't exist any more.
@@ -73,67 +36,21 @@ Job::~Job()
 }
 
 
-QVariant Job::toQVariant() const
+QVariant Job::toQVariant()
 {
-   QVariantMap map;
-
-   map.insert("JobName",      m_jobName);  
-   map.insert("ServerName",   m_serverName);  
-   map.insert("Message",      m_message);  
-   map.insert("JobId",        m_jobId);  
-   map.insert("SubmitTime",   m_submitTime);  
-   map.insert("RunTime",      runTime());  
-   map.insert("Status",       (int)m_status);  
-   map.insert("JulianDay",    m_julianDay);
-   QLOG_DEBUG() << "normal part works";
-if (m_jobInfo)   map.insert("jobInfo", m_jobInfo->toQVariantList());
-   QLOG_DEBUG() << "in save Joblist to preferences";
-   return QVariant(map);
+   set("RunTime", runTime());
+   return QVariant(toQVariantList());
 }
 
 
 bool Job::fromQVariant(QVariant const& qvar)
 {
-   QVariantMap map(qvar.toMap());
+   QVariantList list(qvar.toList());
+   bool ok(fromQVariantList(list));
 
-   if (!map.contains("JobName")) return false;
-   m_jobName = map.value("JobName").toString(); 
-   if (m_jobName.isEmpty()) return false;
+   if (exists("RunTime")) resetTimer(get<unsigned>("RunTime"));
 
-   if (!map.contains("ServerName")) return false;
-   m_serverName = map.value("ServerName").toString(); 
-   if (m_serverName.isEmpty()) return false;
-
-   if (!map.contains("Status")) return false;
-   m_status = static_cast<Status>(map.value("Status").toInt()); 
-
-   if (map.contains("Message")) {
-      m_message = map.value("Message").toString(); 
-   }
-
-   if (map.contains("SubmitTime")) {
-      m_submitTime = map.value("SubmitTime").toString(); 
-   }
-
-   if (map.contains("JobId")) {
-      m_jobId = map.value("JobId").toString(); 
-   }
-
-   if (map.contains("RunTime")) {
-      resetTimer(map.value("RunTime").toUInt()); 
-   }
-
-   if (map.contains("JulianDay")) {
-      m_julianDay = map.value("JulianDay").toUInt(); 
-   }
-
-   if (map.contains("JobInfo")) {
-      if (!m_jobInfo->fromQVariantList(map.value("JobInfo").toList())) {
-         QLOG_WARN() << "Faild to convert JobInfo from serialized Job";
-      }
-   }
-
-   return true;
+   return ok;
 }
 
 
@@ -152,16 +69,16 @@ unsigned Job::runTime() const
 QString Job::substituteMacros(QString const& input) const
 {
    QString output(input);
-   output.replace("${JOB_ID}",   m_jobId);
-   output.replace("${JOB_DIR}",  m_jobInfo->get("RemoteWorkingDirectory"));
-   output.replace("${JOB_NAME}", m_jobInfo->baseName());
+   output.replace("${JOB_ID}",   get<QString>("JobId"));
+   output.replace("${JOB_DIR}",  get<QString>("RemoteWorkingDirectory"));
+   output.replace("${JOB_NAME}", get<QString>("BaseName"));
 
-   output.replace("${QUEUE}",    m_jobInfo->queueName());
-   output.replace("${WALLTIME}", m_jobInfo->wallTime());
-   output.replace("${MEMORY}",   QString::number(m_jobInfo->memory()));
-   output.replace("${JOBFS}",    QString::number(m_jobInfo->scratch()));
-   output.replace("${SCRATCH}",  QString::number(m_jobInfo->scratch()));
-   output.replace("${NCPUS}",    QString::number(m_jobInfo->ncpus()));
+   output.replace("${QUEUE}",    get<QString>("QueueName"));
+   output.replace("${WALLTIME}", get<QString>("WallTime"));
+   output.replace("${MEMORY}",   QString::number(get<qint64>("Memory")));
+   output.replace("${JOBFS}",    QString::number(get<qint64>("Scratch")));
+   output.replace("${SCRATCH}",  QString::number(get<qint64>("Scratch")));
+   output.replace("${NCPUS}",    QString::number(get<qint64>("Ncpus")));
 
    // Check all the macros have been expanded
    if (output.contains("${")) {
@@ -173,23 +90,6 @@ QString Job::substituteMacros(QString const& input) const
 }
 
 
-void Job::parseQueryOutput(QString const&)
-{
-   qDebug() << "Need to parse query string";
-}
-
-
-/*
-void Job::copyProgress()
-{
-   m_copyProgress += ".";
-   if (m_copyProgress == "Copying....") m_copyProgress = "Copying";
-qDebug() << "CopyProgress string:" << m_copyProgress;
-   updated();
-}
-*/
-
-
 void Job::copyProgress(double fraction)
 {
    int pc(100*fraction);
@@ -198,90 +98,59 @@ void Job::copyProgress(double fraction)
 }
 
 
-void Job::setStatus(Status const status, QString const& message)
+void Job::setStatus(JobInfo::Status const status, QString const& message)
 {
-   if (m_status == status) {
+   if (status == jobStatus()) {
       if (!message.isEmpty()) m_message = message;
       updated();
       return;
    }
-   m_status = status;
+   setJobStatus(status);
 
-   switch (m_status) {
-      case NotRunning:
+   switch (status) {
+      case JobInfo::NotRunning:
          m_message = "Job has not yet started";
          break;
 
-      case Queued:
+      case JobInfo::Queued:
          m_message = "Job ID: " + jobId();
-         m_submitTime = QTime::currentTime().toString("h:mm:ss");
+         set("SubmitTime", QDateTime::currentSecsSinceEpoch());
          break;
 
-      case Running:
+      case JobInfo::Running:
          m_timer.start();
          break;
 
-      case Suspended:
+      case JobInfo::Suspended:
          m_timer.stop();
          break;
 
-      case Killed:
+      case JobInfo::Killed:
          m_timer.stop();
          break;
 
-      case Error:
+      case JobInfo::Error:
          m_timer.stop();
          error();
          break;
 
-      case Finished:
+      case JobInfo::Finished:
          m_timer.stop();
          finished();
          break;
 
-      case Copying:
+      case JobInfo::Copying:
          m_copyProgress = "Copying";
          break;
 
-      case Unknown:
+      case JobInfo::Unknown:
          m_timer.stop();
          break;
    }
 
    if (!message.isEmpty()) m_message = message;
-   qDebug() << "Setting Job status to" << toString(m_status) << m_message;
+   qDebug() << "Setting Job status to" << JobInfo::toString(status) << m_message;
    updated();
-}
-
-
-bool Job::isActive(Status const status)
-{
-   bool active(true);
-
-   switch (status) {
-      case NotRunning:
-      case Queued:
-      case Running:
-      case Suspended:
-      case Unknown:
-      case Copying:
-         active = true;
-         break;
-
-      case Killed:
-      case Error:
-      case Finished:
-         active = false;
-         break;
-   }
-
-   return active;
-}
-
-
-bool Job::localFilesExist() const 
-{ 
-   return m_jobInfo->localFilesExist();
 }
 
 } } // end namespaces IQmol::Process
