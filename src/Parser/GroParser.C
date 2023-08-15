@@ -18,11 +18,14 @@ namespace Parser {
 
 bool Gro::parse(TextStream& textStream){
     QLOG_DEBUG() << "trying to parse using gro parser";
+    QLOG_DEBUG() << m_filePath;
 
     bool ok(true);
    
    Data::ProteinChain* chain(0);
    Data::Group* group(0);
+
+   // loadTopologyFiles();
 
    QString line, key;
    QString currentChain;
@@ -49,6 +52,8 @@ bool Gro::parse(TextStream& textStream){
     }
     ++linenumber;
    }
+
+
     return ok;
     error:
       QString msg("Error parsing PDB file around line number ");
@@ -64,21 +69,15 @@ int Gro::parseGRO (char const* groFilePath, Data::Gro* data , char *options)
 
 bool Gro::parseATOM(QString const& line, Data::Group& group)
 {bool ok(true);
-    QLOG_DEBUG() << "trying to parse x";
-    QLOG_DEBUG() <<line.mid(20, 8);
    double x = line.mid(20, 8).toFloat(&ok);
    if (!ok) return false;
-    QLOG_DEBUG() << "trying to parse y";
    double y = line.mid(28, 8).toFloat(&ok);
    if (!ok) return false;
 
    double z = line.mid(36, 8).toFloat(&ok);
    if (!ok) return false;
-QLOG_DEBUG() << "trying to parse z";
    QString label(line.mid(11, 4).trimmed());
-   QLOG_DEBUG() << label;
    QString sym(label[0]);
-   QLOG_DEBUG() << sym;
    Data::Atom* atom(new Data::Atom(sym, label));
    group.addAtom(atom, qglviewer::Vec(x,y,z));
 
@@ -86,3 +85,9 @@ QLOG_DEBUG() << "trying to parse z";
 bool Gro::parseCOMPND(QString const& line)
 {}
 } } // end namespace IQmol::Parser
+
+
+void loadTopologyFiles(){
+
+
+}

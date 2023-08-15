@@ -46,6 +46,7 @@
 
 #include "PdbParser.h"
 #include "TextStream.h"
+#include "Util/QsLog.h"
 
 #include "Math/v3.h"
 #include "Data/Atom.h"
@@ -61,6 +62,8 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 
 
@@ -258,6 +261,7 @@ bool Pdb::parse(TextStream& textStream)
    for (auto chain : m_chains.values()) m_dataBank.append(chain);
    if (solvent) m_dataBank.append(solvent);
    for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+
  
    return ok;
 
@@ -271,7 +275,6 @@ bool Pdb::parse(TextStream& textStream)
       m_errors.append(msg);
       return false;
 }
-
 
 bool Pdb::parseCOMPND(QString const& line)
 {
@@ -465,9 +468,38 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     fclose(pdbFile);
 
     data->fillSS(secStructs);
+    
+    saveSecondaryStructure(secStructs);
+
     return errorcode;
 }
 
+
+void Pdb::saveSecondaryStructure(std::vector<Data::SS> secStructs){
+    /// Users/albertthie/projects/iqmol/IQmolGromacs/4hhb.pdb
+    std::string str = m_filePath.toStdString();
+    size_t index =str.find_last_of("/\\");
+    QLOG_DEBUG() << "saving file";
+    std::string path = str.substr(0,(index+1)) + "SecStruc.dat";
+    //QLOG_DEBUG() << path;
+
+    std::ofstream File(path);
+    for(int s=0;s<secStructs.size();s++){
+        std::string t = std::to_string(secStructs[s].type);
+        std::string c = secStructs[s].chain;
+        std::string start = std::to_string(secStructs[s].start);
+        std::string stop = std::to_string(secStructs[s].stop);
+        std::string output = t + "   " + c + "   " + start + "   " + stop;
+        File  << output  << std::endl;
+
+    }
+    File  << "end file" << std::endl;
+
+    File.close();
+
+
+    
+}
 
 
 bool Pdb::parseCartoon(TextStream& textStream)
