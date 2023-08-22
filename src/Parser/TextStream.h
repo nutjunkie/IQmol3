@@ -52,6 +52,12 @@ namespace Parser {
             m_previousLine = readLine().trimmed();
             return m_previousLine;
          }
+         QString const& nextLineNonTrimmed() {
+            ++m_lineCount;
+            m_previousLine = readLine();
+            return m_previousLine;
+         }
+
 
          QString const& previousLine() {
             return m_previousLine;

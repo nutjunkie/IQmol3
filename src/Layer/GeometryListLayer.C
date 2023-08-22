@@ -140,7 +140,7 @@ void GeometryList::removeGeometry()
            QList<Geometry*> geometryLayers(findLayers<Geometry>(Children));
            QList<Geometry*>::iterator geom;
            for (geom = geometryLayers.begin(); geom != geometryLayers.end(); ++geom) {
-               if (&((*geom)->data()) == target) {
+               if (&((*geom)->geomData()) == target) {
                   //qDebug() << "Layer::Geometry Match found"<< target;
                   removeLayer(*geom);
                   m_geometryList.removeAll(target);
@@ -166,7 +166,7 @@ void GeometryList::setCurrentGeometry(unsigned const index)
    if (!geometry) return;
 
    if (m_allowModifications) m_molecule->saveToCurrentGeometry();
-   m_molecule->setGeometry(geometry->data());
+   m_molecule->setGeometry(geometry->geomData());
 
    if (m_reperceiveBonds) {
       m_molecule->reperceiveBonds();

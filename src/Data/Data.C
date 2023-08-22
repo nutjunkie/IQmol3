@@ -21,10 +21,11 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include <sstream>
+
 
 namespace IQmol {
 namespace Data {
+
 namespace Type {
 
 QString toString(ID const id)
@@ -147,32 +148,6 @@ QString toString(ID const id)
 }
 
 } // end namespace Type
-
-
-void Base::copy(Base const& that)
-{
-   if (typeID() == Type::Undefined) {
-      // Base copy ctor, nothing to do.
-      return;
-   }else if (typeID() != that.typeID()) {
-       std::string msg("Invalid attempt to copy ");
-       msg += toString(that.typeID()).toStdString();
-       msg += " to ";
-       msg += toString(typeID()).toStdString();
-       throw  std::runtime_error(msg);
-    }
-
-    std::stringstream ss;
-    {
-       OutputArchive archive(ss);
-       const_cast<Base&>(that).serialize(archive);
-    }
-    destroy();
-    {
-       InputArchive archive(ss);
-       serialize(archive);
-    }
-}
 
 
 } } // end namespace IQmol::Data

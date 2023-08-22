@@ -107,7 +107,6 @@ namespace Data {
          static Data::atom const* getAtom (Data::residue const& resA, char const* atomType);
 
          void fillSS(std::vector<Data::SS> secStructs);
-
          void serialize(InputArchive& ar, unsigned int const /*version*/) { }
          void serialize(OutputArchive& ar, unsigned int const /*version*/) { }
 

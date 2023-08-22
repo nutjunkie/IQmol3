@@ -314,7 +314,7 @@ void Molecule::appendData(Layer::List& list)
    Surface* surface(0);
 
    for (iter = toSet.begin(); iter != toSet.end(); ++iter) {
-       (*iter)->setMolecule(this);
+       //(*iter)->setMolecule(this);
        if ((surface = qobject_cast<Surface*>(*iter))) {
           m_surfaceList.appendLayer(surface);
        }else {
@@ -723,9 +723,9 @@ QString Molecule::coordinatesAsStringFsm()
    if (geometryList.size() < 2) return coords;
    qDebug() << "Number of Geometries = " << geometryList.size();
 
-   coords  = geometryList[0]->data().coordinatesAsString();
+   coords  = geometryList[0]->geomData().coordinatesAsString();
    coords += "\n****\n";
-   coords += geometryList[1]->data().coordinatesAsString();
+   coords += geometryList[1]->geomData().coordinatesAsString();
 
    return coords.trimmed();
 }

@@ -29,8 +29,8 @@ namespace IQmol {
 namespace Data {
 
    // Data class representing a single chain of a protein
-   class ProteinChain : public MacroMolecule {
-
+   class ProteinChain : public MacroMolecule 
+   {
       public:
          ProteinChain(QString const& label) : MacroMolecule(label) { }
 

@@ -179,6 +179,9 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
    }
 
    QString extension(fileInfo.suffix().toLower());
+
+   QLOG_INFO() << "Parsing file extension " << extension;
+
    Base* parser(0);
 
    // Intercept directories first
@@ -246,6 +249,7 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
 
    if (extension == "gro"){
       parser = new Gro;
+      QLOG_INFO() << "Using gro parser";
    }
 
    if (extension == "ply" || extension == "obj" || 

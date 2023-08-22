@@ -38,7 +38,6 @@ namespace Data {
    /// Basic Data class for holding real data on a 3D grid.
    class GridData : public Base {
 
-      using Base::copy;
       friend class boost::serialization::access;
 
       public:

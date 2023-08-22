@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_H
-#define IQMOL_LAYER_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -37,6 +36,7 @@ namespace Configurator {
    class Base;
 }
 
+
 namespace Layer {
 
    class Molecule;
@@ -61,7 +61,7 @@ namespace Layer {
 
 
    /// Model item for the ViewerModel class.  
-   /// Layers can be thought of as nodes of the tree which is represented in
+   /// Layers can be thought of as nodes of a data tree which is represented in
    /// the 'Model View' window.  This allows a heirarchical data structure to be
    /// built up where, for example, Atom Layers are children of an AtomList Layer
    /// which is in turn a child of a Molecule Layer.  The visibility of a Layer,
@@ -102,7 +102,7 @@ namespace Layer {
 		 // QStandardItem to the Layer.
          virtual void setCheckStatus(Qt::CheckState const) { }
 
-         virtual void setMolecule(Molecule* molecule) { }
+         //virtual void setMolecule(Molecule* molecule) { }
          //Molecule* molecule() const { return m_molecule; }
         
 
@@ -265,4 +265,3 @@ qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
 
 } } // end namespace IQmol::Layer
 
-#endif

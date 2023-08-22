@@ -112,7 +112,7 @@ void GeometryList::load()
        table->setItem(row, 0, energy);
        double e((*iter)->energy());
        double x(row+1);
-       Data::Geometry& geom((*iter)->data());
+       Data::Geometry& geom((*iter)->geomData());
 
        if (geom.hasProperty<Data::Constraint>()) {
           x = geom.getProperty<Data::Constraint>().value();

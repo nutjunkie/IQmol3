@@ -28,10 +28,8 @@ namespace IQmol {
 namespace Data {
 
    /// Data structure representing an atom.
-   class MmAtom : public Base {
-
-      friend class boost::serialization::access;
-
+   class MmAtom : public Atom
+   {
       public:
          MmAtom(unsigned const Z = 0) : Atom(Z) { }
          MmAtom(QString const& symbol);
@@ -39,35 +37,9 @@ namespace Data {
          Type::ID typeID() const { return Type::Atom; }
          unsigned atomicNumber() const { return m_atomicNumber; }
 
-		 /// Returns a reference to the requested AtomicProperty.  If the
-		 /// property does not exist, then a new one is created and added to 
-		 /// the list.
-         template <class P>
-         P& getProperty() 
-         {
-            P* p(0);
-            Bank::iterator iter;
-            for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-                if ( (p = dynamic_cast<P*>(*iter)) ) break; 
-            }
-            if (p == 0) {
-               p = new P();
-               p->setDefault(m_atomicNumber);
-               m_properties.append(p);
-            }
-            return *p;
-         }
 
       private:
          
-   };
-
-
-   class AtomList : public List<Atom> 
-   {
-      public:
-         // Why is a fully qualified namespace required for Type with Qt >= 6.0
-         IQmol::Data::Type::ID typeID() const { return IQmol::Data::Type::AtomList; }
    };
 
 } } // end namespace IQmol::Data
