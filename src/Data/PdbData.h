@@ -22,7 +22,7 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include "Math/v3.h"
+#include "Math/Vec.h"
 
 #define COIL 0
 #define HELIX 1
@@ -41,7 +41,7 @@ namespace Data {
       int idx;
       char type[5];
       char element[3];
-      v3 coor;
+      Math::Vec3 coor;
       float tfactor, occupancy;
       atom *next, *prev;
       residue *res;
@@ -93,11 +93,15 @@ namespace Data {
 
          void dump() const;
 
-         void addResidue(v3 const& posO, v3 const& posCA, char const secondaryStructure);
+         void addResidue(Math::Vec3 const& posO, Math::Vec3 const& posCA, 
+            char const secondaryStructure);
+
          void addChain(int const size);
 
          void appendChain(Data::chain newChain);
+
          void appendResiduetoChain (Data::chain *C, Data::residue newResidue);
+
          void appendAtomtoResidue (Data::residue *R, Data::atom newAtom);
 
          static Data::atom const* getAtom (Data::residue const& resA, char const* atomType);

@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "MacroMolecule.h"
+#include "Math/Vec.h"
 
 
 namespace IQmol {
@@ -39,15 +40,15 @@ namespace Data {
          float const* cao() const { return &m_caoPositions[0]; }
          char const*  ss() const { return &m_secondaryStructure[0]; }
 
-         inline void addResidue(v3 const& posCA, v3 const& posO,
+         inline void addResidue(Math::Vec3 const& posCA, Math::Vec3 const& posO,
             char const secondaryStructure)
          {
-             m_caoPositions.push_back(posCA.x);
-             m_caoPositions.push_back(posCA.y);
-             m_caoPositions.push_back(posCA.z);
-             m_caoPositions.push_back(posO.x);
-             m_caoPositions.push_back(posO.y);
-             m_caoPositions.push_back(posO.z);
+             m_caoPositions.push_back(posCA[0]);
+             m_caoPositions.push_back(posCA[1]);
+             m_caoPositions.push_back(posCA[2]);
+             m_caoPositions.push_back(posO[0]);
+             m_caoPositions.push_back(posO[1]);
+             m_caoPositions.push_back(posO[2]);
 
              m_secondaryStructure.push_back(secondaryStructure); 
          }

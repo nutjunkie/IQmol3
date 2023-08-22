@@ -68,14 +68,14 @@ Data::MeshList Protein::fromCpdb(std::vector<cpdb::Mesh> const& meshes)
 
    for (int i = 0; i < meshes.size(); i++) {
        Data::Mesh* mesh(new Data::Mesh);
-       std::vector<v3> verts  = meshes[i].vertices;
-       std::vector<v3> colors = meshes[i].colors;
+       std::vector<Math::Vec3> verts  = meshes[i].vertices;
+       std::vector<Math::Vec3> colors = meshes[i].colors;
        std::vector<Data::Mesh::Vertex> vertices;
 
        for (int j = 0; j < verts.size(); j++) {
-           Data::Mesh::Vertex v(mesh->addVertex(verts[j].x, verts[j].y, verts[j].z));
+           Data::Mesh::Vertex v(mesh->addVertex(verts[j][0], verts[j][1], verts[j][2]));
            vertices.push_back(v);
-           //colors[j].x, colors[j].y, colors[j].z);
+           //colors[j][0], colors[j][1], colors[j][2]);
        }       
 
        qDebug() << "Number of vertices" << vertices.size();

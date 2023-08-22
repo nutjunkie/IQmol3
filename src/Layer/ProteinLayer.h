@@ -59,9 +59,8 @@ namespace Layer {
          std::vector<cpdb::Mesh> computeCartoonMesh(Data::Pdb& pdb);
          Data::MeshList fromCpdb(std::vector<cpdb::Mesh> const& meshes);
 
-         Data::Pdb& m_pdbData;
          double m_radius;
-
+         Data::Pdb& m_pdbData;
    };
 
 } } // end namespace IQmol::Layer 

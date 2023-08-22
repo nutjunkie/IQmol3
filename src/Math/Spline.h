@@ -21,10 +21,9 @@
 
 ********************************************************************************/
 
-
 #include "TMatrix.h"
 #include <cmath>
-#include "v3.h"
+#include "Vec.h"
 
 
 namespace IQmol {
@@ -41,21 +40,23 @@ inline float RoundPlaces(float a, int p)
 }
 
 
-inline void RoundPlaces(v3 &v, int p)
+inline void RoundPlaces(Math::Vec3 &v, int p)
 {
-    v.x = RoundPlaces(v.x, p);
-    v.y = RoundPlaces(v.y, p);
-    v.z = RoundPlaces(v.z, p);
+    v[0] = RoundPlaces(v[0], p);
+    v[1] = RoundPlaces(v[1], p);
+    v[2] = RoundPlaces(v[2], p);
 }
 
 
 
-inline float Linear(float t) {
+inline float Linear(float t) 
+{
     return t;
 }
 
 
-inline float InOutQuad(float t) {
+inline float InOutQuad(float t) 
+{
     if (t < 0.5f) {
         return 2 * t * t;
     }
@@ -64,17 +65,20 @@ inline float InOutQuad(float t) {
 }
 
 
-inline float OutCirc(float t) {
+inline float OutCirc(float t) 
+{
     t = t-1;
     return sqrtf(1 - (t * t));
 }
 
 
-inline float InCirc(float t) {
+inline float InCirc(float t) 
+{
     return -1 * (sqrtf(1-t*t) - 1);
 }
 
-void spline(v3 *&result, const v3 &vec1, const v3 &vec2, const v3 &vec3, const v3 &vec4, int n);
+
+void spline(Math::Vec3 *&result, Math::Vec3 const& vec1, Math::Vec3 const& vec2, 
+   Math::Vec3 const& vec3, Math::Vec3 const& vec4, int n);
 
 } // end namespace IQmol
-

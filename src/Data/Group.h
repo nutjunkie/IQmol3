@@ -69,7 +69,6 @@ namespace Data {
          QString      m_label;
          AtomList     m_atoms;
          QList<qglviewer::Vec> m_coordinates;
-        
    };
 
 } } // end namespace IQmol::Data

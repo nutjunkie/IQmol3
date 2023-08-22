@@ -51,8 +51,8 @@ namespace Data {
          void dump() const {  }
 
       protected:
-         QString  m_label;
          unsigned m_atomicNumber;
+         QString  m_label;
    };
 
 

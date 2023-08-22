@@ -34,14 +34,15 @@ void Pdb::addChain(int const size)
 }
 
 
-void Pdb::addResidue(v3 const& posCA, v3 const& posO, char const secondaryStructure)
+void Pdb::addResidue(Math::Vec3 const& posCA, Math::Vec3 const& posO, 
+   char const secondaryStructure)
 {
-   m_caoPositions.push_back(posCA.x);
-   m_caoPositions.push_back(posCA.y);
-   m_caoPositions.push_back(posCA.z);
-   m_caoPositions.push_back(posO.x);
-   m_caoPositions.push_back(posO.y);
-   m_caoPositions.push_back(posO.z);
+   m_caoPositions.push_back(posCA[0]);
+   m_caoPositions.push_back(posCA[1]);
+   m_caoPositions.push_back(posCA[2]);
+   m_caoPositions.push_back(posO[0]);
+   m_caoPositions.push_back(posO[1]);
+   m_caoPositions.push_back(posO[2]);
 
    m_secondaryStructure.push_back(secondaryStructure);
 }
@@ -162,7 +163,7 @@ void Pdb::writeFile(FILE *F) const
         while (A != NULL) {
             fprintf (F, "ATOM  %5d %-4s%c%-3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s\n",
                      A->id, A->type,' ', A->res->type, C->id, A->res->id,
-                     A->coor.x, A->coor.y, A->coor.z, A->occupancy, A->tfactor, A->element);
+                     A->coor[0], A->coor[1], A->coor[2], A->occupancy, A->tfactor, A->element);
             A = A->next; 
         }       
     }       

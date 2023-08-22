@@ -47,7 +47,7 @@
 #include "PdbParser.h"
 #include "TextStream.h"
 
-#include "Math/v3.h"
+#include "Math/Vec.h"
 #include "Data/Atom.h"
 #include "Data/Group.h"
 #include "Data/PdbData.h"
@@ -55,7 +55,6 @@
 #include "Data/Solvent.h"
 
 #include "Data/Geometry.h"
-#include "Data/Atom.h"
 
 #include <QDebug>
 
@@ -80,16 +79,16 @@ int extractStr(char *dest, const char *src, int begin, int end)
 }
 
 
-void getCoordinates (const char *line, v3 *out) {
+void getCoordinates (const char *line, Math::Vec3& out) {
     char coorx[9] = {0};
     char coory[9] = {0};
     char coorz[9] = {0};
     strncpy (coorx, &line[30], 8);
     strncpy (coory, &line[38], 8);
     strncpy (coorz, &line[46], 8);
-    out->x = atof (coorx);
-    out->y = atof (coory);
-    out->z = atof (coorz);
+    out[0] = atof (coorx);
+    out[1] = atof (coory);
+    out[2] = atof (coorz);
 }
 
 
@@ -333,7 +332,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     float tempFactor, occupancy;
     int   resIdx = 0;
     int   atomIdx = 0;
-    v3    coor;
+    Math::Vec3    coor;
     int   helixStart = 0;
     int   helixStop = 0;
     char  helixChain[2];
@@ -381,7 +380,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     while (fgets(line, sizeof(line), pdbFile)) {
         if (!strncmp(line, "ATOM  ", 6)) {
 
-            getCoordinates(line, &coor);
+            getCoordinates(line, coor);
             getAtomType(line, atomType);
             getResType(line, resType);
             getAtomElement(line, atomElement);

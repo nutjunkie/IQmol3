@@ -1,6 +1,6 @@
 #include <map>
 #include <iostream>
-#include "Math/v3.h"
+#include "Math/Vec.h"
 #include "Math/Spline.h"
 #include "Data/CMesh.h"
 #include "Data/PdbData.h"
@@ -31,16 +31,16 @@ struct PeptidePlane {
     const Data::residue *Residue1;
     const Data::residue *Residue2;
     const Data::residue *Residue3;
-    v3 Position;
-    v3 Normal;
-    v3 Forward;
-    v3 Side;
+    Math::Vec3 Position;
+    Math::Vec3 Normal;
+    Math::Vec3 Forward;
+    Math::Vec3 Side;
     bool Flipped;
 };
 
 
-inline PeptidePlane NewPeptidePlane(const Data::residue &r1, const Data::residue &r2, 
-   const Data::residue &r3)
+inline PeptidePlane NewPeptidePlane(Data::residue const& r1, Data::residue const& r2, 
+   Data::residue const& r3)
 {
     PeptidePlane newPP;
 
@@ -53,18 +53,27 @@ inline PeptidePlane NewPeptidePlane(const Data::residue &r1, const Data::residue
         return newPP;
     }
 
-    v3 ca1 = CA1->coor;
-    v3 o1 = O1->coor;
-    v3 ca2 = CA2->coor;
+    Math::Vec3 ca1 = CA1->coor;
+    Math::Vec3 o1  = O1->coor;
+    Math::Vec3 ca2 = CA2->coor;
 
-    v3 a = (ca2 - ca1).normalized();
-    v3 b = (o1 - ca1).normalized();
-    v3 c = v3::crossProduct(a, b).normalized();
-    v3 d = v3::crossProduct(c, a).normalized();
-    v3 p = (ca1 + ca2)/ 2.0f;
+    Math::Vec3 a = (ca2 - ca1);
+    a.normalize();
+
+    Math::Vec3 b = (o1 - ca1);
+    b.normalize();
+
+    Math::Vec3 c = a ^ b;
+    c.normalize();
+
+    Math::Vec3 d = c ^ a; 
+    d.normalize();
+
+    Math::Vec3 p = (ca1 + ca2)/ 2.0f;
     newPP.Residue1 = &r1;
     newPP.Residue2 = &r2;
     newPP.Residue3 = &r3;
+
     newPP.Position = p;
     newPP.Normal = c;
     newPP.Forward = a;
@@ -102,15 +111,23 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
     r3->next = 0;
     r3->ss = ssr3;
 
-    v3 ca1 = v3(r1CA[0], r1CA[1], r1CA[2]);
-    v3 o1 = v3(r1O[0], r1O[1], r1O[2]);
-    v3 ca2 = v3(r2CA[0], r2CA[1], r2CA[2]);
+    Math::Vec3 ca1 {r1CA[0], r1CA[1], r1CA[2]};
+    Math::Vec3 o1  {r1O[0],  r1O[1],  r1O[2] };
+    Math::Vec3 ca2 {r2CA[0], r2CA[1], r2CA[2]};
 
-    v3 a = (ca2 - ca1).normalized();
-    v3 b = (o1 - ca1).normalized();
-    v3 c = v3::crossProduct(a, b).normalized();
-    v3 d = v3::crossProduct(c, a).normalized();
-    v3 p = (ca1 + ca2)/ 2.0f;
+    Math::Vec3 a(ca2 - ca1);
+    a.normalize();
+
+    Math::Vec3 b(o1 - ca1);
+    b.normalize();
+
+    Math::Vec3 c(a^b);
+    c.normalize();
+
+    Math::Vec3 d(c^a);
+    d.normalize();
+
+    Math::Vec3 p = (ca1 + ca2)/ 2.0f;
 
     newPP.Residue1 = r1;
     newPP.Residue2 = r2;
@@ -125,36 +142,17 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
 }
 
 
-inline void Transition(const PeptidePlane &pp, char &type1, char &type2) 
+
+inline void splineForPlanes(Math::Vec3 *&result, PeptidePlane const& p1, 
+   PeptidePlane const& p2, PeptidePlane const& p3, PeptidePlane const& p4, 
+   int n, float u, float v) 
+                    
 {
-    char t1 = pp.Residue1->ss;
-    char t2 = pp.Residue2->ss;
-    char t3 = pp.Residue3->ss;
-    type1 = t2;
-    type2 = t2;
-    if (t2 > t1 && t2 == t3){
-        type1 = t1;
-    }
-    if (t2 > t3 && t1 == t2){
-        type2 = t3;
-    }
-}
+    Math::Vec3 g1 = p1.Position + p1.Side*u + p1.Normal * v;
+    Math::Vec3 g2 = p2.Position + p2.Side*u + p2.Normal * v;
+    Math::Vec3 g3 = p3.Position + p3.Side*u + p3.Normal * v;
+    Math::Vec3 g4 = p4.Position + p4.Side*u + p4.Normal * v;
 
-
-inline void Flip(PeptidePlane &pp) 
-{
-    pp.Side = pp.Side * -1;
-    pp.Normal = pp.Normal * -1;
-    pp.Flipped = !pp.Flipped;
-}
-
-
-inline void splineForPlanes(v3 *&result, const PeptidePlane &p1, const PeptidePlane &p2, 
-                    const PeptidePlane &p3,const PeptidePlane &p4, int n, float u, float v) {
-    v3 g1 = p1.Position + p1.Side*u + p1.Normal * v;
-    v3 g2 = p2.Position + p2.Side*u + p2.Normal * v;
-    v3 g3 = p3.Position + p3.Side*u + p3.Normal * v;
-    v3 g4 = p4.Position + p4.Side*u + p4.Normal * v;
     spline(result, g1, g2, g3, g4, n); 
 }
 

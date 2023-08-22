@@ -24,7 +24,10 @@
 
 namespace IQmol {
 
-void spline(v3 *&result, const v3 &vec1, const v3 &vec2, const v3 &vec3, const v3 &vec4, int n) 
+using namespace Math;
+
+void spline(Vec3*& result, Vec3 const& vec1, Vec3 const& vec2,Vec3 const& vec3, 
+   Vec3 const& vec4, int n) 
 {
    float n1 = (float)(n);
    float n2 = (n1 * n1);
@@ -44,14 +47,14 @@ void spline(v3 *&result, const v3 &vec1, const v3 &vec2, const v3 &vec3, const v
        b(3,0) = oos;       b(3,1) =  4 * oos; b(3,2) = oos;
 
    TMatrix<float> g(4,4,1.0f);
-       g(0,0) = vec1.x; g(0,1) =  vec1.y;  g(0,2) =  vec1.z;
-       g(1,0) = vec2.x; g(1,1) =  vec2.y;  g(1,2) =  vec2.z;
-       g(2,0) = vec3.x; g(2,1) =  vec3.y;  g(2,2) =  vec3.z;
-       g(3,0) = vec4.x; g(3,1) =  vec4.y;  g(3,2) =  vec4.z;
+       g(0,0) = vec1[0]; g(0,1) =  vec1[1];  g(0,2) =  vec1[2];
+       g(1,0) = vec2[0]; g(1,1) =  vec2[1];  g(1,2) =  vec2[2];
+       g(2,0) = vec3[0]; g(2,1) =  vec3[1];  g(2,2) =  vec3[2];
+       g(3,0) = vec4[0]; g(3,1) =  vec4[1];  g(3,2) =  vec4[2];
 
    TMatrix<float> m = s * b * g;
 
-   v3 v = v3(m(3,0) / m(3,3), m(3,1) / m(3,3), m(3,2) / m(3,3));
+   Vec3 v {m(3,0) / m(3,3), m(3,1) / m(3,3), m(3,2) / m(3,3)};
    RoundPlaces(v,10);
    result[0] = v;
 
@@ -68,7 +71,7 @@ void spline(v3 *&result, const v3 &vec1, const v3 &vec2, const v3 &vec3, const v
        m(1,1) = m(1,1) + m(0,1);
        m(1,2) = m(1,2) + m(0,2);
        m(1,3) = m(1,3) + m(0,3);
-       v = v3(m(3,0) / m(3,3), m(3,1) / m(3,3), m(3,2) / m(3,3));
+       v = Vec3{m(3,0) / m(3,3), m(3,1) / m(3,3), m(3,2) / m(3,3)};
        RoundPlaces(v,10);
        result[k+1] =  v;
    }

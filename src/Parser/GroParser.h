@@ -4,6 +4,7 @@
 namespace IQmol {
 
 namespace Data {
+  class Pdb;
   class Gro;
   class Group;
   class ProteinChain;
