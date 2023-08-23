@@ -313,6 +313,7 @@ void ParseFile::runParser(Base* parser, QString const& filePath)
 
    Data::Bank& bank(parser->data());
    m_dataBank.merge(bank);
+   QLOG_INFO() << "datamerged";
 }
 
 } } // end namespace IQmol::Parser

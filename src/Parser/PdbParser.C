@@ -56,7 +56,7 @@
 #include "Data/Solvent.h"
 
 #include "Data/Geometry.h"
-#include "Data/Atom.h"
+
 
 #include <QDebug>
 
@@ -235,6 +235,7 @@ bool Pdb::parse(TextStream& textStream)
 
          }else {
             grp = id+grp;
+            QLOG_DEBUG() << "adding new geometry  "<< grp;
             if (grp != currentGeometry) {
                currentGeometry = grp;
                if (m_geometries.contains(currentGeometry)) {
