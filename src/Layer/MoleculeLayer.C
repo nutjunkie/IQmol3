@@ -8,8 +8,6 @@
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
   IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,8 +27,6 @@
 #include "Data/Frequencies.h"
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
-#include "Data/MultipoleExpansion.h"
-#include "Data/PointGroup.h"
 #include "Data/SurfaceInfo.h"
 
 
@@ -42,6 +38,7 @@
 #include "ConstraintLayer.h"
 #include "CubeDataLayer.h"
 #include "DipoleLayer.h"
+#include "FileLayer.h"
 #include "FrequenciesLayer.h"
 #include "EfpFragmentLayer.h"
 #include "GeometryLayer.h"
@@ -61,8 +58,8 @@
 #include "Util/QsLog.h"
 #include "Util/QMsgBox.h"
 #include "Util/Constants.h"
-#include "Process/JobInfo.h" 
 #include "Util/Preferences.h"
+#include "Process/JobInfo.h" 
 #include "Parser/IQmolParser.h"
 
 #include "openbabel/mol.h"
@@ -88,18 +85,18 @@
 #include <QRegularExpression>
 #include <QActionGroup>
 
-#include "boost/bind/bind.hpp"
-
-using namespace boost::placeholders;
 
 
 extern "C" void symmol_(int*, double*, double*, int*, char*);
 
 using namespace OpenBabel;
 using namespace qglviewer;
+using namespace std::placeholders;
+
 
 namespace IQmol {
 namespace Layer {
+
 
 bool Molecule::s_autoDetectSymmetry = false;
 
@@ -189,6 +186,21 @@ void Molecule::setFile(QString const& fileName)
 {
    m_inputFile.setFile(fileName);
    setText(m_inputFile.completeBaseName());
+}
+
+
+void Molecule::appendSurface(Data::Surface* surfaceData)
+{
+   m_bank.append(surfaceData);
+   Layer::Surface* surfaceLayer(new Layer::Surface(*surfaceData));
+
+qDebug() << "Need to check if surface needs to be oriented to the molecular frame";
+// surfaceLayer->setFrame(getReferenceFrame());
+   connect(surfaceLayer, SIGNAL(updated()), this, SIGNAL(softUpdate()));
+   surfaceLayer->setCheckState(Qt::Checked);
+   surfaceLayer->setCheckStatus(Qt::Checked);
+   m_surfaceList.appendLayer(surfaceLayer);
+   updated();
 }
 
 
@@ -309,7 +321,8 @@ void Molecule::appendData(Layer::List& list)
 
    appendPrimitives(primitiveList);
    BondList bondList(findLayers<Bond>(Children));
-   if (bondList.isEmpty()) reperceiveBonds();
+   bool postCmd(true);
+   if (bondList.isEmpty()) reperceiveBonds(postCmd);
 
    Surface* surface(0);
 
@@ -855,6 +868,44 @@ QString Molecule::scanCoordinatesAsString()
 }
 
 
+// - - - - - Isotopes - - - - -
+
+bool Molecule::editIsotopes()
+{
+   bool added(false); 
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+
+   if (atoms.isEmpty()) {
+      QMsgBox::warning(0, "IQmol", "Atom selection required");
+      return added;
+   }
+
+   std::sort(atoms.begin(), atoms.end(), Atom::indexSort);
+
+   Layer::Isotopes* isotopes(new Layer::Isotopes(atoms));
+   isotopes->configure();
+
+   if (isotopes->accepted()) {
+      // selectNone();
+
+     if (isotopes->text().isEmpty()) {
+         QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
+         QString label("Substitution ");
+         label += QString::number(list.size() +1);
+         isotopes->setText(label);
+      }
+
+      m_isotopesList.appendLayer(isotopes);
+      isotopes->updateLabels();
+      added = true;
+   }else {
+      delete isotopes;
+   }
+
+   return added;
+}
+
+
 void Molecule::clearIsotopes()
 {
    QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
@@ -864,20 +915,6 @@ void Molecule::clearIsotopes()
    }
 }
 
-
-void Molecule::addIsotopes(Isotopes* isotopes)
-{
-   if (isotopes) {
-      if (isotopes->text().isEmpty()) {
-         QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
-
-         QString label("Substitution ");
-         label += QString::number(list.size() +1);
-         isotopes->setText(label);
-      }
-      m_isotopesList.appendLayer(isotopes);
-   }
-}
 
 QString Molecule::isotopesAsString()
 {
@@ -898,6 +935,70 @@ QString Molecule::isotopesAsString()
    return s;
 }
 
+
+
+// - - - - - Constraints - - - - -
+
+bool Molecule::editConstraint()
+{
+   bool added(false);
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+   BondList bonds(findLayers<Bond>(Children | Visible | SelectedOnly));
+
+   // Allow for bond constraint by selecting a bond
+   if (atoms.isEmpty() && bonds.size() == 1) {
+      Bond* bond(bonds.first());
+      Atom* A(bond->beginAtom());
+      Atom* B(bond->endAtom());
+      if (A && B) atoms << A << B;
+   }
+
+   if (atoms.isEmpty()) {
+      QMsgBox::warning(0, "IQmol", "Atom selection required");
+      return added;
+   }else if (atoms.size() > 4) {
+      return freezeAtomPositions();
+   }
+
+   Constraint* constraint(findMatchingConstraint(atoms));
+
+   if (constraint) {
+      constraint->configure();
+      if (constraint->accepted()) {
+         applyConstraint(constraint);
+         added = true;
+      }  
+   }else {
+      constraint = new Constraint(atoms);
+      constraint->configure();
+
+      if (constraint->accepted()) {
+         if (canAcceptConstraint(constraint)) {
+            addConstraint(constraint);
+            added = true;
+         }else {
+            QMsgBox::information(0, "IQmol", 
+               "A maximum of two scan coordinates are permitted");
+            delete constraint;
+         }   
+      }else {
+         delete constraint;
+      }  
+   }
+   return added;
+}
+
+
+bool Molecule::freezeAtomPositions()
+{
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+
+   for (auto atom : atoms) {
+       addConstraint(new Constraint({atom}));
+   }
+
+   return true;
+}
 
 
 Constraint* Molecule::findMatchingConstraint(AtomList const& atoms)
@@ -1177,8 +1278,6 @@ void Molecule::applyRingConstraint()
       minimizeEnergy(Preferences::DefaultForceField());
    }
 }
-
-
 
 
 
@@ -1701,6 +1800,7 @@ double Molecule::radius()
 }
 
 
+/*
 double Molecule::onsagerRadius()
 {
    double radius(0), r(0);
@@ -1714,6 +1814,7 @@ double Molecule::onsagerRadius()
 
    return radius;
 }
+*/
 
 
 
@@ -1760,7 +1861,6 @@ bool Molecule::sanityCheck()
        }
    }
 
-
    return valid;
    // check if the molecule has been drawn, that an optimization has beeen performed.
 }
@@ -1775,7 +1875,7 @@ Process::JobInfo Molecule::qchemJobInfo()
    jobInfo.set("Multiplicity",  multiplicity());
    jobInfo.set("Coordinates",   coordinatesAsString());
    jobInfo.set("NumElectrons",  m_info.numberOfElectrons());
-   jobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+   //jobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
 
    jobInfo.set("LocalFilesExist", false);
    jobInfo.set("PromptOnOverwrite", true);
@@ -1822,8 +1922,6 @@ Process::JobInfo Molecule::qchemJobInfo()
           break;
        }
    }
-
-   
 
    return jobInfo;
 }
@@ -2094,9 +2192,7 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
 
    }else if (nAtoms == 1) {
       pointGroup = "Kh";
-      if (updateCoordinates) {
-         atomList.first()->setPosition(Vec(0.0, 0.0, 0.0));
-      }
+      if (updateCoordinates) atomList.first()->setPosition(Vec(0.0, 0.0, 0.0));
 
    }else if (nAtoms == 2) {
       Atom *A(atomList[0]), *B(atomList[1]);
@@ -2145,7 +2241,6 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
       delete[] coordinates;
       delete[] atomicNumbers;
    }
-
 
    Data::PointGroup pg(pointGroup);
    pointGroupAvailable(pg);
@@ -2214,45 +2309,6 @@ void Molecule::translateToCenter(GLObjectList const& selection)
    m_modified = true;
 }
 
-
-void Molecule::translate(Vec const& displacement)
-{
-   GLObjectList objects(findLayers<GLObject>(Children));
-   GLObjectList::iterator iter;
-   for (iter = objects.begin(); iter != objects.end(); ++iter) {
-       (*iter)->setPosition((*iter)->getPosition()+displacement);
-   }
-   //m_frame.setPosition(m_frame.position()+displacement);
-}
-
-
-void Molecule::rotate(Quaternion const& rotation)
-{
-   GLObjectList objects(findLayers<GLObject>(Children));
-   GLObjectList::iterator iter;
-   for (iter = objects.begin(); iter != objects.end(); ++iter) {
-       (*iter)->setPosition(rotation.rotate((*iter)->getPosition()));
-       (*iter)->setOrientation(rotation * (*iter)->getOrientation());
-   }
-   m_frame.setPosition(rotation.rotate(m_frame.position()));
-   m_frame.setOrientation(rotation * m_frame.orientation());
-}
-
-
-// Aligns point along axis (default z-axis)
-void Molecule::alignToAxis(Vec const& point, Vec const axis)
-{
-   rotate(Quaternion(point, axis));
-}
-
-
-// Rotates point into the plane defined by the normal vector
-void Molecule::rotateIntoPlane(Vec const& pt, Vec const& axis, Vec const& normal)
-{
-   Vec pp(pt);
-   pp.projectOnPlane(axis);
-   rotate(Quaternion(pp, cross(normal, axis)));
-}
 
 
 // The following is essentially a wrapper around OBMol::FindChildren
@@ -2356,6 +2412,11 @@ void Molecule::reperceiveBonds(bool postCmd)
    delete obMol;
 }
 
+void Molecule::reperceiveBondsForAnimation()
+{
+   if (m_reperceiveBondsForAnimation) reperceiveBonds(false);
+}
+
 
 QList<QString> Molecule::atomicSymbols() 
 {
@@ -2449,7 +2510,7 @@ void Molecule::setAtomicCharges(Data::Type::ID type)
    m_chargeType = type;
    // The Gasteiger charges always give a neutral system, which messes up the
    // charge/multiplicity from a real calculation.
-   //m_info.setCharge(totalCharge);
+   if (type != Data::Type::GasteigerCharge) m_info.setCharge(totalCharge);
 }
 
 
@@ -2573,8 +2634,9 @@ Vec Molecule::centerOfNuclearCharge()
 
 // ---------- Update functions ----------
 
+
 template <class T>
-void Molecule::update(boost::function<void(T&)> updateFunction)
+void Molecule::update(std::function<void(T&)> updateFunction)
 {
    QList<T*> list(findLayers<T>(Children));
    typename QList<T*>::iterator iter;
@@ -2588,42 +2650,42 @@ void Molecule::update(boost::function<void(T&)> updateFunction)
 void Molecule::updateDrawMode(Primitive::DrawMode drawMode)
 {
    m_drawMode = drawMode;
-   update<Primitive>(boost::bind(&Primitive::setDrawMode, _1, m_drawMode));
+   update<Primitive>(std::bind(&Primitive::setDrawMode, std::placeholders::_1, m_drawMode));
 }
 
 
 void Molecule::updateAtomScale(double const scale)
 {
    m_atomScale = scale;
-   update<Atom>(boost::bind(&Atom::setScale, _1, m_atomScale));
+   update<Atom>(std::bind(&Atom::setScale, std::placeholders::_1, m_atomScale));
 }
 
 
 void Molecule::updateSmallerHydrogens(bool smallerHydrogens)
 {
    m_smallerHydrogens = smallerHydrogens;
-   update<Atom>(boost::bind(&Atom::setSmallerHydrogens, _1, m_smallerHydrogens));
+   update<Atom>(std::bind(&Atom::setSmallerHydrogens, std::placeholders::_1, m_smallerHydrogens));
 }
 
 
 void Molecule::updateHideHydrogens(bool hideHydrogens)
 {
    m_hideHydrogens = hideHydrogens;
-   update<Atom>(boost::bind(&Atom::setHideHydrogens, _1, m_hideHydrogens));
+   update<Atom>(std::bind(&Atom::setHideHydrogens, std::placeholders::_1, m_hideHydrogens));
 }
 
 
 void Molecule::updateBondScale(double const scale)
 {
    m_bondScale = scale;
-   update<Bond>(boost::bind(&Bond::setScale, _1, m_bondScale));
+   update<Bond>(std::bind(&Bond::setScale, std::placeholders::_1, m_bondScale));
 }
 
 
 void Molecule::updateChargeScale(double const scale)
 {
    m_chargeScale = scale;
-   update<Charge>(boost::bind(&Charge::setScale, _1, m_chargeScale));
+   update<Charge>(std::bind(&Charge::setScale, std::placeholders::_1, m_chargeScale));
 }
 
 
@@ -2824,24 +2886,9 @@ Function3D Molecule::getPropertyEvaluator(QString const& name)
 }
 
 
-void Molecule::appendSurface(Data::Surface* surfaceData)
-{
-   m_bank.append(surfaceData);
-   Layer::Surface* surfaceLayer(new Layer::Surface(*surfaceData));
-
-qDebug() << "Need to check if surface needs to be oriented to the molecular frame";
-// surfaceLayer->setFrame(getReferenceFrame());
-   connect(surfaceLayer, SIGNAL(updated()), this, SIGNAL(softUpdate()));
-   surfaceLayer->setCheckState(Qt::Checked);
-   surfaceLayer->setCheckStatus(Qt::Checked);
-   m_surfaceList.appendLayer(surfaceLayer);
-   updated();
-}
-
 
 void Molecule::generateConformersDialog()
 {
-   
    qDebug() << "Opening generate conformers dialog";
    GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, this));
 
@@ -2896,8 +2943,6 @@ void Molecule::generateConformers()
    qDebug() << "Number of conformers: " << obMol->NumConformers();
 
 
-
-
    delete score;
    delete obConformerSearch;
  
@@ -2908,9 +2953,6 @@ void Molecule::generateConformers()
    }
 
    delete obMol;
-
 }
-
-
 
 } } // end namespace IQmol::Layer

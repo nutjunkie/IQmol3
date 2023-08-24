@@ -52,7 +52,7 @@ Vibronic::Vibronic(Layer::Vibronic& vibronic) : m_vibronic(vibronic),
    connect(m_configurator.finalButton, SIGNAL(clicked(bool)), 
       &m_vibronic, SLOT(connectFinalFrequencies(bool)));
 
-   Data::Vibronic const& data(m_vibronic.data());
+   Data::Vibronic const& data(m_vibronic.vibronicData());
 
    if (!data.hasTheory(Data::VibronicSpectrum::FC)) {
       m_configurator.fcButton->setEnabled(false);
@@ -107,7 +107,7 @@ void Vibronic::initTable()
    header->setSectionResizeMode(QHeaderView::Stretch);
    header->setSortIndicatorShown(true);
 
-   Data::Vibronic const& vibronic(m_vibronic.data());
+   Data::Vibronic const& vibronic(m_vibronic.vibronicData());
 
    QList<double> const& initialFrequencies(vibronic.initialFrequencies()); 
    QList<double> const& finalFrequencies(vibronic.finalFrequencies()); 
@@ -144,7 +144,7 @@ void Vibronic::updateSpectra(Constants::Units const units)
    m_plotCanvas->xAxis->setLabel(label);
    m_plotCanvas->clearGraphs();
 
-   Data::Vibronic const& vibronic(m_vibronic.data());
+   Data::Vibronic const& vibronic(m_vibronic.vibronicData());
    unsigned nModes(vibronic.nModes());
    unsigned nPoints(vibronic.nPoints());
 
@@ -257,10 +257,12 @@ void Vibronic::updateSpectra(Constants::Units const units)
 
 void Vibronic::reset()
 {
-   Data::Vibronic const& vibronic(m_vibronic.data());
+   Data::Vibronic const& vibronic(m_vibronic.vibronicData());
 
-   double xmin(Constants::convert(vibronic.frequencyDomainMin(), Constants::Wavenumber, m_units));
-   double xmax(Constants::convert(vibronic.frequencyDomainMax(), Constants::Wavenumber, m_units));
+   double xmin(Constants::convert(vibronic.frequencyDomainMin(), 
+      Constants::Wavenumber, m_units));
+   double xmax(Constants::convert(vibronic.frequencyDomainMax(), 
+      Constants::Wavenumber, m_units));
    m_plotCanvas->xAxis->setRange(std::min(xmin, xmax), std::max(xmin, xmax));
 
    on_fcButton_clicked(true);
@@ -271,7 +273,7 @@ void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
 {
    QTableWidget* table(m_configurator.spectrumTable);
 
-   Data::Vibronic const& vibronic(m_vibronic.data());
+   Data::Vibronic const& vibronic(m_vibronic.vibronicData());
    unsigned nRows(table->rowCount());
    bool ok(true);
 
@@ -291,9 +293,9 @@ void Vibronic::resetTable(Data::VibronicSpectrum::Theory theory)
 void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
 {
    clearAllGraphs();
-   if (!m_vibronic.data().hasTheory(theory)) return;
+   if (!m_vibronic.vibronicData().hasTheory(theory)) return;
 
-   Data::VibronicSpectrum const& spectrum(m_vibronic.data().spectrum(theory, -1));
+   Data::VibronicSpectrum const& spectrum(m_vibronic.vibronicData().spectrum(theory, -1));
    double min(spectrum.min());
    double max(spectrum.max());
 
@@ -316,7 +318,7 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
       graph->setVisible(true);
       graph->addToLegend(m_plotCanvas->legend);
 
-      Data::VibronicSpectrum const& spectrum(m_vibronic.data().spectrum(theory, -2));
+      Data::VibronicSpectrum const& spectrum(m_vibronic.vibronicData().spectrum(theory, -2));
       min = std::min(min, spectrum.min());
       max = std::max(max, spectrum.max());
    }else {
@@ -340,7 +342,7 @@ void Vibronic::resetCanvas(Data::VibronicSpectrum::Theory theory)
    }
 
    // Electronic transition
-   int n = m_vibronic.data().nModes();
+   int n = m_vibronic.vibronicData().nModes();
    bool checked(m_configurator.originTransition->isChecked());
    ModeIndex idx(m_currentTheory, n);
    graph = m_modeMap[idx];
@@ -509,6 +511,5 @@ void Vibronic::closeEvent(QCloseEvent* e)
    m_vibronic.playMode(-1);
    Base::closeEvent(e);
 }
-
 
 } } // end namespace IQmol::Configurator

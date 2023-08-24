@@ -394,7 +394,7 @@ void MainWindow::createMenus()
       connect(action, SIGNAL(triggered()), m_viewer, SLOT(saveSnapshot()));
       action->setShortcut(Qt::CTRL | Qt::Key_P);
 
-/*
+/*    This is now handled by the POV-Ray dialog
       name = "Generate PovRay Input";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(generatePovRay()));
@@ -600,6 +600,10 @@ void MainWindow::createMenus()
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), &m_viewerModel, SLOT(setConstraint()));
       action->setShortcut(Qt::CTRL | Qt::Key_K);
+
+      name = "Freeze Selected Atoms";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), &m_viewerModel, SLOT(freezeAtomPositions()));
 
       name = "Minimize Structure";
       action = menu->addAction(name);

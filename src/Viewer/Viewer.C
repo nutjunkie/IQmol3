@@ -27,6 +27,7 @@
 #include "ViewerModel.h"
 #include "QsLog.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ChargeLayer.h"
 #include "Layer/EfpFragmentLayer.h"
 #include "Preferences.h"
 #include "PovRayGen.h"

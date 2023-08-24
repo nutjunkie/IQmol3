@@ -32,7 +32,8 @@
 #include <QItemSelection>
 #include <QList>
 #include <QColor>
-#include "boost/function.hpp"
+
+#include <functional>
 
 
 class QStandardItem;
@@ -81,6 +82,7 @@ namespace IQmol {
          /// an AddMolecule Command.
          void newMoleculeMenu();
          void removeMolecule(Layer::Molecule*);
+         void removeSystem(Layer::System*);
 
          void addHydrogens();
          void reperceiveBonds();
@@ -93,7 +95,7 @@ namespace IQmol {
          void adjustSymmetryTolerance();
          void toggleAutoDetectSymmetry();
 
-         void freezeAtoms();
+         void freezeAtomPositions();
          void setConstraint();
          void setIsotopes();
          void translateToCenter();
@@ -151,14 +153,10 @@ namespace IQmol {
 		 /// ViewerModel, but does not append the Molecule.  In most cases the
 		 /// Molecule should be appended via an AddMolecule Command.
          Layer::Molecule* newMolecule();
-         void connectMolecule(Layer::Molecule*);
-         void disconnectMolecule(Layer::Molecule*);
-         void forAllMolecules(boost::function<void(Layer::Molecule&)> function);
+         void forAllMolecules(std::function<void(Layer::Molecule&)> function);
 
          Layer::System* newSystem();
-         void connectSystem(Layer::System*);
-         void disconnectSystem(Layer::System*);
-         void forAllSystems(boost::function<void(Layer::System&)> function);
+         void forAllSystems(std::function<void(Layer::System&)> function);
 
          // default is to find only the topmost visible Layers
          template <class T> 

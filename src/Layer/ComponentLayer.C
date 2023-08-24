@@ -29,6 +29,15 @@ namespace IQmol {
 namespace Layer {
 
 
+void Component::draw() const
+{
+   useShader(m_shaderKey);
+   useResolution(m_resolution);
+   useDrawStyle(m_drawStyle);
+   for (auto iter : m_visibleObjects) iter->draw();
+}
+
+
 qglviewer::Vec Component::centerOfNuclearCharge()
 {
    qglviewer::Vec center;
@@ -48,7 +57,7 @@ qglviewer::Vec Component::centerOfNuclearCharge()
        totalCharge += Z;
        center += Z * (*iter)->getPosition();
    }     
-            
+
    if (totalCharge > 0.0) center = center / totalCharge;
 qDebug() << "COC returning" << center.x << center.y << center.z;
    return center;
@@ -62,6 +71,7 @@ void Component::translate(qglviewer::Vec const& displacement)
    for (iter = objects.begin(); iter != objects.end(); ++iter) {
        (*iter)->setPosition((*iter)->getPosition()+displacement);
    }
+   //m_frame.setPosition(m_frame.position()+displacement);
 }
 
 

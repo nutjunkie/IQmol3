@@ -33,14 +33,13 @@ namespace IQmol {
 namespace Layer {
 
 
-System::System(QString const& label, QObject* parent) : 
-   Base(label, parent)
+System::System(QString const& label, QObject* parent) : Base(label, parent)
 {
-   setFlags( Qt::ItemIsEnabled | 
-             Qt::ItemIsEditable |
-             Qt::ItemIsSelectable | 
-             Qt::ItemIsDropEnabled | 
-             Qt::ItemIsUserCheckable );
+   setFlags( Qt::ItemIsEnabled 
+            | Qt::ItemIsEditable
+            | Qt::ItemIsSelectable 
+            | Qt::ItemIsDropEnabled  
+            | Qt::ItemIsUserCheckable );
    setCheckState(Qt::Checked);
 }
 
@@ -108,17 +107,6 @@ void System::appendData(Layer::List& list)
        text = (*iter)->text();
        qDebug() << "Appending System data" << text;
    }
-}
-
-
-double System::radius()
-{
-   double r(0);
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) {
-       r = std::max(r, component->radius());
-   }
-   return r;
 }
 
 

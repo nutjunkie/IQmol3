@@ -35,9 +35,8 @@ namespace IQmol {
    namespace Layer {
 
       // This is the top-level Layer to handle a collection of Components. 
-      // It will eventually supercede the Molecule class
-      class System : public Base {
-
+      class System : public Base 
+      {
          Q_OBJECT
 
          public:
@@ -50,8 +49,6 @@ namespace IQmol {
                m_inputFile.setFile(fileName);
                setText(m_inputFile.completeBaseName());
             }
-
-            double radius();
 
             qglviewer::Vec center();
 
@@ -66,6 +63,7 @@ namespace IQmol {
 
          Q_SIGNALS:
             void softUpdate(); // Issue when number of primitives does not change
+
             void postCommand(QUndoCommand*);
 
          private:
@@ -81,6 +79,7 @@ namespace IQmol {
                qglviewer::Vec const& normal = qglviewer::Vec(0.0, 1.0, 0.0));
 
             void appendData(Layer::List& list);
+
             QFileInfo m_inputFile;
 
             //qglveiwer::Frame m_frame;

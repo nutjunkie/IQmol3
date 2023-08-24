@@ -169,7 +169,7 @@ void GeometryList::setCurrentGeometry(unsigned const index)
    m_molecule->setGeometry(geometry->geomData());
 
    if (m_reperceiveBonds) {
-      m_molecule->reperceiveBonds();
+      m_molecule->reperceiveBonds(true);
    }else {
       update(); 
    }

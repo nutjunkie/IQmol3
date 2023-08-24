@@ -60,7 +60,7 @@ namespace Layer {
             m_clip(false)
          { 
             setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-          }
+         }
 
          virtual ~GLObject() {  }
 
@@ -74,8 +74,8 @@ namespace Layer {
             glPopMatrix();
          }
 
-		 /// Reimplement this for complex objects that require simplified
-		 /// drawing when moving to maintain interactive frame rates.
+         /// Reimplement this for complex objects that require simplified
+         /// drawing when moving to maintain interactive frame rates.
          virtual void drawFast() 
          {
             glPushMatrix();
@@ -162,7 +162,6 @@ namespace Layer {
          virtual void setRotation(qglviewer::Quaternion const& rotation) {
             m_frame.setRotation(rotation); 
          }
-
 
 
       protected:

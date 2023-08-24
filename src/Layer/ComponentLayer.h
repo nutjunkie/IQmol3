@@ -25,80 +25,82 @@
 
 
 namespace IQmol {
-namespace Layer {
 
-   // Base class for components of a System, which may include QM Molecules,
-   // Solvent, Protein, etc.
-   // Shader context is implemented at this level.
+   namespace Layer {
 
-   class Component : public Base {
+      // Base class for components of a System, which may include QM Molecules,
+      // Solvent, Protein, etc.
+      // Shader context switching is implemented at this level.
 
-      enum DrawStyle { BallsAndSticks, Tubes, SpaceFilling, WireFrame, Plastic, Ribbon };
+      class Component : public Base 
+      {
+         enum class DrawStyle { BallsAndSticks, Tubes, SpaceFilling, WireFrame, Plastic, Ribbon };
 
-      Q_OBJECT
+         Q_OBJECT
 
-      public:
-         explicit Component(QString const& label = QString(), QObject* parent = 0) :
-            Base(label, parent)
-         {
-            setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable );
-            setCheckState(Qt::Checked);
-         }
+         public:
+            explicit Component(QString const& label = QString(), QObject* parent = 0) :
+               Base(label, parent)
+            {
+               setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable );
+               setCheckState(Qt::Checked);
+            }
 
-         ~Component() { }
+            ~Component() { }
 
-         //virtual void loadFromFile(QString const& filePath) = 0
-         //void align(QList<qglviewer::Vec> const& current);
+            //virtual void loadFromFile(QString const& filePath) = 0
+            //void align(QList<qglviewer::Vec> const& current);
 
-		 virtual double radius() = 0;
+      		 virtual double radius() = 0;
 
-         void draw() const
-         {
-            useShader(m_shaderKey);
-            useResolution(m_resolution);
-            useDrawStyle(m_drawStyle);
-            for (auto iter : m_visibleObjects) iter->draw();
-         }
+            void draw() const;
 
-         void select() { for (auto iter : m_visibleObjects) iter->select(); }
+            void select() { for (auto iter : m_visibleObjects) iter->select(); }
+   
+            void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
 
-         void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
+            void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
 
-         void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
+            void setShaderKey(QString const& shaderKey) { m_shaderKey = shaderKey; }
 
-         void setShaderKey(QString const& shaderKey) { m_shaderKey = shaderKey; }
+            void updateVisibleObjectList()
+            {
+               m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | 
+                  Layer::Visible | Layer::Nested);
+            }
 
-         void updateVisibleObjectList()
-         {
-            m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | 
-               Layer::Visible | Layer::Nested);
-         }
+            qglviewer::Vec centerOfNuclearCharge();
 
-         qglviewer::Vec centerOfNuclearCharge();
+            void translate(qglviewer::Vec const& displacement);
 
-         void translate(qglviewer::Vec const& displacement);
+            void rotate(qglviewer::Quaternion const& rotation);
 
-         void rotate(qglviewer::Quaternion const& rotation);
+            void alignToAxis(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0,0.0,1.0));
 
-         void alignToAxis(qglviewer::Vec const& point, qglviewer::Vec const& axis);
+            void rotateIntoPlane(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0,0.0,1.0),
+               qglviewer::Vec const& normal = qglviewer::Vec(0.0,1.0,0.0));
 
-         void rotateIntoPlane(qglviewer::Vec const& pt, qglviewer::Vec const& axis, 
-            qglviewer::Vec const& normal);
+            qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
+            void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
 
-      Q_SIGNALS:
-         void useShader(QString const&) const;
-         void useDrawStyle(DrawStyle const) const;
-         void useResolution(unsigned const) const;
-         void softUpdate(); // Issue if the number of primitives does not change
+         Q_SIGNALS:
+            void useShader(QString const&) const;
+            void useDrawStyle(DrawStyle const) const;
+            void useResolution(unsigned const) const;
+            void softUpdate(); // Issue if the number of primitives does not change
 
-      private:
-         QString   m_shaderKey;
-         unsigned  m_resolution;
-         DrawStyle m_drawStyle;
-         //qglviewer::Frame m_frame;
-         GLObjectList m_visibleObjects;
-   };
+         private:
+            QString   m_shaderKey;
+            unsigned  m_resolution;
+            DrawStyle m_drawStyle;
+            qglviewer::Frame m_frame;
+            GLObjectList m_visibleObjects;
+      };
 
-   typedef QList<Component*> ComponentList;
+   }  // end namespace Layer
 
-} } // end namespace IQmol::Layer 
+   typedef QList<Layer::Component*> ComponentList;
+
+} // end namespace IQmol::Layer 

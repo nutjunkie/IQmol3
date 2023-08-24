@@ -468,6 +468,7 @@ RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent)
 RemoveMolecule::~RemoveMolecule()
 {
    if (m_deleteMolecule) {
+      m_molecule->disconnect();
       QLOG_DEBUG() << "Deleting Molecule" << m_molecule->text() << m_molecule;
       // The following causes a crash
       //delete m_molecule;  
@@ -530,7 +531,7 @@ RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent)
 { 
    QString s;
    if (m_system->fileName().isEmpty()) {
-      s = "Remove molecule";
+      s = "Remove system";
    }else {
       s = "Remove " + m_system->fileName();
    }
@@ -540,7 +541,7 @@ RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent)
 
 void RemoveSystem::redo()
 {
-   QLOG_INFO() << "Removing molecule" << m_system->text() << m_system;
+   QLOG_INFO() << "Removing system" << m_system->text() << m_system;
    m_parent->takeRow(m_system->row());
    m_system->updated();
 }
@@ -548,7 +549,7 @@ void RemoveSystem::redo()
 
 void RemoveSystem::undo()
 {
-   QLOG_INFO() << "Adding molecule" << m_system->text() << m_system;
+   QLOG_INFO() << "Adding system" << m_system->text() << m_system;
    m_parent->appendRow(m_system);
    m_system->updated();
 }
