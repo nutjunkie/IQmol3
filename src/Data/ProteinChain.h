@@ -37,7 +37,7 @@ namespace Data {
          Type::ID typeID() const { return Type::ProteinChain; }
 
          int    nres() const { return m_secondaryStructure.size(); }
-         float const* cao() const { return &m_caoPositions[0]; }
+         double const* cao() const { return &m_caoPositions[0]; }
          char const*  ss() const { return &m_secondaryStructure[0]; }
 
          inline void addResidue(Math::Vec3 const& posCA, Math::Vec3 const& posO,
@@ -56,7 +56,7 @@ namespace Data {
       private:
          // Data for generataing the cartoon representation
          unsigned           m_nResidues;
-         std::vector<float> m_caoPositions;
+         std::vector<double> m_caoPositions;
          std::vector<char>  m_secondaryStructure;
    };
 

@@ -640,6 +640,10 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
       forAllMolecules(
          std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
       );
+      forAllSystems(
+         std::bind(&Layer::System::setCheckState, std::placeholders::_1, Qt::Unchecked)
+      );
+
       molecule->setCheckState(Qt::Checked);
       sceneRadiusChanged(sceneRadius());
       changeActiveViewerMode(Viewer::Manipulate);
@@ -1012,6 +1016,7 @@ void ViewerModel::minimizeEnergy()
 
 void ViewerModel::translateToCenter()
 {
+   // forAllMolecules does not nest, so we don't pick up System molecules
    forAllMolecules(
       std::bind(&Layer::Molecule::translateToCenter, std::placeholders::_1, m_selectedObjects)
    );

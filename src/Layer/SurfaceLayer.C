@@ -410,7 +410,7 @@ void Surface::drawVertexNormals(Data::Mesh const& mesh)
    Data::OMMesh::Point  p;
    Data::OMMesh::Normal n;
 
-   float scale(0.08);
+   double scale(0.08);
 
    for (vertex = mesh.vbegin(); vertex != mesh.vend(); ++vertex) {
        p = mesh.vertex(vertex);
@@ -441,7 +441,7 @@ void Surface::drawFaceNormals(Data::Mesh const& mesh)
    Data::OMMesh::Point  p;
    Data::OMMesh::Normal n;
 
-   float scale(0.12);
+   double scale(0.12);
 
    for (face = mesh.fbegin(); face != mesh.fend(); ++face) {
        p = mesh.faceCentroid(*face);

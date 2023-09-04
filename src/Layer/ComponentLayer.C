@@ -66,6 +66,8 @@ qDebug() << "COC returning" << center.x << center.y << center.z;
 
 void Component::translate(qglviewer::Vec const& displacement)
 {
+qDebug() << "Translating component " << text() << " to "
+         << displacement.x << " " << displacement.y << " " << displacement.z;
    GLObjectList objects(findLayers<GLObject>(Children));
    GLObjectList::iterator iter;
    for (iter = objects.begin(); iter != objects.end(); ++iter) {

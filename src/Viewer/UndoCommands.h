@@ -1,5 +1,4 @@
-#ifndef IQMOL_UNDOCOMMANDS_H
-#define IQMOL_UNDOCOMMANDS_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -360,5 +359,3 @@ namespace Command {
 
 
 } } // end namespace IQmol::Command
-
-#endif

@@ -45,7 +45,7 @@ std::vector<cpdb::Mesh> Protein::computeCartoonMesh(Data::Pdb& pdb)
 {
     int nbChain(pdb.nChains());
     int* nbResPerChain(pdb.nres());
-    float* CA_OPositions(pdb.cao());
+    double* CA_OPositions(pdb.cao());
     char* ssTypePerRes(pdb.ss());
 
     std::vector<cpdb::Mesh> meshes(nbChain);

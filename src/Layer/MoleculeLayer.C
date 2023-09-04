@@ -146,7 +146,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    connect(newAction("Select All"), SIGNAL(triggered()),
       this, SLOT(selectAll()));
    connect(newAction("Reperceive Bonds"), SIGNAL(triggered()), 
-      this, SLOT(reperceiveBonds()));
+      this, SLOT(reperceiveBondsSlot()));
    connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
       this, SLOT(addHydrogens()));
    connect(newAction("Generate Conformers"), SIGNAL(triggered()), 

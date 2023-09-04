@@ -166,6 +166,8 @@ void System::translateToCenter(GLObjectList const& selection)
 
 void System::translate(qglviewer::Vec const& displacement)
 {
+qDebug() << "Translating system to " 
+         << displacement.x << " " << displacement.y << " " << displacement.z;
    ComponentList list(findLayers<Component>(Children));
    for (auto component : list) component->translate(displacement);
 }

@@ -9,7 +9,7 @@ using namespace IQmol::Math;
 
 namespace cpdb {
 
-inline Vec3 lerp(Vec3 v0, Vec3 v1, float t) 
+inline Vec3 lerp(Vec3 v0, Vec3 v1, double t) 
 {
     return v0 * (1 - t) + v1 * t;
 }
@@ -43,13 +43,13 @@ inline void Transition(PeptidePlane const& pp, char& type1, char& type2)
 
 
 
-void ellipseProfile(std::vector<Vec3> &profile, int n, float w, float h) 
+void ellipseProfile(std::vector<Vec3> &profile, int n, double w, double h) 
 {
     for (int i = 0; i < n; i++) {
-        float t = (float)i / (float)n;
-        float a = t * 2.0f * M_PI + M_PI / 4.0f;
-        float x = cosf(a) * w / 2.0f;
-        float y = sinf(a) * h / 2.0f;
+        double t = (double)i / (double)n;
+        double a = t * 2.0f * M_PI + M_PI / 4.0f;
+        double x = cosf(a) * w / 2.0f;
+        double y = sinf(a) * h / 2.0f;
         profile[i][0] = x;
         profile[i][1] = y;
         profile[i][2] = 0.0f;
@@ -57,9 +57,9 @@ void ellipseProfile(std::vector<Vec3> &profile, int n, float w, float h)
 }
 
 
-void rectangleProfile(std::vector<Vec3> &profile, int n, float w, float h) {
-    float hw = w / 2.0f;
-    float hh = h / 2.0f;
+void rectangleProfile(std::vector<Vec3> &profile, int n, double w, double h) {
+    double hw = w / 2.0f;
+    double hh = h / 2.0f;
     Vec3 segments[][2] =
     {
         {   Vec3{hw, hh, 0.0f},
@@ -83,7 +83,7 @@ void rectangleProfile(std::vector<Vec3> &profile, int n, float w, float h) {
     int cpt = 0;
     for (int s = 0; s < 4; s++) {
         for (int i = 0; i < m; i++) {
-            float t = (float)i / (float)m;
+            double t = (double)i / (double)m;
             Vec3 p = lerp(segments[s][0], segments[s][1], t);
             profile[cpt++] = lerp(segments[s][0], segments[s][1], t);
         }
@@ -91,11 +91,11 @@ void rectangleProfile(std::vector<Vec3> &profile, int n, float w, float h) {
 }
 
 
-void roundedRectangleProfile(std::vector<Vec3> &profile, int n, float w, float h) 
+void roundedRectangleProfile(std::vector<Vec3> &profile, int n, double w, double h) 
 {
-    float r = h / 2.0f;
-    float hw = w / 2.0f - r;
-    float hh = h / 2.0f;
+    double r = h / 2.0f;
+    double hw = w / 2.0f - r;
+    double hh = h / 2.0f;
 
     Vec3 segments[][2] =
     {
@@ -121,21 +121,21 @@ void roundedRectangleProfile(std::vector<Vec3> &profile, int n, float w, float h
 
     for (int s = 0; s < 4; s++) {
         for (int i = 0; i < m; i++) {
-            float t = (float)i / (float)m;
+            double t = (double)i / (double)m;
             Vec3 p;
             if (s == 0 || s == 2) {
                 p = lerp(segments[s][0], segments[s][1], t);
             }
             else if (s == 1) {
-                float a = M_PI / 2.0f + M_PI * t;
-                float x = cosf(a) * r;
-                float y = sinf(a) * r;
+                double a = M_PI / 2.0f + M_PI * t;
+                double x = cosf(a) * r;
+                double y = sinf(a) * r;
                 p = segments[s][0] + Vec3{x, y, 0.0f};
             }
             else if (s == 3) {
-                float a = 3 * M_PI / 2.0f + M_PI * t;
-                float x = cosf(a) * r;
-                float y = sinf(a) * r;
+                double a = 3 * M_PI / 2.0f + M_PI * t;
+                double x = cosf(a) * r;
+                double y = sinf(a) * r;
                 p = segments[s][0] + Vec3{x, y, 0.0f};
             }
             profile[cpt++] = p;
@@ -144,7 +144,7 @@ void roundedRectangleProfile(std::vector<Vec3> &profile, int n, float w, float h
 }
 
 
-void scaleProfile(std::vector<Vec3> &p, float s, int lenP) 
+void scaleProfile(std::vector<Vec3> &p, double s, int lenP) 
 {
     for (int i = 0; i < lenP; i++) {
         p[i] = p[i] * s;
@@ -152,7 +152,7 @@ void scaleProfile(std::vector<Vec3> &p, float s, int lenP)
 }
 
 
-void translateProfile(std::vector<Vec3> &p, float dx, float dy, int lenP) 
+void translateProfile(std::vector<Vec3> &p, double dx, double dy, int lenP) 
 {
     for (int i = 0; i < lenP; i++) {
         p[i] = p[i] + Vec3{dx, dy, 0.0f};
@@ -167,8 +167,8 @@ void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2,
     char type1, type2;
     Transition(pp1, type1, type2);
 
-    float offset1 = ribbonOffset;
-    float offset2 = ribbonOffset;
+    double offset1 = ribbonOffset;
+    double offset2 = ribbonOffset;
 
     if (pp1.Flipped) {
         offset1 = -offset1;
@@ -274,7 +274,7 @@ void triangulateQuad(Mesh &mesh,
     int idp3 = res3;
     int idp4 = res4;
 
-    const float tolerance = 1e-4f;
+    const double tolerance = 1e-4f;
 
     p1[0] = floor(p1[0] / tolerance) * tolerance;
     p1[1] = floor(p1[1] / tolerance) * tolerance;
@@ -396,8 +396,8 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
     }
 
     for (int i = 0; i < splineSteps; i++) {
-        float t0 = easeFunc(((float)i) / splineSteps);
-        float t1 = easeFunc(((float)i + 1) / splineSteps);
+        double t0 = easeFunc(((double)i) / splineSteps);
+        double t1 = easeFunc(((double)i + 1) / splineSteps);
         if (i == 0 && type1 == STRAND && type2 != STRAND) {
             Vec3 p00 = splines1[0][i];
             Vec3 p10 = splines1[profileDetail / 4][i];
@@ -560,7 +560,7 @@ Mesh createChainMesh(const Data::chain &C)
 
 
 Mesh createChainMesh(int chainId, const int *nbResPerChain,
-                     const float *CA_OPositions, const char *ssTypePerRes) 
+                     const double *CA_OPositions, const char *ssTypePerRes) 
 {
     Mesh mesh;
     int chainSize = nbResPerChain[chainId];
@@ -572,7 +572,7 @@ Mesh createChainMesh(int chainId, const int *nbResPerChain,
         startRes += nbResPerChain[i];
     }
     const char *SSRes = &ssTypePerRes[startRes];
-    const float *atomPos = &CA_OPositions[startRes * 6];
+    const double *atomPos = &CA_OPositions[startRes * 6];
 
     for (int i = -1; i < chainSize; i++) {
 

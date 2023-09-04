@@ -12,17 +12,17 @@ namespace cpdb {
 const int splineSteps = 32/4;
 const int profileDetail = 16/4;
 
-const float ribbonWidth = 2.0f;
-const float ribbonHeight = 0.125f;
-const float ribbonOffset = 1.5f;
-const float arrowHeadWidth = 3.0f;
-const float arrowWidth = 2.0f;
-const float arrowHeight = 0.5f;
-const float tubeSize = 0.35f;
+const double ribbonWidth = 2.0f;
+const double ribbonHeight = 0.125f;
+const double ribbonOffset = 1.5f;
+const double arrowHeadWidth = 3.0f;
+const double arrowWidth = 2.0f;
+const double arrowHeight = 0.5f;
+const double tubeSize = 0.35f;
 
 
 Mesh createChainMesh(const Data::chain &C);
-Mesh createChainMesh(int chainId, const int *nbResPerChain, const float *CA_OPositions, 
+Mesh createChainMesh(int chainId, const int *nbResPerChain, const double *CA_OPositions, 
    const char *ssTypePerRes);
 
 
@@ -83,9 +83,10 @@ inline PeptidePlane NewPeptidePlane(Data::residue const& r1, Data::residue const
     return newPP;
 }
 
-inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  float *r2CA,
-   char ssr1, char ssr2, char ssr3, int idr1, int idr2, int idr3){
-                                
+
+inline PeptidePlane NewPeptidePlane(const double *r1CA,const  double *r1O,const  double *r2CA,
+   char ssr1, char ssr2, char ssr3, int idr1, int idr2, int idr3)
+{
     PeptidePlane newPP;
 
     // if(CA1 == NULL || O1 == NULL || CA2 == NULL){
@@ -121,10 +122,10 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
     Math::Vec3 b(o1 - ca1);
     b.normalize();
 
-    Math::Vec3 c(a^b);
+    Math::Vec3 c = a^b;
     c.normalize();
 
-    Math::Vec3 d(c^a);
+    Math::Vec3 d = c^a;
     d.normalize();
 
     Math::Vec3 p = (ca1 + ca2)/ 2.0f;
@@ -145,7 +146,7 @@ inline PeptidePlane NewPeptidePlane(const float *r1CA,const  float *r1O,const  f
 
 inline void splineForPlanes(Math::Vec3 *&result, PeptidePlane const& p1, 
    PeptidePlane const& p2, PeptidePlane const& p3, PeptidePlane const& p4, 
-   int n, float u, float v) 
+   int n, double u, double v) 
                     
 {
     Math::Vec3 g1 = p1.Position + p1.Side*u + p1.Normal * v;

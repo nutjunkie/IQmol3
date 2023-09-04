@@ -120,7 +120,7 @@ namespace IQmol
       inline double Vec<2,double>::normalize() 
       {
          double const n(norm());
-         *this /= n;
+         if (n >  0.000001) *this /= n;
          return n;
       }
 
@@ -128,7 +128,7 @@ namespace IQmol
       inline double Vec<3,double>::normalize() 
       {
          double const n(norm());
-         *this /= n;
+         if (n >  0.000001) *this /= n;
          return n;
       }
 
@@ -136,7 +136,7 @@ namespace IQmol
       inline double Vec<4,double>::normalize() 
       {
          double const n(norm());
-         *this /= n;
+         if (n >  0.000001) *this /= n;
          return n;
       }
 
@@ -156,7 +156,7 @@ namespace IQmol
       template <typename T>
       Vec<3,T> operator^(Vec<3,T> const& a, Vec<3,T> const& b)
       {
-         T x(a[1]*b[2] - a[3]*b[1]);
+         T x(a[1]*b[2] - a[2]*b[1]);
          T y(a[2]*b[0] - a[0]*b[2]);
          T z(a[0]*b[1] - a[1]*b[0]);
          return Vec<3,T>{x, y, z};

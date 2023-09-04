@@ -240,6 +240,8 @@ bool save(bool prompt = false);
             void updateInfo();
             void reindexAtomsAndBonds();
             void reperceiveBonds(bool postCmd);
+            void reperceiveBondsSlot() { reperceiveBonds(true); }
+
             void reperceiveBondsForAnimation();
    
          Q_SIGNALS:

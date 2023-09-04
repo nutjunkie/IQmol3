@@ -56,7 +56,7 @@ void ProteinChain::cartoonAvailable()
    Layer::Surface* surfaceLayer(new Surface(*data));
    surfaceLayer->setCheckState(Qt::Checked);
    surfaceLayer->setText("Ribbon");
-qDebug() << "***************** isSigned() *********** " << data->isSigned();
+   //qDebug() << "***************** isSigned() *********** " << data->isSigned();
    prependLayer(surfaceLayer);
    updated();
 
@@ -85,7 +85,7 @@ void GenerateCartoon::run()
 cpdb::Mesh GenerateCartoon::computeCartoonMesh()
 {
    int    nbResPerChain(m_data.nres());
-   float const* CA_OPositions(m_data.cao());
+   double const* CA_OPositions(m_data.cao());
    char  const* ssTypePerRes(m_data.ss());
 
    return cpdb::createChainMesh(0, &nbResPerChain, CA_OPositions, ssTypePerRes);
@@ -124,11 +124,14 @@ Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
    mesh->computeFaceNormals();
    mesh->computeVertexNormals();
 
+#if 0
+   // Mesh decimation takes too long and the effects are negligible
    double delta(Data::GridSize::stepSize(2));
    MeshDecimator decimator(*mesh);
    if (!decimator.decimate(delta)) {
       qDebug() <<"Mesh decimation failed: " + decimator.error();
    }   
+#endif
 
    return mesh;
 }

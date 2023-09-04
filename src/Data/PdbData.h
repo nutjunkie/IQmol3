@@ -42,7 +42,7 @@ namespace Data {
       char type[5];
       char element[3];
       Math::Vec3 coor;
-      float tfactor, occupancy;
+      double tfactor, occupancy;
       atom *next, *prev;
       residue *res;
    };
@@ -86,7 +86,7 @@ namespace Data {
          pdb& ref() { return m_pdb; }
 
          int*   nres() { return &m_nResPerChain[0]; }
-         float* cao() { return &m_caoPositions[0]; }
+         double* cao() { return &m_caoPositions[0]; }
          char*  ss() { return &m_secondaryStructure[0]; }
 
          unsigned nChains() const { return m_pdb.chains.size(); }
@@ -122,7 +122,7 @@ namespace Data {
          pdb m_pdb;
 
          std::vector<int>   m_nResPerChain;
-         std::vector<float> m_caoPositions;
+         std::vector<double> m_caoPositions;
          std::vector<char>  m_secondaryStructure;
    };
 
