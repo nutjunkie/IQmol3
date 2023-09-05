@@ -97,7 +97,7 @@ void getCoordinates (const char *line, Math::Vec3& out) {
 
 void getAtomType (const char *line, char *out) 
 {
-    extractStr(out, line, 12, 16);
+    extractStr(out, line, 12, 15);
 }
 
 void getResType (const char *line, char *out) 
@@ -107,7 +107,7 @@ void getResType (const char *line, char *out)
 
 void getAtomElement (const char *line, char *out) 
 {
-    extractStr(out, line, 76, 78);
+    extractStr(out, line, 76, 77);
 }
 
 void getAtomId (const char *line, int *atomId) 
@@ -192,6 +192,9 @@ bool Pdb::parse(TextStream& textStream)
 
       key.resize(6);
       key = key.trimmed().toUpper();
+      if (key != "ATOM") {
+qDebug() << "Key: " << key;
+      }
 
       if (key == "ATOM" || key == "HETATM") {
 
@@ -239,6 +242,7 @@ bool Pdb::parse(TextStream& textStream)
                if (m_geometries.contains(currentGeometry)) {
                   geometry = m_geometries[currentGeometry];
                }else {
+                  QLOG_DEBUG() << "adding new geometry  "<< grp;
                   geometry = new Data::Geometry();
                   geometry->name(res);
                   m_geometries.insert(currentGeometry, geometry);
@@ -248,8 +252,15 @@ bool Pdb::parse(TextStream& textStream)
             geometry->append(sym, v);
          }         
 
+         if (key == "HETATM") {
+            qDebug() << sym;
+         }
+
       }else if (key == "COMPND") {
          parseCOMPND(line);
+
+      }else if (key == "ENDMDL" || key == "END") {
+            break;
       } 
       
    }
@@ -323,7 +334,7 @@ bool Pdb::parseATOM(QString const& line, Data::Group& group)
 */
 int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options) 
 {
-    Data::pdb& P(data->ref());
+    Data::Pdb::ChainList& P(data->chainList());
 
     char  altLocFlag = 1;   // Default: skip alternate location atoms on
     char  hydrogenFlag = 0; // Default: skip hydrogen  atoms off
@@ -343,11 +354,11 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
     int   sheetStop = 0;
     char  sheetChain[2];
 
-    std::vector<Data::SS> secStructs;
+    std::vector<Data::Pdb::SecondaryStructure> secStructs;
 
-    Data::residue* currentResidue(0);
-    Data::chain*   currentChain(0);
-    Data::atom*    currentAtom(0);
+    Data::Pdb::Residue* currentResidue(0);
+    Data::Pdb::Chain*   currentChain(0);
+    Data::Pdb::Atom*    currentAtom(0);
     
     // Setting Parsing Options
     int chindex = 0;
@@ -399,17 +410,17 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
             
             // Chain Related
             if (currentChain == 0 || currentChain->id != chainId) {
-                Data::chain myChain;
+                Data::Pdb::Chain myChain;
                 myChain.id = chainId;
                 data->appendChain(myChain);
-                currentChain = &P.chains.back();
+                currentChain = &P.back();
                 currentAtom = 0;
                 currentResidue = 0;
             }
             
             // Residue Related
             if (currentResidue == 0 || currentResidue->id != resId) {
-                Data::residue myRes;
+                Data::Pdb::Residue myRes;
                 myRes.id = resId;
                 myRes.idx = resIdx++;
                 myRes.next = 0;
@@ -424,7 +435,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
             
             //Atom Related
             if (currentAtom == 0 || currentAtom->id != atomId) {
-                Data::atom myAtom;
+                Data::Pdb::Atom myAtom;
                 myAtom.id = atomId;
                 myAtom.idx = atomIdx++;
                 myAtom.coor = coor;
@@ -443,7 +454,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
 
         if (!strncmp(line, "HELIX ", 6)) {
             getHelix(line, &helixStart, &helixStop, helixChain);
-            Data::SS curSS; 
+            Data::Pdb::SecondaryStructure curSS; 
             curSS.start = helixStart; 
             curSS.stop = helixStop; 
             strncpy(curSS.chain, helixChain, 2);
@@ -453,20 +464,22 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
 
         if (!strncmp(line, "SHEET ", 6)) {
             getSheet(line, &sheetStart, &sheetStop, sheetChain);
-            Data::SS curSS; 
+            Data::Pdb::SecondaryStructure curSS; 
             curSS.start = sheetStart; 
             curSS.stop = sheetStop; 
             strncpy(curSS.chain, sheetChain, 2);
             curSS.type = STRAND;
             secStructs.push_back(curSS);
         }
+
         else if (!strncmp(line, "ENDMDL", 6)  || !strncmp(line, "END", 3)) {
             break;
         }
     }
+
     fclose(pdbFile);
 
-    data->fillSS(secStructs);
+    data->fillSecondaryStructure(secStructs);
     
     saveSecondaryStructure(secStructs);
 
@@ -474,7 +487,7 @@ int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options)
 }
 
 
-void Pdb::saveSecondaryStructure(std::vector<Data::SS> secStructs){
+void Pdb::saveSecondaryStructure(std::vector<Data::Pdb::SecondaryStructure> secStructs){
     /// Users/albertthie/projects/iqmol/IQmolGromacs/4hhb.pdb
     std::string str = m_filePath.toStdString();
     size_t index =str.find_last_of("/\\");
@@ -495,9 +508,6 @@ void Pdb::saveSecondaryStructure(std::vector<Data::SS> secStructs){
     File  << "end file" << std::endl;
 
     File.close();
-
-
-    
 }
 
 
@@ -506,7 +516,7 @@ bool Pdb::parseCartoon(TextStream& textStream)
    textStream.rewind(); 
 
    Data::Pdb* pdbData = new Data::Pdb;
-   Data::pdb& P(pdbData->ref());
+   Data::Pdb::ChainList& P(pdbData->chainList());
 
    std::string str(m_filePath.toStdString());
    const char* fname(str.c_str());
@@ -514,16 +524,16 @@ bool Pdb::parseCartoon(TextStream& textStream)
 
    parsePDB(fname, pdbData, options);
 
-   for (int chainId = 0; chainId < P.chains.size(); chainId++) {
-       Data::chain *C = &P.chains[chainId];
+   for (int chainId = 0; chainId < P.size(); chainId++) {
+       Data::Pdb::Chain *C = &P[chainId];
        pdbData->addChain(C->residues.size());
        QString id(C->id);
        Data::ProteinChain* proteinChain(m_chains[id]);
 
        for (int r = 0; r < C->residues.size(); r++) {
-           Data::residue *R = &C->residues[r];
-           Data::atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
-           Data::atom const* O  = Data::Pdb::getAtom(*R, (char *)"O");
+           Data::Pdb::Residue *R = &C->residues[r];
+           Data::Pdb::Atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
+           Data::Pdb::Atom const* O  = Data::Pdb::getAtom(*R, (char *)"O");
            char ss = R->ss;
 
            if (CA == 0 || O == 0) {

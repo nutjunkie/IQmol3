@@ -471,7 +471,7 @@ bool discontinuity(PeptidePlane pp1, PeptidePlane pp2, PeptidePlane pp3, Peptide
 }
 
 
-Mesh createChainMesh(const Data::chain &C) 
+Mesh createChainMesh(const Data::Pdb::Chain &C) 
 {
     Mesh mesh;
     PeptidePlane *planes = new PeptidePlane[C.residues.size() + 1];
@@ -498,9 +498,9 @@ Mesh createChainMesh(const Data::chain &C)
             id1 = i;
             id2 = i;
         }
-        const Data::residue &r1 = C.residues[id];
-        const Data::residue &r2 = C.residues[id1];
-        const Data::residue &r3 = C.residues[id2];
+        const Data::Pdb::Residue &r1 = C.residues[id];
+        const Data::Pdb::Residue &r2 = C.residues[id1];
+        const Data::Pdb::Residue &r3 = C.residues[id2];
 
         PeptidePlane plane = NewPeptidePlane(r1, r2, r3);
         if (plane.Residue1 == NULL) {
@@ -511,12 +511,12 @@ Mesh createChainMesh(const Data::chain &C)
         //Make sure to start at the first CA position
         if (i <= 0) {
 
-            Data::atom const* CA = Data::Pdb::getAtom(r1, (char *)"CA");
+            Data::Pdb::Atom const* CA = Data::Pdb::getAtom(r1, (char *)"CA");
             plane.Position = CA->coor;
         }
         //Make sure to end at the last CA position
         if (i >= C.residues.size() - 2) {
-            Data::atom const* CA = Data::Pdb::getAtom(r3, (char *)"CA");
+            Data::Pdb::Atom const* CA = Data::Pdb::getAtom(r3, (char *)"CA");
             plane.Position = CA->coor;
         }
 

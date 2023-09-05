@@ -60,7 +60,7 @@ namespace Parser {
          bool parseHOH(QString const& line, Data::Group&);
          bool parseCOMPND(QString const& line);
          bool parseCartoon(TextStream&);
-         void saveSecondaryStructure(std::vector<Data::SS> secStructs);
+         void saveSecondaryStructure(std::vector<Data::Pdb::SecondaryStructure> secStructs);
          int  parsePDB(char const* pdbFilePath, Data::Pdb *P , char *options);
    };
 

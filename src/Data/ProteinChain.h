@@ -55,7 +55,7 @@ namespace Data {
 
       private:
          // Data for generataing the cartoon representation
-         unsigned           m_nResidues;
+//         unsigned           m_nResidues;
          std::vector<double> m_caoPositions;
          std::vector<char>  m_secondaryStructure;
    };

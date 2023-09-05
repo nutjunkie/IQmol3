@@ -21,16 +21,16 @@ const double arrowHeight = 0.5f;
 const double tubeSize = 0.35f;
 
 
-Mesh createChainMesh(const Data::chain &C);
+Mesh createChainMesh(const Data::Pdb::Chain &C);
 Mesh createChainMesh(int chainId, const int *nbResPerChain, const double *CA_OPositions, 
    const char *ssTypePerRes);
 
 
 
 struct PeptidePlane {
-    const Data::residue *Residue1;
-    const Data::residue *Residue2;
-    const Data::residue *Residue3;
+    const Data::Pdb::Residue *Residue1;
+    const Data::Pdb::Residue *Residue2;
+    const Data::Pdb::Residue *Residue3;
     Math::Vec3 Position;
     Math::Vec3 Normal;
     Math::Vec3 Forward;
@@ -39,14 +39,14 @@ struct PeptidePlane {
 };
 
 
-inline PeptidePlane NewPeptidePlane(Data::residue const& r1, Data::residue const& r2, 
-   Data::residue const& r3)
+inline PeptidePlane NewPeptidePlane(Data::Pdb::Residue const& r1, 
+   Data::Pdb::Residue const& r2, Data::Pdb::Residue const& r3)
 {
     PeptidePlane newPP;
 
-    Data::atom const*CA1 = Data::Pdb::getAtom(r1, (char *)"CA");
-    Data::atom const*O1  = Data::Pdb::getAtom(r1, (char *)"O");
-    Data::atom const*CA2 = Data::Pdb::getAtom(r2, (char *)"CA");
+    Data::Pdb::Atom const*CA1 = Data::Pdb::getAtom(r1, (char *)"CA");
+    Data::Pdb::Atom const*O1  = Data::Pdb::getAtom(r1, (char *)"O");
+    Data::Pdb::Atom const*CA2 = Data::Pdb::getAtom(r2, (char *)"CA");
 
     if(CA1 == NULL || O1 == NULL || CA2 == NULL){
         std::cerr<<"Failed to get all the atoms for residue "<<r1.id<<std::endl;
@@ -94,19 +94,19 @@ inline PeptidePlane NewPeptidePlane(const double *r1CA,const  double *r1O,const 
     //     return newPP;
     // }
 
-    Data::residue *r1 = (Data::residue *)calloc(1, sizeof(Data::residue));
+    Data::Pdb::Residue *r1 = (Data::Pdb::Residue *)calloc(1, sizeof(Data::Pdb::Residue));
     r1->id = idr1;
     r1->idx = idr1++;
     r1->next = 0;
     r1->ss = ssr1;
 
-    Data::residue *r2 = (Data::residue *)calloc(1, sizeof(Data::residue));
+    Data::Pdb::Residue *r2 = (Data::Pdb::Residue *)calloc(1, sizeof(Data::Pdb::Residue));
     r2->id = idr2;
     r2->idx = idr2++;
     r2->next = 0;
     r2->ss = ssr2;
 
-    Data::residue *r3 = (Data::residue *)calloc(1, sizeof(Data::residue));
+    Data::Pdb::Residue *r3 = (Data::Pdb::Residue *)calloc(1, sizeof(Data::Pdb::Residue));
     r3->id = idr3;
     r3->idx = idr3++;
     r3->next = 0;
