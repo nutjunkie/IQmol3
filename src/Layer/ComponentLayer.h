@@ -22,7 +22,9 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
+#include "Viewer/Animator.h"
 
+class QUndoCommand;
 
 namespace IQmol {
 
@@ -71,6 +73,8 @@ namespace IQmol {
 
             qglviewer::Vec centerOfNuclearCharge();
 
+            void translateToCenter(GLObjectList const& selection);
+
             void translate(qglviewer::Vec const& displacement);
 
             void rotate(qglviewer::Quaternion const& rotation);
@@ -85,11 +89,19 @@ namespace IQmol {
             qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
             void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
 
+         public Q_SLOTS:
+            virtual void invalidateSymmetry() { }
+            virtual void autoDetectSymmetry() { }
+
          Q_SIGNALS:
             void useShader(QString const&) const;
             void useDrawStyle(DrawStyle const) const;
             void useResolution(unsigned const) const;
             void softUpdate(); // Issue if the number of primitives does not change
+            void pushAnimators(AnimatorList const&);
+            void popAnimators(AnimatorList const&);
+            void postCommand(QUndoCommand*);
+            void postMessage(QString const&);
 
          private:
             QString   m_shaderKey;

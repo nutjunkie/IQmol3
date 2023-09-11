@@ -1,11 +1,11 @@
 #pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -15,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -43,6 +43,7 @@ namespace Layer {
    class Bond;
    class Molecule;
    class System;
+   class Component;
    class Constraint;
 }
 
@@ -90,6 +91,38 @@ namespace Command {
          //   false => delete added Primitives (set if undo is called);
          bool m_deleteRemoved;
    };
+
+
+   class MoveComponentObjects : public QUndoCommand 
+   {
+      public:
+         MoveComponentObjects(Layer::Component*, QString const& text = "Move items", 
+            bool const animiate = false, bool invalidateSymmetry = true);
+         MoveComponentObjects(GLObjectList const&, QString const& text = "Move items", 
+            bool const animiate = false, bool invalidateSymmetry = true);
+         ~MoveComponentObjects();
+           
+         virtual void redo();
+         virtual void undo();
+         void setMessage(QString const& msg) { m_msg = msg; }
+
+      protected:
+         Layer::Component* m_component;
+
+      private:
+         void loadFrames(QList<qglviewer::Frame> const& frames);
+         void saveFrames(QList<qglviewer::Frame>& frames);
+         QList<qglviewer::Frame> m_initialFrames;
+         QList<qglviewer::Frame> m_finalFrames;
+
+         GLObjectList m_objectList;
+         bool m_finalStateSaved;
+         bool m_animate;
+         bool m_invalidateSymmetry;
+         QString m_msg;
+         AnimatorList m_animatorList;
+   };
+
 
 
    class MoveObjects : public QUndoCommand {

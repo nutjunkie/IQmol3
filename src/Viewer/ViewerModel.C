@@ -281,7 +281,7 @@ Layer::Molecule* ViewerModel::newMolecule()
    connect(molecule, SIGNAL(updated()), 
       this, SLOT(updateVisibleObjects()));
    connect(molecule, SIGNAL(softUpdate()), 
-     this, SIGNAL(updated()));
+      this, SIGNAL(updated()));
    connect(molecule, SIGNAL(postMessage(QString const&)), 
       this, SIGNAL(displayMessage(QString const&)));
    connect(molecule, SIGNAL(postCommand(QUndoCommand*)), 

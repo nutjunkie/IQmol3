@@ -2268,6 +2268,7 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
 }
 
 
+/*
 void Molecule::translateToCenter(GLObjectList const& selection)
 {
    Command::MoveObjects* cmd(new Command::MoveObjects(this, "Translate to center", true));
@@ -2281,6 +2282,9 @@ void Molecule::translateToCenter(GLObjectList const& selection)
    }
 
    switch (atomList.size()) {
+      case 0:
+         translate(-centerOfNuclearCharge());
+         break;
       case 1:
          translate(-atomList[0]->getPosition());
          break;
@@ -2293,8 +2297,9 @@ void Molecule::translateToCenter(GLObjectList const& selection)
          alignToAxis(atomList[1]->getPosition());
          rotateIntoPlane(atomList[2]->getPosition());
          break;
+
       default:
-         translate(-centerOfNuclearCharge());
+         translate(-centerOfNuclearCharge(true));
          break;
    }
 
@@ -2308,6 +2313,7 @@ void Molecule::translateToCenter(GLObjectList const& selection)
    // saveToCurrentGeometry();
    m_modified = true;
 }
+*/
 
 
 
@@ -2612,12 +2618,14 @@ Bond* Molecule::getBond(Atom* A, Atom* B)
 }
 
 
-Vec Molecule::centerOfNuclearCharge()
+Vec Molecule::centerOfNuclearCharge(bool selectedOnly)
 {
    Vec center;
    int Z;
-   double totalCharge(0.0);
-   AtomList atoms(findLayers<Atom>(Children));
+   double totalCharge(0.0); 
+   unsigned flags(Children);
+   if (selectedOnly) flags = flags | Selected;
+   AtomList atoms = findLayers<Atom>(flags);
 
    AtomList::iterator iter;
    for (iter = atoms.begin(); iter != atoms.end(); ++iter) {

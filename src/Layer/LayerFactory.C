@@ -196,12 +196,6 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(surfaceLayer);
          } break;
 
-         case Data::Type::Pdb: {
-            Data::Pdb& pdbData(dynamic_cast<Data::Pdb&>(data));
-            Layer::Protein* proteinLayer(new Protein(pdbData));
-            layers.append(proteinLayer);
-         } break;
-
          case Data::Type::Surface: {
             Data::Surface&  surfaceData(dynamic_cast<Data::Surface&>(data));
             Layer::Surface* surfaceLayer(new Surface(surfaceData));
@@ -227,6 +221,14 @@ Layer::List Factory::toLayers(Data::Base& data)
                vibronic(dynamic_cast<Data::Vibronic&>(data));
             layers.append(new Vibronic(vibronic));
          } break;
+
+/* DEPRECATE
+         case Data::Type::Pdb: {
+            Data::Pdb& pdbData(dynamic_cast<Data::Pdb&>(data));
+            Layer::Protein* proteinLayer(new Protein(pdbData));
+            layers.append(proteinLayer);
+         } break;
+*/
 
          case Data::Type::ProteinChain: {
             Data::ProteinChain& 

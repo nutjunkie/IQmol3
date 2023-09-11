@@ -24,11 +24,6 @@
 #include "Data.h"
 #include "Math/Vec.h"
 
-#define COIL 0
-#define HELIX 1
-#define STRAND 2
-#define INC_CAPACITY 15
-
 
 namespace IQmol {
 namespace Data {
@@ -88,7 +83,7 @@ namespace Data {
 
          int*   nres() { return &m_nResPerChain[0]; }
          double* cao() { return &m_caoPositions[0]; }
-         char*   ss()  { return &m_secondaryStructure[0]; }
+         int*   ss()  { return &m_secondaryStructure[0]; }
 
          unsigned nChains() const { return m_chainList.size(); }
 
@@ -125,7 +120,7 @@ namespace Data {
 
          std::vector<int>    m_nResPerChain;
          std::vector<double> m_caoPositions;
-         std::vector<char>   m_secondaryStructure;
+         std::vector<int>   m_secondaryStructure;
    };
 
 } } // end namespace IQmol::Data

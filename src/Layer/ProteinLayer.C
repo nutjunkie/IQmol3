@@ -46,16 +46,19 @@ std::vector<cpdb::Mesh> Protein::computeCartoonMesh(Data::Pdb& pdb)
     int nbChain(pdb.nChains());
     int* nbResPerChain(pdb.nres());
     double* CA_OPositions(pdb.cao());
-    char* ssTypePerRes(pdb.ss());
+    int* ssTypePerRes(pdb.ss());
 
     std::vector<cpdb::Mesh> meshes(nbChain);
     if (nbChain <= 0) {
         return meshes;
     }   
 
+    int nOffset(0);
     for (int chainId = 0; chainId < nbChain; chainId++) {
-        cpdb::Mesh m = cpdb::createChainMesh(chainId, nbResPerChain, CA_OPositions, ssTypePerRes);
+        cpdb::Mesh m = cpdb::createChainMesh(nbResPerChain[chainId], 
+          &CA_OPositions[6*nOffset], &ssTypePerRes[nOffset]);
         meshes[chainId] = m;
+        nOffset += nbResPerChain[chainId];
     }
 
     return meshes;

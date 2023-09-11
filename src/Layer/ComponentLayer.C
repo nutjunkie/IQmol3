@@ -23,6 +23,7 @@
 #include "ComponentLayer.h"
 #include "AtomLayer.h"
 #include "GroupLayer.h"
+#include "Viewer/UndoCommands.h"
 
 
 namespace IQmol {
@@ -38,11 +39,66 @@ void Component::draw() const
 }
 
 
+void Component::translateToCenter(GLObjectList const& selection)
+{
+   Command::MoveComponentObjects* cmd(new Command::MoveComponentObjects(this, "Translate"));
+   
+   // The ordering here is important!!
+   Atom* atom;
+   AtomList atomList;
+   GLObjectList::const_iterator iter;
+   for (iter = selection.begin(); iter != selection.end(); ++iter) {
+       if ( (atom = qobject_cast<Atom*>(*iter)) ) atomList.append(atom);
+   }   
+qDebug() << "System::TranslateToCenter: " << selection.size();
+   
+   switch (atomList.size()) {
+      case 0:
+         translate(-centerOfNuclearCharge());
+         break;
+
+      case 1:
+         translate(-atomList[0]->getPosition());
+         break;
+
+      case 2:
+         translate(-atomList[0]->getPosition());
+         alignToAxis(atomList[1]->getPosition());
+         break;
+
+      case 3:
+         translate(-atomList[0]->getPosition());
+         alignToAxis(atomList[1]->getPosition());
+         rotateIntoPlane(atomList[2]->getPosition());
+         break;
+
+      default: 
+         {  
+            int totalCharge(0);
+            qglviewer::Vec center;
+            for (auto iter = atomList.begin(); iter != atomList.end(); ++iter) {
+                int Z = (*iter)->getAtomicNumber();
+                totalCharge += Z;
+                center += Z * (*iter)->getPosition();
+            }    
+            if (totalCharge > 0.0) center = center / totalCharge;
+qDebug() << "Translating system to: " << center.x << center.y << center.z;
+            translate(-center);
+         }  
+         break;
+   }   
+   
+   postCommand(cmd);
+   softUpdate();
+}
+
+
 qglviewer::Vec Component::centerOfNuclearCharge()
 {
    qglviewer::Vec center;
    int Z;
    double totalCharge(0.0);
+
    AtomList atoms(findLayers<Atom>());
    GroupList groups(findLayers<Group>());
 
@@ -50,8 +106,6 @@ qglviewer::Vec Component::centerOfNuclearCharge()
        atoms += group->getAtoms();
    }
 
-   qDebug() << "Component::centerOfNuclearCharge() returning number of atoms:" << atoms.size();
-      
    for (auto iter = atoms.begin(); iter != atoms.end(); ++iter) {
        Z = (*iter)->getAtomicNumber();
        totalCharge += Z;
@@ -59,7 +113,6 @@ qglviewer::Vec Component::centerOfNuclearCharge()
    }     
 
    if (totalCharge > 0.0) center = center / totalCharge;
-qDebug() << "COC returning" << center.x << center.y << center.z;
    return center;
 }
 
@@ -73,6 +126,8 @@ qDebug() << "Translating component " << text() << " to "
    for (iter = objects.begin(); iter != objects.end(); ++iter) {
        (*iter)->setPosition((*iter)->getPosition()+displacement);
    }
+
+   // Do these get done by the UndoCommands?
    //m_frame.setPosition(m_frame.position()+displacement);
 }
 
@@ -85,6 +140,7 @@ void Component::rotate(qglviewer::Quaternion const& rotation)
        (*iter)->setPosition(rotation.rotate((*iter)->getPosition()));
        (*iter)->setOrientation(rotation * (*iter)->getOrientation());
    }
+   // Do these get done by the UndoCommands?
    //m_frame.setPosition(rotation.rotate(m_frame.position()));
    //m_frame.setOrientation(rotation * m_frame.orientation());
 }

@@ -78,7 +78,9 @@ namespace Data {
                 ExcitedStates,          ElectronicTransition,   ElectronicTransitionList, 
                 OrbitalSymmetries,      Vibronic,               VibronicSpectrum,
                /*---------------------  *---------------------  *--------------------- */
-                YamlNode,               PovRay,                 GeminalOrbitals
+                YamlNode,               PovRay,                 GeminalOrbitals,
+               /*---------------------  *---------------------  *--------------------- */
+                AminoAcid,              AminoAcidList,          Residue
       };
 
       QString toString(ID const);

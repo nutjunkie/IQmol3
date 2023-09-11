@@ -2,9 +2,12 @@ find_package(Qt5 COMPONENTS Core Xml OpenGL REQUIRED)
 set(LIB Data)
 
 set( HEADERS
+   Residue.h
+   Group.h
 )
 
 set( SOURCES
+   AminoAcid.C
    Atom.C
    AtomicProperty.C
    AtomicDensity.C

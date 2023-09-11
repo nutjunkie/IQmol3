@@ -27,6 +27,9 @@
 #include "Data/MacroMolecule.h"
 
 
+//                   !!! CLASS MARKED FOR DEPRECATION !!!
+
+
 namespace IQmol {
 
 namespace Data {

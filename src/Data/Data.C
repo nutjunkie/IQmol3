@@ -142,6 +142,10 @@ QString toString(ID const id)
       case YamlNode:                   s = "Data::YamlNode";                  break;
       case PovRay:                     s = "Data::PovRay";                    break;
       case GeminalOrbitals:            s = "Data::GeminalOrbitals";           break;
+
+      case AminoAcid:                  s = "Data::AminoAcid";                 break;
+      case AminoAcidList:              s = "Data::AminoAcidList";             break;
+      case Residue:                    s = "Data::Residue";                   break;
    }
 
    return s;

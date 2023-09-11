@@ -33,6 +33,7 @@
 #include "Configurator/MoleculeConfigurator.h"
 #include "MolecularSurfacesLayer.h"
 #include "Configurator/SurfaceAnimatorDialog.h"
+
 #include "Viewer/Animator.h"
 
 #include <QFileInfo>
@@ -123,8 +124,6 @@ bool save(bool prompt = false);
             void minimizeEnergy(QString const& forcefield);
             void computeEnergy(QString const& forcefield);
 
-            void translateToCenter(GLObjectList const& selection);
-
             static void toggleAutoDetectSymmetry() { 
                s_autoDetectSymmetry = !s_autoDetectSymmetry; 
             }
@@ -147,7 +146,7 @@ bool save(bool prompt = false);
 
             bool isModified() const { return m_modified; }
    
-            qglviewer::Vec centerOfNuclearCharge();
+            qglviewer::Vec centerOfNuclearCharge(bool selectedOnly = false);
             QStringList getAvailableProperties(); 
             Function3D getPropertyEvaluator(QString const& name);
    
@@ -246,10 +245,6 @@ bool save(bool prompt = false);
    
          Q_SIGNALS:
             void softUpdate(); // issue if the number of primitives does not change
-            void postCommand(QUndoCommand*);
-            void postMessage(QString const&);
-            void pushAnimators(AnimatorList const&);
-            void popAnimators(AnimatorList const&);
             void removeMolecule(Layer::Molecule*);
    
             void multiplicityAvailable(unsigned);

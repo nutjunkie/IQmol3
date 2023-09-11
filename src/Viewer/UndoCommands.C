@@ -22,6 +22,7 @@
 
 #include "UndoCommands.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ComponentLayer.h"
 #include "Layer/SystemLayer.h"
 #include "Layer/AtomLayer.h"
 #include "Layer/BondLayer.h"
@@ -38,8 +39,10 @@ namespace Command {
 
 
 // --------------- AddHydrogens ---------------
-AddHydrogens::AddHydrogens(Layer::Molecule* molecule, Layer::PrimitiveList const& primitives)
-  : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
+AddHydrogens::AddHydrogens(
+   Layer::Molecule* molecule, 
+   Layer::PrimitiveList const& primitives)
+ : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
 {
    Layer::Atom *begin, *end, *atom;
    Layer::Bond *bond;
@@ -110,6 +113,7 @@ void AddHydrogens::undo()
 }
 
 
+
 // --------------- EditPrimitives ---------------
 EditPrimitives::~EditPrimitives()
 {
@@ -138,6 +142,7 @@ void EditPrimitives::undo()
    m_molecule->appendPrimitives(m_removed);
    m_molecule->updated();
 }
+
 
 
 // --------------- MoveObjects ---------------
@@ -242,6 +247,119 @@ void MoveObjects::loadFrames(QList<Frame> const& frames)
        m_objectList[i]->setFrame(frames[i]);
    }
    if (m_molecule) m_molecule->setReferenceFrame(frames.last());
+}
+
+
+
+// --------------- MoveComponentObjects ---------------
+MoveComponentObjects::MoveComponentObjects(
+   Layer::Component* component, 
+   QString const& text, bool const animate,
+   bool const invalidateSymmetry) 
+ : QUndoCommand(text), m_component(component), 
+   m_finalStateSaved(false), m_animate(animate), m_invalidateSymmetry(invalidateSymmetry)
+{ 
+   m_objectList = m_component->findLayers<Layer::GLObject>(Layer::Children);
+   saveFrames(m_initialFrames);
+}
+
+
+MoveComponentObjects::MoveComponentObjects(
+   GLObjectList const& objectList, 
+   QString const& text, 
+   bool const animate, bool const invalidateSymmetry) 
+ : QUndoCommand(text), m_component(0),
+   m_objectList(objectList), m_finalStateSaved(false), m_animate(animate), 
+   m_invalidateSymmetry(invalidateSymmetry)
+{ 
+   // Need a Molecule handle for the Viewer update (yugh)
+   ComponentList parents;
+   int i(0);
+
+   while (!m_component && i < m_objectList.size()) {
+      parents = m_objectList[i]->findLayers<Layer::Component>(Layer::Parents);
+      if (!parents.isEmpty()) m_component = parents.first();
+      ++i;
+   }
+
+   if (!m_component) { QLOG_ERROR() << "MoveObjects constructor called with no molecule"; }
+   saveFrames(m_initialFrames);
+}
+
+
+MoveComponentObjects::~MoveComponentObjects()
+{
+   if (m_component) m_component->popAnimators(m_animatorList); 
+
+   AnimatorList::iterator iter;
+   for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
+       delete (*iter);
+   }
+}
+
+
+void MoveComponentObjects::redo() 
+{
+   if (!m_finalStateSaved) {
+      saveFrames(m_finalFrames);
+      m_finalStateSaved = true;
+      if (m_animate) {   
+         for (int i = 0; i < m_objectList.size(); ++i) {
+             m_objectList[i]->setFrame(m_initialFrames[i]);
+             m_animatorList.append(new Animator::Move(m_objectList[i],
+                 m_finalFrames[i]));
+         }
+      }
+   }
+
+   if (m_animate && m_component) {
+      AnimatorList::iterator iter;
+      for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
+          (*iter)->reset();
+      }
+      m_component->pushAnimators(m_animatorList); 
+      m_component->setReferenceFrame(m_finalFrames.last());
+   }else {
+      loadFrames(m_finalFrames);
+   }
+
+   if (m_component) {
+      if (m_invalidateSymmetry) m_component->invalidateSymmetry();
+      m_component->autoDetectSymmetry();
+      m_component->postMessage(m_msg);
+      m_component->updated();
+   }
+}
+
+
+void MoveComponentObjects::undo() 
+{
+   loadFrames(m_initialFrames);
+   if (m_component) {
+      m_component->postMessage("");
+      if (m_invalidateSymmetry) m_component->invalidateSymmetry();
+      m_component->autoDetectSymmetry();
+      m_component->updated();
+   }
+}
+
+
+void MoveComponentObjects::saveFrames(QList<Frame>& frames)
+{
+   frames.clear();
+   for (int i = 0; i < m_objectList.size(); ++i) {
+       frames.append(m_objectList[i]->getFrame());
+   }
+   if (m_component) frames.append(m_component->getReferenceFrame());
+}
+
+
+void MoveComponentObjects::loadFrames(QList<Frame> const& frames)
+{
+   for (int i = 0; i < m_objectList.size(); ++i) {
+       m_objectList[i]->setFrame(frames[i]);
+   }
+   if (m_component) m_component->setReferenceFrame(frames.last());
 }
 
 

@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2023 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -42,167 +42,124 @@
   77 - 78        LString(2)    element      Element symbol, right-justified.
   79 - 80        LString(2)    charge       Charge  on the atom.
 
+
+  COLUMNS        DATA  TYPE     FIELD         DEFINITION
+  -----------------------------------------------------------------------------------
+   1 -  6        Record name    "HELIX "
+   8 - 10        Integer        serNum        Serial number of the helix. This starts
+                                              at 1  and increases incrementally.
+  12 - 14        LString(3)     helixID       Helix  identifier. In addition to a serial
+                                              number, each helix is given an 
+                                              alphanumeric character helix identifier.
+  16 - 18        Residue name   initResName   Name of the initial residue.
+  20             Character      initChainID   Chain identifier for the chain containing
+                                              this  helix.
+  22 - 25        Integer        initSeqNum    Sequence number of the initial residue.
+  26             AChar          initICode     Insertion code of the initial residue.
+  28 - 30        Residue  name  endResName    Name of the terminal residue of the helix.
+  32             Character      endChainID    Chain identifier for the chain containing
+                                              this  helix.
+  34 - 37        Integer        endSeqNum     Sequence number of the terminal residue.
+  38             AChar          endICode      Insertion code of the terminal residue.
+  39 - 40        Integer        helixClass    Helix class (see below).
+  41 - 70        String         comment       Comment about this helix.
+  72 - 76        Integer        length        Length of this helix.
+
+
+  COLUMNS       DATA  TYPE     FIELD          DEFINITION
+  -------------------------------------------------------------------------------------
+   1 -  6        Record name   "SHEET "
+   8 - 10        Integer       strand         Strand  number which starts at 1 for each
+                                              strand within a sheet and increases by one.
+  12 - 14        LString(3)    sheetID        Sheet  identifier.
+  15 - 16        Integer       numStrands     Number  of strands in sheet.
+  18 - 20        Residue name  initResName    Residue  name of initial residue.
+  22             Character     initChainID    Chain identifier of initial residue 
+                                              in strand. 
+  23 - 26        Integer       initSeqNum     Sequence number of initial residue
+                                              in strand.
+  27             AChar         initICode      Insertion code of initial residue
+                                              in  strand.
+  29 - 31        Residue name  endResName     Residue name of terminal residue.
+  33             Character     endChainID     Chain identifier of terminal residue.
+  34 - 37        Integer       endSeqNum      Sequence number of terminal residue.
+  38             AChar         endICode       Insertion code of terminal residue.
+  39 - 40        Integer       sense          Sense of strand with respect to previous
+                                              strand in the sheet. 0 if first strand,
+                                              1 if  parallel,and -1 if anti-parallel.
+  42 - 45        Atom          curAtom        Registration.  Atom name in current strand.
+  46 - 48        Residue name  curResName     Registration.  Residue name in current strand
+  50             Character     curChainId     Registration. Chain identifier in
+                                              current strand.
+  51 - 54        Integer       curResSeq      Registration.  Residue sequence number
+                                              in current strand.
+  55             AChar         curICode       Registration. Insertion code in
+                                              current strand.
+  57 - 60        Atom          prevAtom       Registration.  Atom name in previous strand.
+  61 - 63        Residue name  prevResName    Registration.  Residue name in
+                                              previous strand.
+  65             Character     prevChainId    Registration.  Chain identifier in
+                                              previous  strand.
+  66 - 69        Integer       prevResSeq     Registration. Residue sequence number
+                                              in previous strand.
+  70             AChar         prevICode      Registration.  Insertion code in
+                                              previous strand.
+
 ********************************************************************************/
 
 #include "PdbParser.h"
-#include "TextStream.h"
-#include "Util/QsLog.h"
 
-#include "Math/Vec.h"
+#include "TextStream.h"
 #include "Data/Atom.h"
-#include "Data/Group.h"
-#include "Data/PdbData.h"
+#include "Data/Residue.h"
+#include "Data/Geometry.h"
 #include "Data/ProteinChain.h"
 #include "Data/Solvent.h"
-
-#include "Data/Geometry.h"
+#include "Util/QsLog.h"
 
 #include <QDebug>
-
-#include <stdlib.h>
-#include <vector>
-#include <iostream>
-#include <fstream>
-
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QVector>
 
 
 namespace IQmol {
 namespace Parser {
 
 
-int extractStr(char *dest, const char *src, int begin, int end) 
-{
-    int length;
-    while (src[begin] == ' ') begin++;
-    while (src[end] == ' ') end--;
-    length = end - begin + 1;
-    strncpy(dest, src + begin, length);
-    dest[length] = 0;
-    return length;
-}
-
-
-void getCoordinates (const char *line, Math::Vec3& out) {
-    char coorx[9] = {0};
-    char coory[9] = {0};
-    char coorz[9] = {0};
-    strncpy (coorx, &line[30], 8);
-    strncpy (coory, &line[38], 8);
-    strncpy (coorz, &line[46], 8);
-    out[0] = atof (coorx);
-    out[1] = atof (coory);
-    out[2] = atof (coorz);
-}
-
-
-void getAtomType (const char *line, char *out) 
-{
-    extractStr(out, line, 12, 15);
-}
-
-void getResType (const char *line, char *out) 
-{
-    extractStr(out, line, 17, 19);
-}
-
-void getAtomElement (const char *line, char *out) 
-{
-    extractStr(out, line, 76, 77);
-}
-
-void getAtomId (const char *line, int *atomId) 
-{
-    char _temp[6]={0};
-    extractStr(_temp, line, 6, 10);
-    *atomId = atoi(_temp);
-}
-
-void getResidueId (const char *line, int *residueId) 
-{
-    char _temp[5]={0};
-    extractStr(_temp, line, 22, 25);
-    *residueId = atoi(_temp);
-}
-
-void getAlternativeLoc(const char *line, char *altLoc) 
-{
-    *altLoc = line[16];
-}
-
-void getChainId(const char *line, char *chainId) 
-{
-    *chainId = line[21];
-}
-
-void getOccupancy (const char *line, float *occupancy) 
-{
-    char _temp[7]={0};
-    extractStr(_temp, line, 54, 59);
-    *occupancy = atof(_temp);
-}
-
-void getTempFactor (const char *line, float *tempFactor)
-{
-    char _temp[7]={0};
-    extractStr(_temp, line, 60, 65);
-    *tempFactor = atof(_temp);
-}
-
-void getHelix(const char *line, int *start, int *stop, char *chain)
-{
-    if(strlen(line) >= 37){
-        extractStr(chain, line, 19, 20);
-        char _temp[5]={0};
-        extractStr(_temp, line, 21, 24);
-        *start = atoi(_temp);
-        extractStr(_temp, line, 33, 36);
-        *stop = atoi(_temp);
-    }
-}
-
-void getSheet(const char *line, int *start, int *stop, char *chain){
-    if(strlen(line) >= 38){
-        extractStr(chain, line, 21, 22);
-        char _temp[5]={0};
-        extractStr(_temp, line, 23, 26);
-        *start = atoi(_temp);
-        extractStr(_temp, line, 34, 37);
-        *stop = atoi(_temp);
-    }
-}
-
-
 bool Pdb::parse(TextStream& textStream)
 {
    bool ok(true);
-   
+
+   QVector<SecondaryStructure> secondaryStructures;
+
    Data::ProteinChain* chain(0);
    Data::Geometry* geometry(0);
    Data::Solvent* solvent(0);
-   Data::Group* group(0);
+   Data::Residue* residue(0);
 
    QString line, key;
-   QString currentChain;
-   QString currentGroup;
+   QString currentChainId;
    QString currentGeometry;
+
+   unsigned currentResidueId(0);
 
    while (!textStream.atEnd()) {
       line = textStream.nextLine();
-      key  = line;
-
-      key.resize(6);
-      key = key.trimmed().toUpper();
-      if (key != "ATOM") {
-qDebug() << "Key: " << key;
-      }
+      key  = line.mid(0, 6).trimmed().toUpper();  // eg. CHA
 
       if (key == "ATOM" || key == "HETATM") {
 
-         QString label(line.mid(12, 4).trimmed());  // eg. CHA
-         QString res(line.mid(17, 3).trimmed());    // eg. HIS
-         QString id (line.mid(21, 1));              // eg. A
-         QString grp(line.mid(22, 4).trimmed());    // eg. 143
-         QString sym(line.mid(76, 2).trimmed());    // eg. C
+         QString alternateLocation(line.mid(16, 1).trimmed());
+         if (!alternateLocation.isEmpty() && alternateLocation != 'A') continue;
+
+         QString label(      line.mid(12, 4).trimmed());  // eg. CA
+         QString residueName(line.mid(17, 3).trimmed());    // eg. HIS
+         QString chainId(    line.mid(21, 1));              // eg. A
+         QString atomSymbol( line.mid(76, 2).trimmed());    // eg. C
+
+         unsigned residueId = line.mid(22, 4).trimmed().toUInt(&ok);  if(!ok) goto error;
 
          double x = line.mid(30, 8).toFloat(&ok);  if (!ok) goto error;
          double y = line.mid(38, 8).toFloat(&ok);  if (!ok) goto error;
@@ -212,66 +169,103 @@ qDebug() << "Key: " << key;
 
          if (key == "ATOM") {
 
-            if (id != currentChain) {
-               currentChain = id;
-               if (m_chains.contains(currentChain)) {
-                  chain = m_chains[currentChain];
+            if (chainId != currentChainId) {
+               currentChainId = chainId;
+               if (m_chains.contains(currentChainId)) {
+                  chain = m_chains[currentChainId];
                }else {
-                  chain = new Data::ProteinChain(QString("Chain ") + currentChain);
-                  m_chains.insert(currentChain, chain);
+                  chain = new Data::ProteinChain(QString("Chain ") + currentChainId);
+                  m_chains.insert(currentChainId, chain);
                }
             }
 
-            if (grp != currentGroup) {
-               currentGroup = grp;
-               group = new Data::Group(grp.trimmed() + " " + res);
-               chain->append(group);
+            if (residueId != currentResidueId) {
+               currentResidueId = residueId;
+               Data::AminoAcid_t type(Data::AminoAcid::toType(residueName));
+               
+               residue = new Data::Residue(type, residueId);
+               chain->append(residue);
             }
    
-            Data::Atom* atom(new Data::Atom(sym, label));
-            group->addAtom(atom, v);
+            Data::Atom* atom(new Data::Atom(atomSymbol, label));
+            residue->addAtom(atom, v);
 
-         }else if (res == "HOH") {
+            if (label == "CA") {
+               chain->appendAlphaCarbon(v);
+            }else if (label == "O") {
+               chain->appendPeptideOxygen(v);
+            }
+
+         }else if (residueName == "HOH") {
             if (!solvent) solvent = new Data::Solvent("Water");
             solvent->addSolvent(v);
 
          }else {
-            grp = id+grp;
-            if (grp != currentGeometry) {
-               currentGeometry = grp;
+            QString geom = chainId+QString::number(residueId);
+            if (geom != currentGeometry) {
+               currentGeometry = geom;
+
                if (m_geometries.contains(currentGeometry)) {
                   geometry = m_geometries[currentGeometry];
                }else {
-                  QLOG_DEBUG() << "adding new geometry  "<< grp;
+                  QLOG_DEBUG() << "adding new geometry  "<< currentGeometry;
                   geometry = new Data::Geometry();
-                  geometry->name(res);
+                  geometry->name(residueName);
                   m_geometries.insert(currentGeometry, geometry);
                }
             }
             
-            geometry->append(sym, v);
+            geometry->append(atomSymbol, v);
          }         
 
-         if (key == "HETATM") {
-            qDebug() << sym;
-         }
-
       }else if (key == "COMPND") {
-         parseCOMPND(line);
+         if (line.contains("MOLECULE")) {
+            QString s(line);
+            s.remove(0,20); 
+            m_label += s;
+         } 
+
+      }else if (key == "HELIX") {
+         QString chainId(line.mid(19,1).trimmed());
+         
+         SecondaryStructure ss;
+         ss.chain = chainId[0];
+         ss.start = line.mid(21,4).toInt(&ok);  if (!ok) goto error;
+         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
+         ss.type  = HELIX;
+
+         secondaryStructures.append(ss);
+
+      }else if (key == "SHEET") {
+         QString chainId(line.mid(21,1).trimmed());
+
+         SecondaryStructure ss;
+         ss.chain = chainId[0];
+         ss.start = line.mid(22,4).toInt(&ok);  if (!ok) goto error;
+         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
+         ss.type  = STRAND;
+ 
+         secondaryStructures.append(ss);
 
       }else if (key == "ENDMDL" || key == "END") {
             break;
       } 
-      
    }
 
-   // This must go last as it rewinds the TextStream!
-   ok = parseCartoon(textStream);
+   if (!setSecondaryStructure(secondaryStructures)) {
+      m_errors.append("Failed to set secondary structure information");
+      goto error;
+   }
+
+   if (!saveSecondaryStructure(secondaryStructures)) {
+      m_errors.append("Failed to save secondary structure information");
+      goto error;
+   }
 
    for (auto chain : m_chains.values()) m_dataBank.append(chain);
    if (solvent) m_dataBank.append(solvent);
+   // These are the non-protein HETATM systems
    for (auto geom: m_geometries.values()) m_dataBank.append(geom);
-
  
    return ok;
 
@@ -286,269 +280,53 @@ qDebug() << "Key: " << key;
       return false;
 }
 
-bool Pdb::parseCOMPND(QString const& line)
-{
-  if (line.contains("MOLECULE")) {
-     QString s(line);
-     s.remove(0,20); 
-     m_label += s;
-  }   
-  return true;
-}
 
-
-
-bool Pdb::parseATOM(QString const& line, Data::Group& group)
+bool Pdb::setSecondaryStructure(QVector<SecondaryStructure> const& secondaryStructures)
 {
    bool ok(true);
 
-   QString key(line.mid(0,5));
-   QString index(line.mid(6,10));
+   for (auto const& key : m_chains.keys()) {
+       unsigned nResidues(m_chains[key]->nResidues());
+       QVector<int> SS(nResidues,0);
 
-   double x = line.mid(30, 8).toFloat(&ok);
-   if (!ok) return false;
+       for (auto& ss : secondaryStructures) {
+           if (ss.chain != key) continue;
 
-   double y = line.mid(38, 8).toFloat(&ok);
-   if (!ok) return false;
+           for (int i(ss.start-1); i < ss.stop; ++i) {
+               SS[i] = ss.type;
+           }
+       }
 
-   double z = line.mid(46, 8).toFloat(&ok);
-   if (!ok) return false;
-
-   QString label(line.mid(12, 4).trimmed());
-   QString sym(line.mid(76, 2).trimmed());
-   
-   Data::Atom* atom(new Data::Atom(sym, label));
-   group.addAtom(atom, qglviewer::Vec(x,y,z));
-
+       ok = ok && m_chains[key]->setSecondaryStructure(SS);
+   }
    return ok;
 }
 
 
-
-/*
- by default, parsePDB function do not parse Hydrogen atoms and 'Alternate Location' atoms.
- To parse these atoms you can pass `options` variable with these characters
-    h: for parsing hydrogen atoms
-    l: for parsing alternate locations
-    a: is equal to h and l both on
-*/
-int Pdb::parsePDB (char const* pdbFilePath, Data::Pdb* data , char *options) 
+bool Pdb::saveSecondaryStructure(QVector<SecondaryStructure> const& secondaryStructures)
 {
-    Data::Pdb::ChainList& P(data->chainList());
+   QFileInfo fileInfo(m_filePath);
+   fileInfo.setFile(fileInfo.dir(),"SecStruc.dat");
 
-    char  altLocFlag = 1;   // Default: skip alternate location atoms on
-    char  hydrogenFlag = 0; // Default: skip hydrogen  atoms off
-    int   errorcode = 0;
-    char  line[128];
-    FILE* pdbFile;
-    char  resType[5], atomType[5], atomElement[3], chainId, altLoc ;
-    int   resId, atomId, length;
-    float tempFactor, occupancy;
-    int   resIdx = 0;
-    int   atomIdx = 0;
-    Math::Vec3    coor;
-    int   helixStart = 0;
-    int   helixStop = 0;
-    char  helixChain[2];
-    int   sheetStart = 0;
-    int   sheetStop = 0;
-    char  sheetChain[2];
+   QFile file(fileInfo.absoluteFilePath());
+   if (!file.open(QIODevice::WriteOnly)) {
+       m_errors.append("Failed to open secondary structure file for write");
+       return false;
+   } 
 
-    std::vector<Data::Pdb::SecondaryStructure> secStructs;
+   QByteArray buffer;
 
-    Data::Pdb::Residue* currentResidue(0);
-    Data::Pdb::Chain*   currentChain(0);
-    Data::Pdb::Atom*    currentAtom(0);
-    
-    // Setting Parsing Options
-    int chindex = 0;
-    char ch = options[chindex++];
+   for (auto const& ss : secondaryStructures) {
+       QString line = QString("%1  %2  %3  %4\n").arg(ss.type, 1)
+                                                 .arg(ss.chain,1)
+                                                 .arg(ss.start,4)
+                                                 .arg(ss.stop, 4);
+       buffer.append(line.toLatin1());
+   }
 
-    while (ch) {
-        switch( ch ) {
-            case 'h' :
-                hydrogenFlag = 0;
-                break;
-            case 'l' :
-                altLocFlag = 0;
-                break;
-            case 'a':
-                hydrogenFlag = 0;
-                altLocFlag = 0;
-                break;
-            default:
-                fprintf(stderr, "invalid option: %c \n", ch );
-                errorcode ++;
-        }
-        ch=options[chindex++];
-    }
-
-    pdbFile = fopen(pdbFilePath, "r");
-    length = 0;
-    
-    if (pdbFile == 0) {
-        perror("pdb file cannnot be read");
-        exit (2);
-    }
-
-    while (fgets(line, sizeof(line), pdbFile)) {
-        if (!strncmp(line, "ATOM  ", 6)) {
-
-            getCoordinates(line, coor);
-            getAtomType(line, atomType);
-            getResType(line, resType);
-            getAtomElement(line, atomElement);
-            getAtomId(line, &atomId);
-
-            getResidueId(line, &resId);
-            getChainId(line, &chainId);
-            getAlternativeLoc(line, &altLoc);
-            getTempFactor(line, &tempFactor);
-            getOccupancy(line, &occupancy);
-            if ( hydrogenFlag && !strncmp(atomElement, "H", 3) ) continue;
-            if ( altLocFlag && !(altLoc == 'A' || altLoc == ' ' ) ) continue;
-            
-            // Chain Related
-            if (currentChain == 0 || currentChain->id != chainId) {
-                Data::Pdb::Chain myChain;
-                myChain.id = chainId;
-                data->appendChain(myChain);
-                currentChain = &P.back();
-                currentAtom = 0;
-                currentResidue = 0;
-            }
-            
-            // Residue Related
-            if (currentResidue == 0 || currentResidue->id != resId) {
-                Data::Pdb::Residue myRes;
-                myRes.id = resId;
-                myRes.idx = resIdx++;
-                myRes.next = 0;
-                myRes.prev = currentResidue;
-                myRes.ss = COIL;
-                data->appendResiduetoChain(currentChain, myRes);
-
-                currentResidue = &(currentChain->residues[currentChain->residues.size()-1]);
-                strncpy(currentResidue->type, resType, 5);
-                if (currentResidue->prev) currentResidue->prev->next = currentResidue;
-            }
-            
-            //Atom Related
-            if (currentAtom == 0 || currentAtom->id != atomId) {
-                Data::Pdb::Atom myAtom;
-                myAtom.id = atomId;
-                myAtom.idx = atomIdx++;
-                myAtom.coor = coor;
-                myAtom.tfactor = tempFactor;
-                myAtom.occupancy = occupancy;
-                myAtom.next = 0;
-                myAtom.prev = currentAtom;
-                myAtom.res = currentResidue;
-                data->appendAtomtoResidue(currentResidue, myAtom);
-                currentAtom = &(currentResidue->atoms[currentResidue->atoms.size()-1]);
-                strncpy(currentAtom->type, atomType, 5);
-                strncpy(currentAtom->element, atomElement, 3);
-                if (currentAtom->prev) currentAtom->prev->next = currentAtom;
-            }
-        }
-
-        if (!strncmp(line, "HELIX ", 6)) {
-            getHelix(line, &helixStart, &helixStop, helixChain);
-            Data::Pdb::SecondaryStructure curSS; 
-            curSS.start = helixStart; 
-            curSS.stop = helixStop; 
-            strncpy(curSS.chain, helixChain, 2);
-            curSS.type = HELIX;
-            secStructs.push_back(curSS);
-        }
-
-        if (!strncmp(line, "SHEET ", 6)) {
-            getSheet(line, &sheetStart, &sheetStop, sheetChain);
-            Data::Pdb::SecondaryStructure curSS; 
-            curSS.start = sheetStart; 
-            curSS.stop = sheetStop; 
-            strncpy(curSS.chain, sheetChain, 2);
-            curSS.type = STRAND;
-            secStructs.push_back(curSS);
-        }
-
-        else if (!strncmp(line, "ENDMDL", 6)  || !strncmp(line, "END", 3)) {
-            break;
-        }
-    }
-
-    fclose(pdbFile);
-
-    data->fillSecondaryStructure(secStructs);
-    
-    saveSecondaryStructure(secStructs);
-
-    return errorcode;
-}
-
-
-void Pdb::saveSecondaryStructure(std::vector<Data::Pdb::SecondaryStructure> secStructs){
-    /// Users/albertthie/projects/iqmol/IQmolGromacs/4hhb.pdb
-    std::string str = m_filePath.toStdString();
-    size_t index =str.find_last_of("/\\");
-    QLOG_DEBUG() << "saving file";
-    std::string path = str.substr(0,(index+1)) + "SecStruc.dat";
-    //QLOG_DEBUG() << path;
-
-    std::ofstream File(path);
-    for(int s=0;s<secStructs.size();s++){
-        std::string t = std::to_string(secStructs[s].type);
-        std::string c = secStructs[s].chain;
-        std::string start = std::to_string(secStructs[s].start);
-        std::string stop = std::to_string(secStructs[s].stop);
-        std::string output = t + "   " + c + "   " + start + "   " + stop;
-        File  << output  << std::endl;
-
-    }
-    File  << "end file" << std::endl;
-
-    File.close();
-}
-
-
-bool Pdb::parseCartoon(TextStream& textStream)
-{
-   textStream.rewind(); 
-
-   Data::Pdb* pdbData = new Data::Pdb;
-   Data::Pdb::ChainList& P(pdbData->chainList());
-
-   std::string str(m_filePath.toStdString());
-   const char* fname(str.c_str());
-   char options[0];
-
-   parsePDB(fname, pdbData, options);
-
-   for (int chainId = 0; chainId < P.size(); chainId++) {
-       Data::Pdb::Chain *C = &P[chainId];
-       pdbData->addChain(C->residues.size());
-       QString id(C->id);
-       Data::ProteinChain* proteinChain(m_chains[id]);
-
-       for (int r = 0; r < C->residues.size(); r++) {
-           Data::Pdb::Residue *R = &C->residues[r];
-           Data::Pdb::Atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
-           Data::Pdb::Atom const* O  = Data::Pdb::getAtom(*R, (char *)"O");
-           char ss = R->ss;
-
-           if (CA == 0 || O == 0) {
-               QString msg("CA/O not found in chain ");
-               msg + C->id + " residue " + R->type + "_"  + R->id;
-               m_errors.append(msg);
-               return false;
-           }   
-
-           proteinChain->addResidue(CA->coor, O->coor, ss);
-           pdbData->addResidue(CA->coor, O->coor, ss);
-       }   
-   }   
-
-   //m_dataBank.append(pdbData);
+   buffer.append(QString("end file").toLatin1());
+   file.write(buffer);
+   file.close();
 
    return true;
 }

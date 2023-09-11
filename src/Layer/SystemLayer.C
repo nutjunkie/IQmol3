@@ -137,25 +137,41 @@ void System::translateToCenter(GLObjectList const& selection)
    for (iter = selection.begin(); iter != selection.end(); ++iter) {
        if ( (atom = qobject_cast<Atom*>(*iter)) ) atomList.append(atom);
    }   
-
-   qglviewer::Vec c(center());
-   qDebug() << "Translating to center for system" << c.x << c.y << c.z;
+qDebug() << "System::TranslateToCenter: " << selection.size();
    
    switch (atomList.size()) {
+      case 0:
+         translate(-center());
+         break;
+
       case 1:
          translate(-atomList[0]->getPosition());
          break;
+
       case 2:
          translate(-atomList[0]->getPosition());
          alignToAxis(atomList[1]->getPosition());
          break;
+
       case 3:
          translate(-atomList[0]->getPosition());
          alignToAxis(atomList[1]->getPosition());
          rotateIntoPlane(atomList[2]->getPosition());
          break;
-      default:
-         translate(-center());
+
+      default: 
+         {
+            int totalCharge(0);
+            qglviewer::Vec center;
+            for (auto iter = atomList.begin(); iter != atomList.end(); ++iter) {
+                int Z = (*iter)->getAtomicNumber();
+                totalCharge += Z;
+                center += Z * (*iter)->getPosition();
+            }    
+            if (totalCharge > 0.0) center = center / totalCharge;
+qDebug() << "Translating system to: " << center.x << center.y << center.z;
+            translate(-center);
+         }
          break;
    }   
    
@@ -166,8 +182,6 @@ void System::translateToCenter(GLObjectList const& selection)
 
 void System::translate(qglviewer::Vec const& displacement)
 {
-qDebug() << "Translating system to " 
-         << displacement.x << " " << displacement.y << " " << displacement.z;
    ComponentList list(findLayers<Component>(Children));
    for (auto component : list) component->translate(displacement);
 }

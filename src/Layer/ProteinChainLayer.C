@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2023 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -43,7 +43,6 @@ ProteinChain::ProteinChain(Data::ProteinChain& data, QObject* parent) :
 }
 
 
-
 void ProteinChain::cartoonAvailable()
 {
    GenerateCartoon* generateCartoon(qobject_cast<GenerateCartoon*>(sender()));
@@ -56,7 +55,6 @@ void ProteinChain::cartoonAvailable()
    Layer::Surface* surfaceLayer(new Surface(*data));
    surfaceLayer->setCheckState(Qt::Checked);
    surfaceLayer->setText("Ribbon");
-   //qDebug() << "***************** isSigned() *********** " << data->isSigned();
    prependLayer(surfaceLayer);
    updated();
 
@@ -84,11 +82,10 @@ void GenerateCartoon::run()
 
 cpdb::Mesh GenerateCartoon::computeCartoonMesh()
 {
-   int    nbResPerChain(m_data.nres());
    double const* CA_OPositions(m_data.cao());
-   char  const* ssTypePerRes(m_data.ss());
+   int  const* ssTypePerRes(m_data.secondaryStructure());
 
-   return cpdb::createChainMesh(0, &nbResPerChain, CA_OPositions, ssTypePerRes);
+   return cpdb::createChainMesh(m_data.nResidues(), CA_OPositions, ssTypePerRes);
 }
 
 
@@ -124,14 +121,7 @@ Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
    mesh->computeFaceNormals();
    mesh->computeVertexNormals();
 
-#if 0
    // Mesh decimation takes too long and the effects are negligible
-   double delta(Data::GridSize::stepSize(2));
-   MeshDecimator decimator(*mesh);
-   if (!decimator.decimate(delta)) {
-      qDebug() <<"Mesh decimation failed: " + decimator.error();
-   }   
-#endif
 
    return mesh;
 }

@@ -27,7 +27,7 @@
 
 #include "Parser.h"
 #include "Data/PdbData.h"
-
+#include <QVector>
 
 
 namespace IQmol {
@@ -48,20 +48,23 @@ namespace Parser {
          bool parse(TextStream&);
 
       private:
+         struct SecondaryStructure
+         {
+            QChar chain;
+            int type;
+            int start;
+            int stop;
+         };
+
          QString m_label;
 
          QMap<QString, Data::ProteinChain*> m_chains;
-         QMap<QString, Data::Geometry*> m_geometries;
-         
+         QMap<QString, Data::Geometry*> m_geometries;  // HETATM components
 
-         bool parseATOM(QString const& line, Data::Group&);
-         bool parseHETATM(QString const& line, Data::Geometry&);
-
-         bool parseHOH(QString const& line, Data::Group&);
-         bool parseCOMPND(QString const& line);
-         bool parseCartoon(TextStream&);
-         void saveSecondaryStructure(std::vector<Data::Pdb::SecondaryStructure> secStructs);
-         int  parsePDB(char const* pdbFilePath, Data::Pdb *P , char *options);
+		 // Scatters the interval-based SS specifications read from the 
+         // PDB to one type per residue
+         bool setSecondaryStructure(QVector<SecondaryStructure> const&);
+         bool saveSecondaryStructure(QVector<SecondaryStructure> const&);
    };
 
 } } // end namespace IQmol::Parser

@@ -51,7 +51,7 @@ namespace Data {
              for (auto group : m_groups) group->dump();
          }
 
-      private:
+      protected:
          int m_charge;
          QString m_label;
          QList<Data::Group*> m_groups;
