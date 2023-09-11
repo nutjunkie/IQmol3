@@ -71,7 +71,6 @@ namespace Layer {
          void run();
 
       private:
-         cpdb::Mesh computeCartoonMesh();
          Data::Mesh* fromCpdb(cpdb::Mesh const& meshes);
 
          Data::ProteinChain const& m_data;

@@ -61,7 +61,6 @@
 #include "NaturalTransitionOrbitalsLayer.h"
 #include "OrbitalsLayer.h"
 #include "ProteinChainLayer.h"
-#include "ProteinLayer.h"
 #include "SolventLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
@@ -221,14 +220,6 @@ Layer::List Factory::toLayers(Data::Base& data)
                vibronic(dynamic_cast<Data::Vibronic&>(data));
             layers.append(new Vibronic(vibronic));
          } break;
-
-/* DEPRECATE
-         case Data::Type::Pdb: {
-            Data::Pdb& pdbData(dynamic_cast<Data::Pdb&>(data));
-            Layer::Protein* proteinLayer(new Protein(pdbData));
-            layers.append(proteinLayer);
-         } break;
-*/
 
          case Data::Type::ProteinChain: {
             Data::ProteinChain& 

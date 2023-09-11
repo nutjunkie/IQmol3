@@ -29,12 +29,13 @@
 #include "SurfaceLayer.h"
 #include "Util/QsLog.h"
 
+#include <QColor>
+
 
 using namespace qglviewer;
 
 namespace IQmol {
 namespace Layer {
-
 
 ProteinChain::ProteinChain(Data::ProteinChain& data, QObject* parent) :  
    MacroMolecule(data, parent), m_data(data)
@@ -75,17 +76,33 @@ void ProteinChain::generateCartoon()
 
 void GenerateCartoon::run()
 {
-   Data::Mesh* mesh = fromCpdb(computeCartoonMesh());
+   Data::Mesh* mesh = fromCpdb(cpdb::createChainMesh(m_data));
    m_surface = new Data::Surface(*mesh);
-}
 
+   QStringList colors {"#fbb4ae","#b3cde3","#ccebc5",
+                       "#decbe4","#fed9a6","#ffffcc",
+                       "#e5d8bd"};
+   colors = QStringList({"#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494"});
+   colors = QStringList(
+   {"#1f78b4", // Blue
+    "#33a02c", // Green
+    "#6a3d9a", // Purple
+    "#e31a1c", // Red
+    "#ff7f00", // Orange
+    "#b15928", // Brown
 
-cpdb::Mesh GenerateCartoon::computeCartoonMesh()
-{
-   double const* CA_OPositions(m_data.cao());
-   int  const* ssTypePerRes(m_data.secondaryStructure());
+    "#a6cee3", // Light blue
+    "#b2df8a", // Light green
+    "#fb9a99", // Light red
+    "#cab2d6", // Light Purple
+    "#fdbf6f", // Light orange
 
-   return cpdb::createChainMesh(m_data.nResidues(), CA_OPositions, ssTypePerRes);
+    "#ffff99"}) ;  //light yellow
+
+   QColor color(colors[m_data.chainId()+6]);
+   qDebug() << "Chain ID: " <<  m_data.chainId();
+   qDebug() << "Color:    " <<  color;
+   m_surface->setColors( {color,color});
 }
 
 

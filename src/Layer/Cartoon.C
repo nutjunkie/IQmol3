@@ -4,8 +4,8 @@
 #include "Cartoon.h"
 #include "Math/Spline.h"
 
-using namespace IQmol::Math;
 
+using namespace IQmol::Math;
 
 namespace cpdb {
 
@@ -25,9 +25,9 @@ inline void Flip(PeptidePlane &pp)
 
 inline void Transition(PeptidePlane const& pp, int& type1, int& type2) 
 {
-    int t1 = pp.Residue1->ss;
-    int t2 = pp.Residue2->ss;
-    int t3 = pp.Residue3->ss;
+    int t1 = pp.Residue1.ss;
+    int t2 = pp.Residue2.ss;
+    int t3 = pp.Residue3.ss;
     type1 = t2;
     type2 = t2;
 
@@ -81,7 +81,7 @@ void rectangleProfile(std::vector<Vec3> &profile, int n, double w, double h) {
     for (int s = 0; s < 4; s++) {
         for (int i = 0; i < m; i++) {
             double t = (double)i / (double)m;
-            Vec3 p = lerp(segments[s][0], segments[s][1], t);
+            //Vec3 p = lerp(segments[s][0], segments[s][1], t);
             profile[cpt++] = lerp(segments[s][0], segments[s][1], t);
         }
     }
@@ -152,7 +152,7 @@ void scaleProfile(std::vector<Vec3> &p, double s, int lenP)
 void translateProfile(std::vector<Vec3> &p, double dx, double dy, int lenP) 
 {
     for (int i = 0; i < lenP; i++) {
-        p[i] = p[i] + Vec3{dx, dy, 0.0f};
+        p[i] = p[i] + Vec3 {dx, dy, 0.0f};
     }
 }
 
@@ -160,7 +160,7 @@ void translateProfile(std::vector<Vec3> &p, double dx, double dy, int lenP)
 void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2, 
    int n, std::vector<Vec3> &p1, std::vector<Vec3> &p2) 
 {
-    int type0 = pp1.Residue1->ss;
+    int type0 = pp1.Residue1.ss;
     int type1, type2;
     Transition(pp1, type1, type2);
 
@@ -340,10 +340,28 @@ void triangulateQuad(Mesh &mesh,
 }
 
 
+inline void splineForPlanes(
+   Math::Vec3 *&result, 
+   PeptidePlane const& p1, 
+   PeptidePlane const& p2, 
+   PeptidePlane const& p3, 
+   PeptidePlane const& p4, 
+   int n, double u, double v) 
+{
+    Math::Vec3 g1 = p1.Position + p1.Side*u + p1.Normal * v;
+    Math::Vec3 g2 = p2.Position + p2.Side*u + p2.Normal * v;
+    Math::Vec3 g3 = p3.Position + p3.Side*u + p3.Normal * v;
+    Math::Vec3 g4 = p4.Position + p4.Side*u + p4.Normal * v;
+
+    spline(result, g1, g2, g3, g4, n); 
+}
+
+
+
 void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1, 
     const PeptidePlane &pp2, const PeptidePlane &pp3, const PeptidePlane &pp4) 
 {
-    int type0 = pp2.Residue1->ss;
+    int type0 = pp2.Residue1.ss;
     int type1, type2;
     Transition(pp2, type1, type2);
     Vec3 c1, c2;
@@ -436,31 +454,29 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
 }
 
 
-bool diffPP(int id1, int id2) {
-    int diff = 1;
-    if (id1 < 0 && id2 > 0) {
-        diff = 2;
-    }
-    if (id2 - id1 > diff) {
-        return true;
-    }
-    return false;
+bool diffPP(int id1, int id2) 
+{
+    int diff = (id1 < 0 && id2 > 0) ? 2 : 1;
+    return (id2 - id1 > diff);
 }
 
 
 bool discontinuity(PeptidePlane pp1, PeptidePlane pp2, PeptidePlane pp3, PeptidePlane pp4) 
 {
-    int diff = 1;
-    if (diffPP(pp1.Residue1->id, pp1.Residue2->id) || diffPP(pp1.Residue2->id, pp1.Residue3->id)) {
+    if (diffPP(pp1.Residue1.id, pp1.Residue2.id) || 
+        diffPP(pp1.Residue2.id, pp1.Residue3.id)) {
         return true;
     }
-    if (diffPP(pp2.Residue1->id, pp2.Residue2->id) || diffPP(pp2.Residue2->id, pp2.Residue3->id)) {
+    if (diffPP(pp2.Residue1.id, pp2.Residue2.id) || 
+        diffPP(pp2.Residue2.id, pp2.Residue3.id)) {
         return true;
     }
-    if (diffPP(pp3.Residue1->id, pp3.Residue2->id) || diffPP(pp3.Residue2->id, pp3.Residue3->id)) {
+    if (diffPP(pp3.Residue1.id, pp3.Residue2.id) || 
+        diffPP(pp3.Residue2.id, pp3.Residue3.id)) {
         return true;
     }
-    if (diffPP(pp4.Residue1->id, pp4.Residue2->id) || diffPP(pp4.Residue2->id, pp4.Residue3->id)) {
+    if (diffPP(pp4.Residue1.id, pp4.Residue2.id) || 
+        diffPP(pp4.Residue2.id, pp4.Residue3.id)) {
         return true;
     }
 
@@ -468,17 +484,52 @@ bool discontinuity(PeptidePlane pp1, PeptidePlane pp2, PeptidePlane pp3, Peptide
 }
 
 
-
-Mesh createChainMesh(const int nResidues,
-                     const double *CA_OPositions, const int* ssTypePerRes) 
+PeptidePlane NewPeptidePlane(
+   Math::Vec3 const& ca1, 
+   Math::Vec3 const& o1,
+   Math::Vec3 const& ca2,
+   int ssr1, int ssr2, int ssr3, 
+   int idr1, int idr2, int idr3)
 {
-    Mesh mesh;
-    PeptidePlane *planes = new PeptidePlane[nResidues + 1];
-    Vec3 previous;
-    int nbPlanes = 0;
-    int startRes = 0;
-    int const* SSRes = &ssTypePerRes[startRes];
-    const double *atomPos = &CA_OPositions[startRes * 6];
+    PeptidePlane newPP;
+
+    Math::Vec3 a(ca2 - ca1);
+    a.normalize();
+
+    Math::Vec3 b(o1 - ca1);
+    b.normalize();
+
+    Math::Vec3 c = a^b;
+    c.normalize();
+
+    Math::Vec3 d = c^a;
+    d.normalize();
+
+    newPP.Residue1 = Residue({ idr1, idr1++, ssr1 });
+    newPP.Residue2 = Residue({ idr2, idr2++, ssr2 });
+    newPP.Residue3 = Residue({ idr3, idr3++, ssr3 });
+    newPP.Position = (ca1 + ca2)/ 2.0f;
+    newPP.Normal   = c;
+    newPP.Forward  = a;
+    newPP.Side     = d;
+    newPP.Flipped  = false;
+
+    return newPP;
+}
+
+
+
+Mesh createChainMesh(Data::ProteinChain const& data)
+{
+   QVector<Vec3> const& alphaCarbons(data.alphaCarbons());
+   QVector<Vec3> const& peptideOxygens(data.peptideOxygens());
+   QVector<int> const & secondaryStructures(data.secondaryStructures());
+
+   int nResidues(alphaCarbons.size());
+   Mesh mesh;
+   PeptidePlane *planes = new PeptidePlane[nResidues + 1];
+   Vec3 previous;
+   int nbPlanes = 0;
 
     for (int i = -1; i < nResidues; i++) {
 
@@ -502,33 +553,20 @@ Mesh createChainMesh(const int nResidues,
             id2 = i;
         }
 
-        PeptidePlane plane = NewPeptidePlane(&atomPos[id * 6],
-                                             &atomPos[id * 6 + 3],
-                                             &atomPos[id1 * 6],
-                                             SSRes[id], SSRes[id1], SSRes[id2],
+        PeptidePlane plane = NewPeptidePlane(alphaCarbons[id],
+                                             peptideOxygens[id],
+                                             alphaCarbons[id1],
+                                             secondaryStructures[id],
+                                             secondaryStructures[id1], 
+                                             secondaryStructures[id2],
                                              id, id1, id2);
-        if (plane.Residue1 == NULL) {
-            // TODO: better handling missing required atoms
-            // planes[nbPlanes++] = plane;
-            continue;
-        }
-        //Make sure to start at the first CA position
-        if (i <= 0) {
-            //CA of r1
-            plane.Position = Vec3{atomPos[0], atomPos[1], atomPos[2]};
-        }
-        //Make sure to end at the last CA position
-        if (i >= nResidues - 2) {
-            //CA of r3
-            plane.Position = Vec3{atomPos[id2 * 3 * 2 + 0], 
-                                  atomPos[id2 * 3 * 2 + 1],
-                                  atomPos[id2 * 3 * 2 + 2]};
-        }
 
-        if (plane.Residue1 != NULL) {
-            // TODO: better handling missing required atoms
-            planes[nbPlanes++] = plane;
-        }
+        //Make sure to start at the first CA position
+        if (i <= 0) plane.Position = alphaCarbons[0]; 
+        //Make sure to end at the last CA position
+        if (i >= nResidues - 2) plane.Position = alphaCarbons[id2];
+
+        planes[nbPlanes++] = plane;
     }
 
     for (int i = 0; i < nbPlanes; i++) {

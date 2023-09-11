@@ -116,6 +116,7 @@
 #include "Data/ProteinChain.h"
 #include "Data/Solvent.h"
 #include "Util/QsLog.h"
+#include "Math/Vec.h"
 
 #include <QDebug>
 #include <QDir>
@@ -165,7 +166,8 @@ bool Pdb::parse(TextStream& textStream)
          double y = line.mid(38, 8).toFloat(&ok);  if (!ok) goto error;
          double z = line.mid(46, 8).toFloat(&ok);  if (!ok) goto error;
 
-         qglviewer::Vec v(x,y,z);
+         Math::Vec3 v {x,y,z};
+         qglviewer::Vec qv {x,y,z};
 
          if (key == "ATOM") {
 
@@ -174,7 +176,7 @@ bool Pdb::parse(TextStream& textStream)
                if (m_chains.contains(currentChainId)) {
                   chain = m_chains[currentChainId];
                }else {
-                  chain = new Data::ProteinChain(QString("Chain ") + currentChainId);
+                  chain = new Data::ProteinChain(currentChainId);
                   m_chains.insert(currentChainId, chain);
                }
             }
@@ -188,7 +190,7 @@ bool Pdb::parse(TextStream& textStream)
             }
    
             Data::Atom* atom(new Data::Atom(atomSymbol, label));
-            residue->addAtom(atom, v);
+            residue->addAtom(atom, qv);
 
             if (label == "CA") {
                chain->appendAlphaCarbon(v);
@@ -198,7 +200,7 @@ bool Pdb::parse(TextStream& textStream)
 
          }else if (residueName == "HOH") {
             if (!solvent) solvent = new Data::Solvent("Water");
-            solvent->addSolvent(v);
+            solvent->addSolvent(qv);
 
          }else {
             QString geom = chainId+QString::number(residueId);
@@ -215,7 +217,7 @@ bool Pdb::parse(TextStream& textStream)
                }
             }
             
-            geometry->append(atomSymbol, v);
+            geometry->append(atomSymbol, qv);
          }         
 
       }else if (key == "COMPND") {

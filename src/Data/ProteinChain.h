@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "MacroMolecule.h"
+#include "Math/Vec.h"
 #include <QVector>
 
 
@@ -32,23 +33,30 @@ namespace Data {
    class ProteinChain : public MacroMolecule 
    {
       public:
-         ProteinChain(QString const& label) : MacroMolecule(label) { }
+         ProteinChain(QString const& chainId) 
+          : MacroMolecule(QString("Chain " + chainId))
+         { 
+            qDebug() << "Attempting to set chain Id to" << chainId;
+            QString const letters("ABCDEFGHIJKLMNOPQRTSUVWXYZ");
+            m_chainId = letters.indexOf(chainId);
+            qDebug() << "set to" << m_chainId;
+         }
 
          Type::ID typeID() const { return Type::ProteinChain; }
 
+         int chainId() const { return m_chainId; }
+
          unsigned nResidues() const { return m_groups.size(); }
-         double const* cao() const { return &m_caoPositions[0]; }
-         int const*  secondaryStructure() const { return &m_secondaryStructure[0]; }
 
-         void appendAlphaCarbon(qglviewer::Vec const& v) 
-         {
-            m_alphaCarbons.append(v);
-         }
+         QVector<Math::Vec3> const& alphaCarbons() const { return m_alphaCarbons; }
 
-         void appendPeptideOxygen(qglviewer::Vec const& v) 
-         {
-            m_peptideOxygens.append(v);
-         }
+         QVector<Math::Vec3> const& peptideOxygens() const { return m_peptideOxygens; }
+
+         QVector<int> const& secondaryStructures() const { return m_secondaryStructure; }
+    
+         void appendAlphaCarbon(Math::Vec3 const& v) { m_alphaCarbons.append(v); }
+
+         void appendPeptideOxygen(Math::Vec3 const& v) { m_peptideOxygens.append(v); }
 
          bool setSecondaryStructure(QVector<int> const& secondaryStructure)
          {
@@ -57,32 +65,15 @@ namespace Data {
             if (m_peptideOxygens.size() != nRes) return false;
             if (secondaryStructure.size() != nRes) return false;
 
-            m_secondaryStructure = secondaryStructure.toStdVector();
-
-            // TMP for recreating the data structures required for cartoons
-            for (size_t i(0); i < nRes; ++i) {
-                addResidue(m_alphaCarbons[i], m_peptideOxygens[i]);
-            }
+            m_secondaryStructure = secondaryStructure;
             return true;
          }
 
       private:
-         inline void addResidue(qglviewer::Vec const& posCA, qglviewer::Vec const& posO)
-         {
-             m_caoPositions.push_back(posCA.x);
-             m_caoPositions.push_back(posCA.y);
-             m_caoPositions.push_back(posCA.z);
-             m_caoPositions.push_back(posO.x);
-             m_caoPositions.push_back(posO.y);
-             m_caoPositions.push_back(posO.z);
-         }
-
-         // Data for generataing the cartoon representation
-         std::vector<double> m_caoPositions;
-         std::vector<int>  m_secondaryStructure;
-
-         QVector<qglviewer::Vec> m_alphaCarbons;
-         QVector<qglviewer::Vec> m_peptideOxygens;
+         int m_chainId;
+         QVector<int> m_secondaryStructure;
+         QVector<Math::Vec3> m_alphaCarbons;
+         QVector<Math::Vec3> m_peptideOxygens;
    };
 
 } } // end namespace IQmol::Data
