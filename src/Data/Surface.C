@@ -31,7 +31,7 @@
 namespace IQmol {
 namespace Data {
 
-Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
+Surface::Surface(SurfaceInfo const& info) : m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_opacity = info.opacity();
    m_description = info.toString();
@@ -43,7 +43,7 @@ Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
 }
 
 
-Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_min(0.0), m_max(0.0)
+Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_description = "Mesh";
    m_meshPositive = mesh;

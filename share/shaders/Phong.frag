@@ -157,6 +157,8 @@ void main()
       if (user_Enhance_Edges) {rgb *= alpha; }
    }
 
+   if (alpha < 0.02) discard;
+
    float specular = 0.0;
    if (user_light_Front) {
       vec3 lightDirection  = normalize(lightDirection0.xyz);

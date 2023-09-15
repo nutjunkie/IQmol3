@@ -49,6 +49,7 @@
 #include <QActionGroup>
 #include <fstream>
 
+#include "Util/ColorDialog.h"
 
 namespace IQmol {
 
@@ -88,6 +89,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
    m_viewer->setActiveViewerMode(Viewer::BuildAtom);
    m_viewer->setDefaultSceneRadius();
    m_viewer->resetView();
+   
+   //Color::GetGradient(Color::Gradient::Default, this);
 }
 
 

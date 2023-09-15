@@ -141,7 +141,6 @@ namespace Gmx {
          QLabel          m_status;
 
          Viewer*               m_viewer;
-         Gmx::GromacsDialog*   m_gromacsDialog;
 
          QItemSelectionModel   m_viewerSelectionModel;
          LogMessageDialog      m_logMessageDialog;
@@ -155,6 +154,7 @@ namespace Gmx {
 
          QSplitter* m_sideSplitter;
          Qui::InputDialog* m_quiInputDialog;
+         Gmx::GromacsDialog*   m_gromacsDialog;
    };
 
 } // end namespace IQmol

@@ -1,7 +1,7 @@
 #pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
 
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -21,22 +21,26 @@
 
 ********************************************************************************/
 
-#include <cmath>
+#include "Group.h"
+#include "AminoAcid.h"
 
 
 namespace IQmol {
-namespace Math {
+namespace Data {
 
-   inline int round(double d) {
-      return (int)floor(d+0.5);
-   }
+   // Data class a group of primitives, e.g. residue, solvent molecule
+   class Residue : public Group {
 
-   inline bool isEven(int i) {
-      return ( (i % 2) == 0);
-   }
+      public:
+         Residue(AminoAcid_t const type, unsigned const index) 
+          : Group(QString::number(index) + " " + AminoAcid::toString(type)),
+            m_aminoAcid(type)  { }
 
-   inline bool isOdd(int i) {
-      return ( (i % 2) == 1);
-   }
+         Type::ID typeID() const { return Type::Residue; }
+         
+      private:
+         unsigned  m_index;
+         AminoAcid m_aminoAcid;
+   };
 
-} } // end namespace IQmol::Math
+} } // end namespace IQmol::Data

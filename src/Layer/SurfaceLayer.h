@@ -1,12 +1,11 @@
-#ifndef IQMOL_LAYER_SURFACE_H
-#define IQMOL_LAYER_SURFACE_H
+#pragma once
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,10 +15,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-   
+
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
@@ -70,12 +69,13 @@ namespace IQmol {
             void setCheckStatus(Qt::CheckState const);
 
          protected:
-            void setColors(QList<QColor> const& colors);
+            void setColors(QList<QColor> const& colors, bool const blend);
             void setColors(QColor const& negative, QColor const& positive);
             QColor colorPositive() const;
             QColor colorNegative() const;
 
             QList<QColor> const& colors() const;
+            bool blend() const { return m_surface.blend(); }
 
             void computePropertyData(Function3D const&);
             void computeIndexField();
@@ -99,7 +99,8 @@ namespace IQmol {
          private:
             void recompile();
             GLuint compile(Data::Mesh const&);
-            bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
+            //bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
+            bool isTransparent() const { return true; }
             void drawVertexNormals();
             void drawFaceNormals();
             void drawVertexNormals(Data::Mesh const&);
@@ -129,5 +130,3 @@ namespace IQmol {
    typedef QList<Layer::Surface*> SurfaceList;
    
 } // end namespace IQmol
-
-#endif

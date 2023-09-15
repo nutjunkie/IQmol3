@@ -1,10 +1,10 @@
 /*******************************************************************************
-
+         
   Copyright (C) 2022 Andrew Gilbert
-
+      
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-
+         
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-
+      
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -24,9 +24,6 @@
 #include "SurfaceConfigurator.h"
 #include "Layer/SurfaceLayer.h"
 #include "Layer/MoleculeLayer.h"
-
-#include "Util/ColorDialog.h"
-
 #include <openbabel/elements.h> 
 #include <QColorDialog>
 
@@ -129,7 +126,7 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       if (parents.isEmpty()) {
          QLOG_ERROR() << "No Molecule found";
       }else {
-         m_surface.setColors(atomColorGradient(parents.first()->maxAtomicNumber()),false);
+         m_surface.setColors(atomColorGradient(parents.first()->maxAtomicNumber()));
          m_surface.computeIndexField();
          updateScale();
       }
@@ -144,8 +141,7 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       m_ui.negativeLabel->setVisible(false);
       m_ui.positiveLabel->setVisible(false);
 
-     bool blend(m_surface.blend());
-      setPositiveColor(m_gradientColors, blend);
+      setPositiveColor(m_gradientColors);
 
       connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
          this, SLOT(editGradientColors(bool)));
@@ -155,7 +151,7 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       if (parents.isEmpty()) {
          QLOG_ERROR() << "No Molecule found";
       }else {
-         m_surface.setColors(m_gradientColors, blend);
+         m_surface.setColors(m_gradientColors);
          m_surface.computePropertyData(parents.first()->getPropertyEvaluator(type));
       }
 
@@ -250,21 +246,19 @@ ColorGradient::ColorList Surface::atomColorGradient(unsigned const maxAtomicNumb
 void Surface::editGradientColors(bool)
 {
    QList<QColor> colors(m_gradientColors);
-   bool blend(m_surface.blend());
-   m_gradientColors = Color::GetGradient(colors, blend, this); 
-   setPositiveColor(m_gradientColors, blend);
+   setPositiveColor(GetGradient(colors, this)); 
    m_surface.recompile();
    m_surface.updated();
 }
 
 
-void Surface::setPositiveColor(QList<QColor> const& colors, bool blend)
+void Surface::setPositiveColor(QList<QColor> const& colors)
 {
    m_ui.positiveColorButton->setProperty("gradient",true);
    QString bg("background-color: ");
-   bg += Color::toString(colors,blend);
+   bg += ColorGradient::ToString(colors);
    m_ui.positiveColorButton->setStyleSheet(bg);
-   m_surface.setColors(colors, blend);
+   m_surface.setColors(colors);
 }
 
 

@@ -2,6 +2,8 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 set(LIB Util)
 
 set(HEADERS
+   Color.h
+   ColorDialog.h
    ColorGradientDialog.h
    QMsgBox.h
    LogMessageDialog.h
@@ -11,6 +13,8 @@ set(HEADERS
 )
 
 set( SOURCES
+   Color.C
+   ColorDialog.C
    ColorGradient.C
    ColorGradientDialog.C
    GLShape.C
@@ -31,6 +35,7 @@ set( SOURCES
 )
 
 set( UI_FILES
+   ColorDialog.ui
    ColorGradientDialog.ui
    LogMessageDialog.ui
    ProgressDialog.ui
