@@ -22,7 +22,7 @@
 
 #include "VibronicConfigurator.h"
 #include "Layer/VibronicLayer.h"
-#include "Util/ColorGradient.h"
+#include "Util/Color.h"
 #include "Util/QsLog.h"
 #include "Util/NumericalTableItem.h"
 #include "CustomPlot.h"
@@ -159,7 +159,7 @@ void Vibronic::updateSpectra(Constants::Units const units)
        x[xi] = Constants::convert(xmin + xi*delta, Constants::Wavenumber, units);
    }   
 
-   ColorGradient::ColorList const& colors = { 
+   Color::List const& colors = { 
       QColor("#a6cee3"), QColor("#1f78b4"), QColor("#b2df8a"), QColor("#33a02c"),
       QColor("#fb9a99"), QColor("#e31a1c"), QColor("#fdbf6f"), QColor("#ff7f00"),
       QColor("#cab2d6"), QColor("#6a3d9a")

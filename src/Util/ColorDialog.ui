@@ -66,7 +66,7 @@ QGraphicsView
       <item>
        <widget class="QGraphicsView" name="gradientView">
         <property name="styleSheet">
-         <string>QGraphicsView {
+         <string notr="true">QGraphicsView {
    background-color: QLinearGradient( x1: 0, y1: 1, x2: 1, y2: 1, 
           stop: 0 #f00,
           stop: 0.5 #fff, 
@@ -376,7 +376,7 @@ QToolButton:checked
         <item>
          <widget class="QComboBox" name="gradientCombo">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <item>
            <property name="text">
@@ -386,6 +386,31 @@ QToolButton:checked
           <item>
            <property name="text">
             <string>Spectrum</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Brighten</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Darken</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Saturate</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Desaturate</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Rotate</string>
            </property>
           </item>
           <item>

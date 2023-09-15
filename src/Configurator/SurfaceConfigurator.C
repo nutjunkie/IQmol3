@@ -37,7 +37,7 @@ namespace IQmol {
 namespace Configurator {
 
 Surface::Surface(Layer::Surface& surface) : m_surface(surface), 
-   m_gradientColors(Preferences::DefaultGradientColors()), m_initialized(false)
+   m_gradientColors(Color::toList(Color::Gradient::Default)), m_initialized(false)
 {        
    m_ui.setupUi(this);
    m_ui.ambientOcclusionCheckBox->setVisible(false);
@@ -226,9 +226,9 @@ void Surface::on_swapColorsButton_clicked(bool)
 }
    
 
-ColorGradient::ColorList Surface::atomColorGradient(unsigned const maxAtomicNumber)
+Color::List Surface::atomColorGradient(unsigned const maxAtomicNumber)
 {
-   ColorGradient::ColorList atomColors;
+   Color::List atomColors;
    QColor color;
    for (unsigned int Z = 1; Z <= maxAtomicNumber; ++Z) {
        double r, g, b;

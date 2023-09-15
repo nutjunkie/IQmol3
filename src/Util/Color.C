@@ -30,8 +30,49 @@
 namespace IQmol {
 namespace Color {
 
+static QColor Maroon("#800000");
+static QColor Brown("#9A6324");
+static QColor Olive("#808000");
+static QColor Teal("#469990");
+static QColor Navy("#000075");
+static QColor Black("#000000");
+static QColor Red("#e6194B");
+static QColor Orange("#f58231");
+static QColor Yellow("#ffe119");
+static QColor Lime("#bfef45");
+static QColor Green("#3cb44b");
+static QColor Cyan("#42d4f4");
+static QColor Blue("#4363d8");
+static QColor Purple("#911eb4");
+static QColor Magenta("#f032e6");
+static QColor Grey("#a9a9a9");
+static QColor Pink("#fabed4");
+static QColor Apricot("#ffd8b1");
+static QColor Beige("#fffac8");
+static QColor Mint("#aaffc3");
+static QColor Lavender("#dcbeff");
+static QColor White("#ffffff");
 
-static QColor orange("#FFA500");
+// Old spectrum
+static QColor red("#c42724");
+static QColor blue("#485fa6");
+static QColor orange("#da8b2a");
+static QColor yellow("#f4e940");
+static QColor green("#6cab57");
+static QColor violet("#603886");
+
+
+QString toString(Gradient gradient)
+{
+   QString s;
+   switch (gradient) {
+      case Gradient::Default:          s = "Default";  break;
+      case Gradient::Spectrum:         s = "Spectrum";  break;
+      case Gradient::PrimarySpectrum:  s = "Spectrum 2";  break;
+      case Gradient::Custom:           s = "Custom";  break;
+   }
+   return s;
+}
 
 
 QString toString(List const& colors, bool blend)
@@ -84,12 +125,17 @@ List toList(Gradient const gradient)
    switch(gradient)
    {
       case Gradient::Default:
-         colors << Qt::red << Qt::white << Qt::blue;
+         colors << red << Qt::white << blue;
          break;
 
       case Gradient::Spectrum:
+         colors << Red << Orange << Yellow << Green
+                << Blue << Purple;
+         break;
+
+      case Gradient::PrimarySpectrum:
          colors << Qt::red << orange << Qt::yellow << Qt::green
-                << Qt::cyan << Qt::blue << Qt::magenta;
+                << Qt::blue << Qt::magenta;
          break;
 
       case Gradient::Custom:
@@ -98,6 +144,28 @@ List toList(Gradient const gradient)
    }
 
    return colors; 
+}
+
+
+List generateGradient(QColor const& base, unsigned const n, Operation const operation)
+{
+   List list;
+   ColorM::Rgb color(base.red(), base.green(), base.blue());
+
+   for (unsigned i(0); i < n; ++i) {
+       QColor qcol(color.red(), color.green(), color.blue());
+       list << qcol;
+
+       switch (operation) {
+          case Operation::Brighten:    color.brighten();           break;
+          case Operation::Darken:      color.darken();             break;
+          case Operation::Saturate:    color.saturate();           break;
+          case Operation::Desaturate:  color.desaturate();         break;
+          case Operation::Rotate:      color.rotate(360.0/(n+1));  break;
+       }
+   }
+
+   return list;
 }
 
 

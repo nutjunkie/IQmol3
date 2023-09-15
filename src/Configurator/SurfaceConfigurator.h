@@ -22,7 +22,7 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "Util/ColorGradient.h"
+#include "Util/Color.h"
 #include "Configurator/ui_SurfaceConfigurator.h"
 
 
@@ -76,7 +76,7 @@ namespace Configurator{
          QList<QColor> m_gradientColors;
          bool m_initialized;
 
-         ColorGradient::ColorList atomColorGradient(unsigned const maxAtomicNumber);
+         Color::List atomColorGradient(unsigned const maxAtomicNumber);
    };
 
 } } // end namespace IQmol::Configurator

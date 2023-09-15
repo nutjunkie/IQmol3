@@ -105,7 +105,6 @@ void Dialog::init()
 {
    m_activeStopButton = 0;
    m_dialog.setupUi(this);
-   m_dialog.stopsSpin->setValue(m_colors.size());
 
    // Fix global button background to default
    QString styleSheet =
@@ -126,6 +125,7 @@ void Dialog::init()
    m_dialog.globalButton->setStyleSheet(styleSheet);
    m_dialog.globalButton->hide();
 
+   m_dialog.stopsSpin->setValue(m_colors.size());
    updateStopColors();
    //::maxRange();
 
@@ -134,11 +134,19 @@ void Dialog::init()
       index = toInt(Gradient::Default);
    }else if (m_colors == toList(Gradient::Spectrum)) {
       index = toInt(Gradient::Spectrum);
+   }else if (m_colors == toList(Gradient::PrimarySpectrum)) {
+      index = toInt(Gradient::PrimarySpectrum);
    }else {
       index = toInt(Gradient::Custom);
    }
 
-   m_dialog.gradientCombo->blockSignals(true);
+   QComboBox* combo(m_dialog.gradientCombo);
+   combo->blockSignals(true);
+   combo->clear();
+   combo->addItem("Default");
+   combo->addItem("Spectrum");
+   combo->addItem("Primary Spectrum");
+   combo->addItem("Custom");
    m_dialog.gradientCombo->setCurrentIndex(index);
    m_dialog.gradientCombo->blockSignals(false);
 }
@@ -146,10 +154,7 @@ void Dialog::init()
 
 void Dialog::updateStops()
 {
-//   unsigned nStops(countStops());
    unsigned nColors(m_colors.size());
-
-   //if (nColors == nStops) return;
 
    clearStops();
 
@@ -226,8 +231,16 @@ void Dialog::clearStops()
 
 void Dialog::on_gradientCombo_currentIndexChanged(int n)
 {
-   Gradient grad = static_cast<Gradient>(n);
-   m_colors = toList(grad);
+   if (n < 4) {
+      Gradient grad = static_cast<Gradient>(n);
+      m_colors = toList(grad);
+   }else {
+      int nstops(m_dialog.stopsSpin->value());
+      n -= 4;
+      Operation op = static_cast<Operation>(n);
+       
+      m_colors = generateGradient(m_colors.first(),nstops,op);
+   }
    updateStopColors();
 }
 

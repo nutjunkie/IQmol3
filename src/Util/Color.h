@@ -32,7 +32,9 @@ namespace Color {
 
    typedef QList<QColor> List;
 
-   enum class Gradient { Default, Spectrum, Custom };
+   enum class Gradient { Default, Spectrum, PrimarySpectrum, Custom };
+
+   enum class Operation{ Brighten, Darken, Saturate, Desaturate, Rotate};
 
    List toList(Gradient);
 
@@ -43,6 +45,9 @@ namespace Color {
    QString toString(List const& colors, bool blend); // Required for the stylesheet
 
    void maxRange();
+
+   // Generates a list of colors based on the Operation
+   List generateGradient(QColor const& base, unsigned const n, Operation const);
 
    /// Class used to represent a simple color gradient.  The reason for this
    /// is that QGradient does not allow access to the color at an arbitrary 
