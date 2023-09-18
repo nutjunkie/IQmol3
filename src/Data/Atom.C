@@ -29,7 +29,9 @@ namespace Data {
 
 unsigned Atom::atomicNumber(QString const& symbol)
 {
-   unsigned z(OpenBabel::OBElements::GetAtomicNum(symbol.toLatin1().data()));
+   QString sym = symbol.toLower();
+   sym[0] = sym[0].toUpper();
+   unsigned z(OpenBabel::OBElements::GetAtomicNum(sym.toLatin1().data()));
    return z;
 }
 
