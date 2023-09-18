@@ -36,7 +36,15 @@ namespace IQmol {
 
       class Component : public Base 
       {
-         enum class DrawStyle { BallsAndSticks, Tubes, SpaceFilling, WireFrame, Plastic, Ribbon };
+         enum class DrawStyle 
+         { 
+            BallsAndSticks, 
+            Tubes, 
+            SpaceFilling, 
+            WireFrame, 
+            Plastic, 
+            Ribbon 
+         };
 
          Q_OBJECT
 
@@ -53,7 +61,7 @@ namespace IQmol {
             //virtual void loadFromFile(QString const& filePath) = 0
             //void align(QList<qglviewer::Vec> const& current);
 
-      		 virtual double radius() = 0;
+            virtual double radius() = 0;
 
             void draw() const;
 
@@ -71,7 +79,9 @@ namespace IQmol {
                   Layer::Visible | Layer::Nested);
             }
 
-            qglviewer::Vec centerOfNuclearCharge();
+            // This can be used to keep a running tally for computing the
+            // center of nuclear 
+            void centerOfNuclearCharge(qglviewer::Vec&, int& totalZ);
 
             void translateToCenter(GLObjectList const& selection);
 
@@ -100,6 +110,7 @@ namespace IQmol {
             void softUpdate(); // Issue if the number of primitives does not change
             void pushAnimators(AnimatorList const&);
             void popAnimators(AnimatorList const&);
+
             void postCommand(QUndoCommand*);
             void postMessage(QString const&);
 

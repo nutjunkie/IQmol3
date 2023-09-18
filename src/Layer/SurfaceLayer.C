@@ -168,7 +168,6 @@ void Surface::setColors(QColor const& negative, QColor const& positive)
    m_colorPositive[2] = positive.blueF();
    m_colorPositive[3] = positive.alphaF();
 
-//qDebug() << "Need to sync colors to Data::Surface";
 return;
    // For some bizarre reason, calling the Data::Surface::setColors causes the
    // negative and positive colors (which are supposed to be const!) to

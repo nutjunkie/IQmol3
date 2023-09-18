@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "MacroMolecule.h"
+#include "Residue.h"
 #include "Math/Vec.h"
 #include <QVector>
 
@@ -38,13 +39,13 @@ namespace Data {
          { 
             qDebug() << "Attempting to set chain Id to" << chainId;
             QString const letters("ABCDEFGHIJKLMNOPQRTSUVWXYZ");
-            m_chainId = letters.indexOf(chainId);
-            qDebug() << "set to" << m_chainId;
+            m_chainIndex = letters.indexOf(chainId);
+            qDebug() << "set to" << m_chainIndex;
          }
 
          Type::ID typeID() const { return Type::ProteinChain; }
 
-         int chainId() const { return m_chainId; }
+         int chainIndex() const { return m_chainIndex; }
 
          unsigned nResidues() const { return m_groups.size(); }
 
@@ -52,13 +53,15 @@ namespace Data {
 
          QVector<Math::Vec3> const& peptideOxygens() const { return m_peptideOxygens; }
 
-         QVector<int> const& secondaryStructures() const { return m_secondaryStructure; }
+         QVector<SecondaryStructure> const& 
+            secondaryStructures() const { return m_secondaryStructure; }
     
          void appendAlphaCarbon(Math::Vec3 const& v) { m_alphaCarbons.append(v); }
 
          void appendPeptideOxygen(Math::Vec3 const& v) { m_peptideOxygens.append(v); }
 
-         bool setSecondaryStructure(QVector<int> const& secondaryStructure)
+         bool setSecondaryStructure(
+             QVector<SecondaryStructure> const& secondaryStructure)
          {
             unsigned nRes(nResidues());
             if (m_alphaCarbons.size() != nRes) return false;
@@ -70,8 +73,8 @@ namespace Data {
          }
 
       private:
-         int m_chainId;
-         QVector<int> m_secondaryStructure;
+         int m_chainIndex;
+         QVector<SecondaryStructure> m_secondaryStructure;
          QVector<Math::Vec3> m_alphaCarbons;
          QVector<Math::Vec3> m_peptideOxygens;
    };

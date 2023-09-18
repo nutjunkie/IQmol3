@@ -22,20 +22,19 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
-#include "Data/Bank.h"
 #include <QFileInfo>
 
 
-using qglviewer::Vec;
-
-class QUndoCommand;
-
 namespace IQmol {
+
+   namespace Data {
+      class Bank;
+   }   
 
    namespace Layer {
 
       // This is the top-level Layer to handle a collection of Components. 
-      class System : public Base 
+      class System : public Component
       {
          Q_OBJECT
 
@@ -50,40 +49,14 @@ namespace IQmol {
                setText(m_inputFile.completeBaseName());
             }
 
-            qglviewer::Vec center();
-
             void appendData(Data::Bank&);
 
-            void translateToCenter(GLObjectList const& selection = GLObjectList());
-
-            //qglveiwer::Frame const& getReferenceFrame() const { return m_frame; }
-
-            //void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
-    
-
-         Q_SIGNALS:
-            void softUpdate(); // Issue when number of primitives does not change
-
-            void postCommand(QUndoCommand*);
+            double radius();
 
          private:
-            void translate(Vec const&);
-
-            void rotate(qglviewer::Quaternion const&);
-
-            void alignToAxis(qglviewer::Vec const& point, 
-               qglviewer::Vec const& axis = qglviewer::Vec(0.0, 0.0, 1.0));
-
-            void rotateIntoPlane(qglviewer::Vec const& point, 
-               qglviewer::Vec const& axis = qglviewer::Vec(0.0, 0.0, 1.0),
-               qglviewer::Vec const& normal = qglviewer::Vec(0.0, 1.0, 0.0));
-
             void appendData(Layer::List& list);
 
             QFileInfo m_inputFile;
-
-            //qglveiwer::Frame m_frame;
-            
       };
 
    } // end namespace Layer

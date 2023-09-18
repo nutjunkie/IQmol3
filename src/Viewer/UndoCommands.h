@@ -23,6 +23,7 @@
 
 #include "Viewer/Animator.h"
 #include "Layer/Layer.h"
+#include "Layer/MoleculeLayer.h"
 #include "QGLViewer/vec.h"
 #include "Layer/PrimitiveLayer.h"
 #include <QUndoCommand>
@@ -41,9 +42,7 @@ namespace IQmol {
 namespace Layer {
    class Atom;
    class Bond;
-   class Molecule;
    class System;
-   class Component;
    class Constraint;
 }
 
@@ -93,14 +92,14 @@ namespace Command {
    };
 
 
-   class MoveComponentObjects : public QUndoCommand 
-   {
+
+   class MoveObjects : public QUndoCommand {
       public:
-         MoveComponentObjects(Layer::Component*, QString const& text = "Move items", 
+         MoveObjects(Layer::Component*, QString const& text = "Move items", 
             bool const animiate = false, bool invalidateSymmetry = true);
-         MoveComponentObjects(GLObjectList const&, QString const& text = "Move items", 
+         MoveObjects(GLObjectList const&, QString const& text = "Move items", 
             bool const animiate = false, bool invalidateSymmetry = true);
-         ~MoveComponentObjects();
+         ~MoveObjects();
            
          virtual void redo();
          virtual void undo();
@@ -122,63 +121,6 @@ namespace Command {
          QString m_msg;
          AnimatorList m_animatorList;
    };
-
-
-
-   class MoveObjects : public QUndoCommand {
-      public:
-         MoveObjects(Layer::Molecule*, QString const& text = "Move items", 
-            bool const animiate = false, bool invalidateSymmetry = true);
-         MoveObjects(GLObjectList const&, QString const& text = "Move items", 
-            bool const animiate = false, bool invalidateSymmetry = true);
-         ~MoveObjects();
-           
-         virtual void redo();
-         virtual void undo();
-         void setMessage(QString const& msg) { m_msg = msg; }
-
-      protected:
-         Layer::Molecule* m_molecule;
-
-      private:
-         void loadFrames(QList<qglviewer::Frame> const& frames);
-         void saveFrames(QList<qglviewer::Frame>& frames);
-         QList<qglviewer::Frame> m_initialFrames;
-         QList<qglviewer::Frame> m_finalFrames;
-
-         GLObjectList m_objectList;
-         bool m_finalStateSaved;
-         bool m_animate;
-         bool m_invalidateSymmetry;
-         QString m_msg;
-         AnimatorList m_animatorList;
-   };
-
-
-   class MoveSystemObjects : public QUndoCommand {
-      public:
-         MoveSystemObjects(Layer::System*, QString const& text = "Move items");
-
-         virtual void redo();
-         virtual void undo();
-
-         void setMessage(QString const& msg) { m_msg = msg; }
-
-      protected:
-         Layer::System* m_system;
-
-      private:
-         void loadFrames(QList<qglviewer::Frame> const& frames);
-         void saveFrames(QList<qglviewer::Frame>& frames);
-         QList<qglviewer::Frame> m_initialFrames;
-         QList<qglviewer::Frame> m_finalFrames;
-
-         GLObjectList m_objectList;
-         bool m_finalStateSaved;
-         QString m_msg;
-   };
-
-
 
 
 

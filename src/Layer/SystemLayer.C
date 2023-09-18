@@ -22,18 +22,20 @@
 
 #include "SystemLayer.h"
 #include "MoleculeLayer.h"
-#include "MacroMoleculeLayer.h"
 #include "LayerFactory.h"
+
+#include "Data/Bank.h"
 #include "Viewer/UndoCommands.h"
 
 #include <QtDebug>
+#include "Util/QsLog.h"
 
 
 namespace IQmol {
 namespace Layer {
 
 
-System::System(QString const& label, QObject* parent) : Base(label, parent)
+System::System(QString const& label, QObject* parent) : Component(label, parent)
 {
    setFlags( Qt::ItemIsEnabled 
             | Qt::ItemIsEditable
@@ -110,102 +112,16 @@ void System::appendData(Layer::List& list)
 }
 
 
-// This is not quite what we want when there is more than one components.
-qglviewer::Vec System::center()
+double System::radius()
 {
-   qglviewer::Vec center;
+   double r(0);
+   ComponentList components(findLayers<Component>());
 
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) {
-       center += component->centerOfNuclearCharge();
+   for (auto& c: components) {
+       r = std::max(r, c->radius());
    }
 
-   if (list.size() > 0) center /= list.size();
-
-   return center;
-}
- 
-
-void System::translateToCenter(GLObjectList const& selection)
-{  
-   Command::MoveSystemObjects* cmd(new Command::MoveSystemObjects(this, "Translate"));
-   
-   // The ordering here is important!!
-   Atom* atom;
-   AtomList atomList;
-   GLObjectList::const_iterator iter;
-   for (iter = selection.begin(); iter != selection.end(); ++iter) {
-       if ( (atom = qobject_cast<Atom*>(*iter)) ) atomList.append(atom);
-   }   
-qDebug() << "System::TranslateToCenter: " << selection.size();
-   
-   switch (atomList.size()) {
-      case 0:
-         translate(-center());
-         break;
-
-      case 1:
-         translate(-atomList[0]->getPosition());
-         break;
-
-      case 2:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         break;
-
-      case 3:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         rotateIntoPlane(atomList[2]->getPosition());
-         break;
-
-      default: 
-         {
-            int totalCharge(0);
-            qglviewer::Vec center;
-            for (auto iter = atomList.begin(); iter != atomList.end(); ++iter) {
-                int Z = (*iter)->getAtomicNumber();
-                totalCharge += Z;
-                center += Z * (*iter)->getPosition();
-            }    
-            if (totalCharge > 0.0) center = center / totalCharge;
-qDebug() << "Translating system to: " << center.x << center.y << center.z;
-            translate(-center);
-         }
-         break;
-   }   
-   
-   postCommand(cmd);
-   softUpdate();
-}
-
-
-void System::translate(qglviewer::Vec const& displacement)
-{
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) component->translate(displacement);
-}
-
-
-void System::rotate(qglviewer::Quaternion const& rotation)
-{
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) component->rotate(rotation);
-}
-
-
-void System::alignToAxis(qglviewer::Vec const& point, qglviewer::Vec const& axis)
-{
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) component->alignToAxis(point, axis);
-}
-
-
-void System::rotateIntoPlane(qglviewer::Vec const& pt, qglviewer::Vec const& axis,
-   qglviewer::Vec const& normal)
-{
-   ComponentList list(findLayers<Component>(Children));
-   for (auto component : list) component->rotateIntoPlane(pt, axis, normal);
+   return r;
 }
 
 } } // end namespace IQmol::Layer

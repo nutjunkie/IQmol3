@@ -28,19 +28,29 @@
 namespace IQmol {
 namespace Data {
 
+    enum class SecondaryStructure 
+    {
+       Coil, 
+       Helix, 
+       Sheet
+    };
+
    // Data class a group of primitives, e.g. residue, solvent molecule
    class Residue : public Group {
 
       public:
          Residue(AminoAcid_t const type, unsigned const index) 
           : Group(QString::number(index) + " " + AminoAcid::toString(type)),
-            m_aminoAcid(type)  { }
+            m_aminoAcid(type), m_index(index)  { }
 
          Type::ID typeID() const { return Type::Residue; }
+
+         AminoAcid_t type() const { return m_aminoAcid.type(); }
+         unsigned  index() const { return m_index; }
          
       private:
-         unsigned  m_index;
          AminoAcid m_aminoAcid;
+         unsigned  m_index;
    };
 
 } } // end namespace IQmol::Data

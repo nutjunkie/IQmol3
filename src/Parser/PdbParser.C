@@ -111,7 +111,6 @@
 
 #include "TextStream.h"
 #include "Data/Atom.h"
-#include "Data/Residue.h"
 #include "Data/Geometry.h"
 #include "Data/ProteinChain.h"
 #include "Data/Solvent.h"
@@ -133,16 +132,14 @@ bool Pdb::parse(TextStream& textStream)
 {
    bool ok(true);
 
-   QVector<SecondaryStructure> secondaryStructures;
-
    Data::ProteinChain* chain(0);
    Data::Geometry* geometry(0);
    Data::Solvent* solvent(0);
    Data::Residue* residue(0);
 
    QString line, key;
-   QString currentChainId;
    QString currentGeometry;
+   QChar   currentChainId;
 
    unsigned currentResidueId(0);
 
@@ -150,12 +147,41 @@ bool Pdb::parse(TextStream& textStream)
       line = textStream.nextLine();
       key  = line.mid(0, 6).trimmed().toUpper();  // eg. CHA
 
-      if (key == "ATOM" || key == "HETATM") {
+      if (key == "COMPND") {
+         if (line.contains("MOLECULE")) {
+            QString s(line);
+            s.remove(0,20); 
+            m_label += s;
+         } 
+
+      }else if (key == "HELIX") {
+         QString chainId(line.mid(19,1));
+         
+         SS ss;
+         ss.chain = chainId[0];
+         ss.start = line.mid(21,4).toInt(&ok);  if (!ok) goto error;
+         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
+         ss.type  = Data::SecondaryStructure::Helix;
+
+         m_secondaryStructure.append(ss);
+
+      }else if (key == "SHEET") {
+         QString chainId(line.mid(21,1));
+
+         SS ss;
+         ss.chain = chainId[0];
+         ss.start = line.mid(22,4).toInt(&ok);  if (!ok) goto error;
+         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
+         ss.type  = Data::SecondaryStructure::Sheet;
+ 
+         m_secondaryStructure.append(ss);
+
+      }else if (key == "ATOM" || key == "HETATM") {
 
          QString alternateLocation(line.mid(16, 1).trimmed());
          if (!alternateLocation.isEmpty() && alternateLocation != 'A') continue;
 
-         QString label(      line.mid(12, 4).trimmed());  // eg. CA
+         QString label(      line.mid(12, 4).trimmed());    // eg. CA
          QString residueName(line.mid(17, 3).trimmed());    // eg. HIS
          QString chainId(    line.mid(21, 1));              // eg. A
          QString atomSymbol( line.mid(76, 2).trimmed());    // eg. C
@@ -171,8 +197,8 @@ bool Pdb::parse(TextStream& textStream)
 
          if (key == "ATOM") {
 
-            if (chainId != currentChainId) {
-               currentChainId = chainId;
+            if (chainId[0] != currentChainId) {
+               currentChainId = chainId[0];
                if (m_chains.contains(currentChainId)) {
                   chain = m_chains[currentChainId];
                }else {
@@ -198,11 +224,11 @@ bool Pdb::parse(TextStream& textStream)
                chain->appendPeptideOxygen(v);
             }
 
-         }else if (residueName == "HOH") {
+         }else if (residueName == "HOH") {  // HETATM
             if (!solvent) solvent = new Data::Solvent("Water");
             solvent->addSolvent(qv);
 
-         }else {
+         }else {  // HETATM
             QString geom = chainId+QString::number(residueId);
             if (geom != currentGeometry) {
                currentGeometry = geom;
@@ -210,9 +236,8 @@ bool Pdb::parse(TextStream& textStream)
                if (m_geometries.contains(currentGeometry)) {
                   geometry = m_geometries[currentGeometry];
                }else {
-                  QLOG_DEBUG() << "adding new geometry  "<< currentGeometry;
                   geometry = new Data::Geometry();
-                  geometry->name(residueName);
+                  geometry->name(residueName + " " + geom);
                   m_geometries.insert(currentGeometry, geometry);
                }
             }
@@ -220,46 +245,17 @@ bool Pdb::parse(TextStream& textStream)
             geometry->append(atomSymbol, qv);
          }         
 
-      }else if (key == "COMPND") {
-         if (line.contains("MOLECULE")) {
-            QString s(line);
-            s.remove(0,20); 
-            m_label += s;
-         } 
-
-      }else if (key == "HELIX") {
-         QString chainId(line.mid(19,1).trimmed());
-         
-         SecondaryStructure ss;
-         ss.chain = chainId[0];
-         ss.start = line.mid(21,4).toInt(&ok);  if (!ok) goto error;
-         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
-         ss.type  = HELIX;
-
-         secondaryStructures.append(ss);
-
-      }else if (key == "SHEET") {
-         QString chainId(line.mid(21,1).trimmed());
-
-         SecondaryStructure ss;
-         ss.chain = chainId[0];
-         ss.start = line.mid(22,4).toInt(&ok);  if (!ok) goto error;
-         ss.stop  = line.mid(33,4).toInt(&ok);  if (!ok) goto error;
-         ss.type  = STRAND;
- 
-         secondaryStructures.append(ss);
-
       }else if (key == "ENDMDL" || key == "END") {
             break;
       } 
    }
 
-   if (!setSecondaryStructure(secondaryStructures)) {
+   if (!setSecondaryStructure()) {
       m_errors.append("Failed to set secondary structure information");
       goto error;
    }
 
-   if (!saveSecondaryStructure(secondaryStructures)) {
+   if (!saveSecondaryStructure()) {
       m_errors.append("Failed to save secondary structure information");
       goto error;
    }
@@ -283,29 +279,51 @@ bool Pdb::parse(TextStream& textStream)
 }
 
 
-bool Pdb::setSecondaryStructure(QVector<SecondaryStructure> const& secondaryStructures)
+Data::SecondaryStructure 
+   Pdb::getSecondaryStructure(QChar const& chain, int const index)
+{
+   Data::SecondaryStructure s(Data::SecondaryStructure::Coil);
+
+   for (auto& ss : m_secondaryStructure) {
+       if (ss.chain != chain) continue;
+       if (index >= ss.start && index <= ss.stop) {
+          s = ss.type;
+          break;
+       }
+   }
+
+   return s;
+}
+
+
+bool Pdb::setSecondaryStructure()
 {
    bool ok(true);
 
    for (auto const& key : m_chains.keys()) {
-       unsigned nResidues(m_chains[key]->nResidues());
-       QVector<int> SS(nResidues,0);
+       Data::ProteinChain* chain(m_chains[key]);
+       QList<Data::Group*> groups(chain->groups());
 
-       for (auto& ss : secondaryStructures) {
-           if (ss.chain != key) continue;
+       QVector<Data::SecondaryStructure> secondaryStructure;
 
-           for (int i(ss.start-1); i < ss.stop; ++i) {
-               SS[i] = ss.type;
+       for (auto& group : groups) {
+           Data::Residue* residue = dynamic_cast<Data::Residue*>(group); 
+           if (residue) {
+              int index(residue->index());
+              Data::SecondaryStructure
+                  ss(getSecondaryStructure(key, index));
+              secondaryStructure.push_back(ss);
            }
        }
 
-       ok = ok && m_chains[key]->setSecondaryStructure(SS);
+       chain->setSecondaryStructure(secondaryStructure); 
    }
+
    return ok;
 }
 
 
-bool Pdb::saveSecondaryStructure(QVector<SecondaryStructure> const& secondaryStructures)
+bool Pdb::saveSecondaryStructure()
 {
    QFileInfo fileInfo(m_filePath);
    fileInfo.setFile(fileInfo.dir(),"SecStruc.dat");
@@ -318,8 +336,9 @@ bool Pdb::saveSecondaryStructure(QVector<SecondaryStructure> const& secondaryStr
 
    QByteArray buffer;
 
-   for (auto const& ss : secondaryStructures) {
-       QString line = QString("%1  %2  %3  %4\n").arg(ss.type, 1)
+   for (auto const& ss : m_secondaryStructure) {
+
+       QString line = QString("%1  %2  %3  %4\n").arg(int(ss.type), 1)
                                                  .arg(ss.chain,1)
                                                  .arg(ss.start,4)
                                                  .arg(ss.stop, 4);

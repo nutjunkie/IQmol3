@@ -390,6 +390,16 @@ QToolButton:checked
           </item>
           <item>
            <property name="text">
+            <string>Primary Spectrum</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Custom</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>Brighten</string>
            </property>
           </item>
@@ -411,11 +421,6 @@ QToolButton:checked
           <item>
            <property name="text">
             <string>Rotate</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Custom</string>
            </property>
           </item>
          </widget>

@@ -7,6 +7,8 @@
 
 using namespace IQmol::Math;
 
+using namespace IQmol::Data;
+
 namespace cpdb {
 
 inline Vec3 lerp(Vec3 v0, Vec3 v1, double t) 
@@ -23,11 +25,12 @@ inline void Flip(PeptidePlane &pp)
 }
 
 
-inline void Transition(PeptidePlane const& pp, int& type1, int& type2) 
+inline void Transition(PeptidePlane const& pp, SecondaryStructure& type1, 
+   SecondaryStructure& type2) 
 {
-    int t1 = pp.Residue1.ss;
-    int t2 = pp.Residue2.ss;
-    int t3 = pp.Residue3.ss;
+    SecondaryStructure t1 = pp.Residue1.ss;
+    SecondaryStructure t2 = pp.Residue2.ss;
+    SecondaryStructure t3 = pp.Residue3.ss;
     type1 = t2;
     type2 = t2;
 
@@ -160,8 +163,8 @@ void translateProfile(std::vector<Vec3> &p, double dx, double dy, int lenP)
 void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2, 
    int n, std::vector<Vec3> &p1, std::vector<Vec3> &p2) 
 {
-    int type0 = pp1.Residue1.ss;
-    int type1, type2;
+    SecondaryStructure type0 = pp1.Residue1.ss;
+    SecondaryStructure type1, type2;
     Transition(pp1, type1, type2);
 
     double offset1 = ribbonOffset;
@@ -175,8 +178,8 @@ void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2,
     }
 
     switch (type1) {
-    case HELIX:
-        if (type0 == STRAND) {
+    case SecondaryStructure::Helix:
+        if (type0 == SecondaryStructure::Sheet) {
             roundedRectangleProfile(p1, n, 0.0f, 0.0f);
         }
         else {
@@ -184,15 +187,15 @@ void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2,
         }
         translateProfile(p1, 0.0f, offset1, n);
         break;
-    case STRAND:
-        if (type2 == STRAND) {
+    case SecondaryStructure::Sheet:
+        if (type2 == SecondaryStructure::Sheet) {
             rectangleProfile(p1, n, arrowWidth, arrowHeight);
         } else {
             rectangleProfile(p1, n, arrowHeadWidth, arrowHeight);
         }
         break;
     default:
-        if (type0 == STRAND) {
+        if (type0 == SecondaryStructure::Sheet) {
             ellipseProfile(p1, n, 0.0f, 0.0f);
         } else {
             ellipseProfile(p1, n, tubeSize, tubeSize);
@@ -200,18 +203,18 @@ void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2,
         break;
     }
     switch (type2) {
-    case HELIX:
+    case SecondaryStructure::Helix:
         roundedRectangleProfile(p2, n, ribbonWidth, ribbonHeight);
         translateProfile(p2, 0.0f, offset2, n);
         break;
-    case STRAND:
+    case SecondaryStructure::Sheet:
         rectangleProfile(p2, n, arrowWidth, arrowHeight);
         break;
     default:
         ellipseProfile(p2, n, tubeSize, tubeSize);
         break;
     }
-    if (type1 == STRAND && type2 != STRAND) {
+    if (type1 == SecondaryStructure::Sheet && type2 != SecondaryStructure::Sheet) {
         rectangleProfile(p2, n, 0.0f, arrowHeight);
     }
 }
@@ -228,13 +231,13 @@ void segmentColors(const PeptidePlane &pp, Vec3 &c1, Vec3 &c2)
     // c1 = fauxgl.MakeColor(Viridis.Color(t1))
     // c2 = fauxgl.MakeColor(Viridis.Color(t2))
     // return
-    int type1, type2;
+    SecondaryStructure type1, type2;
     Transition(pp, type1, type2);
     switch (type1) {
-    case HELIX:
+    case SecondaryStructure::Helix:
         c1 = Vec3{1.0f, 0.71f, 0.2f};
         break;
-    case STRAND:
+    case SecondaryStructure::Sheet:
         c1 = Vec3{0.96f, 0.45f, 0.21f};
         break;
     default:
@@ -242,17 +245,17 @@ void segmentColors(const PeptidePlane &pp, Vec3 &c1, Vec3 &c2)
         break;
     }
     switch (type2) {
-    case HELIX:
+    case SecondaryStructure::Helix:
         c2 = Vec3{1.0f, 0.71f, 0.2f};
         break;
-    case STRAND:
+    case SecondaryStructure::Sheet:
         c2 = Vec3{0.96f, 0.45f, 0.21f};
         break;
     default:
         c2 = Vec3{0.02f, 0.47f, 0.47f};
         break;
     }
-    if (type1 == STRAND) {
+    if (type1 == SecondaryStructure::Sheet) {
         c2 = c1;
     }
 }
@@ -361,8 +364,8 @@ inline void splineForPlanes(
 void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1, 
     const PeptidePlane &pp2, const PeptidePlane &pp3, const PeptidePlane &pp4) 
 {
-    int type0 = pp2.Residue1.ss;
-    int type1, type2;
+    SecondaryStructure type0 = pp2.Residue1.ss;
+    SecondaryStructure type1, type2;
     Transition(pp2, type1, type2);
     Vec3 c1, c2;
     segmentColors(pp2, c1, c2);
@@ -375,14 +378,14 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
     segmentProfiles(pp2, pp3, profileDetail, profile1, profile2);
 
     auto easeFunc = &Linear;
-    if (!(type1 == STRAND && type2 != STRAND)) {
+    if (!(type1 == SecondaryStructure::Sheet && type2 != SecondaryStructure::Sheet)) {
 
         easeFunc = &InOutQuad;
     }
-    if (type0 == STRAND && type1 != STRAND) {
+    if (type0 == SecondaryStructure::Sheet && type1 != SecondaryStructure::Sheet) {
         easeFunc = &OutCirc;
     }
-    // if type1 != STRAND && type2 == STRAND {
+    // if type1 != SecondaryStructure::Sheet && type2 == SecondaryStructure::Sheet {
     //  easeFunc = &ease.InOutSquare
     // }
 
@@ -413,7 +416,7 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
     for (int i = 0; i < splineSteps; i++) {
         double t0 = easeFunc(((double)i) / splineSteps);
         double t1 = easeFunc(((double)i + 1) / splineSteps);
-        if (i == 0 && type1 == STRAND && type2 != STRAND) {
+        if (i == 0 && type1 == SecondaryStructure::Sheet && type2 != SecondaryStructure::Sheet) {
             Vec3 p00 = splines1[0][i];
             Vec3 p10 = splines1[profileDetail / 4][i];
             Vec3 p11 = splines1[2 * profileDetail / 4][i];
@@ -488,7 +491,7 @@ PeptidePlane NewPeptidePlane(
    Math::Vec3 const& ca1, 
    Math::Vec3 const& o1,
    Math::Vec3 const& ca2,
-   int ssr1, int ssr2, int ssr3, 
+   SecondaryStructure ssr1, SecondaryStructure ssr2, SecondaryStructure ssr3, 
    int idr1, int idr2, int idr3)
 {
     PeptidePlane newPP;
@@ -523,7 +526,7 @@ Mesh createChainMesh(Data::ProteinChain const& data)
 {
    QVector<Vec3> const& alphaCarbons(data.alphaCarbons());
    QVector<Vec3> const& peptideOxygens(data.peptideOxygens());
-   QVector<int> const & secondaryStructures(data.secondaryStructures());
+   QVector<SecondaryStructure> const & secondaryStructures(data.secondaryStructures());
 
    int nResidues(alphaCarbons.size());
    Mesh mesh;

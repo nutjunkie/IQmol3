@@ -23,10 +23,9 @@
 
 #include "DataList.h"
 
-#define COIL 0
-#define HELIX 1
-#define STRAND 2
-#define INC_CAPACITY 15
+//#define COIL 0
+//#define HELIX 1
+//#define STRAND 2
 
 
 namespace IQmol {
@@ -39,7 +38,6 @@ namespace Data {
       ASX, GLX, // ambiguous ASN/ASP and GLN/GLU
       XXX       // unknown 
    };
-
 
    class AminoAcid : public Base 
    {

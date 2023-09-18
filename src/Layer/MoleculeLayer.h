@@ -91,11 +91,10 @@ namespace IQmol {
             ~Molecule();
 
             double radius();
-
-//double onsagerRadius();
    
 // Attempts to save the molecule, returning false if the operation
 // was unsuccessful or canceled by the user.
+// Can this be moved up the Layer heirarchy
 bool save(bool prompt = false);
    
             // Appends the Layers in the DataList, but only if an existing Layer

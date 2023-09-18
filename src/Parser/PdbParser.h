@@ -27,6 +27,7 @@
 
 #include "Parser.h"
 #include "Data/PdbData.h"
+#include "Data/Residue.h"
 #include <QVector>
 
 
@@ -48,23 +49,27 @@ namespace Parser {
          bool parse(TextStream&);
 
       private:
-         struct SecondaryStructure
+         struct SS
          {
+            Data::SecondaryStructure type;
             QChar chain;
-            int type;
             int start;
             int stop;
          };
 
          QString m_label;
 
-         QMap<QString, Data::ProteinChain*> m_chains;
+         QMap<QChar, Data::ProteinChain*> m_chains;
          QMap<QString, Data::Geometry*> m_geometries;  // HETATM components
-
+         QVector<SS> m_secondaryStructure;
+         
 		 // Scatters the interval-based SS specifications read from the 
          // PDB to one type per residue
-         bool setSecondaryStructure(QVector<SecondaryStructure> const&);
-         bool saveSecondaryStructure(QVector<SecondaryStructure> const&);
+         bool setSecondaryStructure();
+         bool saveSecondaryStructure();
+
+         Data::SecondaryStructure
+            getSecondaryStructure(QChar const& chain, int const index);
    };
 
 } } // end namespace IQmol::Parser

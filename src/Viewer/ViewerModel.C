@@ -262,6 +262,10 @@ void ViewerModel::insertMoleculeById(QString identifier)
 
 void ViewerModel::newMoleculeMenu()
 {
+   forAllSystems(
+      std::bind(&Layer::System::setCheckState, std::placeholders::_1, Qt::Unchecked)
+   );
+
    forAllMolecules(
       std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
    );
@@ -309,9 +313,8 @@ void ViewerModel::removeMolecule(Layer::Molecule* molecule)
 // the last visible molecule.
 Layer::Molecule* ViewerModel::activeMolecule()
 {
-   Layer::Molecule* mol(0);
-   if (!moleculeList().isEmpty()) mol = moleculeList().last();
-   return  mol;
+   MoleculeList molecules = moleculeList();
+   return molecules.isEmpty() ? 0 : molecules.last();
 }
 
 
@@ -358,9 +361,8 @@ void ViewerModel::removeSystem(Layer::System* system)
 // the last visible system.
 Layer::System* ViewerModel::activeSystem()
 {
-   Layer::System* system(0);
-   if (!systemList().isEmpty()) system = systemList().last();
-   return  system;
+   SystemList systems = systemList();
+   return  systems.isEmpty() ? 0 : systems.last();
 }
 
 
@@ -1016,14 +1018,16 @@ void ViewerModel::minimizeEnergy()
 
 void ViewerModel::translateToCenter()
 {
-   // forAllMolecules does not nest, so we don't pick up System molecules
-   forAllMolecules(
-      std::bind(&Layer::Molecule::translateToCenter, std::placeholders::_1, m_selectedObjects)
-   );
+   // If we translate all Molecules and all Systems, the System Molecules 
+   // get translated twice, so just do the active Component.
 
-   forAllSystems(
-      std::bind(&Layer::System::translateToCenter, std::placeholders::_1, m_selectedObjects)
-   );
+   Layer::System* system(activeSystem());
+   if (system) {
+      system->translateToCenter(m_selectedObjects);
+   }else {
+      Layer::Molecule* molecule(activeMolecule());
+      molecule->translateToCenter(m_selectedObjects);
+   }
 }
 
 
