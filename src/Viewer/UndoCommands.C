@@ -160,7 +160,7 @@ MoveObjects::MoveObjects(GLObjectList const& objectList, QString const& text,
    m_objectList(objectList), m_finalStateSaved(false), m_animate(animate), 
    m_invalidateSymmetry(invalidateSymmetry)
 { 
-   // Need a Molecule handle for the Viewer update (yugh)
+   // Need a Component handle for the Viewer update (yugh)
    ComponentList parents;
    int i(0);
 
@@ -170,7 +170,7 @@ MoveObjects::MoveObjects(GLObjectList const& objectList, QString const& text,
       ++i;
    }
 
-   if (!m_component) { QLOG_ERROR() << "MoveObjects constructor called with no molecule"; }
+   if (!m_component) { QLOG_ERROR() << "MoveObjects constructor called with no Component"; }
    saveFrames(m_initialFrames);
 }
 

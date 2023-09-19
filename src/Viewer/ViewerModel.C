@@ -286,6 +286,7 @@ Layer::Molecule* ViewerModel::newMolecule()
       this, SLOT(updateVisibleObjects()));
    connect(molecule, SIGNAL(softUpdate()), 
       this, SIGNAL(updated()));
+
    connect(molecule, SIGNAL(postMessage(QString const&)), 
       this, SIGNAL(displayMessage(QString const&)));
    connect(molecule, SIGNAL(postCommand(QUndoCommand*)), 
@@ -346,6 +347,15 @@ Layer::System* ViewerModel::newSystem()
       this, SLOT(updateVisibleObjects()));
    connect(system, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
+
+   connect(system, SIGNAL(postMessage(QString const&)), 
+      this, SIGNAL(displayMessage(QString const&)));
+   connect(system, SIGNAL(postCommand(QUndoCommand*)), 
+      this, SIGNAL(postCommand(QUndoCommand*)));
+   connect(system, SIGNAL(pushAnimators(AnimatorList const&)), 
+      this, SIGNAL(pushAnimators(AnimatorList const&)));
+   connect(system, SIGNAL(popAnimators(AnimatorList const&)), 
+      this, SIGNAL(popAnimators(AnimatorList const&)));
 
    return system;
 }

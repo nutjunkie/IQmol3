@@ -25,6 +25,8 @@
 #include "Color.h"
 #include "ColorM.h"
 
+//https://tympanus.net/codrops/2021/12/07/coloring-with-code-a-programmatic-approach-to-design/
+
 
 namespace IQmol {
 namespace Color {

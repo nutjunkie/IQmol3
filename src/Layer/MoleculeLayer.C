@@ -2268,54 +2268,6 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
 }
 
 
-/*
-void Molecule::translateToCenter(GLObjectList const& selection)
-{
-   Command::MoveObjects* cmd(new Command::MoveObjects(this, "Translate to center", true));
-
-   // the ordering here is important!!
-   Atom* atom;
-   AtomList atomList;
-   GLObjectList::const_iterator iter;
-   for (iter = selection.begin(); iter != selection.end(); ++iter) {
-       if ( (atom = qobject_cast<Atom*>(*iter)) ) atomList.append(atom); 
-   }
-
-   switch (atomList.size()) {
-      case 0:
-         translate(-centerOfNuclearCharge());
-         break;
-      case 1:
-         translate(-atomList[0]->getPosition());
-         break;
-      case 2:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         break;
-      case 3:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         rotateIntoPlane(atomList[2]->getPosition());
-         break;
-
-      default:
-         translate(-centerOfNuclearCharge(true));
-         break;
-   }
-
-   postCommand(cmd);
-
-   softUpdate();
-   centerOfNuclearChargeAvailable(centerOfNuclearCharge());
-   reindexAtomsAndBonds();
-   // remove this as I think it is unnecessary and can cause a premature
-   // setting of number of atom for the GeometryList.
-   // saveToCurrentGeometry();
-   m_modified = true;
-}
-*/
-
-
 
 // The following is essentially a wrapper around OBMol::FindChildren
 AtomList Molecule::getContiguousFragment(Atom* first, Atom* second)

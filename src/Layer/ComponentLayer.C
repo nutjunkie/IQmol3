@@ -41,6 +41,7 @@ void Component::draw() const
 
 void Component::translateToCenter(GLObjectList const& selection)
 {
+   qDebug() << "Component::translateToCenter called";
    bool animate(true);
    Command::MoveObjects* cmd =
        new Command::MoveObjects(this, "Translate to center", animate);
