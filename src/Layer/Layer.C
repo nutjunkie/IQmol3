@@ -27,7 +27,8 @@
 namespace IQmol {
 namespace Layer {
 
-Base::Base(QString const& text, QObject* parent) : QObject(parent), 
+Base::Base(QString const& text, QObject* parent) : 
+   QObject(parent), 
    QStandardItem(text), 
    m_configurator(0), 
    m_persistentParent(0), 

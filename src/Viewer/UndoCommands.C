@@ -22,6 +22,7 @@
 
 #include "UndoCommands.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ComponentLayer.h"
 #include "Layer/SystemLayer.h"
 #include "Layer/AtomLayer.h"
 #include "Layer/BondLayer.h"
@@ -38,8 +39,10 @@ namespace Command {
 
 
 // --------------- AddHydrogens ---------------
-AddHydrogens::AddHydrogens(Layer::Molecule* molecule, Layer::PrimitiveList const& primitives)
-  : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
+AddHydrogens::AddHydrogens(
+   Layer::Molecule* molecule, 
+   Layer::PrimitiveList const& primitives)
+ : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
 {
    Layer::Atom *begin, *end, *atom;
    Layer::Bond *bond;
@@ -110,6 +113,7 @@ void AddHydrogens::undo()
 }
 
 
+
 // --------------- EditPrimitives ---------------
 EditPrimitives::~EditPrimitives()
 {
@@ -140,39 +144,40 @@ void EditPrimitives::undo()
 }
 
 
+
 // --------------- MoveObjects ---------------
-MoveObjects::MoveObjects(Layer::Molecule* molecule, QString const& text, bool const animate,
-   bool const invalidateSymmetry) : QUndoCommand(text), m_molecule(molecule), 
+MoveObjects::MoveObjects(Layer::Component* component, QString const& text, bool const animate,
+   bool const invalidateSymmetry) : QUndoCommand(text), m_component(component), 
    m_finalStateSaved(false), m_animate(animate), m_invalidateSymmetry(invalidateSymmetry)
 { 
-   m_objectList = m_molecule->findLayers<Layer::GLObject>(Layer::Children);
+   m_objectList = m_component->findLayers<Layer::GLObject>(Layer::Children);
    saveFrames(m_initialFrames);
 }
 
 
 MoveObjects::MoveObjects(GLObjectList const& objectList, QString const& text, 
-   bool const animate, bool const invalidateSymmetry) : QUndoCommand(text), m_molecule(0),
+   bool const animate, bool const invalidateSymmetry) : QUndoCommand(text), m_component(0),
    m_objectList(objectList), m_finalStateSaved(false), m_animate(animate), 
    m_invalidateSymmetry(invalidateSymmetry)
 { 
-   // Need a Molecule handle for the Viewer update (yugh)
-   MoleculeList parents;
+   // Need a Component handle for the Viewer update (yugh)
+   ComponentList parents;
    int i(0);
 
-   while (!m_molecule && i < m_objectList.size()) {
-      parents = m_objectList[i]->findLayers<Layer::Molecule>(Layer::Parents);
-      if (!parents.isEmpty()) m_molecule = parents.first();
+   while (!m_component && i < m_objectList.size()) {
+      parents = m_objectList[i]->findLayers<Layer::Component>(Layer::Parents);
+      if (!parents.isEmpty()) m_component = parents.first();
       ++i;
    }
 
-   if (!m_molecule) { QLOG_ERROR() << "MoveObjects constructor called with no molecule"; }
+   if (!m_component) { QLOG_ERROR() << "MoveObjects constructor called with no Component"; }
    saveFrames(m_initialFrames);
 }
 
 
 MoveObjects::~MoveObjects()
 {
-   if (m_molecule) m_molecule->popAnimators(m_animatorList); 
+   if (m_component) m_component->popAnimators(m_animatorList); 
    AnimatorList::iterator iter;
    for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
        delete (*iter);
@@ -194,22 +199,25 @@ void MoveObjects::redo()
       }
    }
 
-   if (m_animate && m_molecule) {
+   if (m_animate && m_component) {
       AnimatorList::iterator iter;
       for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
           (*iter)->reset();
       }
-      m_molecule->pushAnimators(m_animatorList); 
-      m_molecule->setReferenceFrame(m_finalFrames.last());
+      m_component->pushAnimators(m_animatorList); 
+      m_component->setReferenceFrame(m_finalFrames.last());
    }else {
       loadFrames(m_finalFrames);
    }
 
-   if (m_molecule) {
-      if (m_invalidateSymmetry) m_molecule->invalidateSymmetry();
-      m_molecule->autoDetectSymmetry();
-      m_molecule->postMessage(m_msg);
-      m_molecule->updated();
+   if (m_component) {
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
+      m_component->postMessage(m_msg);
+      m_component->updated();
    }
 }
 
@@ -217,11 +225,14 @@ void MoveObjects::redo()
 void MoveObjects::undo() 
 {
    loadFrames(m_initialFrames);
-   if (m_molecule) {
-      m_molecule->postMessage("");
-      if (m_invalidateSymmetry) m_molecule->invalidateSymmetry();
-      m_molecule->autoDetectSymmetry();
-      m_molecule->updated();
+   if (m_component) {
+      m_component->postMessage("");
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
+      m_component->updated();
    }
 }
 
@@ -232,7 +243,7 @@ void MoveObjects::saveFrames(QList<Frame>& frames)
    for (int i = 0; i < m_objectList.size(); ++i) {
        frames.append(m_objectList[i]->getFrame());
    }
-   if (m_molecule) frames.append(m_molecule->getReferenceFrame());
+   if (m_component) frames.append(m_component->getReferenceFrame());
 }
 
 
@@ -241,58 +252,9 @@ void MoveObjects::loadFrames(QList<Frame> const& frames)
    for (int i = 0; i < m_objectList.size(); ++i) {
        m_objectList[i]->setFrame(frames[i]);
    }
-   if (m_molecule) m_molecule->setReferenceFrame(frames.last());
+   if (m_component) m_component->setReferenceFrame(frames.last());
 }
 
-
-
-// --------------- MoveSystemObjects ---------------
-MoveSystemObjects::MoveSystemObjects(Layer::System* system, QString const& text) :
-   QUndoCommand(text), 
-   m_system(system), 
-   m_finalStateSaved(false)
-{ 
-   m_objectList = m_system->findLayers<Layer::GLObject>(Layer::Children);
-   saveFrames(m_initialFrames);
-}
-
-
-void MoveSystemObjects::redo() 
-{
-   if (!m_finalStateSaved) {
-      saveFrames(m_finalFrames);
-      m_finalStateSaved = true;
-   }
-
-   loadFrames(m_finalFrames);
-   m_system->softUpdate();
-}
-
-
-void MoveSystemObjects::undo() 
-{
-   loadFrames(m_initialFrames);
-   m_system->softUpdate();
-}
-
-
-void MoveSystemObjects::saveFrames(QList<Frame>& frames)
-{
-   frames.clear();
-   for (int i = 0; i < m_objectList.size(); ++i) {
-       frames.append(m_objectList[i]->getFrame());
-   }
-   //if (m_system) frames.append(m_system->getReferenceFrame());
-}
-
-
-void MoveSystemObjects::loadFrames(QList<Frame> const& frames)
-{
-   for (int i = 0; i < m_objectList.size(); ++i) {
-       m_objectList[i]->setFrame(frames[i]);
-   }
-   //f (m_system) m_system->setReferenceFrame(frames.last());
-}
 
 
 // --------------- AddConstraint ---------------
@@ -468,6 +430,7 @@ RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent)
 RemoveMolecule::~RemoveMolecule()
 {
    if (m_deleteMolecule) {
+      m_molecule->disconnect();
       QLOG_DEBUG() << "Deleting Molecule" << m_molecule->text() << m_molecule;
       // The following causes a crash
       //delete m_molecule;  
@@ -530,7 +493,7 @@ RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent)
 { 
    QString s;
    if (m_system->fileName().isEmpty()) {
-      s = "Remove molecule";
+      s = "Remove system";
    }else {
       s = "Remove " + m_system->fileName();
    }
@@ -540,7 +503,7 @@ RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent)
 
 void RemoveSystem::redo()
 {
-   QLOG_INFO() << "Removing molecule" << m_system->text() << m_system;
+   QLOG_INFO() << "Removing system" << m_system->text() << m_system;
    m_parent->takeRow(m_system->row());
    m_system->updated();
 }
@@ -548,7 +511,7 @@ void RemoveSystem::redo()
 
 void RemoveSystem::undo()
 {
-   QLOG_INFO() << "Adding molecule" << m_system->text() << m_system;
+   QLOG_INFO() << "Adding system" << m_system->text() << m_system;
    m_parent->appendRow(m_system);
    m_system->updated();
 }

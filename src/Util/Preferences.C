@@ -455,22 +455,6 @@ void NegativeSurfaceColor(QColor const& color)
 
 // ---------
 
-QList<QColor> SpectrumGradientColors()
-{
-   static QColor orange("#FFA500");
-   QList<QColor> colors;
-   colors << Qt::red << orange << Qt::yellow << Qt::green
-          << Qt::cyan << Qt::blue << Qt::magenta;
-   return colors;
-}
-
-QList<QColor> DefaultGradientColors()
-{
-   QList<QColor> colors;
-   colors << Qt::red << Qt::white << Qt::blue;
-   return colors;
-}
-
 QList<QColor> CustomGradientColors()
 {
    QList<QColor> colors(GetList<QColor>("CustomGradientColors"));

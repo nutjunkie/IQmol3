@@ -29,6 +29,11 @@
 #include <QDebug>
 
 namespace IQmol {
+
+namespace Property {
+   class Base;
+}
+
 namespace Data {
 
    class SurfaceInfo;
@@ -44,14 +49,20 @@ namespace Data {
          Surface(Mesh const&);
          Surface() { }  // for serialization
 
-         void computeSurfaceProperty(Function3D const&);
-         void computeIndexProperty();
          void clearSurfaceProperty();
+
+void computeSurfaceProperty(Function3D const&);
+void computeSurfaceProperty(Data::Mesh::VertexFunction const&);
+         void computeSurfaceProperty(Property::Base*);
+
          void getPropertyRange(double& min, double& max) const;
          void setPropertyRange(double const min, double const max);
 
          QList<QColor> const& colors() const { return m_colors; }
          void setColors(QList<QColor> const& colors);
+
+         bool blend() const { return m_blend; }
+         void setBlend(bool const blend) { m_blend = blend; }
 
          double opacity() const { return m_opacity; }
          void setOpacity(double const opacity ) { m_opacity = opacity; }
@@ -101,6 +112,7 @@ namespace Data {
          QString m_description;
          QList<QColor> m_colors;
          double m_opacity;
+         bool   m_blend;
          bool   m_isSigned;
          bool   m_isVisible;
          Mesh   m_meshPositive;

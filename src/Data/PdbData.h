@@ -22,58 +22,54 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include "Math/v3.h"
-
-#define COIL 0
-#define HELIX 1
-#define STRAND 2
-#define INC_CAPACITY 15
-
+#include "Math/Vec.h"
 
 
 namespace IQmol {
 namespace Data {
 
-   struct residue;
-
-   struct atom {
-      int id;
-      int idx;
-      char type[5];
-      char element[3];
-      v3 coor;
-      float tfactor, occupancy;
-      atom *next, *prev;
-      residue *res;
-   };
-
-   struct residue {
-      int id;
-      int idx;
-      char type[5];
-      std::vector<atom> atoms;
-      char ss;
-      residue *next, *prev;
-   };
-
-   struct chain {
-      char id;
-      std::vector<residue> residues;
-   };
-
-   struct pdb {
-      std::vector<chain> chains;
-   };
-
-   struct SS {
-      char type;
-      int  start;
-      int  stop;
-      char chain[2];
-   };
-
-
    class Pdb : public Base {
+
+      public:
+         struct Residue;
+
+         struct Atom 
+         {
+            int id;
+            int idx;
+            char type[5];
+            char element[3];
+            Math::Vec3 coor;
+            double tfactor, occupancy;
+            Atom *next, *prev;
+            Residue *res;
+         };
+
+         struct Residue 
+         {
+            int id;
+            int idx;
+            char type[5];
+            std::vector<Atom> atoms;
+            char ss;
+            Residue *next, *prev;
+         };
+
+         struct Chain 
+         {
+            char id;
+            std::vector<Residue> residues;
+         };
+
+         struct SecondaryStructure 
+         {
+            char type;
+            int  start;
+            int  stop;
+            char chain[2];
+         };
+
+         typedef std::vector<Chain> ChainList;
 
       friend class boost::serialization::access;
 
@@ -83,26 +79,31 @@ namespace Data {
          Pdb() { }
          ~Pdb() { }
 
-         pdb& ref() { return m_pdb; }
+         ChainList& chainList() { return m_chainList; }
 
          int*   nres() { return &m_nResPerChain[0]; }
-         float* cao() { return &m_caoPositions[0]; }
-         char*  ss() { return &m_secondaryStructure[0]; }
+         double* cao() { return &m_caoPositions[0]; }
+         int*   ss()  { return &m_secondaryStructure[0]; }
 
-         unsigned nChains() const { return m_pdb.chains.size(); }
+         unsigned nChains() const { return m_chainList.size(); }
 
          void dump() const;
 
-         void addResidue(v3 const& posO, v3 const& posCA, char const secondaryStructure);
+         void addResidue(Math::Vec3 const& posO, Math::Vec3 const& posCA, 
+            char const secondaryStructure);
+
          void addChain(int const size);
 
-         void appendChain(Data::chain newChain);
-         void appendResiduetoChain (Data::chain *C, Data::residue newResidue);
-         void appendAtomtoResidue (Data::residue *R, Data::atom newAtom);
+         void appendChain(Chain newChain);
 
-         static Data::atom const* getAtom (Data::residue const& resA, char const* atomType);
+         void appendResiduetoChain (Chain *C, Residue newResidue);
 
-         void fillSS(std::vector<Data::SS> secStructs);
+         void appendAtomtoResidue (Residue *R, Atom newAtom);
+
+         static Atom const* getAtom (Residue const& resA, char const* atomType);
+
+         void fillSecondaryStructure(std::vector<SecondaryStructure> secStructs);
+
          void serialize(InputArchive& ar, unsigned int const /*version*/) { }
          void serialize(OutputArchive& ar, unsigned int const /*version*/) { }
 
@@ -111,15 +112,15 @@ namespace Data {
 
       private:
          
-         void updateAtomPointers(Data::residue *R);
-         void updateResiduePointers(Data::chain *C);
-         Data::chain* getChain(char *c);
+         void updateAtomPointers(Residue *R);
+         void updateResiduePointers(Chain *C);
+         Chain* getChain(char *c);
 
-         pdb m_pdb;
+         ChainList m_chainList;
 
-         std::vector<int>   m_nResPerChain;
-         std::vector<float> m_caoPositions;
-         std::vector<char>  m_secondaryStructure;
+         std::vector<int>    m_nResPerChain;
+         std::vector<double> m_caoPositions;
+         std::vector<int>    m_secondaryStructure;
    };
 
 } } // end namespace IQmol::Data

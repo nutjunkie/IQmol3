@@ -1,5 +1,4 @@
-#ifndef IQMOL_VIEWER_H
-#define IQMOL_VIEWER_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2011-2015 Andrew Gilbert
@@ -244,5 +243,3 @@ namespace IQmol {
     };
 
 } // end namespace IQmol
-
-#endif

@@ -2,19 +2,20 @@
 #include "TextStream.h"
 #include "Util/QsLog.h"
 
-#include "Math/v3.h"
 #include "Data/Atom.h"
 #include "Data/Group.h"
 #include "Data/PdbData.h"
 #include "Data/ProteinChain.h"
 #include "Data/Geometry.h"
 #include "Data/Solvent.h"
+#include "Math/Vec.h"
 #include <regex>
 
 #include <QDebug>
 #include <QFile>
 #include <stdlib.h>
 #include <vector>
+
 
 namespace IQmol {
 namespace Parser {
@@ -44,8 +45,8 @@ bool Gro::parse(TextStream& textStream){
   std::vector<QString> secStrucChain;
   std::vector<int>secStrucType,secStrucResStart,secStrucResStop;
   
-  v3 vCA;
-  v3 vO;
+  Math::Vec3 vCA;
+  Math::Vec3 vO;
 
    QString line, key, secStrucLine, secStrucKey;
    QString currentChain;
@@ -140,12 +141,26 @@ bool Gro::parse(TextStream& textStream){
 
     if (label == "CA"){
       CA = atom;
-      vCA.set(x,y,z);
+      Math::Vec3 vtemp {x,y,z};
+      vCA = vtemp;
     }
    if (label == "O"){
       O = atom;
-      vO.set(x,y,z);
-      chain->addResidue(vCA, vO, strucType);
+      Math::Vec3 vtemp {x,y,z};
+      vO = vtemp;
+      chain->appendAlphaCarbon(vCA);
+      chain->appendPeptideOxygen(vO);
+
+      if(strucType == 0 ){
+        chain->appendSecondaryStructure(Data::SecondaryStructure::Coil);
+      }
+      if(strucType == 1){
+        chain->appendSecondaryStructure(Data::SecondaryStructure::Helix);
+      }
+      if(strucType == 2){
+        chain->appendSecondaryStructure(Data::SecondaryStructure::Sheet);
+      }
+      //chain->addResidue(vCA, vO, strucType);
     }
     
     if (!ok) goto error;
@@ -200,7 +215,8 @@ bool Gro::parse(TextStream& textStream){
 }
 
 bool Gro::parseATOM(QString const& line, Data::Group& group)
-{bool ok(true);
+{
+   bool ok(true);
    double x = line.mid(20, 8).toFloat(&ok);
    if (!ok) return false;
    double y = line.mid(28, 8).toFloat(&ok);
@@ -214,13 +230,18 @@ bool Gro::parseATOM(QString const& line, Data::Group& group)
    group.addAtom(atom, qglviewer::Vec(x,y,z));
   
 
-   return ok;}
+   return ok;
+}
 
 
 
 
+
+
+
+void loadTopologyFiles()
+{
+
+}
 
 } } // end namespace IQmol::Parser
-
-
-

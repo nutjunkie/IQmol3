@@ -54,7 +54,6 @@ void Dipole::setMolecule(Molecule* molecule)
 
      connect(this, SIGNAL(updated()), molecule, SIGNAL(softUpdate()));
         
-
      setPosition(molecule->centerOfNuclearCharge());
      setRadius(molecule->radius());
   }

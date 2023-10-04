@@ -50,6 +50,9 @@
     <file>cursors/zoom.png</file>
     <file>unhappy.png</file>
     <file>splash.png</file>
+    <file>icons/global.png</file>
+    <file>icons/non-global.png</file>
+
   </qresource>
 
   <qresource prefix="/" >

@@ -42,7 +42,7 @@ namespace Layer {
 
       public:
          Vibronic(Data::Vibronic const&);
-         Data::Vibronic const& data() const { return m_vibronic; }
+         Data::Vibronic const& vibronicData() const { return m_vibronic; }
          void setFrequencyLayers(QList<Layer::Frequencies*> const& frequencyLayers);
 
       Q_SIGNALS:

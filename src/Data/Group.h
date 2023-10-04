@@ -21,7 +21,7 @@
 
 ********************************************************************************/
 
-#include <QtDebug>
+#include <QDebug>
 #include "Atom.h"
 
 
@@ -64,12 +64,11 @@ namespace Data {
              }
          }
          
-      private:
+      protected:
          int          m_charge;
          QString      m_label;
          AtomList     m_atoms;
          QList<qglviewer::Vec> m_coordinates;
-        
    };
 
 } } // end namespace IQmol::Data

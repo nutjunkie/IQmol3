@@ -174,4 +174,4 @@ Base* Factory::create(Type::ID const id)
 
 } } // end namespace IQmol::Data
 
-BOOST_CLASS_EXPORT(IQmol::Data::Base)
+//BOOST_CLASS_EXPORT(IQmol::Data::Base)

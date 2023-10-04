@@ -31,7 +31,6 @@
 #include "Data/MacroMolecule.h"
 #include "Data/Mesh.h"
 #include "Data/NmrData.h"
-#include "Data/PdbData.h"
 #include "Data/PointCharge.h"
 #include "Data/ProteinChain.h"
 #include "Data/OrbitalsList.h"
@@ -61,7 +60,6 @@
 #include "NaturalTransitionOrbitalsLayer.h"
 #include "OrbitalsLayer.h"
 #include "ProteinChainLayer.h"
-#include "ProteinLayer.h"
 #include "SolventLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
@@ -194,12 +192,6 @@ Layer::List Factory::toLayers(Data::Base& data)
             Layer::Surface* surfaceLayer(new Surface(*surface));
             surfaceLayer->setCheckState(Qt::Checked);
             layers.append(surfaceLayer);
-         } break;
-
-         case Data::Type::Pdb: {
-            Data::Pdb& pdbData(dynamic_cast<Data::Pdb&>(data));
-            Layer::Protein* proteinLayer(new Protein(pdbData));
-            layers.append(proteinLayer);
          } break;
 
          case Data::Type::Surface: {

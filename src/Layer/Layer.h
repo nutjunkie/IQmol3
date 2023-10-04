@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_H
-#define IQMOL_LAYER_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -37,9 +36,8 @@ namespace Configurator {
    class Base;
 }
 
-namespace Layer {
 
-   class Molecule;
+namespace Layer {
 
    /// Custom Layer property flags.  Do not confuse these with the flags for
    /// QStandardItem.
@@ -61,7 +59,7 @@ namespace Layer {
 
 
    /// Model item for the ViewerModel class.  
-   /// Layers can be thought of as nodes of the tree which is represented in
+   /// Layers can be thought of as nodes of a data tree which is represented in
    /// the 'Model View' window.  This allows a heirarchical data structure to be
    /// built up where, for example, Atom Layers are children of an AtomList Layer
    /// which is in turn a child of a Molecule Layer.  The visibility of a Layer,
@@ -101,10 +99,6 @@ namespace Layer {
 		 // This is used to pass the change in the checkbox status from the
 		 // QStandardItem to the Layer.
          virtual void setCheckStatus(Qt::CheckState const) { }
-
-         virtual void setMolecule(Molecule* molecule) { }
-         //Molecule* molecule() const { return m_molecule; }
-        
 
          template <class T>
          QList<T*> findLayers(unsigned int flags = (Nested | Children))
@@ -183,7 +177,6 @@ qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
          void setPersistentParent(Base* parent);
 
       protected:
-         //Molecule* m_molecule;
          void setConfigurator(Configurator::Base* configurator) {
             m_configurator = configurator; 
          }
@@ -265,4 +258,3 @@ qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
 
 } } // end namespace IQmol::Layer
 
-#endif

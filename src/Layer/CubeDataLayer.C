@@ -26,7 +26,7 @@
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Data/SurfaceInfo.h"
-#include "Grid/SpatialProperty.h" 
+#include "Grid/Property.h" 
 #include "Data/CubeData.h"
 #include "Util/QsLog.h"
 
@@ -37,7 +37,7 @@ namespace IQmol {
 namespace Layer {
 
 CubeData::CubeData(Data::CubeData const& cube) : Base("Cube Data"), m_configurator(*this),
-   m_cube(cube)
+   m_cube(cube), m_molecule(0)
 {
    connect(&m_configurator, SIGNAL(calculateSurface(Data::SurfaceInfo const&)),
       this, SLOT(calculateSurface(Data::SurfaceInfo const&)));
@@ -62,9 +62,9 @@ void CubeData::setMolecule(Molecule* molecule)
 }
 
 
-GridBased* CubeData::createProperty() const
+Property::GridBased* CubeData::createProperty() const
 {
-   return new GridBased(text(), m_cube);
+   return new Property::GridBased(text(), m_cube);
 }
 
 

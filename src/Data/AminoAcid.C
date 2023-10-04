@@ -1,4 +1,3 @@
-#pragma once
 /*******************************************************************************
 
   Copyright (C) 2023 Andrew Gilbert
@@ -21,47 +20,50 @@
 
 ********************************************************************************/
 
-#include "ComponentLayer.h"
-#include "Data/CMesh.h"
-#include "Data/Mesh.h"
-#include "Data/MacroMolecule.h"
+#include "AminoAcid.h"
+#include "Util/QsLog.h"
 
 
 namespace IQmol {
-
 namespace Data {
-   class Mesh;
-   class Pdb;
+
+static const QStringList symbols = 
+{
+      "Ala", "Arg", "Asn", "Asp", "Cys", 
+      "Gln", "Glu", "Gly", "His", "Ile",
+      "Leu", "Lys", "Met", "Phe", "Pro",
+      "Ser", "Thr", "Trp", "Tyr", "Val",
+      "Asx", "Glx", "Xxx"
+};
+
+
+QString const& AminoAcid::toString(AminoAcid_t const type)
+{
+   unsigned idx = static_cast<unsigned>(type);
+   return symbols[idx];
 }
 
-namespace Layer {
 
-   class Protein : public Component {
+QChar AminoAcid::toLetter(AminoAcid_t const type)
+{
+   static const QString letters("ARNDCQEGHILKMFPSTWYVBZ");
+   unsigned idx = static_cast<unsigned>(type);
+   return letters[idx];
+}
 
-      Q_OBJECT
 
-      //friend class Configurator::Surface;
+AminoAcid_t AminoAcid::toType(QString s)
+{
+   s = s.toLower();
+   s[0] = s[0].toUpper();
 
-      public:
-         explicit Protein(Data::Pdb &, QObject* parent = 0 );
+   int idx(symbols.indexOf(s));
+   if (idx < 0) {
+      QLOG_WARN() << "Invalid Amino Acid encountered" << s;
+      idx = symbols.size()-1;
+   }
 
-         double radius() { return m_radius; }
+   return static_cast<AminoAcid_t>(idx);
+}
 
-         ~Protein() { }
-
-      Q_SIGNALS:
-    
-      private:
-
-         //Data::Surface* generateSurface();
-         void generateCartoons();
-
-         std::vector<cpdb::Mesh> computeCartoonMesh(Data::Pdb& pdb);
-         Data::MeshList fromCpdb(std::vector<cpdb::Mesh> const& meshes);
-
-         Data::Pdb& m_pdbData;
-         double m_radius;
-
-   };
-
-} } // end namespace IQmol::Layer 
+} } // end namespace IQmol::Data

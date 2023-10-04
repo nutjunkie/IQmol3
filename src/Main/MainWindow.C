@@ -49,6 +49,7 @@
 #include <QActionGroup>
 #include <fstream>
 
+#include "Util/ColorDialog.h"
 
 namespace IQmol {
 
@@ -88,6 +89,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
    m_viewer->setActiveViewerMode(Viewer::BuildAtom);
    m_viewer->setDefaultSceneRadius();
    m_viewer->resetView();
+   
+   //Color::GetGradient(Color::Gradient::Default, this);
 }
 
 
@@ -394,7 +397,7 @@ void MainWindow::createMenus()
       connect(action, SIGNAL(triggered()), m_viewer, SLOT(saveSnapshot()));
       action->setShortcut(Qt::CTRL | Qt::Key_P);
 
-/*
+/*    This is now handled by the POV-Ray dialog
       name = "Generate PovRay Input";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(generatePovRay()));
@@ -600,6 +603,10 @@ void MainWindow::createMenus()
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), &m_viewerModel, SLOT(setConstraint()));
       action->setShortcut(Qt::CTRL | Qt::Key_K);
+
+      name = "Freeze Selected Atoms";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), &m_viewerModel, SLOT(freezeAtomPositions()));
 
       name = "Minimize Structure";
       action = menu->addAction(name);

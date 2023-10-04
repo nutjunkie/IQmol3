@@ -22,41 +22,75 @@
 ********************************************************************************/
 
 #include "MacroMolecule.h"
+#include "Residue.h"
+#include "Math/Vec.h"
+#include <QVector>
 
 
 namespace IQmol {
 namespace Data {
 
    // Data class representing a single chain of a protein
-   class ProteinChain : public MacroMolecule {
-
+   class ProteinChain : public MacroMolecule 
+   {
       public:
-         ProteinChain(QString const& label) : MacroMolecule(label) { }
+         ProteinChain(QString const& chainId) 
+          : MacroMolecule(QString("Chain " + chainId))
+         { 
+            qDebug() << "Attempting to set chain Id to" << chainId;
+            QString const letters("ABCDEFGHIJKLMNOPQRTSUVWXYZ");
+            m_chainIndex = letters.indexOf(chainId);
+            qDebug() << "set to" << m_chainIndex;
+         }
 
          Type::ID typeID() const { return Type::ProteinChain; }
 
-         int    nres() const { return m_secondaryStructure.size(); }
-         float const* cao() const { return &m_caoPositions[0]; }
-         char const*  ss() const { return &m_secondaryStructure[0]; }
+         int chainIndex() const { return m_chainIndex; }
 
-         inline void addResidue(v3 const& posCA, v3 const& posO,
-            char const secondaryStructure)
+         unsigned nResidues() const { return m_groups.size(); }
+
+         QList<AminoAcid_t> residueList() const 
          {
-             m_caoPositions.push_back(posCA.x);
-             m_caoPositions.push_back(posCA.y);
-             m_caoPositions.push_back(posCA.z);
-             m_caoPositions.push_back(posO.x);
-             m_caoPositions.push_back(posO.y);
-             m_caoPositions.push_back(posO.z);
+            QList<AminoAcid_t> list;
 
-             m_secondaryStructure.push_back(secondaryStructure); 
+            for (auto group : m_groups) {
+                Residue* res = dynamic_cast<Residue*>(group);
+                if (res) list.append(res->type());
+            }
+
+            return list;
+         }
+
+         QVector<Math::Vec3> const& alphaCarbons() const { return m_alphaCarbons; }
+
+         QVector<Math::Vec3> const& peptideOxygens() const { return m_peptideOxygens; }
+
+         QVector<SecondaryStructure> const& 
+            secondaryStructures() const { return m_secondaryStructure; }
+    
+         void appendAlphaCarbon(Math::Vec3 const& v) { m_alphaCarbons.append(v); }
+
+         void appendPeptideOxygen(Math::Vec3 const& v) { m_peptideOxygens.append(v); }
+
+         void appendSecondaryStructure(SecondaryStructure sstype){m_secondaryStructure.append(sstype); }
+
+         bool setSecondaryStructure(
+             QVector<SecondaryStructure> const& secondaryStructure)
+         {
+            unsigned nRes(nResidues());
+            if (m_alphaCarbons.size() != nRes) return false;
+            if (m_peptideOxygens.size() != nRes) return false;
+            if (secondaryStructure.size() != nRes) return false;
+
+            m_secondaryStructure = secondaryStructure;
+            return true;
          }
 
       private:
-         // Data for generataing the cartoon representation
-         unsigned           m_nResidues;
-         std::vector<float> m_caoPositions;
-         std::vector<char>  m_secondaryStructure;
+         int m_chainIndex;
+         QVector<SecondaryStructure> m_secondaryStructure;
+         QVector<Math::Vec3> m_alphaCarbons;
+         QVector<Math::Vec3> m_peptideOxygens;
    };
 
 } } // end namespace IQmol::Data

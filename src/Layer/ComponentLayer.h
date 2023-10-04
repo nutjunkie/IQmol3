@@ -22,83 +22,138 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
+#include "ContainerLayer.h"
+#include "Viewer/Animator.h"
+#include "Grid/Property.h"
 
+
+class QUndoCommand;
 
 namespace IQmol {
-namespace Layer {
 
-   // Base class for components of a System, which may include QM Molecules,
-   // Solvent, Protein, etc.
-   // Shader context is implemented at this level.
+   namespace Data {
+      class Surface;
+   }
 
-   class Component : public Base {
+   namespace Layer {
 
-      enum DrawStyle { BallsAndSticks, Tubes, SpaceFilling, WireFrame, Plastic, Ribbon };
+      // Base class for components of a System, which may include QM Molecules,
+      // Solvent, Protein, etc.
+      // Shader context switching is implemented at this level.
 
-      Q_OBJECT
+      class Component : public Base 
+      {
+         enum class DrawStyle 
+         { 
+            BallsAndSticks, 
+            Tubes, 
+            SpaceFilling, 
+            WireFrame, 
+            Plastic, 
+            Ribbon 
+         };
 
-      public:
-         explicit Component(QString const& label = QString(), QObject* parent = 0) :
-            Base(label, parent)
-         {
-            setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable );
-            setCheckState(Qt::Checked);
-         }
+         Q_OBJECT
 
-         ~Component() { }
+         public:
+            explicit Component(QString const& label = QString(), QObject* parent = 0);
 
-         //virtual void loadFromFile(QString const& filePath) = 0
-         //void align(QList<qglviewer::Vec> const& current);
+            ~Component() { }
 
-		 virtual double radius() = 0;
+            //virtual void loadFromFile(QString const& filePath) = 0
+            //void align(QList<qglviewer::Vec> const& current);
 
-         void draw() const
-         {
-            useShader(m_shaderKey);
-            useResolution(m_resolution);
-            useDrawStyle(m_drawStyle);
-            for (auto iter : m_visibleObjects) iter->draw();
-         }
+            virtual double radius() = 0;
 
-         void select() { for (auto iter : m_visibleObjects) iter->select(); }
+            void draw() const;
 
-         void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
+            void select() { for (auto iter : m_visibleObjects) iter->select(); }
+            void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
 
-         void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
+            void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
 
-         void setShaderKey(QString const& shaderKey) { m_shaderKey = shaderKey; }
+            void setShaderKey(QString const& shaderKey) { m_shaderKey = shaderKey; }
 
-         void updateVisibleObjectList()
-         {
-            m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | 
-               Layer::Visible | Layer::Nested);
-         }
+            void updateVisibleObjectList()
+            {
+               m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | 
+                  Layer::Visible | Layer::Nested);
+            }
 
-         qglviewer::Vec centerOfNuclearCharge();
+            void addProperty(Property::Base* property) { m_properties.append(property); }
+            QStringList getAvailableProperties2();
+            Property::Base* getProperty(QString const& name);
+            Data::Mesh::VertexFunction getPropertyEvaluator2(QString const& name);
 
-         void translate(qglviewer::Vec const& displacement);
+            void appendSurface(Data::Surface* surfaceData);
+            void prependSurface(Data::Surface* surfaceData);
 
-         void rotate(qglviewer::Quaternion const& rotation);
+            // This can be used to keep a running tally for computing the
+            // center of nuclear charge of several Components
+            void centerOfNuclearCharge(qglviewer::Vec&, int& totalZ);
 
-         void alignToAxis(qglviewer::Vec const& point, qglviewer::Vec const& axis);
+            qglviewer::Vec centerOfNuclearCharge()
+            {
+               qglviewer::Vec center;
+               int totalZ;
+               centerOfNuclearCharge(center, totalZ);
+               center /= double(totalZ);
+               return center;
+            }
 
-         void rotateIntoPlane(qglviewer::Vec const& pt, qglviewer::Vec const& axis, 
-            qglviewer::Vec const& normal);
+            void translateToCenter(GLObjectList const& selection);
 
-      Q_SIGNALS:
-         void useShader(QString const&) const;
-         void useDrawStyle(DrawStyle const) const;
-         void useResolution(unsigned const) const;
-         void softUpdate(); // Issue if the number of primitives does not change
+            void translate(qglviewer::Vec const& displacement);
 
-      private:
-         QString   m_shaderKey;
-         unsigned  m_resolution;
-         DrawStyle m_drawStyle;
-         //qglviewer::Frame m_frame;
-         GLObjectList m_visibleObjects;
-   };
+            void rotate(qglviewer::Quaternion const& rotation);
 
-   typedef QList<Component*> ComponentList;
+            void alignToAxis(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0,0.0,1.0));
 
-} } // end namespace IQmol::Layer 
+            void rotateIntoPlane(qglviewer::Vec const& point, 
+               qglviewer::Vec const& axis = qglviewer::Vec(0.0,0.0,1.0),
+               qglviewer::Vec const& normal = qglviewer::Vec(0.0,1.0,0.0));
+
+            qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
+            void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
+
+         Q_SIGNALS:
+            void useShader(QString const&) const;
+            void useDrawStyle(DrawStyle const) const;
+            void useResolution(unsigned const) const;
+            void softUpdate(); // Issue if the number of primitives does not change
+
+            void pushAnimators(AnimatorList const&);
+            void popAnimators(AnimatorList const&);
+
+            void postCommand(QUndoCommand*);
+            void postMessage(QString const&);
+
+            // This allows observers to disconnect from a Component once removed
+            void componentRemoved(Layer::Component*);
+
+         protected:
+            QList<Property::Base*> m_properties;
+
+            virtual void deleteProperties();
+            virtual void initProperties();
+
+            Layer::Container m_surfaceList;
+            Surface* createSurfaceLayer(Data::Surface* surfaceData);
+
+         private Q_SLOTS:
+            void  removeComponent() { componentRemoved(this); }
+
+         private:
+            QString   m_shaderKey;
+            unsigned  m_resolution;
+            DrawStyle m_drawStyle;
+            qglviewer::Frame m_frame;
+            GLObjectList m_visibleObjects;
+      };
+
+   }  // end namespace Layer
+
+   typedef QList<Layer::Component*> ComponentList;
+
+} // end namespace IQmol::Layer 

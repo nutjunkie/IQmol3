@@ -22,27 +22,27 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+
 #include "InfoLayer.h"
-#include "FileLayer.h"
 #include "AtomLayer.h"
 #include "BondLayer.h"
-#include "ChargeLayer.h"
-#include "ContainerLayer.h"
+//#include "ChargeLayer.h"
+
 #include "EfpFragmentListLayer.h"
-#include "Configurator/MoleculeConfigurator.h"
 #include "MolecularSurfacesLayer.h"
+#include "Configurator/MoleculeConfigurator.h"
 #include "Configurator/SurfaceAnimatorDialog.h"
+
 #include "Viewer/Animator.h"
 
-#include <QFileInfo>
 #include <QMap>
+#include <QFileInfo>
 #include <QItemSelectionModel>
-#include "boost/function.hpp"
+
+#include <functional>
 
 
 class QUndoCommand;
-class QDropEvent;
-class QDragEnterEvent;
 
 namespace OpenBabel {
    class OBMol;
@@ -58,130 +58,87 @@ namespace IQmol {
       class  JobInfo;
    }
 
-   namespace Command {
-      class AppendData;
-      class RemoveData;
-      class EditPrimitives;
-      class AddHydrogens;
-      class MoveObjects;
-      class AddMolecule;
-      class RemoveMolecule;
-      class ChangeBondOrder;
-      class ChangeAtomType;
-   }
-
-   namespace Data {
-      class Geometry;
-      class Bank;
-      class SurfaceInfo;
-      class PointGroup;
-   }
-
-   class SpatialProperty;
-   class PointChargePotential;
-   class NearestNuclearCharge;
-
    namespace Layer {
 
       class Isotopes;
       class Constraint;
       class Surface;
       class Group;
-      class Info;
+      class Charge;
 
       typedef QMap<OpenBabel::OBAtom*, Atom*>  AtomMap;
       typedef QMap<OpenBabel::OBBond*, Bond*>  BondMap;
       typedef QMap<OpenBabel::OBAtom*, Group*> GroupMap;
    
-      /// Container Layer for all things related to a particular molecule.
-      /// This is the main data structure for a molecule.  It contains the Primitve
-      /// GLObjects that visually represent the molecule along with Data Layers
-      /// containing information such as checkpoint files, cube files and output
-      /// files.
+      // Container Layer for all things related to a molecule which is to
+      // be treated quantum mechanically.
+
+      // This is the main data structure for a molecule.  It contains the Primitve
+      // GLObjects that visually represent the molecule along with Data Layers
+      // containing information such as checkpoint files, cube files and output
+      // files.
       class Molecule : public Component {
    
          Q_OBJECT
    
-         friend class Frequencies;
-         friend class GeometryList; 
          friend class Configurator::Molecule;
-         friend class Animator::Combo;
-         friend class SurfaceAnimatorDialog;
-   
-         // !!! some of these are no longer required to be friends
-         friend class Command::AppendData;
-         friend class Command::RemoveData;
-         friend class Command::EditPrimitives;
-         friend class Command::AddHydrogens;
-         friend class Command::MoveObjects;
-         friend class Command::AddMolecule;
-         friend class Command::RemoveMolecule;
-         friend class Command::ChangeBondOrder;
-         friend class Command::ChangeAtomType;
-   
+
          public:
             explicit Molecule(QObject* parent = 0);
 
             ~Molecule();
 
             double radius();
-            double onsagerRadius();
    
-      		/// Attempts to save the molecule, returning false if the operation
-            /// was unsuccessful or canceled by the user.
-            bool save(bool prompt = false);
+// Attempts to save the molecule, returning false if the operation
+// was unsuccessful or canceled by the user.
+// Can this be moved up the Layer heirarchy
+bool save(bool prompt = false);
    
-            /// Appends the Layers in the DataList, but only if an existing Layer
-            /// of that kind does not exist already.
+            // Appends the Layers in the DataList, but only if an existing Layer
+            // of that kind does not exist already.
             void appendData(IQmol::Data::Bank&);
             void appendData(Layer::List&);
 
-            void appendSurface(Data::Surface*);
-
-            void addProperty(SpatialProperty* property) { m_properties.append(property); }
-   
             void setFile(QString const& fileName);
             QString fileName() const { return m_inputFile.fileName(); }
    
             bool sanityCheck();
+
             Process::JobInfo qchemJobInfo();
             void jobInfoChanged(Process::JobInfo const&);
    
-            /// Attempts to determine the best axis for the functional group when
-            /// converting an atom to a functional group (click on atom event)
+            // Attempts to determine the best axis for the functional group when
+            // converting an atom to a functional group (click on atom event)
             qglviewer::Vec getBuildAxis(Atom*);
-
-
-            void symmetrize(double tolerance, bool updateCoordinates = true);
 
             void minimizeEnergy(QString const& forcefield);
             void computeEnergy(QString const& forcefield);
 
-            void translateToCenter(GLObjectList const& selection);
-            static void toggleAutoDetectSymmetry() { 
+            void symmetrize(double tolerance, bool updateCoordinates = true);
+
+            static void toggleAutoDetectSymmetry() 
+            { 
                s_autoDetectSymmetry = !s_autoDetectSymmetry; 
             }
    
-            /// Obtains a list of selected Primitives in the Molecule and removes
-            /// them from the lists.  The Primitives are not immediately deleted,
-            /// rather they are embedded in a RemovePrimtives Command so that the 
-            /// action can be undone.
+            // Obtains a list of selected Primitives in the Molecule and removes
+            // them from the lists.  The Primitives are not immediately deleted,
+            // rather they are embedded in a RemovePrimtives Command so that the 
+            // action can be undone.
             void deleteSelection();
             
-            /// Returns a list of the selected atoms and bonds.  If dangling bonds
-            /// is true then all selected bonds are included, otherwise only bonds
-            /// with both atoms selected are included.
+            // Returns a list of the selected atoms and bonds.  If dangling bonds
+            // is true then all selected bonds are included, otherwise only bonds
+            // with both atoms selected are included.
             PrimitiveList getSelected(bool danglingBonds = false);
    
             /// Locates all atoms for which there exists a path to B without going through A.
             AtomList getContiguousFragment(Atom* A, Atom* B);
             Bond* getBond(Atom*, Atom*);
             BondList getBonds(Atom*);
+
             bool isModified() const { return m_modified; }
-   
-            qglviewer::Vec centerOfNuclearCharge();
-            QStringList getAvailableProperties(); 
-            Function3D getPropertyEvaluator(QString const& name);
    
             /// Removes the specified Primitive(s) from the molecule, 
             /// but does not delete them. 
@@ -193,16 +150,22 @@ namespace IQmol {
             void appendPrimitive(Primitive*);
    
             Constraint* findMatchingConstraint(AtomList const&);
+
+            bool editConstraint();
+            bool freezeAtomPositions();
             bool canAcceptConstraint(Constraint*);
-      		void addConstraint(Constraint*);
+            void addConstraint(Constraint*);
 
 			// These simpy add or remove the Constraint layer to the model view
 			// and are used by the undo commands.
             void addConstraintLayer(Constraint*);
             void removeConstraintLayer(Constraint*);
 
-            void addIsotopes(Isotopes*);
+//            void addIsotopes(Isotopes*);
             void clearIsotopes();
+
+            // Returns true if isotopes are actually added
+            bool editIsotopes();
    
             /// Converts the Molecule to an XYZ format and uses OpenBabel to parse this.  
             /// Useful for, e.g., reperceiving bonds.
@@ -221,28 +184,25 @@ namespace IQmol {
             Charge* createCharge(double const q, qglviewer::Vec const& position);
    
             QList<qglviewer::Vec> coordinates();
+            QList<int> atomicNumbers();
+
             QList<double> atomicCharges(Data::Type::ID type);
             void setGeometry(IQmol::Data::Geometry&);
             QList<QString> atomicSymbols();
 
-
             // There must be a better way of doing this, but this is used
             // in Layer::GeometryList for de
-            bool isCurrentGeometry(Data::Geometry const* geometry) const { 
+            bool isCurrentGeometry(Data::Geometry const* geometry) const 
+            { 
                return m_currentGeometry == geometry;
             }
    
-      		 // This is needed for fchk-file based surfaces and only covers ridgid
-      		 // body motions of the molecule.
-            qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
-
-            void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
-   
-            void setReperceiveBondsForAnimation(bool tf) {
+            void setReperceiveBondsForAnimation(bool tf) 
+            {
                  m_reperceiveBondsForAnimation = tf;
             }
 
-            unsigned maxAtomicNumber() { return m_maxAtomicNumber; }
+//            unsigned maxAtomicNumber() { return m_maxAtomicNumber; }
 
             void   setMullikenDecompositions(Matrix const& M);
             double mullikenDecomposition(int const a, int const b) const;
@@ -260,11 +220,6 @@ namespace IQmol {
 
             void openSurfaceAnimator();
 
-            void reperceiveBonds() { reperceiveBonds(true); }
-            void reperceiveBondsForAnimation() { 
-               if (m_reperceiveBondsForAnimation) reperceiveBonds(false);
-            }
-   
             /// Passes the remove signal on so that the ViewerModel can deal with it
             void removeMolecule() { removeMolecule(this); }
             void detectSymmetry();
@@ -273,13 +228,15 @@ namespace IQmol {
             void saveToCurrentGeometry();
 
             void addHydrogens();
+            void updateInfo();
+            void reindexAtomsAndBonds();
+            void reperceiveBonds(bool postCmd);
+            void reperceiveBondsSlot() { reperceiveBonds(true); }
+
+            void reperceiveBondsForAnimation();
    
          Q_SIGNALS:
             void softUpdate(); // issue if the number of primitives does not change
-            void postCommand(QUndoCommand*);
-            void postMessage(QString const&);
-            void pushAnimators(AnimatorList const&);
-            void popAnimators(AnimatorList const&);
             void removeMolecule(Layer::Molecule*);
    
             void multiplicityAvailable(unsigned);
@@ -300,11 +257,6 @@ namespace IQmol {
             void updateBondScale(double const scale);
             void updateChargeScale(double const scale);
             void updateDrawMode(Primitive::DrawMode const);
-            void updateInfo();
-   
-            /// Updates the atom and bond indicies after, for example, deletion.
-            void reindexAtomsAndBonds();
-            void reperceiveBonds(bool postCmd);
    
          private Q_SLOTS:
             void dumpData() { m_bank.dump(); }
@@ -317,6 +269,7 @@ namespace IQmol {
             static bool s_autoDetectSymmetry;
             int totalCharge() const;
             int multiplicity() const;
+
             QString constraintsAsString();
             QString scanCoordinatesAsString();
             QString efpFragmentsAsString();
@@ -325,11 +278,11 @@ namespace IQmol {
 
             template <class T>
             QList<double> atomicCharges();
+
             qglviewer::Vec dipoleFromPointCharges();
 
             QList<double> zeroCharges();
             QList<double> gasteigerCharges();
-
 
             /// Writes the molecule to the specified file.  The format is
             /// determined from the file extension and a Parser::IOError 
@@ -365,50 +318,34 @@ namespace IQmol {
             /// should be used.
    		    PrimitiveList fromOBMol(OpenBabel::OBMol*, AtomMap* = 0, BondMap* = 0, 
                GroupMap* = 0);
-   
-            template <class T> void update(boost::function<void(T&)>);
 
-            void translate(qglviewer::Vec const& displacement);
-
-            void rotate(qglviewer::Quaternion const& rotation);
-
-            void alignToAxis(qglviewer::Vec const& point, 
-               qglviewer::Vec axis = qglviewer::Vec(0.0, 0.0, 1.0));
-
-            void rotateIntoPlane(qglviewer::Vec const& point, 
-               qglviewer::Vec const& axis = qglviewer::Vec(0.0, 0.0, 1.0),
-               qglviewer::Vec const& normal = qglviewer::Vec(0.0, 1.0, 0.0));
+            template <class T>
+            void update(std::function<void(T&)>);
 
             void clearData();
    
+            void initProperties();
             void deleteProperties();
 
-            void initProperties();
-
             void saveToGeometry(Data::Geometry&);
-
    
-            QFileInfo m_inputFile;
+// This should probably move to Component
+QFileInfo m_inputFile;
    
             /// State variable that determines how the Primitives are drawn (e.g.
             /// CPK or wireframe)
             Primitive::DrawMode m_drawMode;
    
-            /// Determines by how much the atom radius should be scaled from the
-            /// default value.
+            // Determines by how much the respective radii should be scaled
+            // from their default value.
             double m_atomScale;
-   
-            /// Determines by how much the bond radius should be scaled from the
-            /// default value.
             double m_bondScale;
-   
-            /// Determines by how much the charge radius should be scaled from the
-            /// default value.
             double m_chargeScale;
    
             /// Determines if the hydrogen atoms are drawn smaller in the CPK model
             bool m_smallerHydrogens;
             bool m_hideHydrogens;
+
 
             bool m_modified;
             bool m_reperceiveBondsForAnimation;
@@ -421,7 +358,6 @@ namespace IQmol {
             Layer::Container m_bondList;
             Layer::Container m_chargesList;
             Layer::Container m_fileList;
-            Layer::Container m_surfaceList;
             Layer::Container m_constraintList;
             Layer::Container m_isotopesList;
             Layer::Container m_scanList;
@@ -430,20 +366,20 @@ namespace IQmol {
             Layer::EfpFragmentList m_efpFragmentList;
             Layer::MolecularSurfaces m_molecularSurfaces;
    
-            QList<SpatialProperty*> m_properties;
-            qglviewer::Frame m_frame;
             Data::Bank m_bank;
 
             Data::Geometry* m_currentGeometry;
             Data::Type::ID m_chargeType;
             QAction* m_atomicChargesMenu;
-            unsigned m_maxAtomicNumber;
+//            unsigned m_maxAtomicNumber;
             QAction* m_addGeometryMenu;;
 
             Matrix m_mullikenDecompositions;
       };
    
    } // end namespace Layer
+
+
 
    typedef QList<Layer::Molecule*> MoleculeList;
 

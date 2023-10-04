@@ -34,44 +34,45 @@ void Pdb::addChain(int const size)
 }
 
 
-void Pdb::addResidue(v3 const& posCA, v3 const& posO, char const secondaryStructure)
+void Pdb::addResidue(Math::Vec3 const& posCA, Math::Vec3 const& posO, 
+   char const secondaryStructure)
 {
-   m_caoPositions.push_back(posCA.x);
-   m_caoPositions.push_back(posCA.y);
-   m_caoPositions.push_back(posCA.z);
-   m_caoPositions.push_back(posO.x);
-   m_caoPositions.push_back(posO.y);
-   m_caoPositions.push_back(posO.z);
+   m_caoPositions.push_back(posCA[0]);
+   m_caoPositions.push_back(posCA[1]);
+   m_caoPositions.push_back(posCA[2]);
+   m_caoPositions.push_back(posO[0]);
+   m_caoPositions.push_back(posO[1]);
+   m_caoPositions.push_back(posO[2]);
 
    m_secondaryStructure.push_back(secondaryStructure);
 }
 
 
-void Pdb::appendChain(Data::chain newChain) 
+void Pdb::appendChain(Data::Pdb::Chain newChain) 
 {
-    m_pdb.chains.push_back(newChain);    
+    m_chainList.push_back(newChain);    
 }
 
 
-void Pdb::appendResiduetoChain(Data::chain *C, Data::residue newResidue) 
+void Pdb::appendResiduetoChain(Data::Pdb::Chain *C, Data::Pdb::Residue newResidue) 
 {
    C->residues.push_back(newResidue);
    updateResiduePointers(C);
 }
 
 
-void Pdb::appendAtomtoResidue (Data::residue *R, Data::atom newAtom) 
+void Pdb::appendAtomtoResidue (Data::Pdb::Residue *R, Data::Pdb::Atom newAtom) 
 {
    R->atoms.push_back(newAtom);
    updateAtomPointers(R);
 }
 
 
-void Pdb::updateResiduePointers (Data::chain *C) 
+void Pdb::updateResiduePointers(Data::Pdb::Chain *C) 
 {
-    Data::residue* p(0);
-    Data::residue* n(0);
-    Data::atom* a(0);
+    Data::Pdb::Residue* p(0);
+    Data::Pdb::Residue* n(0);
+    Data::Pdb::Atom* a(0);
 
     for (int i=0; i<C->residues.size(); i++) {
         n = & C->residues[i];
@@ -86,10 +87,12 @@ void Pdb::updateResiduePointers (Data::chain *C)
     if (n) n->next = NULL;
 }
 
-void Pdb::updateAtomPointers (Data::residue *R) {
+
+void Pdb::updateAtomPointers (Data::Pdb::Residue *R) 
+{
     int i;
-    Data::atom *p = NULL;
-    Data::atom *c = NULL;
+    Data::Pdb::Atom *p = NULL;
+    Data::Pdb::Atom *c = NULL;
     if (R->prev) p = & R->prev->atoms[R->prev->atoms.size()-1];
 
     for (i=0; i<R->atoms.size(); i++){
@@ -110,9 +113,9 @@ void Pdb::updateAtomPointers (Data::residue *R) {
 }
 
 
-Data::atom const* Pdb::getAtom(Data::residue const& resA, char const* atomType)
+Data::Pdb::Atom const* Pdb::getAtom(Data::Pdb::Residue const& resA, char const* atomType)
 {
-    Data::atom const* atomA;
+    Data::Pdb::Atom const* atomA;
     int i = 0;
     for (i=0; i<resA.atoms.size(); i++) {
         atomA = &resA.atoms[i];
@@ -123,27 +126,27 @@ Data::atom const* Pdb::getAtom(Data::residue const& resA, char const* atomType)
 }
 
 
-Data::chain* Pdb::getChain(char *c) 
+Data::Pdb::Chain* Pdb::getChain(char *c) 
 {
-   Data::chain* C(0);
+   Chain* C(0);
    for (int i(0); i < nChains(); i++){
-       C = &m_pdb.chains[i];
+       C = &m_chainList[i];
        if (C->id == c[0]) break;
    }   
    return C;
 }
 
 
-void Pdb::fillSS(std::vector<Data::SS> secStructs) {
+void Pdb::fillSecondaryStructure(std::vector<Data::Pdb::SecondaryStructure> secStructs) {
     for(int s=0;s<secStructs.size();s++){
         char *c = secStructs[s].chain;
         int start = secStructs[s].start;
         int stop = secStructs[s].stop;
 
-        Data::chain *C = getChain(c); 
+        Chain *C = getChain(c); 
         if(C != NULL){
             for(int r=0;r < C->residues.size();r++){
-                Data::residue *R = &C->residues[r];
+                Data::Pdb::Residue *R = &C->residues[r];
                 if(R->id >= start && R->id <= stop){
                     R->ss = secStructs[s].type;
                 }   
@@ -157,12 +160,12 @@ void Pdb::writeFile(FILE *F) const
 {
     int chainId;
     for (chainId = 0 ; chainId < nChains(); chainId++) {
-        Data::chain const* C = &m_pdb.chains[chainId];
-        Data::atom const* A = &C->residues[0].atoms[0];
+        Chain const* C = &m_chainList[chainId];
+        Atom const* A = &C->residues[0].atoms[0];
         while (A != NULL) {
             fprintf (F, "ATOM  %5d %-4s%c%-3s %c%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s\n",
                      A->id, A->type,' ', A->res->type, C->id, A->res->id,
-                     A->coor.x, A->coor.y, A->coor.z, A->occupancy, A->tfactor, A->element);
+                     A->coor[0], A->coor[1], A->coor[2], A->occupancy, A->tfactor, A->element);
             A = A->next; 
         }       
     }       

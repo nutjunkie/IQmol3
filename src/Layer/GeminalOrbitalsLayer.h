@@ -28,7 +28,7 @@
 #include "Configurator/GeminalOrbitalsConfigurator.h"
 #include "Data/GridData.h"
 #include "Math/Matrix.h"
-#include "Grid/SpatialProperty.h"
+#include "Grid/Property.h"
 #include <QPair>
 
 
@@ -117,7 +117,7 @@ namespace Layer {
    // This class provides a SpatialProperty interface that can be used to plot the 
    // value of a geminal orbital on an arbitrary surface, but most likely a geminal
    // density.
-   class GeminalOrbitalProperty : public SpatialProperty {
+   class GeminalOrbitalProperty : public Property::Spatial{
       public:
          GeminalOrbitalProperty(Data::GeminalOrbitals const&,  unsigned const index);
 

@@ -1,5 +1,4 @@
-#ifndef IQMOL_MATH_FUNCTION_H
-#define IQMOL_MATH_FUNCTION_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,21 +21,21 @@
 
 ********************************************************************************/
 
-#include "boost/bind/bind.hpp"
-#include "boost/function.hpp"
 #include "Matrix.h"
 
-using namespace boost::placeholders;
+#include <functional>
 
 
 namespace IQmol {
 
-typedef boost::function<double (double const, double const, double const)> Function3D;
+typedef std::function<double (double const, double const, double const)> Function3D;
 
-typedef boost::function<Vector const& (double const, double const, double const)> MultiFunction3D;
+typedef std::function<Vector const& (double const, double const, double const)> MultiFunction3D;
+
+typedef std::function<int (int const)> IndexMap;
 
 static Function3D NullFunction3D;
 
-} // end namespace IQmol
+static IndexMap IdentityMap;
 
-#endif
+} // end namespace IQmol

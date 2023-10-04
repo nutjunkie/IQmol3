@@ -28,15 +28,12 @@
 //#include "Util/octree/point3d.h"
 
 
-
-
 namespace IQmol {
-
-
 
 namespace Layer {
 
-   // Component of a System that is large.
+   // Component of a System that is large and will eventually support
+   // boxing via an octree
 
    class MacroMolecule : public Component {
 
@@ -59,7 +56,5 @@ namespace Layer {
          double m_radius;
 //         Octree< Point3D<double> >  m_octree;
    };
-
-   typedef QList<Component*> ComponentList;
 
 } } // end namespace IQmol::Layer 

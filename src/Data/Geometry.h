@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_GEOMETRY_H
-#define IQMOL_DATA_GEOMETRY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -41,8 +40,11 @@ namespace Data {
          Geometry();
          Geometry(Geometry const&);
 
-         Geometry(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
-         Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates);
+         Geometry(QList<unsigned> const& atomicNumbers, 
+            QList<double> const& coordinates);
+
+         Geometry(std::vector<unsigned> const& atomicNumbers, 
+           std::vector<double> const& coordinates);
 
          void set(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
 
@@ -190,5 +192,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

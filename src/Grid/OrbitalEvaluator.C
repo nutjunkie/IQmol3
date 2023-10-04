@@ -37,8 +37,8 @@ OrbitalEvaluator::OrbitalEvaluator(Data::GridDataList& grids, Data::ShellList& s
 {
    m_shellList.setOrbitalVectors(coefficients, indices);
    m_returnValues.resize(m_indices.size());
-   m_function = boost::bind(&Data::ShellList::orbitalValues, &m_shellList, 
-      boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+   m_function = std::bind(&Data::ShellList::orbitalValues, &m_shellList, 
+      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
    double thresh(0.001);
    m_evaluator = new MultiGridEvaluator(m_grids, m_function, thresh);

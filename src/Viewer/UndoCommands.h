@@ -1,12 +1,11 @@
-#ifndef IQMOL_UNDOCOMMANDS_H
-#define IQMOL_UNDOCOMMANDS_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -24,6 +23,7 @@
 
 #include "Viewer/Animator.h"
 #include "Layer/Layer.h"
+#include "Layer/MoleculeLayer.h"
 #include "QGLViewer/vec.h"
 #include "Layer/PrimitiveLayer.h"
 #include <QUndoCommand>
@@ -42,7 +42,6 @@ namespace IQmol {
 namespace Layer {
    class Atom;
    class Bond;
-   class Molecule;
    class System;
    class Constraint;
 }
@@ -93,9 +92,10 @@ namespace Command {
    };
 
 
+
    class MoveObjects : public QUndoCommand {
       public:
-         MoveObjects(Layer::Molecule*, QString const& text = "Move items", 
+         MoveObjects(Layer::Component*, QString const& text = "Move items", 
             bool const animiate = false, bool invalidateSymmetry = true);
          MoveObjects(GLObjectList const&, QString const& text = "Move items", 
             bool const animiate = false, bool invalidateSymmetry = true);
@@ -106,7 +106,7 @@ namespace Command {
          void setMessage(QString const& msg) { m_msg = msg; }
 
       protected:
-         Layer::Molecule* m_molecule;
+         Layer::Component* m_component;
 
       private:
          void loadFrames(QList<qglviewer::Frame> const& frames);
@@ -121,32 +121,6 @@ namespace Command {
          QString m_msg;
          AnimatorList m_animatorList;
    };
-
-
-   class MoveSystemObjects : public QUndoCommand {
-      public:
-         MoveSystemObjects(Layer::System*, QString const& text = "Move items");
-
-         virtual void redo();
-         virtual void undo();
-
-         void setMessage(QString const& msg) { m_msg = msg; }
-
-      protected:
-         Layer::System* m_system;
-
-      private:
-         void loadFrames(QList<qglviewer::Frame> const& frames);
-         void saveFrames(QList<qglviewer::Frame>& frames);
-         QList<qglviewer::Frame> m_initialFrames;
-         QList<qglviewer::Frame> m_finalFrames;
-
-         GLObjectList m_objectList;
-         bool m_finalStateSaved;
-         QString m_msg;
-   };
-
-
 
 
 
@@ -360,5 +334,3 @@ namespace Command {
 
 
 } } // end namespace IQmol::Command
-
-#endif

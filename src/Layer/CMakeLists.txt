@@ -40,7 +40,6 @@ set( HEADERS
    OrbitalsLayer.h
    PrimitiveLayer.h
    ProteinChainLayer.h
-   ProteinLayer.h
    RemLayer.h
    SolventLayer.h
    SurfaceLayer.h
@@ -87,7 +86,6 @@ set( SOURCES
    OrbitalsLayer.C
    PrimitiveLayer.C
    ProteinChainLayer.C
-   ProteinLayer.C
    RemLayer.C
    SolventLayer.C
    SurfaceLayer.C

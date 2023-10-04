@@ -24,6 +24,8 @@
 #include "Data/SurfaceInfo.h"
 #include "Util/Preferences.h"
 #include "Util/QsLog.h"
+#include "Grid/Property.h"
+
 #include <QDebug>
 #include <climits>
 
@@ -31,7 +33,7 @@
 namespace IQmol {
 namespace Data {
 
-Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
+Surface::Surface(SurfaceInfo const& info) : m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_opacity = info.opacity();
    m_description = info.toString();
@@ -43,7 +45,7 @@ Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
 }
 
 
-Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_min(0.0), m_max(0.0)
+Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_description = "Mesh";
    m_meshPositive = mesh;
@@ -55,6 +57,21 @@ Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_min(0.0), m_max(0.0)
 }
 
 
+void Surface::computeSurfaceProperty(Property::Base* property)
+{
+   if (property == 0) return;
+
+   property->setMesh(&m_meshPositive);
+   m_meshPositive.computeScalarField(property->evaluator());
+
+   if (m_isSigned) {
+       property->setMesh(&m_meshNegative);
+       m_meshNegative.computeScalarField(property->evaluator());
+   }
+   computeSurfacePropertyRange();
+}
+
+
 void Surface::computeSurfaceProperty(Function3D const& function)
 {
    m_meshPositive.computeScalarField(function);
@@ -62,13 +79,6 @@ void Surface::computeSurfaceProperty(Function3D const& function)
    computeSurfacePropertyRange();
 }
 
-
-void Surface::computeIndexProperty()
-{
-   m_meshPositive.computeIndexField();
-   if (m_isSigned) m_meshNegative.computeIndexField();
-   computeSurfacePropertyRange();
-}
 
 
 bool Surface::hasProperty() const 

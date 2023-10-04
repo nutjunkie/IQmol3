@@ -21,11 +21,34 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include <sstream>
+
 
 namespace IQmol {
 namespace Data {
+
 namespace Type {
+
+QString chargeToString(ID const id)
+{
+    QString s("Unspecified");
+
+    switch (id) {
+       case GasteigerCharge:         s = "ESP (Gasteiger)";         break;
+       case MullikenCharge:          s = "ESP (Mulliken)";          break;
+       case MultipoleDerivedCharge:  s = "ESP (MDC)";               break;
+       case ChelpgCharge:            s = "ESP (GHELPG)";            break;
+       case HirshfeldCharge:         s = "ESP (Hershfeld)";         break;
+       case LowdinCharge:            s = "ESP (Lowdin)";            break;
+       case NaturalCharge:           s = "ESP (Natural)";           break;
+       case MerzKollmanEspCharge:    s = "ESP (Merz-Kollma/ESP)";   break;
+       case MerzKollmanRespCharge:   s = "ESP (Merz-Kollma/RESP)";  break;
+       default:                                                     break;
+    } 
+
+    return s;
+}
+
+
 
 QString toString(ID const id)
 {
@@ -141,38 +164,16 @@ QString toString(ID const id)
       case YamlNode:                   s = "Data::YamlNode";                  break;
       case PovRay:                     s = "Data::PovRay";                    break;
       case GeminalOrbitals:            s = "Data::GeminalOrbitals";           break;
+
+      case AminoAcid:                  s = "Data::AminoAcid";                 break;
+      case AminoAcidList:              s = "Data::AminoAcidList";             break;
+      case Residue:                    s = "Data::Residue";                   break;
    }
 
    return s;
 }
 
 } // end namespace Type
-
-
-void Base::copy(Base const& that)
-{
-   if (typeID() == Type::Undefined) {
-      // Base copy ctor, nothing to do.
-      return;
-   }else if (typeID() != that.typeID()) {
-       std::string msg("Invalid attempt to copy ");
-       msg += toString(that.typeID()).toStdString();
-       msg += " to ";
-       msg += toString(typeID()).toStdString();
-       throw  std::runtime_error(msg);
-    }
-
-    std::stringstream ss;
-    {
-       OutputArchive archive(ss);
-       const_cast<Base&>(that).serialize(archive);
-    }
-    destroy();
-    {
-       InputArchive archive(ss);
-       serialize(archive);
-    }
-}
 
 
 } } // end namespace IQmol::Data

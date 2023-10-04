@@ -1,5 +1,4 @@
-#ifndef IQMOL_MATH_NUMERICAL_H
-#define IQMOL_MATH_NUMERICAL_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -41,5 +40,3 @@ namespace Math {
    }
 
 } } // end namespace IQmol::Math
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_CONTAINER_H
-#define IQMOL_LAYER_CONTAINER_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -39,7 +38,4 @@ namespace Layer {
 		 Container(Layer::Base* parent, QString const& label);
    };
 
-
 } } // end namespace IQmol::Layer
-
-#endif

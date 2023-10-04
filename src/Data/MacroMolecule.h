@@ -37,7 +37,6 @@ namespace Data {
 
          QString const& label() const { return m_label; }
 
-      
          QList<Data::Group*> const& groups() const { return m_groups; }
 
          void append(Data::Group* group) 
@@ -46,16 +45,13 @@ namespace Data {
             m_groups.append(group);
          }
          
-         void serialize(InputArchive& ar, unsigned const version = 0)  { }
-         void serialize(OutputArchive& ar, unsigned const version = 0)  { }
-
          void dump() const 
          {  
              qDebug() <<  m_label;
              for (auto group : m_groups) group->dump();
          }
 
-      private:
+      protected:
          int m_charge;
          QString m_label;
          QList<Data::Group*> m_groups;

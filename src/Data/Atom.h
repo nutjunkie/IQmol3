@@ -27,11 +27,10 @@
 namespace IQmol {
 namespace Data {
 
-
    // Base class for QM and MM atoms.  Note that position information is
-   // factored out into a geometry object.
-   class Atom : public Base {
-
+   // treated separately in the Geometry object.
+   class Atom : public Base 
+   {
       public:
          Atom(unsigned const Z = 0, QString const& label = QString()) 
           : m_atomicNumber(Z), m_label(label) { }
@@ -41,18 +40,14 @@ namespace Data {
          Type::ID typeID() const { return Type::Atom; }
 
          unsigned atomicNumber() const { return m_atomicNumber; }
+
          QString getLabel() { return m_label; }
  
          static unsigned atomicNumber(QString const&);
 
-         void serialize(InputArchive& ar, unsigned const version = 0)  { }
-         void serialize(OutputArchive& ar, unsigned const version = 0)  { }
-
-         void dump() const {  }
-
       protected:
-         QString  m_label;
          unsigned m_atomicNumber;
+         QString  m_label;
    };
 
 
