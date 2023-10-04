@@ -22,7 +22,6 @@
 ********************************************************************************/
 
 #include "ColorM.h"
-
 #include <QColor>
 #include <QList>
 
@@ -32,7 +31,7 @@ namespace Color {
 
    typedef QList<QColor> List;
 
-   enum class Gradient { Default, Spectrum, PrimarySpectrum, Custom };
+   enum class Gradient {Custom , Default, Spectrum, PrimarySpectrum };
 
    enum class Operation{ Brighten, Darken, Saturate, Desaturate, Rotate};
 
@@ -43,6 +42,10 @@ namespace Color {
    Gradient fromInt(unsigned);
 
    QString toString(List const& colors, bool blend); // Required for the stylesheet
+
+   List residueColors();
+
+   List atomColors();
 
    void maxRange();
 

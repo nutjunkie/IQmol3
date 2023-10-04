@@ -29,37 +29,44 @@
 #include <QMenu>
 #include <QDebug>
 
+#include <limits>
+
 
 void maxRange()
 {
-     double lmin(999.99), lmax(-999.99); 
-     double cmin(999.99), cmax(-999.99); 
-     double hmin(999.99), hmax(-999.99); 
+   double lmin(std::numeric_limits<double>::max());
+   double lmax(std::numeric_limits<double>::min());
+
+   double cmin(std::numeric_limits<double>::max());
+   double cmax(std::numeric_limits<double>::min());
+
+   double hmin(std::numeric_limits<double>::max());
+   double hmax(std::numeric_limits<double>::min());
   
-    ColorM::Lch lch;
+   ColorM::Lch lch;
      
-     for (int r = 0; r < 256; ++r) {
-         for (int g = 0; g < 256; ++g) {
-             for (int b = 0; b < 256; ++b) {
-                 ColorM::Rgb rgb(r,g,b);
-                 ColorM::Lch lch(rgb);
-                 lch = lch.clip();
+   for (int r = 0; r < 256; ++r) {
+       for (int g = 0; g < 256; ++g) {
+           for (int b = 0; b < 256; ++b) {
+               ColorM::Rgb rgb(r,g,b);
+               ColorM::Lch lch(rgb);
+               lch = lch.clip();
 
-                 lmin = std::min(lmin, lch.lightness());
-                 lmax = std::max(lmax, lch.lightness());
+               lmin = std::min(lmin, lch.lightness());
+               lmax = std::max(lmax, lch.lightness());
 
-                 cmin = std::min(cmin, lch.chroma());
-                 cmax = std::max(cmax, lch.chroma());
+               cmin = std::min(cmin, lch.chroma());
+               cmax = std::max(cmax, lch.chroma());
 
-                 hmin = std::min(hmin, lch.hue());
-                 hmax = std::max(hmax, lch.hue());
-             }
-         }   
-     }
+               hmin = std::min(hmin, lch.hue());
+               hmax = std::max(hmax, lch.hue());
+           }
+       }   
+   }
 
-    qDebug() << "L range: " << lmin <<" - " << lmax;
-    qDebug() << "C range: " << cmin <<" - " << cmax;
-    qDebug() << "H range: " << hmin <<" - " << hmax;
+   qDebug() << "L range: " << lmin <<" - " << lmax;
+   qDebug() << "C range: " << cmin <<" - " << cmax;
+   qDebug() << "H range: " << hmin <<" - " << hmax;
 }
 
 
@@ -136,17 +143,15 @@ void Dialog::init()
       index = toInt(Gradient::Spectrum);
    }else if (m_colors == toList(Gradient::PrimarySpectrum)) {
       index = toInt(Gradient::PrimarySpectrum);
-   }else {
-      index = toInt(Gradient::Custom);
    }
 
    QComboBox* combo(m_dialog.gradientCombo);
    combo->blockSignals(true);
    combo->clear();
+   combo->addItem("Custom");
    combo->addItem("Default");
    combo->addItem("Spectrum");
    combo->addItem("Primary Spectrum");
-   combo->addItem("Custom");
    m_dialog.gradientCombo->setCurrentIndex(index);
    m_dialog.gradientCombo->blockSignals(false);
 }

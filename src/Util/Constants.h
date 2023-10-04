@@ -1,5 +1,4 @@
-#ifndef IQMOL_UTIL_CONSTANTS_H
-#define IQMOL_UTIL_CONSTANTS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2011-2015 Andrew Gilbert
@@ -130,5 +129,3 @@ namespace Constants {
    }
 
 } } // end namespace IQmol::Constants
-
-#endif
