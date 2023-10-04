@@ -26,9 +26,6 @@ namespace Parser {
          QMap<QString, Data::Geometry*> m_geometries;
 
          bool parseATOM(QString const& line, Data::Group&);
-         bool parseCOMPND(QString const& line);
-         bool parseCartoon(TextStream&);
-         int  parseGRO(char const* pdbFilePath, Data::Pdb *P , char *options);
    };
 
 } } // end namespace IQmol::Parser

@@ -490,11 +490,16 @@ void Pdb::saveSecondaryStructure(std::vector<Data::SS> secStructs){
         std::string c = secStructs[s].chain;
         std::string start = std::to_string(secStructs[s].start);
         std::string stop = std::to_string(secStructs[s].stop);
-        std::string output = t + "   " + c + "   " + start + "   " + stop;
+        std::string output = t;  // + "   " + c + "   " + start + "   " + stop;
+        output.append((static_cast<int>(4 - c.length())), ' ');
+        output.append(c);
+        output.append((static_cast<int>(7 - start.length())), ' ');
+        output.append(start);
+        output.append((static_cast<int>(7- stop.length())), ' ');
+        output.append(stop);
         File  << output  << std::endl;
 
     }
-    File  << "end file" << std::endl;
 
     File.close();
 
