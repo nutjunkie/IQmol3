@@ -23,6 +23,7 @@
 #include "Property.h"
 #include "Data/GridData.h"
 #include "Data/AtomicDensity.h"
+#include "Data/MultipoleExpansion.h"
 #include "Util/Constants.h"
 #include "Layer/MoleculeLayer.h"
 #include "Layer/ProteinChainLayer.h"
@@ -37,7 +38,6 @@ namespace IQmol {
 
       Data::Mesh::VertexFunction const& Indexed::evaluator() 
       {
-qDebug() << "Evaluator called" << m_map;
          update();
          m_vertexFunction = std::bind(&Indexed::map, this, std::placeholders::_1);
          return m_vertexFunction;
@@ -77,7 +77,6 @@ qDebug() << "Evaluator called" << m_map;
              int r = static_cast<int>(residue);
              m_map.append(double(r));
          }
-qDebug() << "Residues updated" << m_map;
       }
 
 
@@ -199,7 +198,8 @@ qDebug() << "Residues updated" << m_map;
 
       PointChargePotential::PointChargePotential(Data::Type::ID type,
          Layer::Molecule* molecule, Data::Mesh const* mesh) 
-          : Spatial(Data::Type::chargeToString(type), mesh), m_type(type), m_molecule(molecule)
+          : Spatial(Data::Type::chargeToString(type), mesh), m_type(type), 
+            m_molecule(molecule)
       { 
          m_function = std::bind(&PointChargePotential::potential, this, 
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -224,6 +224,7 @@ qDebug() << "Residues updated" << m_map;
          }   
          return esp * Constants::BohrToAngstrom;
       }
+
 
       // - - - - - - - - - - MultipolePotential - - - - - - - - - -
 

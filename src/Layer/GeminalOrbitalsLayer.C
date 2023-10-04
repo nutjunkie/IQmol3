@@ -21,14 +21,15 @@
 ********************************************************************************/
 
 #include "GeminalOrbitalsLayer.h"
-#include "Data/GeminalOrbitals.h"
 #include "MoleculeLayer.h"
+
+#include "Data/GeminalOrbitals.h"
+#include "Data/SurfaceType.h"
+#include "Data/SurfaceInfo.h"
 #include "Grid/GridInfoDialog.h"
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Grid/BoundingBoxDialog.h"
-#include "Data/SurfaceType.h"
-#include "Data/SurfaceInfo.h"
 #include "Util/QMsgBox.h"
 #include "Util/QsLog.h"
 
@@ -793,8 +794,8 @@ void GeminalOrbitals::computeShellPairs(double const x, double const y, double c
 // ------------------------------------------------------------------------
 
 GeminalOrbitalProperty::GeminalOrbitalProperty(Data::GeminalOrbitals const& geminalOrbitals, 
-   unsigned const index)
-   : m_geminalOrbitals(geminalOrbitals), m_alpha(geminalOrbitals.alphaCoefficients()),  
+   unsigned const index) : Property::Spatial("Geminal orbitals"),
+   m_geminalOrbitals(geminalOrbitals), m_alpha(geminalOrbitals.alphaCoefficients()),  
    m_beta(geminalOrbitals.betaCoefficients()),m_geminals(geminalOrbitals.geminalCoefficients()),
    m_index(index)
    

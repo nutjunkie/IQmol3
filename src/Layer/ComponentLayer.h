@@ -22,11 +22,10 @@
 ********************************************************************************/
 
 #include "GLObjectLayer.h"
-#include "Viewer/Animator.h"
-#include "Grid/SpatialProperty.h"
 #include "ContainerLayer.h"
-
+#include "Viewer/Animator.h"
 #include "Grid/Property.h"
+
 
 class QUndoCommand;
 

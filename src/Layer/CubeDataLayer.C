@@ -26,7 +26,6 @@
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Data/SurfaceInfo.h"
-#include "Grid/SpatialProperty.h" 
 #include "Grid/Property.h" 
 #include "Data/CubeData.h"
 #include "Util/QsLog.h"

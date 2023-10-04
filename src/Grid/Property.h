@@ -56,6 +56,7 @@ namespace IQmol {
             virtual ~Base() { }
 
             QString text() const { return m_text; }
+            void setText(QString const& text) { m_text = text; }
 
             void setMesh(Data::Mesh* mesh) { m_mesh = mesh; }
 

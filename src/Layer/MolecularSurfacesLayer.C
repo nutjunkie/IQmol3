@@ -27,6 +27,8 @@
 #include "Data/AtomicDensity.h"
 #include "Data/SurfaceInfo.h"
 #include "Data/Mesh.h"
+#include "Data/GridSize.h"
+#include "Data/GridData.h"
 #include "Grid/Property.h"
 #include "Grid/SurfaceGenerator.h"
 #include "Grid/GridEvaluator.h"

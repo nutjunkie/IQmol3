@@ -25,6 +25,7 @@
 #include "Data/Energy.h"
 #include "Data/File.h"
 #include "Data/Frequencies.h"
+#include "Data/MultipoleExpansion.h"
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
 #include "Data/SurfaceInfo.h"
@@ -51,7 +52,6 @@
 
 
 #include "Configurator/GenerateConformersDialog.h"
-#include "Grid/SpatialProperty.h"
 #include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"

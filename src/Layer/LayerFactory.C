@@ -31,7 +31,6 @@
 #include "Data/MacroMolecule.h"
 #include "Data/Mesh.h"
 #include "Data/NmrData.h"
-#include "Data/PdbData.h"
 #include "Data/PointCharge.h"
 #include "Data/ProteinChain.h"
 #include "Data/OrbitalsList.h"
