@@ -94,19 +94,16 @@ bool Mesh::requestProperty(Property const property)
          break;
 
       case ScalarField:
-qDebug() << "Requesting property: scalarField" ;
          m_omMesh.add_property(m_scalarFieldHandle, s_scalarFieldString);
          return m_scalarFieldHandle.is_valid();
          break;
 
       case IndexField:
-qDebug() << "Requesting property: indexField" ;
          m_omMesh.add_property(m_indexFieldHandle, s_indexFieldString);
          return m_indexFieldHandle.is_valid();
          break;
 
       case MeshIndex:
-qDebug() << "Requesting property: meshIndex" ;
          m_omMesh.add_property(m_meshIndexHandle, s_meshIndexString);
          return m_meshIndexHandle.is_valid();
          break;
@@ -410,48 +407,15 @@ bool Mesh::computeScalarField(Function3D const& function)
 
 bool Mesh::computeScalarField(VertexFunction const& function)
 {
-dump();
-qDebug() << "Mesh::computeScalarField with vertex function 1";
-   if (!hasProperty(MeshIndex) && !requestProperty(MeshIndex))  return false;
-qDebug() << "Mesh::computeScalarField with vertex function 2";
-   if (!hasProperty(ScalarField) && !requestProperty(ScalarField))  return false;
-qDebug() << "Mesh::computeScalarField with vertex function 3";
-
-   if (!hasProperty(IndexField) && !requestProperty(IndexField))  return false;
-qDebug() << "Mesh::computeScalarField with vertex function 4";
-
-   OMMesh::ConstVertexIter vertex;
-   for (vertex = m_omMesh.vertices_begin(); vertex != m_omMesh.vertices_end(); ++vertex) {
-       m_omMesh.property(m_scalarFieldHandle, *vertex) = function(*vertex);
-   }
-qDebug() << "Mesh::computeScalarField with vertex function 5";
-
-   return true;
+   if (!hasProperty(MeshIndex) && !requestProperty(MeshIndex))     return false;
+   if (!hasProperty(ScalarField) && !requestProperty(ScalarField)) return false;
+   if (!hasProperty(IndexField) && !requestProperty(IndexField))   return false;
 
    for (auto v = m_omMesh.vertices_begin(); v != m_omMesh.vertices_end(); ++v) {
-qDebug() << "Mesh::computeScalarField with vertex function value" << function(*v);
        m_omMesh.property(m_scalarFieldHandle, *v) = function(*v);
    }
 
    return true;
-/*
-   OMMesh::FaceIter face;
-   OMMesh::FaceVertexIter vertex;
-   for (face = fbegin(); face != fend(); ++face) {
-       int index( m_omMesh.property(m_meshIndexHandle, face));
-       // add a little bit to avoid round-off changing the int value
-       double value(index + 0.0001);
-   
-       vertex = m_omMesh.fv_iter(face);
-       m_omMesh.property(m_scalarFieldHandle, vertex) = value;
-       ++vertex;
-       m_omMesh.property(m_scalarFieldHandle, vertex) = value;
-       ++vertex;
-       m_omMesh.property(m_scalarFieldHandle, vertex) = value;
-   }
-
-   return true;
-*/
 }
 
 
