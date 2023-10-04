@@ -75,7 +75,7 @@ namespace Process {
          template <typename T>
          T get(QString const key) const
          {
-            T t;
+            T t{};
             if (m_jobData.contains(key) && m_jobData[key].canConvert<T>()) {
                t = m_jobData[key].value<T>();
             }else {

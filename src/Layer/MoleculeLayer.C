@@ -29,7 +29,6 @@
 #include "Data/GeometryList.h"
 #include "Data/SurfaceInfo.h"
 
-
 // Layers
 #include "LayerFactory.h"
 #include "AtomLayer.h"
@@ -113,7 +112,6 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_bondList(this, "Bonds"), 
    m_chargesList(this, "Charges"), 
    m_fileList(this, "Files"), 
-   m_surfaceList(this, "Surfaces"), 
    m_constraintList(this, "Constraints"), 
    m_isotopesList(this, "Isotopes"), 
    m_scanList(this, "Scan Coordinates"), 
@@ -139,7 +137,6 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    OBConversion conv;
    conv.SetInFormat("xyz");
 
-
    // Add actions for the context menu
    connect(newAction("Configure"), SIGNAL(triggered()), 
       this, SLOT(configure()));
@@ -161,17 +158,9 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
-//#warning "################################";
-//#warning "# !!! TURN OFF FOR RELEASE !!! #";
-//#warning "################################";
-//   connect(newAction("Dump Data"), SIGNAL(triggered()), 
-//      this, SLOT(dumpData()));
-
-   initProperties();
 
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
-   connect(&m_surfaceList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_molecularSurfaces, SIGNAL(updated()), this, SIGNAL(softUpdate()));
 }
 
@@ -186,21 +175,6 @@ void Molecule::setFile(QString const& fileName)
 {
    m_inputFile.setFile(fileName);
    setText(m_inputFile.completeBaseName());
-}
-
-
-void Molecule::appendSurface(Data::Surface* surfaceData)
-{
-   m_bank.append(surfaceData);
-   Layer::Surface* surfaceLayer(new Layer::Surface(*surfaceData));
-
-qDebug() << "Need to check if surface needs to be oriented to the molecular frame";
-// surfaceLayer->setFrame(getReferenceFrame());
-   connect(surfaceLayer, SIGNAL(updated()), this, SIGNAL(softUpdate()));
-   surfaceLayer->setCheckState(Qt::Checked);
-   surfaceLayer->setCheckStatus(Qt::Checked);
-   m_surfaceList.appendLayer(surfaceLayer);
-   updated();
 }
 
 
@@ -315,6 +289,7 @@ void Molecule::appendData(Layer::List& list)
        } 
 
        if ( (cubeData = qobject_cast<CubeData*>(*iter)) ) {
+          cubeData->setMolecule(this);
           m_properties << cubeData->createProperty(); 
        }
    }
@@ -327,8 +302,8 @@ void Molecule::appendData(Layer::List& list)
    Surface* surface(0);
 
    for (iter = toSet.begin(); iter != toSet.end(); ++iter) {
-       //(*iter)->setMolecule(this);
        if ((surface = qobject_cast<Surface*>(*iter))) {
+          surface->setComponent(this);
           m_surfaceList.appendLayer(surface);
        }else {
           appendLayer(*iter);
@@ -747,12 +722,25 @@ QString Molecule::coordinatesAsStringFsm()
 QList<Vec> Molecule::coordinates()
 {
    QList<Vec> coordinates;
+
    AtomList atoms(findLayers<Atom>(Children));
-   for (int i = 0; i < atoms.size(); ++i) {
-       coordinates << atoms[i]->getPosition();
-   }
+   for (auto& atom : atoms)  coordinates << atom->getPosition();
+
    return coordinates;
 }
+
+
+QList<int> Molecule::atomicNumbers() 
+{
+   QList<int> atomicNumbers;
+
+   AtomList atoms(findLayers<Atom>(Children));
+   for (auto& atom : atoms)  atomicNumbers << atom->getAtomicNumber();
+
+   return atomicNumbers;
+}
+
+
 
 
 QString Molecule::efpFragmentsAsString()
@@ -1772,11 +1760,11 @@ void Molecule::saveToCurrentGeometry()
 
 void Molecule::reindexAtomsAndBonds()
 {
-   m_maxAtomicNumber = 0;
+//   m_maxAtomicNumber = 0;
    AtomList atoms(findLayers<Atom>(Children));
    for (int i = 0; i < atoms.size(); ++i) {
        atoms[i]->setIndex(i+1);
-       m_maxAtomicNumber = std::max((int)m_maxAtomicNumber, atoms[i]->getAtomicNumber());
+//       m_maxAtomicNumber = std::max((int)m_maxAtomicNumber, atoms[i]->getAtomicNumber());
    }
 
    BondList bonds(findLayers<Bond>(Children));
@@ -2570,6 +2558,7 @@ Bond* Molecule::getBond(Atom* A, Atom* B)
 }
 
 
+/*
 Vec Molecule::centerOfNuclearCharge(bool selectedOnly)
 {
    Vec center;
@@ -2589,6 +2578,7 @@ Vec Molecule::centerOfNuclearCharge(bool selectedOnly)
    if (atoms.size() > 0) center = center / totalCharge;
    return center;
 }
+*/
 
 
 
@@ -2663,10 +2653,7 @@ int Molecule::multiplicity() const
 
 void Molecule::deleteProperties()
 {
-   QList<SpatialProperty*>::iterator iter;
-   for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-       delete (*iter);
-   }
+   for (auto& property : m_properties) delete property;
    m_properties.clear();
 
    if (m_atomicChargesMenu) {
@@ -2680,9 +2667,7 @@ void Molecule::initProperties()
 {
    deleteProperties();
 
-   m_properties << new RadialDistance();
-
-   m_properties << new MeshIndex("Nuclei"); 
+   m_properties << new Property::MeshIndex("Nuclei"); 
 
    QList<CubeData*> cubeFiles(findLayers<CubeData>(Children));
    QList<CubeData*>::iterator iter;
@@ -2694,104 +2679,108 @@ void Molecule::initProperties()
    m_atomicChargesMenu->setMenu(menu);
    QActionGroup* chargeTypes(new QActionGroup(menu));
 
+   Data::Type::ID type;
+
    // Gasteiger
+   type = Data::Type::GasteigerCharge;
    QAction* action(menu->addAction("Gasteiger"));
    action->setCheckable(true);
    action->setChecked(true);
-   action->setData(Data::Type::GasteigerCharge);
+   action->setData(type);
    chargeTypes->addAction(action);
    connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-   m_properties.append( new PointChargePotential(Data::Type::GasteigerCharge, 
-       "ESP (Gasteiger)", this) );
+   m_properties.append( new Property::PointChargePotential(type, this) );
 
    if (!m_currentGeometry) return;
 
    // Mulliken
    if (m_currentGeometry->hasProperty<Data::MullikenCharge>()) {
+      type = Data::Type::MullikenCharge;
       action = menu->addAction("Mulliken");
       action->setCheckable(true);
-      action->setData(Data::Type::MullikenCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::MullikenCharge, "ESP (Mulliken)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Multipole Derived
    if (m_currentGeometry->hasProperty<Data::MultipoleDerivedCharge>()) {
+      type = Data::Type::MultipoleDerivedCharge;
       action = menu->addAction("Multipole Derived");
       action->setCheckable(true);
-      action->setData(Data::Type::MultipoleDerivedCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::MultipoleDerivedCharge, "ESP (MDC)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // ChelpG
    if (m_currentGeometry->hasProperty<Data::ChelpgCharge>()) {
+      type = Data::Type::ChelpgCharge;
       action = menu->addAction("CHELPG");
       action->setCheckable(true);
-      action->setData(Data::Type::ChelpgCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::ChelpgCharge, "ESP (CHELPG)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Hirshfeld
    if (m_currentGeometry->hasProperty<Data::HirshfeldCharge>()) {
+      type = Data::Type::HirshfeldCharge;
       action = menu->addAction("Hirshfeld");
       action->setCheckable(true);
-      action->setData(Data::Type::HirshfeldCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::HirshfeldCharge, "ESP (Hirshfeld)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Lowdin
    if (m_currentGeometry->hasProperty<Data::LowdinCharge>()) {
+      type = Data::Type::LowdinCharge;
       action = menu->addAction("Lowdin");
       action->setCheckable(true);
-      action->setData(Data::Type::LowdinCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "ESP (Lowdin)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Natural
    if (m_currentGeometry->hasProperty<Data::NaturalCharge>()) {
+      type = Data::Type::NaturalCharge;
+      action = menu->addAction("Lowdin");
       action = menu->addAction("Natural");
       action->setCheckable(true);
-      action->setData(Data::Type::NaturalCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "ESP (Natural)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
+         
+   }
+
+   // Merz Kollman RESP
+   if (m_currentGeometry->hasProperty<Data::MerzKollmanEspCharge>()) {
+      type = Data::Type::MerzKollmanEspCharge;
+      action = menu->addAction("Merz-Kollman ESP");
+      action->setCheckable(true);
+      action->setData(type);
+      chargeTypes->addAction(action);
+      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Merz Kollman RESP
    if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
-      action = menu->addAction("Merz Kollman RESP");
+      type = Data::Type::MerzKollmanRespCharge;
+      action = menu->addAction("Merz-Kollman RESP");
       action->setCheckable(true);
-      action->setData(Data::Type::MerzKollmanRespCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
-   }
-
-   // Merz Kollman RESP
-   if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
-      action = menu->addAction("Merz Kollman RESP");
-      action->setCheckable(true);
-      action->setData(Data::Type::MerzKollmanRespCharge);
-      chargeTypes->addAction(action);
-      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    if (m_currentGeometry->hasProperty<Data::MultipoleExpansionList>()) {
@@ -2799,52 +2788,26 @@ void Molecule::initProperties()
          m_currentGeometry->getProperty<Data::MultipoleExpansionList>());
       if (!dma.isEmpty()) {
          int maxOrder(dma.first()->order());
-         MultipolePotential* dmaEsp;
+         Property::MultipolePotential* dmaEsp;
          if (maxOrder >= 0) {
-            dmaEsp = new MultipolePotential("ESP (DMA, charges)", 0, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, charges)", 0, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 1) {
-            dmaEsp = new MultipolePotential("ESP (DMA, dipoles)", 1, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, dipoles)", 1, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 2) {
-            dmaEsp = new MultipolePotential("ESP (DMA, quadrupoles)", 2, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, quadrupoles)", 2, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 3) {
-            dmaEsp = new MultipolePotential("ESP (DMA, octopoles)", 3, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, octopoles)", 3, dma);
             m_properties << dmaEsp;
          }
       }
    }
 }
-
-
-QStringList Molecule::getAvailableProperties()
-{
-  QStringList properties;
-  QList<SpatialProperty*>::iterator iter;
-  for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-      properties << (*iter)->text();
-  }
-  return properties;
-}
-
-
-Function3D Molecule::getPropertyEvaluator(QString const& name)
-{
-   QList<SpatialProperty*>::iterator iter;
-   for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-       if ( (*iter)->text() == name) {
-          return (*iter)->evaluator();
-       }
-   }
-
-   QLOG_WARN() << "Evaluator for property" << name << "not found, returning null function";
-   return Function3D();
-}
-
 
 
 void Molecule::generateConformersDialog()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>568</width>
-    <height>339</height>
+    <height>346</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -380,47 +380,7 @@ QToolButton:checked
           </property>
           <item>
            <property name="text">
-            <string>Default</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Spectrum</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Primary Spectrum</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
             <string>Custom</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Brighten</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Darken</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Saturate</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Desaturate</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Rotate</string>
            </property>
           </item>
          </widget>

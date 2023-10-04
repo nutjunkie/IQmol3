@@ -55,6 +55,7 @@ namespace Parser {
             QChar chain;
             int start;
             int stop;
+            int index; // jk
          };
 
          QString m_label;

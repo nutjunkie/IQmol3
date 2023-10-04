@@ -28,6 +28,28 @@ namespace Data {
 
 namespace Type {
 
+QString chargeToString(ID const id)
+{
+    QString s("Unspecified");
+
+    switch (id) {
+       case GasteigerCharge:         s = "ESP (Gasteiger)";         break;
+       case MullikenCharge:          s = "ESP (Mulliken)";          break;
+       case MultipoleDerivedCharge:  s = "ESP (MDC)";               break;
+       case ChelpgCharge:            s = "ESP (GHELPG)";            break;
+       case HirshfeldCharge:         s = "ESP (Hershfeld)";         break;
+       case LowdinCharge:            s = "ESP (Lowdin)";            break;
+       case NaturalCharge:           s = "ESP (Natural)";           break;
+       case MerzKollmanEspCharge:    s = "ESP (Merz-Kollma/ESP)";   break;
+       case MerzKollmanRespCharge:   s = "ESP (Merz-Kollma/RESP)";  break;
+       default:                                                     break;
+    } 
+
+    return s;
+}
+
+
+
 QString toString(ID const id)
 {
    QString s("Invalid Type");

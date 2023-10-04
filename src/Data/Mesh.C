@@ -21,11 +21,13 @@
 ********************************************************************************/
 
 #include "OpenMesh/Core/IO/MeshIO.hh"
-#include "Data/Mesh.h"
+#include "Mesh.h"
+#include "Grid/Property.h"
 #include "Util/QsLog.h"
+
 #include <string>
 #include <sstream>
-#include <climits>
+#include <limits>
 #include <QDebug>
 #include <exception>
 
@@ -37,6 +39,7 @@ namespace Data {
 
 std::string const Mesh::s_archiveFormat       = ".obj";
 std::string const Mesh::s_scalarFieldString   = "ScalarField";
+std::string const Mesh::s_indexFieldString    = "IndexField";
 std::string const Mesh::s_faceCentroidsString = "FaceCentroids";
 std::string const Mesh::s_meshIndexString     = "MeshIndex";
 
@@ -91,14 +94,20 @@ bool Mesh::requestProperty(Property const property)
          break;
 
       case ScalarField:
+qDebug() << "Requesting property: scalarField" ;
          m_omMesh.add_property(m_scalarFieldHandle, s_scalarFieldString);
-         //m_omMesh.property(m_scalarFieldHandle).set_persistent(true);
          return m_scalarFieldHandle.is_valid();
          break;
 
+      case IndexField:
+qDebug() << "Requesting property: indexField" ;
+         m_omMesh.add_property(m_indexFieldHandle, s_indexFieldString);
+         return m_indexFieldHandle.is_valid();
+         break;
+
       case MeshIndex:
+qDebug() << "Requesting property: meshIndex" ;
          m_omMesh.add_property(m_meshIndexHandle, s_meshIndexString);
-         //m_omMesh.property(m_meshIndexHandle).set_persistent(true);
          return m_meshIndexHandle.is_valid();
          break;
    }
@@ -117,26 +126,18 @@ Mesh& Mesh::operator=(Mesh const& that)
 
 void Mesh::copy(Mesh const& that)
 {
-//   qDebug() << "Invoking Mesh::copy()";
+   qDebug() << "Invoking Mesh::copy()";
    deleteProperty(ScalarField);
+   deleteProperty(IndexField);
    deleteProperty(MeshIndex);
 
-   if (that.hasProperty(ScalarField)) {
-      if (requestProperty(MeshIndex)) {
-         // copy property
-      }
+   OMMesh::ConstVertexIter iter;
+   for (iter = vbegin(); iter != vend(); ++iter) {
+       m_omMesh.delete_vertex(iter, false);
    }
+   m_omMesh.garbage_collection();
 
-   if (that.hasProperty(MeshIndex)) {
-      if (requestProperty(MeshIndex)) {
-         // copy property
-      }
-   }
-
-   m_omMesh = that.m_omMesh;
-   m_faceCentroidsHandle = that.m_faceCentroidsHandle;
-   m_scalarFieldHandle = that.m_scalarFieldHandle;
-   m_meshIndexHandle = that.m_meshIndexHandle;
+   *this += that;
 }
 
 
@@ -205,6 +206,18 @@ Mesh& Mesh::operator+=(Mesh const& that)
       }
    }
 
+   if (that.hasProperty(IndexField)) {
+      if (!hasProperty(IndexField) && !requestProperty(IndexField)) {
+         QLOG_WARN() << "Mesh request for index field property failed";
+      }else {
+         OMMesh::ConstVertexIter vertex;
+         for (vertex = that.vbegin(); vertex != that.vend(); ++vertex) {
+             double value(that.indexFieldValue(vertex.handle()));
+             m_omMesh.property(m_indexFieldHandle, vertexMap.value(vertex.handle())) = value;
+         }
+      }
+   }
+
    return *this;
 }
 
@@ -224,6 +237,9 @@ bool Mesh::hasProperty(Property const property) const
       case ScalarField:
          return m_scalarFieldHandle.is_valid();
          break;
+      case IndexField:
+         return m_indexFieldHandle.is_valid();
+         break;
       case MeshIndex:
          return m_meshIndexHandle.is_valid();
          break;
@@ -239,6 +255,13 @@ void Mesh::deleteProperty(Property const property)
          if (m_scalarFieldHandle.is_valid()) {
             m_omMesh.property(m_scalarFieldHandle).clear();   
             m_scalarFieldHandle.invalidate();
+         }
+         break;
+
+      case IndexField:
+         if (m_indexFieldHandle.is_valid()) {
+            m_omMesh.property(m_indexFieldHandle).clear();   
+            m_indexFieldHandle.invalidate();
          }
          break;
 
@@ -357,9 +380,23 @@ void Mesh::writeToFile()
 }
 
 
+bool Mesh::setIndexField(Mesh::Vertex const& vertex, int const index)
+{
+   if (!hasProperty(IndexField) && !requestProperty(IndexField))  return false;
+   m_omMesh.property(m_indexFieldHandle, vertex) = index;
+   return true;
+}
+
+
+int Mesh::indexFieldValue(Mesh::Vertex const& vertex) const
+{
+   return m_omMesh.property(m_indexFieldHandle, vertex);
+}
+
+
 bool Mesh::computeScalarField(Function3D const& function)
 {
-   if (!hasProperty(ScalarField) && !requestProperty(ScalarField))  return false;
+   if (!hasProperty(ScalarField) && !requestProperty(ScalarField)) return false;
 
    OMMesh::ConstVertexIter vertex;
    for (vertex = m_omMesh.vertices_begin(); vertex != m_omMesh.vertices_end(); ++vertex) {
@@ -371,11 +408,33 @@ bool Mesh::computeScalarField(Function3D const& function)
 }
 
 
-bool Mesh::computeIndexField()
+bool Mesh::computeScalarField(VertexFunction const& function)
 {
+dump();
+qDebug() << "Mesh::computeScalarField with vertex function 1";
    if (!hasProperty(MeshIndex) && !requestProperty(MeshIndex))  return false;
+qDebug() << "Mesh::computeScalarField with vertex function 2";
    if (!hasProperty(ScalarField) && !requestProperty(ScalarField))  return false;
+qDebug() << "Mesh::computeScalarField with vertex function 3";
 
+   if (!hasProperty(IndexField) && !requestProperty(IndexField))  return false;
+qDebug() << "Mesh::computeScalarField with vertex function 4";
+
+   OMMesh::ConstVertexIter vertex;
+   for (vertex = m_omMesh.vertices_begin(); vertex != m_omMesh.vertices_end(); ++vertex) {
+       m_omMesh.property(m_scalarFieldHandle, *vertex) = function(*vertex);
+   }
+qDebug() << "Mesh::computeScalarField with vertex function 5";
+
+   return true;
+
+   for (auto v = m_omMesh.vertices_begin(); v != m_omMesh.vertices_end(); ++v) {
+qDebug() << "Mesh::computeScalarField with vertex function value" << function(*v);
+       m_omMesh.property(m_scalarFieldHandle, *v) = function(*v);
+   }
+
+   return true;
+/*
    OMMesh::FaceIter face;
    OMMesh::FaceVertexIter vertex;
    for (face = fbegin(); face != fend(); ++face) {
@@ -392,6 +451,7 @@ bool Mesh::computeIndexField()
    }
 
    return true;
+*/
 }
 
 
@@ -417,8 +477,8 @@ int Mesh::meshIndex(Face const& face) const
 void Mesh::getScalarFieldRange(double& min, double& max)
 {
    if (hasProperty(ScalarField)) {
-      min = DBL_MAX;
-      max = DBL_MIN;
+      min = std::numeric_limits<double>::max();
+      max = std::numeric_limits<double>::min();
 
       OMMesh::ConstVertexIter vertex;
       for (vertex = m_omMesh.vertices_begin(); vertex != m_omMesh.vertices_end(); ++vertex) {
@@ -542,6 +602,7 @@ bool Mesh::computeFaceNormals()
 bool Mesh::computeVertexNormals()
 {
    m_omMesh.update_vertex_normals();
+   return true;
 }
 
 
@@ -562,7 +623,7 @@ void Mesh::removeDisconnectedVertices()
    }
 
    m_omMesh.garbage_collection();
-   //qDebug() << "Mesh cliping removed" << orphans << "vertices";
+   qDebug() << "Mesh cliping removed" << orphans << "vertices";
 }
 
 
@@ -772,6 +833,7 @@ void Mesh::dump() const
    qDebug() << " - face normals      " << hasProperty(FaceNormals);
    qDebug() << " - face centroids    " << hasProperty(FaceCentroids);
    qDebug() << " - scalar field      " << hasProperty(ScalarField);
+   qDebug() << " - index field       " << hasProperty(IndexField);
    qDebug() << " - mesh index        " << hasProperty(MeshIndex);
    qDebug() << "   Number of vertices" << m_omMesh.n_vertices();
    qDebug() << "   Number of edges   " << m_omMesh.n_edges();

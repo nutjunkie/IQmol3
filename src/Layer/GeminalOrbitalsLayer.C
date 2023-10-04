@@ -655,13 +655,15 @@ void GeminalOrbitals::initGeminalOrbitalProperties()
       return;
    }
 
-   unsigned i;
-   for (i = 0; i < nAlpha(); ++i) {
+   QLOG_WARN() << "Geminal properties not initialized";
+/*
+   for (unsigned i = 0; i < nAlpha(); ++i) {
        m_molecule->addProperty(new GeminalOrbitalProperty(m_geminalOrbitals, i));
    }
-   for (i = 0; i < nBeta(); ++i) {
+   for (unsigned i = 0; i < nBeta(); ++i) {
        m_molecule->addProperty(new GeminalOrbitalProperty(m_geminalOrbitals, i+nAlpha()));
    }
+*/
 }
 
 
@@ -805,7 +807,8 @@ GeminalOrbitalProperty::GeminalOrbitalProperty(Data::GeminalOrbitals const& gemi
   } else {
     setText("Geminal Beta " + QString::number(index+1-geminalOrbitals.nAlpha()));
  }
-  m_function = boost::bind(&GeminalOrbitalProperty::orbital, this, _1, _2, _3);
+  m_function = std::bind(&GeminalOrbitalProperty::orbital, this, 
+     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
 

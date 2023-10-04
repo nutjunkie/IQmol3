@@ -43,6 +43,23 @@ inline void Transition(PeptidePlane const& pp, SecondaryStructure& type1,
 }
 
 
+inline void Transition(PeptidePlane const& pp, int& idx1, int& idx2) 
+{
+    int i1 = pp.Residue1.idx;
+    int i2 = pp.Residue2.idx;
+    int i3 = pp.Residue3.idx;
+    idx1 = i2;
+    idx2 = i2;
+
+    if (i2 > i1 && i2 == i3) {
+        idx1 = i1;
+    }
+    if (i2 > i3 && i1 == i2) {
+        idx2 = i3;
+    }
+}
+
+
 void ellipseProfile(std::vector<Vec3> &profile, int n, double w, double h) 
 {
     for (int i = 0; i < n; i++) {
@@ -220,59 +237,48 @@ void segmentProfiles(const PeptidePlane &pp1, const PeptidePlane &pp2,
 }
 
 
-void segmentColors(const PeptidePlane &pp, Vec3 &c1, Vec3 &c2) 
+void segmentColors(PeptidePlane const& pp, Vec3 &c1, Vec3 &c2) 
 {
-    // const minTemp = 10
-    // const maxTemp = 50
-    // f1 := pp.Residue2.Atoms["CA"].TempFactor
-    // f2 := pp.Residue3.Atoms["CA"].TempFactor
-    // t1 := fauxgl.Clamp((f1-minTemp)/(maxTemp-minTemp), 0, 1)
-    // t2 := fauxgl.Clamp((f2-minTemp)/(maxTemp-minTemp), 0, 1)
-    // c1 = fauxgl.MakeColor(Viridis.Color(t1))
-    // c2 = fauxgl.MakeColor(Viridis.Color(t2))
-    // return
     SecondaryStructure type1, type2;
     Transition(pp, type1, type2);
+
     switch (type1) {
-    case SecondaryStructure::Helix:
-        c1 = Vec3{1.0f, 0.71f, 0.2f};
-        break;
-    case SecondaryStructure::Sheet:
-        c1 = Vec3{0.96f, 0.45f, 0.21f};
-        break;
-    default:
-        c1 = Vec3{0.02f, 0.47f, 0.47f};
-        break;
+       case SecondaryStructure::Helix:
+           c1 = Vec3{1.0f, 0.71f, 0.2f};
+           break;
+       case SecondaryStructure::Sheet:
+           c1 = Vec3{0.96f, 0.45f, 0.21f};
+           break;
+       default:
+           c1 = Vec3{0.02f, 0.47f, 0.47f};
+           break;
     }
+
     switch (type2) {
-    case SecondaryStructure::Helix:
-        c2 = Vec3{1.0f, 0.71f, 0.2f};
-        break;
-    case SecondaryStructure::Sheet:
-        c2 = Vec3{0.96f, 0.45f, 0.21f};
-        break;
-    default:
-        c2 = Vec3{0.02f, 0.47f, 0.47f};
-        break;
+       case SecondaryStructure::Helix:
+           c2 = Vec3{1.0f, 0.71f, 0.2f};
+           break;
+       case SecondaryStructure::Sheet:
+           c2 = Vec3{0.96f, 0.45f, 0.21f};
+           break;
+       default:
+           c2 = Vec3{0.02f, 0.47f, 0.47f};
+           break;
     }
-    if (type1 == SecondaryStructure::Sheet) {
-        c2 = c1;
-    }
+
+    if (type1 == SecondaryStructure::Sheet) c2 = c1;
 }
 
 
 void triangulateQuad(Mesh &mesh,
-   Vec3& p1, Vec3& p2, Vec3& p3, Vec3& p4, Vec3& c1, Vec3& c2, Vec3& c3, Vec3& c4) 
+   Vec3& p1, Vec3& p2, Vec3& p3, Vec3& p4, 
+   Vec3& c1, Vec3& c2, Vec3& c3, Vec3& c4,
+   int   i1, int   i2, int   i3, int   i4)
 {
-    int res1 = 0;
-    int res2 = 0;
-    int res3 = 0;
-    int res4 = 0;
-
-    int idp1 = res1;
-    int idp2 = res2;
-    int idp3 = res3;
-    int idp4 = res4;
+    int idp1 = 0;
+    int idp2 = 0;
+    int idp3 = 0;
+    int idp4 = 0;
 
     const double tolerance = 1e-4f;
 
@@ -294,41 +300,41 @@ void triangulateQuad(Mesh &mesh,
 
     if (mesh.verticesDict.find(p1) != mesh.verticesDict.end()) {
         idp1 = mesh.verticesDict.at(p1);
-    }
-    else {
+    }else {
         mesh.vertices.push_back(p1);
         idp1 = mesh.vertices.size() - 1;
         mesh.colors.push_back(c1);
+        mesh.vertexResidues.push_back(i1);
         mesh.verticesDict.insert(std::pair<Vec3, int>(p1, idp1));
     }
 
     if (mesh.verticesDict.find(p2) != mesh.verticesDict.end()) {
         idp2 = mesh.verticesDict.at(p2);
-    }
-    else {
+    }else {
         mesh.vertices.push_back(p2);
         idp2 = mesh.vertices.size() - 1;
         mesh.colors.push_back(c2);
+        mesh.vertexResidues.push_back(i2);
         mesh.verticesDict.insert(std::pair<Vec3, int>(p2, idp2));
     }
 
     if (mesh.verticesDict.find(p3) != mesh.verticesDict.end()) {
         idp3 = mesh.verticesDict.at(p3);
-    }
-    else {
+    }else {
         mesh.vertices.push_back(p3);
         idp3 = mesh.vertices.size() - 1;
         mesh.colors.push_back(c3);
+        mesh.vertexResidues.push_back(i3);
         mesh.verticesDict.insert(std::pair<Vec3, int>(p3, idp3));
     }
 
     if (mesh.verticesDict.find(p4) != mesh.verticesDict.end()) {
         idp4 = mesh.verticesDict.at(p4);
-    }
-    else {
+    }else {
         mesh.vertices.push_back(p4);
         idp4 = mesh.vertices.size() - 1;
         mesh.colors.push_back(c4);
+        mesh.vertexResidues.push_back(i4);
         mesh.verticesDict.insert(std::pair<Vec3, int>(p4, idp4));
     }
 
@@ -367,8 +373,12 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
     SecondaryStructure type0 = pp2.Residue1.ss;
     SecondaryStructure type1, type2;
     Transition(pp2, type1, type2);
+
     Vec3 c1, c2;
     segmentColors(pp2, c1, c2);
+
+    int idx1 = pp2.Residue1.idx;
+    int idx2 = pp2.Residue2.idx;
 
     std::vector<Vec3> profile1(n);
     std::vector<Vec3> profile2(n);
@@ -379,7 +389,6 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
 
     auto easeFunc = &Linear;
     if (!(type1 == SecondaryStructure::Sheet && type2 != SecondaryStructure::Sheet)) {
-
         easeFunc = &InOutQuad;
     }
     if (type0 == SecondaryStructure::Sheet && type1 != SecondaryStructure::Sheet) {
@@ -421,7 +430,9 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
             Vec3 p10 = splines1[profileDetail / 4][i];
             Vec3 p11 = splines1[2 * profileDetail / 4][i];
             Vec3 p01 = splines1[3 * profileDetail / 4][i];
-            triangulateQuad(mesh, p00, p01, p11, p10, c1, c1, c1, c1);
+            triangulateQuad(mesh, p00,  p01,  p11,  p10, 
+                                  c1,   c1,   c1,   c1, 
+                                  idx1, idx1, idx1, idx1);
         }
 
         for (int j = 0; j < profileDetail ; j++) {
@@ -442,16 +453,22 @@ void createSegmentMesh(Mesh &mesh, int curi, int n, const PeptidePlane &pp1,
             Vec3 c01 = lerp(c1, c2, t1);
             Vec3 c10 = lerp(c1, c2, t0);
             Vec3 c11 = lerp(c1, c2, t1);
-            triangulateQuad(mesh, p10, p11, p01, p00, c10, c11, c01, c00);
+
+            int i00 = t0 < 0.5 ? idx1 : idx2;
+            int i01 = t1 < 0.5 ? idx1 : idx2;
+            int i10 = t0 < 0.5 ? idx1 : idx2;
+            int i11 = t1 < 0.5 ? idx1 : idx2;
+
+            triangulateQuad(mesh, p10, p11, p01, p00, c10, c11, c01, c00,
+               i10, i11, i01, i00);
         }
     }
-    // mesh.triangles = triangles;
-    // mesh.colors = colors;
-    // mesh.vertices = vertices;
+
     for (int i = 0; i < lenProf1; i++) {
         delete(splines1[i]);
         delete(splines2[i]);
     }
+
     delete[] splines1;
     delete[] splines2;
 }
@@ -526,7 +543,7 @@ Mesh createChainMesh(Data::ProteinChain const& data)
 {
    QVector<Vec3> const& alphaCarbons(data.alphaCarbons());
    QVector<Vec3> const& peptideOxygens(data.peptideOxygens());
-   QVector<SecondaryStructure> const & secondaryStructures(data.secondaryStructures());
+   QVector<SecondaryStructure> const& secondaryStructures(data.secondaryStructures());
 
    int nResidues(alphaCarbons.size());
    Mesh mesh;
@@ -586,6 +603,7 @@ Mesh createChainMesh(Data::ProteinChain const& data)
     int nbVert = n * (splineSteps + 1) * profileDetail * 4 ;
     mesh.triangles.reserve(nbTri);
     mesh.colors.reserve(nbVert);
+    mesh.vertexResidues.reserve(nbVert);
     mesh.vertices.reserve(nbVert);
 
     for (int i = 0; i < n; i++) {
@@ -595,9 +613,7 @@ Mesh createChainMesh(Data::ProteinChain const& data)
         PeptidePlane &pp3 = planes[i + 2];
         PeptidePlane &pp4 = planes[i + 3];
 
-        if (discontinuity(pp1, pp2, pp3, pp4)) {
-            continue;
-        }
+        if (discontinuity(pp1, pp2, pp3, pp4)) continue;
 
         createSegmentMesh(mesh, i, n, pp1, pp2, pp3, pp4);
     }

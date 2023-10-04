@@ -88,11 +88,10 @@ Surface::~Surface()
 }
 
 
-void Surface::setMolecule(Molecule* molecule) 
+void Surface::setComponent(Component* component) 
 {
-   m_molecule = molecule;
-   connect(this, SIGNAL(updated()), molecule, SIGNAL(softUpdate()));
-
+   m_component = component;
+   connect(this, SIGNAL(updated()), component, SIGNAL(softUpdate()));
 }
 
 
@@ -550,16 +549,18 @@ void Surface::clearPropertyData()
 }
 
 
-void Surface::computePropertyData(Function3D const& function) 
+void Surface::computePropertyData(Property::Base* property) 
 {
-   m_surface.computeSurfaceProperty(function);
+qDebug() << "Computing property data using Property::Base";
+   m_surface.computeSurfaceProperty(property);
    recompile(); 
 }
 
 
-void Surface::computeIndexField() 
+void Surface::computePropertyData(Function3D const& function) 
 {
-   m_surface.computeIndexProperty();
+qDebug() << "Computing property data using Function3D";
+   m_surface.computeSurfaceProperty(function);
    recompile(); 
 }
 

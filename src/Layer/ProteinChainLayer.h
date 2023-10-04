@@ -24,7 +24,7 @@
 #include "MacroMoleculeLayer.h"
 #include "Data/CMesh.h"
 #include "Data/Mesh.h"
-#include "Data/MacroMolecule.h"
+#include "Data/ProteinChain.h"
 
 #include "Util/Task.h"
 
@@ -47,13 +47,17 @@ namespace Layer {
       public:
          explicit ProteinChain(Data::ProteinChain& data, QObject* parent = 0);
 
+         QList<Data::AminoAcid_t> residueList() const {return m_data.residueList(); };
+
       public Q_SLOTS:
          void cartoonAvailable();
+
+      protected:
+         void initProperties();
 
       private:
          void generateCartoon();
          Data::ProteinChain& m_data;
-
    };
 
 

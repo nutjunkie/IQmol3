@@ -39,8 +39,6 @@ namespace Configurator {
 
 namespace Layer {
 
-   class Molecule;
-
    /// Custom Layer property flags.  Do not confuse these with the flags for
    /// QStandardItem.
    enum PropertyFlag { 
@@ -101,10 +99,6 @@ namespace Layer {
 		 // This is used to pass the change in the checkbox status from the
 		 // QStandardItem to the Layer.
          virtual void setCheckStatus(Qt::CheckState const) { }
-
-         //virtual void setMolecule(Molecule* molecule) { }
-         //Molecule* molecule() const { return m_molecule; }
-        
 
          template <class T>
          QList<T*> findLayers(unsigned int flags = (Nested | Children))
@@ -183,7 +177,6 @@ qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
          void setPersistentParent(Base* parent);
 
       protected:
-         //Molecule* m_molecule;
          void setConfigurator(Configurator::Base* configurator) {
             m_configurator = configurator; 
          }

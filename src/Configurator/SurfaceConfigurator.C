@@ -24,8 +24,10 @@
 #include "SurfaceConfigurator.h"
 #include "Layer/SurfaceLayer.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ComponentLayer.h"
 
 #include "Util/ColorDialog.h"
+#include "Util/Color.h"
 
 #include <openbabel/elements.h> 
 #include <QColorDialog>
@@ -78,15 +80,12 @@ void Surface::init()
          break;
    }  
 
-   MoleculeList parents(m_surface.findLayers<Layer::Molecule>(Layer::Parents));
+   ComponentList parents(m_surface.findLayers<Layer::Component>(Layer::Parents));
    if (parents.isEmpty()) {
-      QLOG_ERROR() << "Could not find Molecule parent for surface";
+      QLOG_ERROR() << "Could not find Component parent for surface";
    }else {
-      QStringList properties(parents.first()->getAvailableProperties());
-      // remove Nuclei for non-vdW surfaces 
-      if (!m_surface.isVdW()) {
-         properties.removeAll("Nuclei");
-      }
+      QStringList properties(parents.first()->getAvailableProperties2());
+      if (!m_surface.isVdW())  properties.removeAll("Nuclei");
       m_ui.propertyCombo->addItems(properties);
    }
 }  
@@ -125,14 +124,49 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
 
       setPositiveColor(m_surface.colorPositive());
 
-      QList<Layer::Molecule*> parents = m_surface.findLayers<Layer::Molecule>(Layer::Parents);
+      bool blend(false);
+      m_surface.setColors(Color::atomColors(),blend);
+
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
+
       if (parents.isEmpty()) {
-         QLOG_ERROR() << "No Molecule found";
+         QLOG_ERROR() << "No parent Component found";
       }else {
-         m_surface.setColors(atomColorGradient(parents.first()->maxAtomicNumber()),false);
-         m_surface.computeIndexField();
-         updateScale();
+         m_surface.setColors(Color::residueColors(), blend);
+         m_surface.computePropertyData(parents.first()->getProperty(type));
       }
+
+    //  m_surface.computeIndexField();
+      updateScale();
+
+   }else if (type == "Residue") {
+
+      m_ui.minValue->setVisible(false);
+      m_ui.maxValue->setVisible(false);
+      m_ui.centerButton->setEnabled(false);
+      m_ui.negativeColorButton->setVisible(false);
+      m_ui.swapColorsButton->setEnabled(false);
+      m_ui.negativeLabel->setVisible(false);
+      m_ui.positiveLabel->setVisible(true);
+
+      bool blend(false);
+      setPositiveColor(Color::residueColors(), blend);
+
+      connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
+         this, SLOT(editGradientColors(bool)));
+
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
+
+      if (parents.isEmpty()) {
+         QLOG_ERROR() << "No parent Component found";
+      }else {
+         m_surface.setColors(Color::residueColors(), blend);
+         m_surface.computePropertyData(parents.first()->getProperty(type));
+      }
+
+      updateScale();
 
    }else {
 
@@ -145,18 +179,19 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       m_ui.positiveLabel->setVisible(false);
 
      bool blend(m_surface.blend());
-      setPositiveColor(m_gradientColors, blend);
+     setPositiveColor(m_gradientColors, blend);
 
       connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
          this, SLOT(editGradientColors(bool)));
 
-      QList<Layer::Molecule*> parents(m_surface.findLayers<Layer::Molecule>(Layer::Parents));
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
 
       if (parents.isEmpty()) {
-         QLOG_ERROR() << "No Molecule found";
+         QLOG_ERROR() << "No parent Component found";
       }else {
          m_surface.setColors(m_gradientColors, blend);
-         m_surface.computePropertyData(parents.first()->getPropertyEvaluator(type));
+         m_surface.computePropertyData(parents.first()->getProperty(type));
       }
 
       m_ui.centerButton->setEnabled(m_surface.propertyIsSigned());
@@ -226,7 +261,8 @@ void Surface::on_swapColorsButton_clicked(bool)
 }
    
 
-Color::List Surface::atomColorGradient(unsigned const maxAtomicNumber)
+/*
+Color::List Surface::atomColors(unsigned const maxAtomicNumber)
 {
    Color::List atomColors;
    QColor color;
@@ -237,14 +273,9 @@ Color::List Surface::atomColorGradient(unsigned const maxAtomicNumber)
        atomColors.append(color);
    }
 
-/*
-   setPositiveColor(atomColors);
-   m_surface.recompile();
-   m_surface.updated();
-*/
-
    return atomColors;
 }
+*/
 
  
 void Surface::editGradientColors(bool)

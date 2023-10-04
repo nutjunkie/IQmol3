@@ -28,7 +28,7 @@ set( SOURCES
    MeshDecimator.C
    MolecularGridEvaluator.C
    OrbitalEvaluator.C
-   SpatialProperty.C
+   Property.C             # Need to move somewhere else
    Spline.C
    SurfaceGenerator.C
 )

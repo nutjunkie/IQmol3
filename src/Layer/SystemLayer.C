@@ -43,6 +43,8 @@ System::System(QString const& label, QObject* parent) : Component(label, parent)
             | Qt::ItemIsDropEnabled  
             | Qt::ItemIsUserCheckable );
    setCheckState(Qt::Checked);
+
+   m_surfaceList.setText("Ribbons");
 }
 
 
@@ -115,11 +117,9 @@ void System::appendData(Layer::List& list)
 double System::radius()
 {
    double r(0);
-   ComponentList components(findLayers<Component>());
 
-   for (auto& c: components) {
-       r = std::max(r, c->radius());
-   }
+   ComponentList components(findLayers<Component>());
+   for (auto& c: components) r = std::max(r, c->radius());
 
    return r;
 }

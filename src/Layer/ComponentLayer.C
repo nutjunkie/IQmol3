@@ -23,11 +23,24 @@
 #include "ComponentLayer.h"
 #include "AtomLayer.h"
 #include "GroupLayer.h"
+#include "Util/QsLog.h"
 #include "Viewer/UndoCommands.h"
 
 
 namespace IQmol {
 namespace Layer {
+
+
+Component::Component(QString const& label, QObject* parent) : Base(label, parent),
+   m_surfaceList(this, "Surfaces")
+{
+   setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
+   setCheckState(Qt::Checked);
+
+   connect(&m_surfaceList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
+
+   initProperties();
+}
 
 
 void Component::draw() const
@@ -39,9 +52,56 @@ void Component::draw() const
 }
 
 
+void Component::deleteProperties()
+{
+   for (auto& property : m_properties) delete property;
+   m_properties.clear();
+}
+
+
+void Component::initProperties()
+{
+   deleteProperties();
+   m_properties << new Property::RadialDistance();
+}
+
+
+QStringList Component::getAvailableProperties2()
+{
+   QStringList properties;
+   for (auto const& property : m_properties) {
+       properties << property->text();
+   }
+   return properties;
+}
+
+
+Property::Base* Component::getProperty(QString const& name)
+{
+    for (auto& property : m_properties) {
+       if (property->text() == name) {
+          return property;
+       }
+   }
+   return 0;
+}
+
+
+Data::Mesh::VertexFunction Component::getPropertyEvaluator2(QString const& name)
+{
+   for (auto& property : m_properties) {
+       if (property->text() == name) {
+          return property->evaluator();
+       }
+   }
+  
+   QLOG_WARN() << "Evaluator for property" << name << "not found, returning null function";
+   return Data::NullFunction;
+}
+
+ 
 void Component::translateToCenter(GLObjectList const& selection)
 {
-   qDebug() << "Component::translateToCenter called";
    bool animate(true);
    Command::MoveObjects* cmd =
        new Command::MoveObjects(this, "Translate to center", animate);
@@ -160,6 +220,33 @@ void Component::rotateIntoPlane(qglviewer::Vec const& pt, qglviewer::Vec const& 
    qglviewer::Vec pp(pt);
    pp.projectOnPlane(axis);
    rotate(qglviewer::Quaternion(pp, cross(normal, axis)));
+}
+
+
+Layer::Surface* Component::createSurfaceLayer(Data::Surface* surfaceData)
+{
+   Layer::Surface* surfaceLayer(new Layer::Surface(*surfaceData));
+   connect(surfaceLayer, SIGNAL(updated()), this, SIGNAL(softUpdate()));
+   surfaceLayer->setCheckState(Qt::Checked);
+   surfaceLayer->setCheckStatus(Qt::Checked);
+   return surfaceLayer;
+}
+
+
+void Component::appendSurface(Data::Surface* surfaceData)
+{
+   Layer::Surface* surface = createSurfaceLayer(surfaceData);
+   surface->setComponent(this);
+   m_surfaceList.appendLayer(surface);
+   updated();
+}
+
+
+void Component::prependSurface(Data::Surface* surfaceData)
+{
+   Layer::Surface* surface = createSurfaceLayer(surfaceData);
+   m_surfaceList.prependLayer(surface);
+   updated();
 }
 
 } } // end namespace IQmol::Layer 

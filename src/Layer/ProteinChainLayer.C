@@ -21,13 +21,16 @@
 ********************************************************************************/
 
 #include "ProteinChainLayer.h"
+#include "SurfaceLayer.h"
+#include "SystemLayer.h"
+#include "Cartoon.h"
+
 #include "Data/ProteinChain.h"
 #include "Data/Surface.h"
 #include "Data/GridSize.h"
 #include "Grid/MeshDecimator.h"
-#include "Cartoon.h"
-#include "SurfaceLayer.h"
 #include "Util/QsLog.h"
+
 
 #include <QColor>
 
@@ -41,6 +44,21 @@ ProteinChain::ProteinChain(Data::ProteinChain& data, QObject* parent) :
    MacroMolecule(data, parent), m_data(data)
 {
    generateCartoon();   
+   //activate once the Configurator exists
+   //setConfigurator(&m_configurator);
+
+    //connect(newAction("Convert to Molecule"), SIGNAL(triggered()),
+    //   this, SLOT(convert()));
+
+    initProperties();
+}
+
+
+void ProteinChain::initProperties()
+{
+   deleteProperties();
+   m_properties << new Property::RadialDistance();
+   m_properties << new Property::Residue(this);
 }
 
 
@@ -52,14 +70,23 @@ void ProteinChain::cartoonAvailable()
       return;
    }
 
-   Data::Surface* data(generateCartoon->getSurface());
-   Layer::Surface* surfaceLayer(new Surface(*data));
-   surfaceLayer->setCheckState(Qt::Checked);
-   surfaceLayer->setText("Ribbon");
-   prependLayer(surfaceLayer);
-   updated();
+   Data::Surface* surfaceData(generateCartoon->getSurface());
 
-   generateCartoon->deleteLater();;
+   QList<System*> parents = findLayers<System>(Parents);
+   if (!parents.isEmpty()) {
+
+      //surfaceData->setDescription(text());
+      //parents.first()->prependSurface(surfaceData);
+      //parents.first()->addProperty(new Property::Residue(this));
+
+      surfaceData->setDescription("Ribbon");
+      Surface* surface = createSurfaceLayer(surfaceData);
+      prependLayer(surface);
+      //addProperty(new Property::Residue(this));
+   }
+
+   updated();
+   generateCartoon->deleteLater();
 }
 
 
@@ -111,6 +138,7 @@ Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
    Data::Mesh* mesh(new Data::Mesh);
    std::vector<Math::Vec3> verts  = cmesh.vertices;
    std::vector<Math::Vec3> colors = cmesh.colors;
+   std::vector<int> vertexResidues = cmesh.vertexResidues;
    std::vector<Data::Mesh::Vertex> vertices;
 
    for (int j = 0; j < verts.size(); j++) {
@@ -119,8 +147,7 @@ Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
        //colors[j][0], colors[j][1], colors[j][2]);
    }       
 
-   qDebug() << "Number of vertices" << vertices.size();
-
+   bool ok(true);
    std::vector<int> tri = cmesh.triangles;
    for (unsigned j = 0; j < tri.size(); j += 3) {
        unsigned j0(tri[j  ]); 
@@ -133,8 +160,14 @@ Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
           Data::Mesh::Vertex v1(vertices[j1]);
           Data::Mesh::Vertex v2(vertices[j2]);
           mesh->addFace(v0, v1, v2);
+
+          // add a little bit to avoid round-off changing the int value
+          ok = ok && mesh->setIndexField(v0, vertexResidues[j0]);
+          ok = ok && mesh->setIndexField(v1, vertexResidues[j1]);
+          ok = ok && mesh->setIndexField(v2, vertexResidues[j2]);
        }      
    }          
+
    mesh->computeFaceNormals();
    mesh->computeVertexNormals();
 

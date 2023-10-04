@@ -30,7 +30,13 @@ double returnZero(double, double, double)
    return 0.0;
 }
 
-//Function3D NullFunction3D = boost::bind(&returnZero, _1, _2, _3);
+
+/*
+Function3D NullFunction3D = std::bind(&returnZero, 
+   std::placeholders::_1, 
+   std::placeholders::_2, 
+   std::placeholders::_3);
+*/
 
 
 } // end namespace IQmol

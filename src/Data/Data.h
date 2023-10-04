@@ -84,6 +84,8 @@ namespace Data {
       };
 
       QString toString(ID const);
+
+      QString chargeToString(ID const);
    }
 
    /// Base class for all data classes that can be serialized.

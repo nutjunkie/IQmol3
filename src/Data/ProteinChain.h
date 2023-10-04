@@ -49,6 +49,18 @@ namespace Data {
 
          unsigned nResidues() const { return m_groups.size(); }
 
+         QList<AminoAcid_t> residueList() const 
+         {
+            QList<AminoAcid_t> list;
+
+            for (auto group : m_groups) {
+                Residue* res = dynamic_cast<Residue*>(group);
+                if (res) list.append(res->type());
+            }
+
+            return list;
+         }
+
          QVector<Math::Vec3> const& alphaCarbons() const { return m_alphaCarbons; }
 
          QVector<Math::Vec3> const& peptideOxygens() const { return m_peptideOxygens; }

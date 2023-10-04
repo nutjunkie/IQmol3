@@ -76,7 +76,7 @@ namespace Configurator{
          QList<QColor> m_gradientColors;
          bool m_initialized;
 
-         Color::List atomColorGradient(unsigned const maxAtomicNumber);
+         //Color::List atomColors(unsigned const maxAtomicNumber);
    };
 
 } } // end namespace IQmol::Configurator

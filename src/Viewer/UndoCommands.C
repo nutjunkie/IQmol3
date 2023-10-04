@@ -211,8 +211,11 @@ void MoveObjects::redo()
    }
 
    if (m_component) {
-      if (m_invalidateSymmetry) m_component->invalidateSymmetry();
-      m_component->autoDetectSymmetry();
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
       m_component->postMessage(m_msg);
       m_component->updated();
    }
@@ -224,8 +227,11 @@ void MoveObjects::undo()
    loadFrames(m_initialFrames);
    if (m_component) {
       m_component->postMessage("");
-      if (m_invalidateSymmetry) m_component->invalidateSymmetry();
-      m_component->autoDetectSymmetry();
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
       m_component->updated();
    }
 }

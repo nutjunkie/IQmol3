@@ -23,12 +23,15 @@
 #include "MolecularSurfacesLayer.h"
 #include "MoleculeLayer.h"
 #include "SurfaceLayer.h"
+
 #include "Data/AtomicDensity.h"
-#include "Grid/SpatialProperty.h"
 #include "Data/SurfaceInfo.h"
+#include "Data/Mesh.h"
+#include "Grid/Property.h"
 #include "Grid/SurfaceGenerator.h"
 #include "Grid/GridEvaluator.h"
 #include "Util/QsLog.h"
+
 
 #include <QDebug>
 
@@ -126,7 +129,6 @@ Data::Surface* MolecularSurfaces::calculateVanDerWaals(Data::SurfaceInfo const& 
        atom = new AtomicDensity::VanDerWaals( (*iter)->getAtomicNumber(), 
                       (*iter)->getPosition(), scale);
        vdwAtoms.append(atom);
-       //atomIndices.append(i);
        atomIndices.append((*iter)->getAtomicNumber()-1);
    }
 
@@ -135,8 +137,12 @@ Data::Surface* MolecularSurfaces::calculateVanDerWaals(Data::SurfaceInfo const& 
    i = 0; 
    QList<AtomicDensity::VanDerWaals*>::iterator iter2;
    for (iter2 = vdwAtoms.begin(); iter2 != vdwAtoms.end(); ++iter2, ++i) {
+       int Z = atomIndices[i];
        Data::Mesh mesh((*iter2)->generateMesh(surfaceInfo.quality(), vdwAtoms));
-       mesh.setMeshIndex(atomIndices[i]);
+       Data::OMMesh::VertexIter iter;
+       for (iter = mesh.vbegin(); iter != mesh.vend(); ++iter) {
+           mesh.setIndexField(*iter, Z);
+       }
        surfaceData->meshPositive() += mesh;
    }
 
@@ -184,7 +190,7 @@ Data::Surface* MolecularSurfaces::calculateSuperposition(Data::SurfaceInfo const
        atomList.append(atom); 
    }
 
-   PromoleculeDensity rho("Superposition", atomList, coordinates);
+   Property::PromoleculeDensity rho("Superposition", atomList, coordinates);
    
    Vec min, max;
    rho.boundingBox(min, max);
@@ -192,7 +198,7 @@ Data::Surface* MolecularSurfaces::calculateSuperposition(Data::SurfaceInfo const
    Data::GridSize gridSize(min, max, surfaceInfo.quality());
    Data::GridData grid(gridSize, surfaceInfo.type());
 
-   GridEvaluator gridEvaluator(grid, rho.evaluator());
+   GridEvaluator gridEvaluator(grid, rho.function3D());
    gridEvaluator.start();
    gridEvaluator.wait();
 

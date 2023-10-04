@@ -203,6 +203,7 @@ Data::Mesh VanDerWaals::generateMesh(int ndiv, QList<VanDerWaals*> const& atoms)
    // Now dilate and translate the unit sphere
    Data::OMMesh::Point vertex;
    Data::OMMesh::Point center(m_center[0], m_center[1], m_center[2]);
+
    Data::OMMesh::VertexIter iter;
    for (iter = mesh.vbegin(); iter != mesh.vend(); ++iter) {
        vertex = mesh.vertex(iter);

@@ -38,7 +38,7 @@ namespace IQmol {
 
    namespace Layer {
 
-      class Molecule;
+      class Component;
 
       /// Representation of a OpenGL surface.  Note that a surface layer is 
       /// potentially made up of two separate surfaces (positive and negative) so
@@ -65,7 +65,7 @@ namespace IQmol {
             void setClip(bool const tf);
             void povray(PovRayGen&);
 
-            void setMolecule(Molecule*);
+            void setComponent(Component*);
             void setCheckStatus(Qt::CheckState const);
 
          protected:
@@ -77,9 +77,11 @@ namespace IQmol {
             QList<QColor> const& colors() const;
             bool blend() const { return m_surface.blend(); }
 
-            void computePropertyData(Function3D const&);
-            void computeIndexField();
             void clearPropertyData();
+
+            void computePropertyData(Function3D const&);
+            void computePropertyData(Property::Base*);
+
             bool isSigned() const { return m_surface.isSigned(); }
             bool hasProperty() const { return m_surface.hasProperty(); }
             bool propertyIsSigned() const { return m_surface.propertyIsSigned(); }
@@ -119,7 +121,7 @@ namespace IQmol {
             bool m_drawFaceNormals;
             bool m_balanceScale;  // for properties
 
-            Molecule* m_molecule;
+            Component* m_component;
             MeshDecimatorTask* m_decimator;
             void povray(PovRayGen&, Data::OMMesh const&, QColor const&);
             void povrayLines(PovRayGen&, Data::OMMesh const&, QColor const&);

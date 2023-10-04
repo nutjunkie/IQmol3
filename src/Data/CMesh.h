@@ -23,6 +23,7 @@ struct Mesh
 {
     std::vector<Math::Vec3> vertices;
     std::vector<Math::Vec3> colors;
+    std::vector<int> vertexResidues;
     std::vector<int> triangles;
     std::map<Math::Vec3, int, cmpFloat3> verticesDict;
 };

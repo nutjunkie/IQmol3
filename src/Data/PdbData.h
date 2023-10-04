@@ -120,7 +120,7 @@ namespace Data {
 
          std::vector<int>    m_nResPerChain;
          std::vector<double> m_caoPositions;
-         std::vector<int>   m_secondaryStructure;
+         std::vector<int>    m_secondaryStructure;
    };
 
 } } // end namespace IQmol::Data

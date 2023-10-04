@@ -28,17 +28,17 @@
 #include "BondLayer.h"
 //#include "ChargeLayer.h"
 
-#include "ContainerLayer.h"
 #include "EfpFragmentListLayer.h"
-#include "Configurator/MoleculeConfigurator.h"
 #include "MolecularSurfacesLayer.h"
+#include "Configurator/MoleculeConfigurator.h"
 #include "Configurator/SurfaceAnimatorDialog.h"
 
 #include "Viewer/Animator.h"
 
-#include <QFileInfo>
 #include <QMap>
+#include <QFileInfo>
 #include <QItemSelectionModel>
+
 #include <functional>
 
 
@@ -57,8 +57,6 @@ namespace IQmol {
    namespace Process {
       class  JobInfo;
    }
-
-   class SpatialProperty;
 
    namespace Layer {
 
@@ -102,10 +100,6 @@ bool save(bool prompt = false);
             void appendData(IQmol::Data::Bank&);
             void appendData(Layer::List&);
 
-            void appendSurface(Data::Surface*);
-
-            void addProperty(SpatialProperty* property) { m_properties.append(property); }
-   
             void setFile(QString const& fileName);
             QString fileName() const { return m_inputFile.fileName(); }
    
@@ -118,12 +112,13 @@ bool save(bool prompt = false);
             // converting an atom to a functional group (click on atom event)
             qglviewer::Vec getBuildAxis(Atom*);
 
-            void symmetrize(double tolerance, bool updateCoordinates = true);
-
             void minimizeEnergy(QString const& forcefield);
             void computeEnergy(QString const& forcefield);
 
-            static void toggleAutoDetectSymmetry() { 
+            void symmetrize(double tolerance, bool updateCoordinates = true);
+
+            static void toggleAutoDetectSymmetry() 
+            { 
                s_autoDetectSymmetry = !s_autoDetectSymmetry; 
             }
    
@@ -144,10 +139,6 @@ bool save(bool prompt = false);
             BondList getBonds(Atom*);
 
             bool isModified() const { return m_modified; }
-   
-            qglviewer::Vec centerOfNuclearCharge(bool selectedOnly = false);
-            QStringList getAvailableProperties(); 
-            Function3D getPropertyEvaluator(QString const& name);
    
             /// Removes the specified Primitive(s) from the molecule, 
             /// but does not delete them. 
@@ -193,13 +184,16 @@ bool save(bool prompt = false);
             Charge* createCharge(double const q, qglviewer::Vec const& position);
    
             QList<qglviewer::Vec> coordinates();
+            QList<int> atomicNumbers();
+
             QList<double> atomicCharges(Data::Type::ID type);
             void setGeometry(IQmol::Data::Geometry&);
             QList<QString> atomicSymbols();
 
             // There must be a better way of doing this, but this is used
             // in Layer::GeometryList for de
-            bool isCurrentGeometry(Data::Geometry const* geometry) const { 
+            bool isCurrentGeometry(Data::Geometry const* geometry) const 
+            { 
                return m_currentGeometry == geometry;
             }
    
@@ -208,7 +202,7 @@ bool save(bool prompt = false);
                  m_reperceiveBondsForAnimation = tf;
             }
 
-            unsigned maxAtomicNumber() { return m_maxAtomicNumber; }
+//            unsigned maxAtomicNumber() { return m_maxAtomicNumber; }
 
             void   setMullikenDecompositions(Matrix const& M);
             double mullikenDecomposition(int const a, int const b) const;
@@ -226,7 +220,6 @@ bool save(bool prompt = false);
 
             void openSurfaceAnimator();
 
-   
             /// Passes the remove signal on so that the ViewerModel can deal with it
             void removeMolecule() { removeMolecule(this); }
             void detectSymmetry();
@@ -265,8 +258,6 @@ bool save(bool prompt = false);
             void updateChargeScale(double const scale);
             void updateDrawMode(Primitive::DrawMode const);
    
-            /// Updates the atom and bond indicies after, for example, deletion.
-   
          private Q_SLOTS:
             void dumpData() { m_bank.dump(); }
             void setAtomicCharges(Data::Type::ID type);
@@ -278,6 +269,7 @@ bool save(bool prompt = false);
             static bool s_autoDetectSymmetry;
             int totalCharge() const;
             int multiplicity() const;
+
             QString constraintsAsString();
             QString scanCoordinatesAsString();
             QString efpFragmentsAsString();
@@ -286,11 +278,11 @@ bool save(bool prompt = false);
 
             template <class T>
             QList<double> atomicCharges();
+
             qglviewer::Vec dipoleFromPointCharges();
 
             QList<double> zeroCharges();
             QList<double> gasteigerCharges();
-
 
             /// Writes the molecule to the specified file.  The format is
             /// determined from the file extension and a Parser::IOError 
@@ -332,12 +324,12 @@ bool save(bool prompt = false);
 
             void clearData();
    
-            void deleteProperties();
-
             void initProperties();
+            void deleteProperties();
 
             void saveToGeometry(Data::Geometry&);
    
+// This should probably move to Component
 QFileInfo m_inputFile;
    
             /// State variable that determines how the Primitives are drawn (e.g.
@@ -366,7 +358,6 @@ QFileInfo m_inputFile;
             Layer::Container m_bondList;
             Layer::Container m_chargesList;
             Layer::Container m_fileList;
-            Layer::Container m_surfaceList;
             Layer::Container m_constraintList;
             Layer::Container m_isotopesList;
             Layer::Container m_scanList;
@@ -375,19 +366,20 @@ QFileInfo m_inputFile;
             Layer::EfpFragmentList m_efpFragmentList;
             Layer::MolecularSurfaces m_molecularSurfaces;
    
-            QList<SpatialProperty*> m_properties;
             Data::Bank m_bank;
 
             Data::Geometry* m_currentGeometry;
             Data::Type::ID m_chargeType;
             QAction* m_atomicChargesMenu;
-            unsigned m_maxAtomicNumber;
+//            unsigned m_maxAtomicNumber;
             QAction* m_addGeometryMenu;;
 
             Matrix m_mullikenDecompositions;
       };
    
    } // end namespace Layer
+
+
 
    typedef QList<Layer::Molecule*> MoleculeList;
 

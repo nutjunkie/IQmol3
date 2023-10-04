@@ -23,10 +23,18 @@
 
 #include "GLObjectLayer.h"
 #include "Viewer/Animator.h"
+#include "Grid/SpatialProperty.h"
+#include "ContainerLayer.h"
+
+#include "Grid/Property.h"
 
 class QUndoCommand;
 
 namespace IQmol {
+
+   namespace Data {
+      class Surface;
+   }
 
    namespace Layer {
 
@@ -49,12 +57,7 @@ namespace IQmol {
          Q_OBJECT
 
          public:
-            explicit Component(QString const& label = QString(), QObject* parent = 0) :
-               Base(label, parent)
-            {
-               setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable );
-               setCheckState(Qt::Checked);
-            }
+            explicit Component(QString const& label = QString(), QObject* parent = 0);
 
             ~Component() { }
 
@@ -66,7 +69,6 @@ namespace IQmol {
             void draw() const;
 
             void select() { for (auto iter : m_visibleObjects) iter->select(); }
-   
             void deselect() { for (auto iter : m_visibleObjects) iter->deselect(); }
 
             void setDrawStyle(DrawStyle const drawStyle, unsigned resolution = 0);
@@ -79,9 +81,26 @@ namespace IQmol {
                   Layer::Visible | Layer::Nested);
             }
 
+            void addProperty(Property::Base* property) { m_properties.append(property); }
+            QStringList getAvailableProperties2();
+            Property::Base* getProperty(QString const& name);
+            Data::Mesh::VertexFunction getPropertyEvaluator2(QString const& name);
+
+            void appendSurface(Data::Surface* surfaceData);
+            void prependSurface(Data::Surface* surfaceData);
+
             // This can be used to keep a running tally for computing the
-            // center of nuclear 
+            // center of nuclear charge of several Components
             void centerOfNuclearCharge(qglviewer::Vec&, int& totalZ);
+
+            qglviewer::Vec centerOfNuclearCharge()
+            {
+               qglviewer::Vec center;
+               int totalZ;
+               centerOfNuclearCharge(center, totalZ);
+               center /= double(totalZ);
+               return center;
+            }
 
             void translateToCenter(GLObjectList const& selection);
 
@@ -99,20 +118,32 @@ namespace IQmol {
             qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
             void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
 
-         public Q_SLOTS:
-            virtual void invalidateSymmetry() { }
-            virtual void autoDetectSymmetry() { }
-
          Q_SIGNALS:
             void useShader(QString const&) const;
             void useDrawStyle(DrawStyle const) const;
             void useResolution(unsigned const) const;
             void softUpdate(); // Issue if the number of primitives does not change
+
             void pushAnimators(AnimatorList const&);
             void popAnimators(AnimatorList const&);
 
             void postCommand(QUndoCommand*);
             void postMessage(QString const&);
+
+            // This allows observers to disconnect from a Component once removed
+            void componentRemoved(Layer::Component*);
+
+         protected:
+            QList<Property::Base*> m_properties;
+
+            virtual void deleteProperties();
+            virtual void initProperties();
+
+            Layer::Container m_surfaceList;
+            Surface* createSurfaceLayer(Data::Surface* surfaceData);
+
+         private Q_SLOTS:
+            void  removeComponent() { componentRemoved(this); }
 
          private:
             QString   m_shaderKey;
