@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,10 +14,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-   
+
 ********************************************************************************/
 
 #include "QsLog.h"
@@ -36,6 +36,7 @@ using namespace boost::placeholders;
 namespace IQmol {
 
 
+/*
 // --------------- RadialDisatance ---------------
 RadialDistance::RadialDistance() : SpatialProperty("Radial Distance") 
 { 
@@ -47,8 +48,10 @@ double RadialDistance::distance(double const x, double const y, double const z) 
 {
    return std::sqrt(x*x+y*y+z*z);
 }
+*/
 
 
+/*
 
 // --------------- PromoleculeDensity ---------------
 
@@ -300,5 +303,6 @@ double GridBased::evaluate(double const x, double const y, double const z) const
 {
    return m_grid.interpolate(x, y, z);
 }
+*/
 
 } // end namespace IQmol

@@ -1,12 +1,11 @@
-#ifndef IQMOL_SPATIALPROPERTY_H
-#define IQMOL_SPATIALPROPERTY_H
+#pragma once
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,10 +15,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-   
+
 ********************************************************************************/
 
 #include "Math/Function.h"
@@ -63,6 +62,7 @@ namespace IQmol {
 
 
 
+/*
    /// Returns the distance from the origin, mainly for debugging purposes.
    class RadialDistance : public SpatialProperty {
       public:
@@ -71,8 +71,10 @@ namespace IQmol {
       private:
          double distance(double const x, double const y, double const z) const;
    };
+*/
 
 
+/*
 
    // This is a generalized promolecule density which is a molecular density
    // made up of any atomic parts.
@@ -111,6 +113,17 @@ namespace IQmol {
          QList<qglviewer::Vec> m_coordinates;
          double potential(double const x, double const y, double const z) const;
    };
+*/
+
+
+/*
+   class MeshIndex : public SpatialProperty {
+      public:
+         MeshIndex(QString const&);
+
+      private:
+         double index(double const x, double const y, double const z) const;
+   };
 
 
 
@@ -133,7 +146,6 @@ namespace IQmol {
    };
 
 
-
    class NearestNuclearCharge : public SpatialProperty {
       public:
          NearestNuclearCharge(QList<int> nuclearCharges = QList<int>(), 
@@ -148,14 +160,6 @@ namespace IQmol {
    };
 
 
-   class MeshIndex : public SpatialProperty {
-      public:
-         MeshIndex(QString const&);
-
-      private:
-         double index(double const x, double const y, double const z) const;
-   };
-
 
 
 
@@ -167,7 +171,6 @@ namespace IQmol {
          Data::GridData const& m_grid;
          double evaluate(double const x, double const y, double const z) const;
    };
+*/
 
 } // end namespace IQmol
-
-#endif

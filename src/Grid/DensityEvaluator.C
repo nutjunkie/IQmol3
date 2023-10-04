@@ -40,8 +40,8 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
 
    m_shellList.setDensityVectors(densities);
    m_returnValues.resize(m_densities.size());
-   m_function = boost::bind(&Data::ShellList::densityValues, &m_shellList, 
-     boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, 
+     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
      
 
    double thresh(0.001);
