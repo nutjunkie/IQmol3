@@ -41,11 +41,15 @@ namespace IQmol {
          void newMoleculeFromSelection(QModelIndexList const&);
          void mergeSelection(QModelIndexList const&);
          void deleteSelection(QModelIndexList const&);
+         void showMolecules(QModelIndexList const&);
+         void hideMolecules(QModelIndexList const&);
 
       private Q_SLOTS:
          void newMoleculeFromSelection();
          void mergeSelection();
          void deleteSelection();
+         void showMolecules();
+         void hideMolecules();
 
       private Q_SLOTS:
          void contextMenuEvent(QContextMenuEvent*);

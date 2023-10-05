@@ -203,6 +203,13 @@ void MainWindow::createConnections()
    connect(&m_viewerView, SIGNAL(deleteSelection(QModelIndexList const&)),
       &m_viewerModel, SLOT(deleteSelection(QModelIndexList const&)));
 
+   connect(&m_viewerView, SIGNAL(showMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(showMolecules(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(hideMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(hideMolecules(QModelIndexList const&)));
+
+
    connect(&m_viewerModel, SIGNAL(sceneRadiusChanged(double const)), 
       m_viewer, SLOT(setSceneRadius(double const)));
 

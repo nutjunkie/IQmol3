@@ -106,6 +106,9 @@ namespace IQmol {
          void deleteSelection(QModelIndexList const&);
          void mergeSelection(QModelIndexList const&);
 
+         void hideMolecules(QModelIndexList const&);
+         void showMolecules(QModelIndexList const&);
+
          void cutSelection();
          void copySelectionToClipboard();
          void pasteSelectionFromClipboard();

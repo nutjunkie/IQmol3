@@ -285,6 +285,31 @@ void ViewerModel::mergeSelection(QModelIndexList const& selection)
 }
 
 
+void ViewerModel::hideMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Unchecked);
+       }
+   }
+}
+
+
+void ViewerModel::showMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Checked);
+       }
+   }
+}
+
 void ViewerModel::deleteSelection(QModelIndexList const&)
 {
    qDebug() << "ViewerModel::deleteSelection NYI !!!";

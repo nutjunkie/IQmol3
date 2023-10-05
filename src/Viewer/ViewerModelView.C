@@ -75,7 +75,14 @@ void ViewerModelView::contextMenuEvent(QContextMenuEvent*)
          QAction* action(new QAction("Merge Molecules")); 
          connect(action, SIGNAL(triggered()), this, SLOT(mergeSelection()));
          menu.addAction(action);
-         // select, deselect
+
+         action = new QAction("Show Molecules"); 
+         connect(action, SIGNAL(triggered()), this, SLOT(showMolecules()));
+         menu.addAction(action);
+
+         action = new QAction("Hide Molecules"); 
+         connect(action, SIGNAL(triggered()), this, SLOT(hideMolecules()));
+         menu.addAction(action);
       }
    }
 
@@ -125,6 +132,24 @@ void ViewerModelView::deleteSelection()
    QModelIndexList selection(selectModel->selectedRows());
 
    deleteSelection(selection);
+}
+
+
+void ViewerModelView::showMolecules()
+{
+   QItemSelectionModel* selectModel(selectionModel());
+   QModelIndexList selection(selectModel->selectedRows());
+
+   showMolecules(selection);
+}
+
+
+void ViewerModelView::hideMolecules()
+{
+   QItemSelectionModel* selectModel(selectionModel());
+   QModelIndexList selection(selectModel->selectedRows());
+
+   hideMolecules(selection);
 }
 
 } // end namespace IQmol
