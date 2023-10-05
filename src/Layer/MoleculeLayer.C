@@ -90,7 +90,6 @@ extern "C" void symmol_(int*, double*, double*, int*, char*);
 
 using namespace OpenBabel;
 using namespace qglviewer;
-using namespace std::placeholders;
 
 
 namespace IQmol {

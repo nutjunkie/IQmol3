@@ -103,19 +103,10 @@ ViewerModel::ViewerModel(QWidget* parent) :
    connect(this, SIGNAL(itemChanged(QStandardItem*)), 
       this, SLOT(checkItemChanged(QStandardItem*)));
 
-#if 0
-   Layer::System* system(newSystem());
-   qDebug() << "print appending System Layer" << system;
-   appendRow(system);
- 
-   Layer::Molecule* mol(newMolecule());
-   system->appendLayer(mol);
-#else
-   // By default we create a new Molecule, Systems are more conveniently loaded
-   // from file(s)
+   // By default we create a new Molecule, Systems are more 
+   // conveniently loaded from file(s)
    Layer::Molecule* mol(newMolecule());
    appendRow(mol);
-#endif
 
    changeActiveViewerMode(Viewer::BuildAtom);
    sceneRadiusChanged(Preferences::DefaultSceneRadius());
@@ -257,6 +248,97 @@ void ViewerModel::insertMoleculeById(QString identifier)
 }
 
 
+void ViewerModel::mergeSelection(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+   Layer::Molecule* parent(0);
+
+   MoleculeList molecules;
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (parent == 0) {
+             parent = molecule;
+          } else {
+             atoms.append(molecule->findLayers<Layer::Atom>());
+             molecules.append(molecule);
+          }
+       }
+   }
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atoms) {
+       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   for (auto molecule : molecules) {
+       postCommand(new Command::RemoveMolecule(molecule));
+   }
+
+   parent->appendPrimitives(primitives);
+   parent->reperceiveBonds(false);
+}
+
+
+void ViewerModel::deleteSelection(QModelIndexList const&)
+{
+   qDebug() << "ViewerModel::deleteSelection NYI !!!";
+}
+
+
+void ViewerModel::newMoleculeFromSelection(QModelIndexList const& selection)
+{
+   Layer::Atom*     atom;
+   Layer::Group*    group;
+   Layer::Molecule* molecule;
+   QStandardItem*   root(0);
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+
+       // Attempt to find a system to attach the new molecule, otherwise it will 
+       // attach to the root item.
+       if (root == 0) {
+          if ( (base = qobject_cast<Layer::Base*>(base)) ) {
+             SystemList parents(
+                base->findLayers<Layer::System>(Layer::Parents | Layer::Nested));
+             root = parents.isEmpty() ? 0 : parents.first();
+          }
+       }
+
+       if ( (group = qobject_cast<Layer::Group*>(base)) ) {
+          atoms.append(group->getAtoms());
+       }else if ( (atom = qobject_cast<Layer::Atom*>(base)) ) {
+           atoms.append(atom);
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+           atoms.append(molecule->findLayers<Layer::Atom>());
+       }
+   }
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atoms) {
+       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   molecule = newMolecule();
+   molecule->appendPrimitives(primitives);
+   molecule->reperceiveBonds(false);
+
+   if (root == 0) root = invisibleRootItem();
+
+   Command::AddMolecule* cmd(new Command::AddMolecule(molecule, root));
+   postCommand(cmd);
+}
+
 
 // - - - - - Molecule - - - - -
 
@@ -306,7 +388,7 @@ Layer::Molecule* ViewerModel::newMolecule()
 
 void ViewerModel::removeMolecule(Layer::Molecule* molecule)
 {
-   postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
+   postCommand(new Command::RemoveMolecule(molecule));
 }
 
 
@@ -363,7 +445,7 @@ Layer::System* ViewerModel::newSystem()
 
 void ViewerModel::removeSystem(Layer::System* system)
 {
-   postCommand(new Command::RemoveSystem(system, invisibleRootItem()));
+   postCommand(new Command::RemoveSystem(system));
 }
 
 

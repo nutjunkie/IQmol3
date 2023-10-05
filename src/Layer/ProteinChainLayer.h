@@ -40,6 +40,8 @@ namespace Data {
 
 namespace Layer {
 
+   class PrimitiveList;
+
    class ProteinChain : public MacroMolecule {
 
       Q_OBJECT
@@ -48,6 +50,9 @@ namespace Layer {
          explicit ProteinChain(Data::ProteinChain& data, QObject* parent = 0);
 
          QList<Data::AminoAcid_t> residueList() const {return m_data.residueList(); };
+
+      Q_SIGNALS:
+         void makeMolecule(PrimitiveList const&);
 
       public Q_SLOTS:
          void cartoonAvailable();

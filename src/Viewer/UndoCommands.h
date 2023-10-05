@@ -231,7 +231,7 @@ namespace Command {
 
    class RemoveMolecule: public QUndoCommand {
       public:
-         RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent);
+         RemoveMolecule(Layer::Molecule* molecule);
          ~RemoveMolecule();
          void redo();
          void undo();
@@ -255,7 +255,7 @@ namespace Command {
 
    class RemoveSystem: public QUndoCommand {
       public:
-         RemoveSystem(Layer::System* system, QStandardItem* parent);
+         RemoveSystem(Layer::System* system);
          void redo();
          void undo();
       private:
@@ -292,7 +292,6 @@ namespace Command {
          Layer::Molecule* m_molecule;
          Layer::List  m_dataList;
    };
-
 
 
 /*

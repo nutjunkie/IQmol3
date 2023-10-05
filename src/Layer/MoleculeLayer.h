@@ -185,10 +185,10 @@ bool save(bool prompt = false);
    
             QList<qglviewer::Vec> coordinates();
             QList<int> atomicNumbers();
+            QList<QString> atomicSymbols();
 
             QList<double> atomicCharges(Data::Type::ID type);
             void setGeometry(IQmol::Data::Geometry&);
-            QList<QString> atomicSymbols();
 
             // There must be a better way of doing this, but this is used
             // in Layer::GeometryList for de
@@ -208,6 +208,19 @@ bool save(bool prompt = false);
             double mullikenDecomposition(int const a, int const b) const;
             bool   hasMullikenDecompositions() const;
    
+         Q_SIGNALS:
+            void softUpdate(); // issue if the number of primitives does not change
+            void removeMolecule(Layer::Molecule*);
+   
+            void multiplicityAvailable(unsigned);
+            void chargeAvailable(int);
+            void pointGroupAvailable(Data::PointGroup const&);
+            void energyAvailable(double const, Info::EnergyUnit, QString const&);
+            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
+            void radiusAvailable(double const radius);
+            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
+            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
+ 
          public Q_SLOTS:
             void groupSelection();
             void ungroupSelection();
@@ -234,22 +247,7 @@ bool save(bool prompt = false);
             void reperceiveBondsSlot() { reperceiveBonds(true); }
 
             void reperceiveBondsForAnimation();
-   
-         Q_SIGNALS:
-            void softUpdate(); // issue if the number of primitives does not change
-            void removeMolecule(Layer::Molecule*);
-   
-            void multiplicityAvailable(unsigned);
-            void chargeAvailable(int);
-            void pointGroupAvailable(Data::PointGroup const&);
-            void energyAvailable(double const, Info::EnergyUnit, QString const&);
-            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
-            void radiusAvailable(double const radius);
-            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
-
-            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
-   
-   
+  
          protected:
             void updateAtomScale(double const scale);
             void updateSmallerHydrogens(bool smallerHydrogens);

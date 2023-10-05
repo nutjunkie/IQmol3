@@ -414,8 +414,9 @@ void AddMolecule::undo()
 
 
 // --------------- RemoveMolecule ---------------
-RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
-   : m_molecule(molecule), m_parent(parent), m_deleteMolecule(false)
+RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule) 
+   : m_molecule(molecule), m_parent(m_molecule->QStandardItem::parent()), 
+     m_deleteMolecule(false)
 { 
    QString s;
    if (m_molecule->fileName().isEmpty()) {
@@ -488,8 +489,8 @@ void AddSystem::undo()
 
 
 // --------------- RemoveSystem ---------------
-RemoveSystem::RemoveSystem(Layer::System* system, QStandardItem* parent) 
-   : m_system(system), m_parent(parent)
+RemoveSystem::RemoveSystem(Layer::System* system) 
+   : m_system(system), m_parent(system->QStandardItem::parent())
 { 
    QString s;
    if (m_system->fileName().isEmpty()) {
