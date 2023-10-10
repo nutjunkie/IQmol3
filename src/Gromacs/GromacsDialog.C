@@ -215,6 +215,8 @@ void GromacsDialog::on_solvateButton_clicked(bool)
 
 void GromacsDialog::on_generateBoxButton_clicked(bool)
 {
+
+   
    enableRequestWidgets(false);    
    if (m_networkReply) {
       QString msg("Request already in progress");

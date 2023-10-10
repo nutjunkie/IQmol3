@@ -4,7 +4,7 @@
 
 #include "Data/Atom.h"
 #include "Data/Group.h"
-#include "Data/PdbData.h"
+//#include "Data/PdbData.h"
 #include "Data/ProteinChain.h"
 #include "Data/Geometry.h"
 #include "Data/Solvent.h"
