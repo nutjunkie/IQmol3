@@ -216,6 +216,10 @@ void GromacsDialog::on_solvateButton_clicked(bool)
 void GromacsDialog::on_generateBoxButton_clicked(bool)
 {
 
+   //job
+   //m_gromacsjobinfo
+   //m_gromacsjobinfo.set()
+   //new job(m_gromacsjobinfo)
    
    enableRequestWidgets(false);    
    if (m_networkReply) {

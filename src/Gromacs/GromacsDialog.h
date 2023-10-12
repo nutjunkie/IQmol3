@@ -64,6 +64,10 @@ namespace Gmx {
          Ui::GromacsDialog  m_dialog;
          QNetworkAccessManager* m_networkAccessManager;
          QNetworkReply* m_networkReply; 
+         //IQmol::Process::JobInfo m_gromacsJobInfo;
+         //Job* m_currentJob;
+
+
    };
 
 } } // end namespace IQmol::Gmx
