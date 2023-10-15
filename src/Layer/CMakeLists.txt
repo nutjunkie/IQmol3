@@ -37,6 +37,7 @@ set( HEADERS
    NaturalBondOrbitalsLayer.h
    NaturalTransitionOrbitalsLayer.h
    NmrLayer.h
+   OctreeLayer.h
    OrbitalsLayer.h
    PrimitiveLayer.h
    ProteinChainLayer.h
@@ -83,6 +84,7 @@ set( SOURCES
    NaturalBondOrbitalsLayer.C
    NaturalTransitionOrbitalsLayer.C
    NmrLayer.C
+   OctreeLayer.C
    OrbitalsLayer.C
    PrimitiveLayer.C
    ProteinChainLayer.C

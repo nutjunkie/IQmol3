@@ -1,4 +1,3 @@
-#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -21,35 +20,62 @@
 
 ********************************************************************************/
 
-#include "Configurator.h"
-#include "Configurator/ui_DipoleConfigurator.h"
+#include "OctreeConfigurator.h"
+#include "Layer/OctreeLayer.h"
 
+
+using namespace qglviewer;
 
 namespace IQmol {
-
-namespace Layer {
-   class Dipole;
-}
-
 namespace Configurator {
 
-   /// Configurator Dialog which allows the user to change the display
-   /// options for the molecular dipole.
-   class Dipole : public Base {
+Octree::Octree(Layer::Octree& octree) : m_octree(octree) 
+{ 
+   m_configurator.setupUi(this); 
+   m_configurator.hitsTextEdit->setText(QString::number(0));
+}
 
-      Q_OBJECT
 
-      public:
-         explicit Dipole(Layer::Dipole& dipole);
-         void sync();
-      
-      public Q_SLOTS:
-         void on_scaleSlider_valueChanged(int);
-         void on_colorButton_clicked(bool);
+void Octree::init()
+{
+}
 
-      private:
-         Ui::DipoleConfigurator m_dipoleConfigurator;
-         Layer::Dipole& m_dipole;
-   };
+
+void Octree::sync()
+{
+}
+
+
+void Octree::hits(unsigned n)
+{
+   m_configurator.hitsTextEdit->setText(QString::number(n));
+}
+
+
+
+void Octree::on_radiusSlider_valueChanged(int value)
+{
+   double x(value*value*0.01);
+   double spin(m_configurator.radiusSpin->value());
+
+   if (std::abs(x-spin) > 0.01) {
+      m_configurator.radiusSpin->setValue(x);
+   }
+    selectionRadiusChanged(x); 
+}
+
+
+void Octree::on_radiusSpin_valueChanged(double value)
+{
+    int x(std::round(std::sqrt(100*value)));
+    int slider(m_configurator.radiusSlider->value());
+    if (x != slider) {
+       m_configurator.radiusSlider->setValue(x);
+    }
+   
+    selectionRadiusChanged(value); 
+}
+
+
 
 } } // end namespace IQmol::Configurator

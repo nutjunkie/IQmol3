@@ -22,34 +22,37 @@
 ********************************************************************************/
 
 #include "Configurator.h"
-#include "Configurator/ui_DipoleConfigurator.h"
+#include "ui_OctreeConfigurator.h"
 
 
 namespace IQmol {
 
 namespace Layer {
-   class Dipole;
+   class Octree;
 }
 
 namespace Configurator {
 
-   /// Configurator Dialog which allows the user to change the display
-   /// options for the molecular dipole.
-   class Dipole : public Base {
+   class Octree: public Base {
 
       Q_OBJECT
 
       public:
-         explicit Dipole(Layer::Dipole& dipole);
-         void sync();
-      
+         Octree(Layer::Octree& octree);
+         void hits(unsigned);
+
+      Q_SIGNALS:
+         void selectionRadiusChanged(double);
+
       public Q_SLOTS:
-         void on_scaleSlider_valueChanged(int);
-         void on_colorButton_clicked(bool);
+         void init();
+         void sync();
+         void on_radiusSlider_valueChanged(int);
+         void on_radiusSpin_valueChanged(double);
 
       private:
-         Ui::DipoleConfigurator m_dipoleConfigurator;
-         Layer::Dipole& m_dipole;
+         Layer::Octree& m_octree;
+         Ui::OctreeConfigurator m_configurator;
    };
 
 } } // end namespace IQmol::Configurator

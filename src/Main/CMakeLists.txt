@@ -47,6 +47,7 @@ target_include_directories(${LIB} PUBLIC
 target_link_libraries(${LIB} PUBLIC
    Viewer
 )
+
 target_link_libraries(${LIB} PRIVATE
    Process
    Qui

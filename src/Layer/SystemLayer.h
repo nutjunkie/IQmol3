@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+#include "OctreeLayer.h"
 #include <QFileInfo>
 
 
@@ -53,7 +54,11 @@ namespace IQmol {
 
             double radius();
 
+         private Q_SLOTS:
+            void boxSystem();
+
          private:
+            Octree* m_octree;
             void appendData(Layer::List& list);
 
             QFileInfo m_inputFile;

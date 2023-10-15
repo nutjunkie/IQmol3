@@ -21,7 +21,8 @@
    
 ********************************************************************************/
  
-#include "Gromacs/ui_GromacsDialog.h"
+#include "ui_GromacsDialog.h"
+#include "JobInfo.h"
 #include <QDialog>
 #include <QJsonObject>
 #include <QJsonArray>
