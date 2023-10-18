@@ -148,6 +148,7 @@ QString HttpConnection::getCookie()
 
    if (reply->status() == Reply::Finished) {
       QString msg(reply->message());
+      QLOG_DEBUG() << "cookie is" << msg;
       QRegularExpression rx("Qchemserv-Cookie::([0-9a-zA-Z\\-\\._]+)");
       QRegularExpressionMatch match(rx.match(msg));
       if (msg.contains("Qchemserv-Status::OK") && match.hasMatch()) {

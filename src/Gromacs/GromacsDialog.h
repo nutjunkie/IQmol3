@@ -20,11 +20,13 @@
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
 ********************************************************************************/
- 
-#include "Gromacs/ui_GromacsDialog.h"
+
+#include "ui_GromacsDialog.h"
+#include "JobInfo.h"
 #include <QDialog>
 #include <QJsonObject>
 #include <QJsonArray>
+
 
 
 class QNetworkAccessManager;
@@ -41,6 +43,11 @@ namespace Gmx {
    class GromacsDialog: public QDialog {
 
       Q_OBJECT
+
+      Q_SIGNALS:
+      void submitGromacsJobRequest(IQmol::Process::JobInfo&);
+
+      
 
       public:
          GromacsDialog(QWidget* parent);
@@ -64,7 +71,7 @@ namespace Gmx {
          Ui::GromacsDialog  m_dialog;
          QNetworkAccessManager* m_networkAccessManager;
          QNetworkReply* m_networkReply; 
-         //IQmol::Process::JobInfo m_gromacsJobInfo;
+         Process::JobInfo m_gromacsJobInfo;
          //Job* m_currentJob;
 
 

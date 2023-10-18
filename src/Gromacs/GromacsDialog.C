@@ -148,11 +148,11 @@ QString GromacsDialog::readToString()
    if (!m_networkReply) return(s);
    qint64 size(m_networkReply->bytesAvailable());
    s = m_networkReply->read(size);
-   qDebug() << "Reading" << size << " bytes to string" << s;
+   qDebug() << "Reading" << size << " bytes to string";
    QString qPath("1AKI_newbox.gro");
    QFile qFile(qPath);
    if (qFile.open(QIODevice::WriteOnly)) {
-      QTextStream out(&qFile); out << s;
+      QTextStream out(&qFile);
       qFile.close();
    }
    return(s);
@@ -240,6 +240,12 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    QHttpPart jsonPart;
    jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
    QJsonObject payload(boxRequestPayload());
+
+   m_gromacsJobInfo.set("JsonPayload",payload);
+   m_gromacsJobInfo.set("Url",url);
+   m_gromacsJobInfo.set("Hearder",QVariant("form-data; name=\"json\""));
+   m_gromacsJobInfo.set("ServerName","Gromacs");
+   submitGromacsJobRequest(m_gromacsJobInfo);
    QJsonDocument json;
    json.setObject(payload);
    //qDebug() << "Request body:" << json.toJson();
@@ -254,6 +260,9 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    file->setParent(multiPart); // we cannot delete the file now, so delete it with the multiPart
    multiPart->append(jsonPart);
    multiPart->append(filePart);
+
+
+
 
 
    m_networkReply = m_networkAccessManager->post(request,multiPart);
@@ -343,7 +352,7 @@ void GromacsDialog::boxRequestFinished()
     }else{  
       QString msg("Request finished");
       QMsgBox::information(this, "IQmol", msg);
-      //QString outputdata = readToString();
+      QString outputdata = readToString();
   }
 
       // do stuff

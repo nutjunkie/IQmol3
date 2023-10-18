@@ -28,6 +28,8 @@ target_include_directories(${LIB} PUBLIC
 )
 target_link_libraries(${LIB} PUBLIC
    Network
+   Process
+   Util
 )
 target_link_libraries(${LIB} PRIVATE
    Data

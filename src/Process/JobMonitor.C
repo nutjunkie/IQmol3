@@ -244,6 +244,7 @@ void JobMonitor::reconnectServers()
 void JobMonitor::submitJob(JobInfo* jobInfo)
 {
    QString serverName(jobInfo->get<QString>("ServerName"));
+   qDebug() << "writing to server : " << serverName;
    Server* server(ServerRegistry::instance().find(serverName));
 
    if (!server) {

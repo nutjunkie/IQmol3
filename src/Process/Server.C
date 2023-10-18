@@ -126,7 +126,7 @@ bool Server::open()
 
    if (m_connection->status() == Network::Opened) {
       QLOG_TRACE() << "Authenticating connection";
-      Network::AuthenticationT 
+      Network::AuthenticationT
          authentication(m_configuration.authentication());
 
       if (m_configuration.isWebBased()) {
