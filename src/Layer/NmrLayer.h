@@ -46,6 +46,8 @@ namespace Layer {
          Nmr(Data::Nmr&);
          ~Nmr();
 
+         void setMolecule(Molecule* molecule) { m_molecule = molecule; }
+
       public Q_SLOTS:
          void configure();
 
