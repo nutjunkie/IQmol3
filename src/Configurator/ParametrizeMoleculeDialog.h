@@ -30,7 +30,7 @@ namespace IQmol {
       class Molecule;
    }
 
-   /// Dialog allowing the user to set up a conformer search
+   /// Dialog allowing the user to parametrize a molecule
    class ParametrizeMoleculeDialog : public QDialog {
 
       Q_OBJECT
