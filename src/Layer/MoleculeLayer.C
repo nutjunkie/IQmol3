@@ -2928,6 +2928,20 @@ void Molecule::parametrizeMolecule()
    qDebug() << "Antechamber finished with exit code: " << antechamber->exitCode();
    qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
    qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
+
+   // Call parmchk2 to check the parameters
+   QProcess *parmchk2 = new QProcess(this);
+   arguments.clear();
+   arguments << "-i" << name + ".mol2"
+             << "-f" << "mol2"
+             << "-o" << name + ".frcmod"
+             << "-s" << "2"
+             << "-a" << "N"
+             << "-w" << "Y";
+   qDebug() << "Arguments: " << arguments;
+   parmchk2->start("/opt/homebrew/Caskroom/miniforge/base/envs/AmberTools23/bin/parmchk2", arguments);
+   parmchk2->waitForFinished(-1);
+   qDebug() << "Parmchk2 finished with exit code: " << parmchk2->exitCode();
 }
 
 } } // end namespace IQmol::Layer
