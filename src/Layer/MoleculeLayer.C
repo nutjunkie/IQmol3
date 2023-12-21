@@ -2898,11 +2898,12 @@ void Molecule::parametrizeMolecule()
 {
    ParametrizeMoleculeDialog *dialog(qobject_cast<ParametrizeMoleculeDialog *>(sender()));
 
+   QString name(text().split(' ').first());
    int charge(dialog->charge);
    int multiplicity(dialog->multiplicity);
    QString forceField(dialog->forceField);
 
-   qDebug() << "charge" << charge << "multiplicity" << multiplicity << forceField;
+   qDebug() << "charge" << charge << "multiplicity" << multiplicity << forceField << name;
 
    writeToFile("input.mol2");
 
@@ -2911,14 +2912,14 @@ void Molecule::parametrizeMolecule()
    QStringList arguments;
    arguments << "-i" << "input.mol2"
              << "-fi" << "mol2"
-             << "-o" << "output.mol2"
+             << "-o" << name + ".mol2"
              << "-fo" << "mol2"
              << "-nc" << QString::number(charge)
              << "-m" << QString::number(multiplicity)
              << "-s" << "2"
              << "-pf" << "yes"
              << "-dr" << "no"
-             << "-rn" << "mol"
+             << "-rn" << name
              << "-at" << forceField
              << "-c" << "bcc";
    qDebug() << "Arguments: " << arguments;
