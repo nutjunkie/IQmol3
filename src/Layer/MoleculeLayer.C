@@ -158,7 +158,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_atomicChargesMenu = newAction("Atomic Charges");
 
    connect(newAction("Parametrize"), SIGNAL(triggered()), 
-      this, SLOT(parametrizeMoleculeDialog())); // You need to define this slot in your class
+      this, SLOT(parametrizeMoleculeDialog()));
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
