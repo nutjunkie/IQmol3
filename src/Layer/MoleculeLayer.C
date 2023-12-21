@@ -52,6 +52,7 @@
 
 
 #include "Configurator/GenerateConformersDialog.h"
+#include "Configurator/ParametrizeMoleculeDialog.h"
 #include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"
@@ -155,6 +156,9 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(createGeometryList()));
 
    m_atomicChargesMenu = newAction("Atomic Charges");
+
+   connect(newAction("Parametrize"), SIGNAL(triggered()), 
+      this, SLOT(parametrizeMoleculeDialog())); // You need to define this slot in your class
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
@@ -2876,6 +2880,53 @@ void Molecule::generateConformers()
    }
 
    delete obMol;
+}
+
+void Molecule::parametrizeMoleculeDialog()
+{
+   qDebug() << "Opening parametrize molecule dialog";
+   ParametrizeMoleculeDialog *dialog(new ParametrizeMoleculeDialog(0, this));
+
+   dialog->setWindowModality(Qt::WindowModal);
+   dialog->show();
+   dialog->raise();
+
+   connect(dialog, SIGNAL(accepted()), this, SLOT(parametrizeMolecule()));
+}
+
+void Molecule::parametrizeMolecule()
+{
+   ParametrizeMoleculeDialog *dialog(qobject_cast<ParametrizeMoleculeDialog *>(sender()));
+
+   int charge(dialog->charge);
+   int multiplicity(dialog->multiplicity);
+   QString forceField(dialog->forceField);
+
+   qDebug() << "charge" << charge << "multiplicity" << multiplicity << forceField;
+
+   writeToFile("input.mol2");
+
+   // Call antechamer to parametrize the molecule
+   QProcess *antechamber = new QProcess(this);
+   QStringList arguments;
+   arguments << "-i" << "input.mol2"
+             << "-fi" << "mol2"
+             << "-o" << "output.mol2"
+             << "-fo" << "mol2"
+             << "-nc" << QString::number(charge)
+             << "-m" << QString::number(multiplicity)
+             << "-s" << "2"
+             << "-pf" << "yes"
+             << "-dr" << "no"
+             << "-rn" << "mol"
+             << "-at" << forceField
+             << "-c" << "bcc";
+   qDebug() << "Arguments: " << arguments;
+   antechamber->start("/opt/homebrew/Caskroom/miniforge/base/envs/AmberTools23/bin/antechamber", arguments);
+   antechamber->waitForFinished(-1);
+   qDebug() << "Antechamber finished with exit code: " << antechamber->exitCode();
+   qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
+   qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
 }
 
 } } // end namespace IQmol::Layer

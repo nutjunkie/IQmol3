@@ -264,7 +264,9 @@ bool save(bool prompt = false);
             void updateAtomicCharges();
             void generateConformersDialog();
             void generateConformers();
-   
+            void parametrizeMoleculeDialog();
+            void parametrizeMolecule();
+
          private:
             static bool s_autoDetectSymmetry;
             int totalCharge() const;
