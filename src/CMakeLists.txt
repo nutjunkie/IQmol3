@@ -12,3 +12,8 @@ add_subdirectory(Plot)
 add_subdirectory(Process)
 add_subdirectory(Viewer)
 add_subdirectory(Fortran)
+
+add_dependencies(Process Configurator)
+add_dependencies(Grid Configurator)
+add_dependencies(Viewer Process)
+
