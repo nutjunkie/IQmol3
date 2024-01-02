@@ -68,4 +68,9 @@ if [ $ARCH == 'Windoze' ]; then
    echo "-- Run $MINGW_ROOT/bin/mingw32-make.exe inside the build directory"
 fi
 
+if [ $ARCH == 'Linux' ]; then
+   echo "-- May have to manually edit build/CMakeFiles/IQmol.dir/link.txt to fix linking:"
+   echo "   Replace /path/to/libm.a with -lm"
+fi
+
 exit ${PIPESTATUS[0]}
