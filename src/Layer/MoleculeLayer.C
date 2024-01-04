@@ -2905,12 +2905,14 @@ void Molecule::parametrizeMolecule()
 
    qDebug() << "charge" << charge << "multiplicity" << multiplicity << forceField << name;
 
-   writeToFile("input.mol2");
+   QFileInfo fileInfo(Preferences::LastFileAccessed());
+   qDebug() << "File path: " << fileInfo.absolutePath();
+   writeToFile(fileInfo.absolutePath() + "/_" + name + ".mol2");
 
    // Call antechamer to parametrize the molecule
    QProcess *antechamber = new QProcess(this);
    QStringList arguments;
-   arguments << "-i" << "input.mol2"
+   arguments << "-i" << "_" + name + ".mol2"
              << "-fi" << "mol2"
              << "-o" << name + ".mol2"
              << "-fo" << "mol2"
@@ -2923,6 +2925,7 @@ void Molecule::parametrizeMolecule()
              << "-at" << forceField
              << "-c" << "bcc";
    qDebug() << "Arguments: " << arguments;
+   antechamber->setWorkingDirectory(fileInfo.absolutePath());
    antechamber->start("/opt/homebrew/Caskroom/miniforge/base/envs/AmberTools23/bin/antechamber", arguments);
    antechamber->waitForFinished(-1);
    qDebug() << "Antechamber finished with exit code: " << antechamber->exitCode();
@@ -2939,6 +2942,7 @@ void Molecule::parametrizeMolecule()
              << "-a" << "N"
              << "-w" << "Y";
    qDebug() << "Arguments: " << arguments;
+   parmchk2->setWorkingDirectory(fileInfo.absolutePath());
    parmchk2->start("/opt/homebrew/Caskroom/miniforge/base/envs/AmberTools23/bin/parmchk2", arguments);
    parmchk2->waitForFinished(-1);
    qDebug() << "Parmchk2 finished with exit code: " << parmchk2->exitCode();
