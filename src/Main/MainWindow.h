@@ -36,6 +36,10 @@
 #include "GromacsConfigDialog.h"
 #endif
 
+#ifdef AMBER
+#include "AmberConfigDialog.h"
+#endif
+
 #include <QItemSelectionModel>
 #include <QSortFilterProxyModel>
 #include <QMainWindow>
@@ -99,6 +103,7 @@ namespace Gmx {
          void showGromacsDialog();
          void showGromacsServerDialog();
          void showGromacsConfigDialog();
+         void showAmberConfigDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::JobInfo&);

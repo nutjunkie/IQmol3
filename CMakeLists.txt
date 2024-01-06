@@ -87,6 +87,11 @@ if (WITH_GROMACS)
    add_subdirectory(src/Gromacs)
 endif()
 
+if (WITH_AMBER)
+    add_compile_definitions(AMBER)
+    add_subdirectory(src/Amber)
+endif()
+
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
 set(Boost_USE_STATIC_LIBS TRUE)
@@ -110,8 +115,8 @@ endif ()
 
 set(ICON_PATH resources/IQmol.icns)
 
-if (EXISTS /opt/local/lib/)
-   link_directories(/opt/local/lib/)
+if (EXISTS /opt/homebrew/lib/)
+   link_directories(/opt/homebrew/lib/)
 endif()
 
 

@@ -725,6 +725,12 @@ void MainWindow::createMenus()
 #endif
 
 
+#ifdef AMBER
+      menu->addSeparator();
+      name = "Edit Amber Config";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberConfigDialog()));
+#endif
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
@@ -1063,6 +1069,17 @@ void MainWindow::showGromacsServerDialog()
 }
 
 
+void MainWindow::showAmberConfigDialog()
+{
+#ifdef AMBER
+   Amber::AmberConfigDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      Preferences::AmberDirectory(dialog.getDirectory());
+   }
+
+#endif
+}
 
 
 void MainWindow::insertMoleculeDialog() 

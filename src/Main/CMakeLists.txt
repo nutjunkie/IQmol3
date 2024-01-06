@@ -60,3 +60,7 @@ target_link_libraries(${LIB} PRIVATE
 if (WITH_GROMACS)
    target_link_libraries(${LIB} PRIVATE Gromacs)
 endif()
+
+if (WITH_AMBER)
+   target_link_libraries(${LIB} PRIVATE Amber)
+endif()

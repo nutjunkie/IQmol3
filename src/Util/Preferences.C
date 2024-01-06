@@ -839,6 +839,25 @@ void GromacsPositionsFile(QString const& position){
 }
 
 
+// ---------
+
+QString AmberDirectory()
+{
+   QString directory;
+   QVariant value(Get("AmberDirectory"));
+
+   if (value.isNull() || value.toString().isEmpty()) {
+      directory = QString("");
+   } else {
+      directory = value.value<QString>();
+   }
+   return directory;
+}
+
+void AmberDirectory(QString const& directory)
+{
+   Set("AmberDirectory", directory);
+}
 
 // ---------
 

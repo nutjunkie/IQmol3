@@ -180,6 +180,9 @@ namespace Preferences {
    QString GromacsPositionsFile();
    void GromacsPositionsFile(QString const&);
 
+   QString AmberDirectory();
+   void AmberDirectory(QString const&);
+
    // Deprecate
    QList<QVariant> CurrentProcessList();
    void CurrentProcessList(QList<QVariant> const&);
