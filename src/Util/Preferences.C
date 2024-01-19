@@ -860,7 +860,11 @@ QString AmberDirectory()
    QVariant value(Get("AmberDirectory"));
 
    if (value.isNull() || value.toString().isEmpty()) {
-      directory = QString("");
+      if (!qgetenv("AMBERHOME").isEmpty()) {
+         directory = qgetenv("AMBERHOME");
+      } else {
+         directory = QString("");
+      }
    } else {
       directory = value.value<QString>();
    }
