@@ -2900,30 +2900,36 @@ void Molecule::parametrizeMolecule()
 {
    ParametrizeMoleculeDialog *dialog(qobject_cast<ParametrizeMoleculeDialog *>(sender()));
 
-   QString name(text().split(' ').first());
-   int charge(dialog->charge);
-   int multiplicity(dialog->multiplicity);
-   QString forceField(dialog->forceField);
-
-   qDebug() << "charge" << charge << "multiplicity" << multiplicity << forceField << name;
-
-   // Make sure Amber directory is set
-   QString AmberDirectory = Preferences::AmberDirectory();
-   qDebug () << "Amber directory: " << AmberDirectory;
-
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   qDebug() << "File path: " << fileInfo.absolutePath();
-   writeToFile(QDir(fileInfo.absolutePath()).filePath("_" + name + ".mol2"));
-
    // Call antechamer to parametrize the molecule
    QProcess *antechamber = new QProcess(this);
+
+   connect(antechamber, SIGNAL(finished(int, QProcess::ExitStatus)),
+      this, SLOT(antechamberFinished(int, QProcess::ExitStatus)));
+
+   // Find antechamber executable
+   QString AmberDirectory = Preferences::AmberDirectory();
+   QString program = QDir(AmberDirectory).filePath("bin/antechamber");
+   qDebug () << "Antechamber executable location: " << program;
+
+   // Set working directory
+   QFileInfo fileInfo(Preferences::LastFileAccessed());
+   antechamber->setWorkingDirectory(fileInfo.absolutePath());
+   qDebug() << "Antechamber working directory: " << fileInfo.absolutePath();
+
+   // Prepare arguments and write the input mol2 file
+   QString name(text().split(' ').first());
+   QString forceField(dialog->forceField);
+   writeToFile(QDir(fileInfo.absolutePath()).filePath(name + "_ac" + ".mol2"));
+   qDebug() << "charge" << totalCharge() << "multiplicity" << multiplicity() << forceField << name;
+
+   // Build arguments
    QStringList arguments;
-   arguments << "-i" << "_" + name + ".mol2"
+   arguments << "-i" << name + "_ac" + ".mol2"
              << "-fi" << "mol2"
              << "-o" << name + ".mol2"
              << "-fo" << "mol2"
-             << "-nc" << QString::number(charge)
-             << "-m" << QString::number(multiplicity)
+             << "-nc" << QString::number(totalCharge())
+             << "-m" << QString::number(multiplicity())
              << "-s" << "2"
              << "-pf" << "yes"
              << "-dr" << "no"
@@ -2931,25 +2937,56 @@ void Molecule::parametrizeMolecule()
              << "-at" << forceField
              << "-c" << "bcc";
    qDebug() << "Arguments: " << arguments;
-   antechamber->setWorkingDirectory(fileInfo.absolutePath());
-   antechamber->start(QDir(AmberDirectory).filePath("bin/antechamber"), arguments);
-   antechamber->waitForFinished(-1);
+
+   antechamber->start(program, arguments);
    qDebug() << "Antechamber finished with exit code: " << antechamber->exitCode();
    qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
    qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
+}
 
+void Molecule::antechamberFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+   qDebug() << "Antechamber finished with exit code: " << exitCode;
+
+   switch (exitStatus) {
+      case QProcess::NormalExit:
+         runParmchk2();
+         break;
+      case QProcess::CrashExit:
+         qDebug() << "Antechamber crashed";
+         break;
+   }
+}
+
+void Molecule::runParmchk2()
+{
    // Call parmchk2 to check the parameters
    QProcess *parmchk2 = new QProcess(this);
-   arguments.clear();
-   arguments << "-i" << name + ".mol2"
-             << "-f" << "mol2"
-             << "-o" << name + ".frcmod"
-             << "-s" << "2"
-             << "-a" << "N"
-             << "-w" << "Y";
-   qDebug() << "Arguments: " << arguments;
+
+   // Find parmchk2 executable
+   QString AmberDirectory = Preferences::AmberDirectory();
+   QString program = QDir(AmberDirectory).filePath("bin/parmchk2");
+   qDebug() << "Parmchk2 executable location: " << program;
+
+   // Set working directory
+   QFileInfo fileInfo(Preferences::LastFileAccessed());
    parmchk2->setWorkingDirectory(fileInfo.absolutePath());
-   parmchk2->start(QDir(AmberDirectory).filePath("bin/parmchk2"), arguments);
+   qDebug() << "Parmchk2 working directory: " << fileInfo.absolutePath();
+
+   // Prepare arguments
+   QString name(text().split(' ').first());
+
+   // Build arguments
+   QStringList arguments;
+   arguments << "-i" << name + ".mol2"
+            << "-f" << "mol2"
+            << "-o" << name + ".frcmod"
+            << "-s" << "2"
+            << "-a" << "N"
+            << "-w" << "Y";
+   qDebug() << "Arguments: " << arguments;
+
+   parmchk2->start(program, arguments);
    parmchk2->waitForFinished(-1);
    qDebug() << "Parmchk2 finished with exit code: " << parmchk2->exitCode();
 }

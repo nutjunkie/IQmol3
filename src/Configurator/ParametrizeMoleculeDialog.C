@@ -29,14 +29,27 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    Layer::Molecule* molecule) : QDialog(parent), m_molecule(molecule)
 {
    m_dialog.setupUi(this);
+   m_dialog.chargeSpin->setValue(m_molecule->totalCharge());
+   m_dialog.multiplicitySpin->setValue(m_molecule->multiplicity());
 }
 
+
+void ParametrizeMoleculeDialog::on_chargeSpin_valueChanged(int value)
+{
+   m_molecule->chargeAvailable(value);
+   m_dialog.multiplicitySpin->setValue(m_molecule->multiplicity());
+}
+
+
+void ParametrizeMoleculeDialog::on_multiplicitySpin_valueChanged(int value)
+{
+   m_molecule->multiplicityAvailable(value);
+   m_dialog.chargeSpin->setValue(m_molecule->totalCharge());
+}
 
 void ParametrizeMoleculeDialog::accept()
 {
    // gather data
-   charge = m_dialog.charge->value();
-   multiplicity = m_dialog.multiplicity->value();
    forceField = m_dialog.forceField->currentText();
 
    QDialog::accept();

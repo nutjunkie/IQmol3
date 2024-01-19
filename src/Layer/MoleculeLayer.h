@@ -38,6 +38,7 @@
 #include <QMap>
 #include <QFileInfo>
 #include <QItemSelectionModel>
+#include <QProcess>
 
 #include <functional>
 
@@ -207,6 +208,9 @@ bool save(bool prompt = false);
             void   setMullikenDecompositions(Matrix const& M);
             double mullikenDecomposition(int const a, int const b) const;
             bool   hasMullikenDecompositions() const;
+
+            int totalCharge() const;
+            int multiplicity() const;
    
          public Q_SLOTS:
             void groupSelection();
@@ -266,11 +270,11 @@ bool save(bool prompt = false);
             void generateConformers();
             void parametrizeMoleculeDialog();
             void parametrizeMolecule();
+            void antechamberFinished(int, QProcess::ExitStatus);
+            void runParmchk2();
 
          private:
             static bool s_autoDetectSymmetry;
-            int totalCharge() const;
-            int multiplicity() const;
 
             QString constraintsAsString();
             QString scanCoordinatesAsString();

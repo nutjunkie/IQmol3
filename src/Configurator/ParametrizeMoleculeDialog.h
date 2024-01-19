@@ -41,11 +41,11 @@ namespace IQmol {
          ParametrizeMoleculeDialog(QWidget* parent, Layer::Molecule*);
 
       protected:
-         int charge;
-         int multiplicity;
          QString forceField;
 
       private Q_SLOTS:
+         void on_chargeSpin_valueChanged(int);
+         void on_multiplicitySpin_valueChanged(int);
          void accept();
 
       private:
