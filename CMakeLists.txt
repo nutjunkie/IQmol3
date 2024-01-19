@@ -87,10 +87,9 @@ if (WITH_GROMACS)
    add_subdirectory(src/Gromacs)
 endif()
 
-if (WITH_AMBER)
-    add_compile_definitions(AMBER)
-    add_subdirectory(src/Amber)
-endif()
+
+add_subdirectory(src/Amber)
+
 
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.

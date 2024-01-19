@@ -157,10 +157,10 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 
    m_atomicChargesMenu = newAction("Atomic Charges");
 
-#ifdef AMBER
+if (Preferences::AmberEnabled()) {
    connect(newAction("Parametrize"), SIGNAL(triggered()), 
       this, SLOT(parametrizeMoleculeDialog()));
-#endif
+}
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));

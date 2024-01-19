@@ -29,15 +29,12 @@
 #include "ViewerModel.h"
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
+#include "AmberConfigDialog.h"
 
 #ifdef GROMACS
 #include "GromacsDialog.h"
 #include "GromacsServerDialog.h"
 #include "GromacsConfigDialog.h"
-#endif
-
-#ifdef AMBER
-#include "AmberConfigDialog.h"
 #endif
 
 #include <QItemSelectionModel>

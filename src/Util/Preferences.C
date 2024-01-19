@@ -416,6 +416,19 @@ void DefaultForceField(QString const& forceField)
 
 // ---------
 
+bool AmberEnabled()
+{
+   QVariant value(Get("AmberEnabled"));
+   return value.isNull() ? true : value.value<bool>();
+}
+
+void AmberEnabled(bool const tf)
+{
+   Set("AmberEnabled", QVariant::fromValue(tf));
+}
+
+// ---------
+
 double SymmetryTolerance()
 {
    QVariant value(Get("SymmetryTolerance"));

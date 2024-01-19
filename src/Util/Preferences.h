@@ -106,6 +106,9 @@ namespace Preferences {
    QString DefaultForceField();
    void    DefaultForceField(QString const&);
 
+   bool    AmberEnabled();
+   void    AmberEnabled(bool const);
+
    double  SymmetryTolerance();
    void    SymmetryTolerance(double const);
    
