@@ -20,7 +20,9 @@
    
 ********************************************************************************/
 
+#include <QDir>
 #include "AmberConfigDialog.h"
+#include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
 
 
@@ -37,6 +39,24 @@ AmberConfigDialog::AmberConfigDialog(QWidget* parent) : QDialog(parent)
 QString AmberConfigDialog::getDirectory() const
 {
    return m_dialog.directory->text();
+}
+
+void AmberConfigDialog::accept()
+{
+   // check if the directory exists
+   QString directory = m_dialog.directory->text();
+   if (!directory.isEmpty() && !QDir(directory).exists()) {
+      QMessageBox::warning(this, tr("Amber directory"),
+         tr("The directory %1 does not exist.").arg(directory));
+      return;
+   }
+   // check if the directory is valid
+   if (!directory.isEmpty() && !QDir(directory).exists("amber.sh")) {
+      QMessageBox::warning(this, tr("Amber directory"),
+         tr("The directory %1 does not contain the Amber executable.").arg(directory));
+      return;
+   }
+   QDialog::accept();
 }
 
 } } // end namespace IQmol::Amber

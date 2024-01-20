@@ -22,6 +22,9 @@
 
 #include "ParametrizeMoleculeDialog.h"
 #include "Layer/MoleculeLayer.h"
+#include "Util/QMsgBox.h"
+#include "Util/Preferences.h"
+#include "Amber/AmberConfigDialog.h"
 
 namespace IQmol {
 
@@ -51,6 +54,19 @@ void ParametrizeMoleculeDialog::accept()
 {
    // gather data
    forceField = m_dialog.forceField->currentText();
+
+   // check if the Amber directory is set
+   QString AmberDirectory = Preferences::AmberDirectory();
+   if (AmberDirectory.isEmpty()) {
+      QMessageBox::warning(this, tr("Amber directory not set"),
+         tr("The Amber directory is not set. Please set it in the Edit Amber Config dialog."));
+      Amber::AmberConfigDialog dialog(this);
+      dialog.exec();
+      if (dialog.result() == QDialog::Accepted) {
+         Preferences::AmberDirectory(dialog.getDirectory());
+      }
+      return;
+   }
 
    QDialog::accept();
 }

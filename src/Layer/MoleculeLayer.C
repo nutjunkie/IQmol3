@@ -2903,8 +2903,8 @@ void Molecule::parametrizeMolecule()
    // Call antechamer to parametrize the molecule
    QProcess *antechamber = new QProcess(this);
 
-   connect(antechamber, SIGNAL(finished(int, QProcess::ExitStatus)),
-      this, SLOT(antechamberFinished(int, QProcess::ExitStatus)));
+   connect(antechamber, SIGNAL(finished(int,QProcess::ExitStatus)),
+      this, SLOT(antechamberFinished(int,QProcess::ExitStatus)));
 
    // Find antechamber executable
    QString AmberDirectory = Preferences::AmberDirectory();

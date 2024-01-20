@@ -41,6 +41,9 @@ namespace Amber {
       
       private:
          Ui::AmberConfigDialog  m_dialog;
+
+      private Q_SLOTS:
+         void accept();
    };
 
 } } // end namespace IQmol::Amber
