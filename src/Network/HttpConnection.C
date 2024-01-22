@@ -29,6 +29,11 @@
 #include <QEventLoop>
 #include <QRegularExpression>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QHttpMultiPart>
 
 
 
@@ -199,6 +204,33 @@ Reply* HttpConnection::putFile(QString const& sourcePath, QString const& destina
    }
    
    HttpPost* reply(new HttpPost(this, destinationPath, QString(buffer)));
+   return reply;
+}
+
+QNetworkReply* HttpConnection::putJsonFile(QString const& sourcePath, QString const& destinationPath, QJsonObject const& payload)
+{
+   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpPart jsonPart;
+   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
+   QJsonDocument json;  
+   json.setObject(payload);
+   jsonPart.setBody(json.toJson());
+ //setting up reply goes into httpPostJson use current httpPost
+   QHttpPart filePart;
+   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
+   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
+   QFile *file = new QFile("1AKI_processed.gro"); //get local file path
+   if (file->open(QIODevice::ReadOnly)){
+      filePart.setBodyDevice(file);
+      file->setParent(multiPart);
+      file->close();
+   };
+   // we cannot delete the file now, so delete it with the multiPart
+   multiPart->append(jsonPart);
+   multiPart->append(filePart);
+   QNetworkRequest request;
+   request.setUrl(destinationPath);
+   QNetworkReply* reply = m_networkAccessManager->post(request,multiPart);
    return reply;
 }
 

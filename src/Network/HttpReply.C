@@ -374,5 +374,10 @@ void HttpPost::run()
    m_timer.start();
 }
 
-
+/*
+HttpJsonPost::HttpJsonPost(HttpConnection* connection, QString const& path,  
+   QString const& postData) : HttpReply(connection), m_postData(postData)
+{
+   setUrl(path);
+}*/
 } } // end namespace IQmol::Network

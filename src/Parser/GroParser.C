@@ -20,7 +20,30 @@
 namespace IQmol {
 namespace Parser {
 
+std::vector<QString> getTopologyFiles(QString topolPath){
+  QFile file(topolPath);
+ 
+  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+  QTextStream topolTextStream(&file);
+  const QString fileString = topolTextStream.readAll();
+  QRegularExpression rx("\"(topol_Protein.*?)\"");
+  QRegularExpressionMatchIterator i = rx.globalMatch(fileString);
+  std::vector<QString> output;
+  while (i.hasNext()) {
+    QRegularExpressionMatch match = i.next();
+    QString subtopol = match.captured(1);
+    QLOG_DEBUG() << "newtopol";
+    QLOG_DEBUG() << subtopol;
+    output.push_back(subtopol);
 
+
+  }
+
+
+
+  return output;
+  }
+}
 
 bool Gro::parse(TextStream& textStream){
   bool ok(true);
@@ -28,6 +51,7 @@ bool Gro::parse(TextStream& textStream){
   size_t index =str.find_last_of("/\\");
   QLOG_DEBUG() << "loading structure file";
   QString path = QString::fromStdString(str.substr(0,(index+1)) + "SecStruc.dat");
+  QString topolfile = QString::fromStdString(str.substr(0,(index+1)) + "topol.top");
   QLOG_DEBUG() << path;
   QFile file(path);
  
@@ -41,7 +65,9 @@ bool Gro::parse(TextStream& textStream){
   Data::Atom* CA(0);
   Data::Atom* O(0);
 
-   // loadTopologyFiles();
+  std::vector<QString> topology = getTopologyFiles(topolfile);
+
+
   std::vector<QString> secStrucChain;
   std::vector<int>secStrucType,secStrucResStart,secStrucResStop;
   
@@ -59,7 +85,6 @@ bool Gro::parse(TextStream& textStream){
   int grpNumber(0);
 
   chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
-  //chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
 
   m_chains.insert(currentChain, chain);
    while (!secStrucTextStream.atEnd()) {
@@ -98,8 +123,8 @@ bool Gro::parse(TextStream& textStream){
     qglviewer::Vec v(x,y,z);
 
     grpNumber = grp.toInt();
-    QLOG_DEBUG() << "chain number" <<chainNumber;
-    QLOG_DEBUG() << "secStrucIndex" <<secStrucIndex;
+    //QLOG_DEBUG() << "chain number" <<chainNumber;
+    //QLOG_DEBUG() << "secStrucIndex" <<secStrucIndex;
     if(secStrucIndex ==32){
       secStrucIndex =31;
     }
@@ -120,7 +145,7 @@ bool Gro::parse(TextStream& textStream){
     }
     
     
-    QLOG_DEBUG() << "current " << currentGroup <<" new " <<grp;
+    //QLOG_DEBUG() << "current " << currentGroup <<" new " <<grp;
     if(currentGroup.toInt() > grp.toInt()){
       ++chainNumber;
       currentChain = aToZ[chainNumber];
@@ -239,9 +264,6 @@ bool Gro::parseATOM(QString const& line, Data::Group& group)
 
 
 
-void loadTopologyFiles()
-{
 
-}
 
 } } // end namespace IQmol::Parser

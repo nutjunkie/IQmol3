@@ -23,6 +23,7 @@
 ********************************************************************************/
 
 #include "Connection.h"
+#include <QNetworkAccessManager>
 
 typedef QMap<QString, QString> QStringMap;
 
@@ -70,7 +71,7 @@ namespace Network {
          Reply* putFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFiles(QStringList const& fileList, QString const& destinationPath);
-
+         QNetworkReply* putJsonFile(QString const& sourcePath, QString const& destinationPath, QJsonObject const& payload);
          Reply* get(QString const& query) { return execute(query); }
          Reply* post(QString const& path, QString const&);
 

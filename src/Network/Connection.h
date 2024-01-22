@@ -21,9 +21,10 @@
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
 ********************************************************************************/
-
+#include "Reply.h"
 #include <QObject>
 #include <QThread>
+
 
 #include "Network.h"
 
@@ -71,6 +72,7 @@ namespace Network {
          virtual Reply* getFile(QString const& sourcePath, QString const& destinationPath) = 0;
          virtual Reply* putFile(QString const& sourcePath, QString const& destinationPath) = 0;
          virtual Reply* getFiles(QStringList const& fileList, QString const& destinationPath) = 0;
+         //virtual QNetworkReply* putJsonFile(QString const& sourcePath, QString const& destinationPath, QJsonObject const& payload);
 
          void setTimeout(unsigned timeout) { m_timeout = timeout; }
          unsigned timeout() const { return m_timeout; }

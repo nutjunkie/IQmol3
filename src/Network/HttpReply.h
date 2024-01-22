@@ -140,6 +140,22 @@ namespace Network {
          
    };
 
+  /* class HttpJsonPost : public HttpReply {
+
+      Q_OBJECT
+
+      public:
+         HttpJsonPost(HttpConnection*, QString const& path, QString const& postData);
+
+      protected Q_SLOTS:
+         void run();
+
+      private:
+         QString m_postData;
+         QNetworkRequest request;
+         
+   };
+*/
 } } // end namespace IQmol::Network
 
 #endif

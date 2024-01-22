@@ -231,23 +231,26 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    //stageCalculation();
    qDebug() << "Generating Box";
    QString url(Preferences::GromacsServerAddress());
-   url += "/editconf";
+   url = url + "/editconf";
    qDebug() << "URL set to " << url;
-
+   QString gromacsJobType = "editconf";
+   QString jobType ="gromacs";
    QNetworkRequest request;
    request.setUrl(url);
    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
    QHttpPart jsonPart;
    jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
    QJsonObject payload(boxRequestPayload());
-
+   QJsonDocument json;  
+   //json.setObject(payload);
+   m_gromacsJobInfo.set("gromacsJobType",gromacsJobType);
    m_gromacsJobInfo.set("JsonPayload",payload);
    m_gromacsJobInfo.set("Url",url);
-   m_gromacsJobInfo.set("Hearder",QVariant("form-data; name=\"json\""));
+   m_gromacsJobInfo.set("Header",QVariant("form-data; name=\"json\""));
    m_gromacsJobInfo.set("ServerName","Gromacs");
+   m_gromacsJobInfo.set("jobType",jobType);
    submitGromacsJobRequest(m_gromacsJobInfo);
-   QJsonDocument json;
-   json.setObject(payload);
+
    //qDebug() << "Request body:" << json.toJson();
    jsonPart.setBody(json.toJson());
 
@@ -275,6 +278,7 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
 QJsonObject GromacsDialog::boxRequestPayload()
 {
    QJsonObject json;
+   json.insert("jobType","EditConf");
 
    // Box type
    BoxType bt(Cubic);
