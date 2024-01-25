@@ -2939,14 +2939,15 @@ void Molecule::parametrizeMolecule()
    qDebug() << "Arguments: " << arguments;
 
    antechamber->start(program, arguments);
-   qDebug() << "Antechamber finished with exit code: " << antechamber->exitCode();
-   qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
-   qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
 }
 
 void Molecule::antechamberFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+   QProcess* antechamber(qobject_cast<QProcess*>(sender()));
    qDebug() << "Antechamber finished with exit code: " << exitCode;
+   qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
+   qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
+   antechamber->deleteLater();
 
    switch (exitStatus) {
       case QProcess::NormalExit:
