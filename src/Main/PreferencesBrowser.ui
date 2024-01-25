@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>661</width>
-    <height>299</height>
+    <height>327</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -303,7 +303,7 @@ QToolButton:checked {
         <string>Enable</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
