@@ -227,7 +227,7 @@ QToolButton:checked {
      <item row="3" column="1">
       <widget class="QLineEdit" name="qchemDatabaseFileLineEdit"/>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QLabel" name="label_7">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -241,7 +241,7 @@ QToolButton:checked {
         </font>
        </property>
        <property name="text">
-        <string>Log file changes will not take effect until restart</string>
+        <string>Some changes will not take effect until restart</string>
        </property>
       </widget>
      </item>
@@ -290,14 +290,14 @@ QToolButton:checked {
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
         <string>Amber Support:</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="6" column="1">
       <widget class="QCheckBox" name="amberEnabledCheckBox">
        <property name="text">
         <string>Enable</string>
