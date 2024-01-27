@@ -38,9 +38,22 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    // set up the run button
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
-   connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::request);
-}
+   QPushButton* killButton = m_dialog.buttonBox->addButton("Cancel", QDialogButtonBox::ActionRole);
+   killButton->setEnabled(false);
 
+   connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::request);
+   connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
+   connect(runButton, &QPushButton::clicked, killButton, [killButton]() { killButton->setEnabled(true); });
+
+   connect(killButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::killed);
+   connect(killButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(killButton, &QPushButton::clicked, killButton, [killButton]() { killButton->setEnabled(false); });
+
+   connect(this, &ParametrizeMoleculeDialog::rejected, this, &ParametrizeMoleculeDialog::killed);
+
+   connect(this, &ParametrizeMoleculeDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(this, &ParametrizeMoleculeDialog::finished, killButton, [killButton]() { killButton->setEnabled(false); });
+}
 
 void ParametrizeMoleculeDialog::on_chargeSpin_valueChanged(int value)
 {
@@ -74,15 +87,6 @@ void ParametrizeMoleculeDialog::request()
    }
 
    emit requested();
-
-   // disable the run button
-   m_dialog.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
-}
-
-void ParametrizeMoleculeDialog::finish()
-{
-   // enable the run button
-   m_dialog.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
 }
 
 } // end namespace IQmol

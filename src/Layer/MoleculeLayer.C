@@ -2912,7 +2912,8 @@ void Molecule::parametrizeMolecule()
    connect(antechamber, SIGNAL(finished(int,QProcess::ExitStatus)),
       this, SLOT(antechamberFinished(int,QProcess::ExitStatus)));
    connect(antechamber, SIGNAL(finished(int,QProcess::ExitStatus)),
-      dialog, SLOT(finish()));
+      dialog, SIGNAL(finished()));
+   connect(dialog, SIGNAL(killed()), antechamber, SLOT(kill()));
 
    // Find antechamber executable
    QString AmberDirectory = Preferences::AmberDirectory();

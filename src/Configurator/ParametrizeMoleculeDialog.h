@@ -45,12 +45,13 @@ namespace IQmol {
 
       Q_SIGNALS:
          void requested();
+         void killed();
+         void finished();
 
       private Q_SLOTS:
          void on_chargeSpin_valueChanged(int);
          void on_multiplicitySpin_valueChanged(int);
          void request();
-         void finish();
 
       private:
          Layer::Molecule* m_molecule;
