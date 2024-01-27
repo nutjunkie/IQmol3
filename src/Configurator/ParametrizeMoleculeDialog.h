@@ -43,10 +43,14 @@ namespace IQmol {
       protected:
          QString forceField;
 
+      Q_SIGNALS:
+         void requested();
+
       private Q_SLOTS:
          void on_chargeSpin_valueChanged(int);
          void on_multiplicitySpin_valueChanged(int);
-         void accept();
+         void request();
+         void finish();
 
       private:
          Layer::Molecule* m_molecule;

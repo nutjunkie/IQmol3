@@ -34,6 +34,11 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    m_dialog.setupUi(this);
    m_dialog.chargeSpin->setValue(m_molecule->totalCharge());
    m_dialog.multiplicitySpin->setValue(m_molecule->multiplicity());
+
+   // set up the run button
+   QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
+   runButton->setText(tr("Run"));
+   connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::request);
 }
 
 
@@ -50,7 +55,7 @@ void ParametrizeMoleculeDialog::on_multiplicitySpin_valueChanged(int value)
    m_dialog.chargeSpin->setValue(m_molecule->totalCharge());
 }
 
-void ParametrizeMoleculeDialog::accept()
+void ParametrizeMoleculeDialog::request()
 {
    // gather data
    forceField = m_dialog.forceField->currentText();
@@ -68,7 +73,16 @@ void ParametrizeMoleculeDialog::accept()
       return;
    }
 
-   QDialog::accept();
+   emit requested();
+
+   // disable the run button
+   m_dialog.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+}
+
+void ParametrizeMoleculeDialog::finish()
+{
+   // enable the run button
+   m_dialog.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
 }
 
 } // end namespace IQmol

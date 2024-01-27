@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>245</width>
-    <height>235</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,12 +111,29 @@
     </layout>
    </item>
    <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Output:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextBrowser" name="logTextBrowser"/>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
      </property>
      <property name="centerButtons">
       <bool>false</bool>

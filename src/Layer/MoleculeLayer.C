@@ -2893,7 +2893,7 @@ void Molecule::parametrizeMoleculeDialog()
    dialog->show();
    dialog->raise();
 
-   connect(dialog, SIGNAL(accepted()), this, SLOT(parametrizeMolecule()));
+   connect(dialog, SIGNAL(requested()), this, SLOT(parametrizeMolecule()));
 }
 
 void Molecule::parametrizeMolecule()
@@ -2902,9 +2902,17 @@ void Molecule::parametrizeMolecule()
 
    // Call antechamer to parametrize the molecule
    QProcess *antechamber = new QProcess(this);
+   antechamber->setProcessChannelMode(QProcess::MergedChannels);
+
+   connect(antechamber, &QProcess::readyReadStandardOutput, [antechamber,dialog]() {
+        auto output=antechamber->readAllStandardOutput();
+        dialog->m_dialog.logTextBrowser->append(output.trimmed() + "\n");
+    });
 
    connect(antechamber, SIGNAL(finished(int,QProcess::ExitStatus)),
       this, SLOT(antechamberFinished(int,QProcess::ExitStatus)));
+   connect(antechamber, SIGNAL(finished(int,QProcess::ExitStatus)),
+      dialog, SLOT(finish()));
 
    // Find antechamber executable
    QString AmberDirectory = Preferences::AmberDirectory();
@@ -2945,8 +2953,6 @@ void Molecule::antechamberFinished(int exitCode, QProcess::ExitStatus exitStatus
 {
    QProcess* antechamber(qobject_cast<QProcess*>(sender()));
    qDebug() << "Antechamber finished with exit code: " << exitCode;
-   qDebug() << "Antechamber output: " << antechamber->readAllStandardOutput();
-   qDebug() << "Antechamber error: " << antechamber->readAllStandardError();
    antechamber->deleteLater();
 
    switch (exitStatus) {
