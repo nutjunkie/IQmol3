@@ -38,7 +38,6 @@
 #include <QMap>
 #include <QFileInfo>
 #include <QItemSelectionModel>
-#include <QProcess>
 
 #include <functional>
 
