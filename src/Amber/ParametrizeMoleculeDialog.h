@@ -1,7 +1,7 @@
 #pragma once
 /*******************************************************************************
          
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
       
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -23,6 +23,7 @@
 
 #include "Amber/ui_ParametrizeMoleculeDialog.h"
 
+#include <QProcess>
 
 namespace IQmol {
 
@@ -44,14 +45,17 @@ namespace IQmol {
          QString forceField;
 
       Q_SIGNALS:
-         void requested();
          void killed();
          void finished();
 
       private Q_SLOTS:
          void on_chargeSpin_valueChanged(int);
          void on_multiplicitySpin_valueChanged(int);
-         void request();
+         void run();
+         void runAntechamber();
+         void antechamberFinished(int, QProcess::ExitStatus);
+         void runParmchk2();
+         void parmchk2Finished(int, QProcess::ExitStatus);
 
       private:
          Layer::Molecule* m_molecule;

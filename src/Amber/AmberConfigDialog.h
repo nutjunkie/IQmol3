@@ -1,8 +1,6 @@
-#ifndef IQMOL_AMBERCONFIG_H
-#define IQMOL_AMBERCONFIG_H
 /*******************************************************************************
        
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2023 Andrew Gilbert
            
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -47,5 +45,3 @@ namespace Amber {
    };
 
 } } // end namespace IQmol::Amber
-
-#endif

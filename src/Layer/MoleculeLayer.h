@@ -239,6 +239,11 @@ bool save(bool prompt = false);
 
             void reperceiveBondsForAnimation();
    
+            /// Writes the molecule to the specified file.  The format is
+            /// determined from the file extension and a Parser::IOError 
+            /// exception is thrown if there are any problems.
+            void writeToFile(QString const& filePath);
+
          Q_SIGNALS:
             void softUpdate(); // issue if the number of primitives does not change
             void removeMolecule(Layer::Molecule*);
@@ -269,9 +274,6 @@ bool save(bool prompt = false);
             void generateConformersDialog();
             void generateConformers();
             void parametrizeMoleculeDialog();
-            void parametrizeMolecule();
-            void antechamberFinished(int, QProcess::ExitStatus);
-            void runParmchk2();
 
          private:
             static bool s_autoDetectSymmetry;
@@ -289,11 +291,6 @@ bool save(bool prompt = false);
 
             QList<double> zeroCharges();
             QList<double> gasteigerCharges();
-
-            /// Writes the molecule to the specified file.  The format is
-            /// determined from the file extension and a Parser::IOError 
-            /// exception is thrown if there are any problems.
-            void writeToFile(QString const& filePath);
    
             /// Translates the coordinates of all the atoms so that the constraint is satisfied.
             void applyPositionConstraint(Constraint*);
