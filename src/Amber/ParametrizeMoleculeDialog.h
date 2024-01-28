@@ -21,7 +21,7 @@
    
 ********************************************************************************/
 
-#include "Configurator/ui_ParametrizeMoleculeDialog.h"
+#include "Amber/ui_ParametrizeMoleculeDialog.h"
 
 
 namespace IQmol {

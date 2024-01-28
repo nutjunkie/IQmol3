@@ -29,7 +29,7 @@
 #include "ViewerModel.h"
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
-#include "AmberConfigDialog.h"
+#include "Amber/AmberConfigDialog.h"
 
 #ifdef GROMACS
 #include "GromacsDialog.h"

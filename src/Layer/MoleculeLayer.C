@@ -52,7 +52,6 @@
 
 
 #include "Configurator/GenerateConformersDialog.h"
-#include "Configurator/ParametrizeMoleculeDialog.h"
 #include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"
@@ -61,6 +60,8 @@
 #include "Util/Preferences.h"
 #include "Process/JobInfo.h" 
 #include "Parser/IQmolParser.h"
+
+#include "Amber/ParametrizeMoleculeDialog.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"

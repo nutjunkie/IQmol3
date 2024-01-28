@@ -87,10 +87,6 @@ if (WITH_GROMACS)
    add_subdirectory(src/Gromacs)
 endif()
 
-
-add_subdirectory(src/Amber)
-
-
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
 set(Boost_USE_STATIC_LIBS TRUE)
@@ -187,6 +183,7 @@ target_link_libraries (${targetName}
    Math
    Plot
    Fort
+   Amber
    openbabel
    libssh2
    yaml-cpp
