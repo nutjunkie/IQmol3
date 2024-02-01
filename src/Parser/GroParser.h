@@ -25,8 +25,8 @@ namespace Parser {
 
          QMap<QString, Data::ProteinChain*> m_chains;
          QMap<QString, Data::Geometry*> m_geometries;
-
-         bool parseATOM(QString const& line, Data::Group&);
+         
+         bool parseATOM(QString const& line, Data::Group&, float atomcharge);
    };
 
 } } // end namespace IQmol::Parser

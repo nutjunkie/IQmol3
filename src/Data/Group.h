@@ -36,6 +36,13 @@ namespace Data {
 
          Type::ID typeID() const { return Type::Group; }
 
+         void addAtom(Data::Atom* atom, qglviewer::Vec const& position, float atomcharge)
+         {
+            m_atoms.append(atom);
+            m_coordinates.append(position);
+            m_atomcharges.append(atomcharge);
+         }
+
          void addAtom(Data::Atom* atom, qglviewer::Vec const& position)
          {
             m_atoms.append(atom);
@@ -68,6 +75,7 @@ namespace Data {
          int          m_charge;
          QString      m_label;
          AtomList     m_atoms;
+         QList<float> m_atomcharges;
          QList<qglviewer::Vec> m_coordinates;
    };
 
