@@ -46,6 +46,7 @@ std::vector<QString> getTopologyFiles(QString topolPath){
   }
 }
 
+
 bool Gro::parse(TextStream& textStream){
   bool ok(true);
   std::string str = m_filePath.toStdString();
@@ -61,7 +62,6 @@ bool Gro::parse(TextStream& textStream){
   TextStream secStrucTextStream(&file);
   QLOG_DEBUG() << "loading succesfull";
   Data::ProteinChain* chain(0);
-  Data::Geometry* geometry(0);
   Data::Solvent* solvent(0);
   Data::Group* group(0);
   Data::Atom* CA(0);
@@ -72,7 +72,12 @@ bool Gro::parse(TextStream& textStream){
   int topolcount(0);
   float atomcharge(0);
   std::vector<QString> topologies = getTopologyFiles(topolpath);
+
+
   QFile topolfile(prefix + topologies.at(topolcount) );
+
+
+
   if (topolfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
     topology = new TextStream(&topolfile);
     topology->seek(";   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB");
@@ -120,6 +125,8 @@ bool Gro::parse(TextStream& textStream){
     QLOG_DEBUG() << QString::number(secStrucResStop[i]);
    }
    while (!textStream.atEnd()) {
+
+
       
       line = textStream.nextLineNonTrimmed();
       key  = line;
@@ -174,7 +181,7 @@ bool Gro::parse(TextStream& textStream){
       chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
       m_chains.insert(currentChain, chain);
 
-       if (topolfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      /* if (topolfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
           topology = new TextStream(&topolfile);
           topology->seek(";   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB");
 
@@ -184,7 +191,7 @@ bool Gro::parse(TextStream& textStream){
             msg +=  prefix + topologies.at(topolcount);
             msg +=  "\n" + line;
             m_errors.append(msg);
-        }
+        }*/
     }else{
       chain = m_chains[currentChain];
     }
@@ -195,9 +202,9 @@ bool Gro::parse(TextStream& textStream){
       group = new Data::Group(grp.trimmed() + " " +res);
       chain->append(group);
     }
-    topolline = topology->nextLineNonTrimmed();
-    atomcharge = topolline.mid(49, 8).toFloat(&ok);  if (!ok) goto error;
-
+    //topolline = topology->nextLineNonTrimmed();
+    //atomcharge = topolline.mid(49, 8).toFloat(&ok);  if (!ok) goto error;
+    atomcharge =0;
     Data::Atom* atom(new Data::Atom(sym, label));
     group->addAtom(atom, v,atomcharge); 
 
@@ -271,14 +278,9 @@ bool Gro::parse(TextStream& textStream){
       m_errors.append(msg);
       return false;
       
-}else{
-      QString msg("Failed to open secondary structure file for reading: ");
-      msg += m_filePath;
-      m_errors.append(msg);
- }
 }
 }
-
+}
 bool Gro::parseATOM(QString const& line, Data::Group& group, float atomcharge)
 {
    bool ok(true);
@@ -297,6 +299,7 @@ bool Gro::parseATOM(QString const& line, Data::Group& group, float atomcharge)
 
    return ok;
 }
+
 
 
 
