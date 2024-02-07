@@ -36,8 +36,6 @@ namespace IQmol {
 
       Q_OBJECT
 
-      friend class Layer::Molecule;
-
       public:
          ParametrizeMoleculeDialog(QWidget* parent, Layer::Molecule*);
 

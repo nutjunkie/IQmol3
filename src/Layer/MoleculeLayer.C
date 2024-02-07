@@ -2888,9 +2888,8 @@ void Molecule::generateConformers()
 void Molecule::parametrizeMoleculeDialog()
 {
    qDebug() << "Opening parametrize molecule dialog";
-   ParametrizeMoleculeDialog *dialog(new ParametrizeMoleculeDialog(0, this));
+   ParametrizeMoleculeDialog *dialog(new ParametrizeMoleculeDialog(QApplication::activeWindow(), this));
 
-   dialog->setWindowModality(Qt::WindowModal);
    dialog->show();
    dialog->raise();
 }
