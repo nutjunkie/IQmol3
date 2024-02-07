@@ -20,11 +20,11 @@
    
 ********************************************************************************/
 
-#include <QDir>
 #include "AmberConfigDialog.h"
 #include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
 
+#include <QDir>
 
 namespace IQmol {
 namespace Amber { 

@@ -40,21 +40,21 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    // set up the run button
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
-   QPushButton* killButton = m_dialog.buttonBox->addButton("Cancel", QDialogButtonBox::ActionRole);
-   killButton->setEnabled(false);
+   QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
+   stopButton->setEnabled(false);
 
    connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::run);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
-   connect(runButton, &QPushButton::clicked, killButton, [killButton]() { killButton->setEnabled(true); });
+   connect(runButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(true); });
 
-   connect(killButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::killed);
-   connect(killButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
-   connect(killButton, &QPushButton::clicked, killButton, [killButton]() { killButton->setEnabled(false); });
+   connect(stopButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::killed);
+   connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
 
    connect(this, &ParametrizeMoleculeDialog::rejected, this, &ParametrizeMoleculeDialog::killed);
 
    connect(this, &ParametrizeMoleculeDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
-   connect(this, &ParametrizeMoleculeDialog::finished, killButton, [killButton]() { killButton->setEnabled(false); });
+   connect(this, &ParametrizeMoleculeDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
 }
 
 void ParametrizeMoleculeDialog::on_chargeSpin_valueChanged(int value)
