@@ -32,6 +32,7 @@
 #include "MolecularSurfacesLayer.h"
 #include "Configurator/MoleculeConfigurator.h"
 #include "Configurator/SurfaceAnimatorDialog.h"
+#include "Amber/ParametrizeMoleculeDialog.h"
 
 #include "Viewer/Animator.h"
 
@@ -354,6 +355,7 @@ QFileInfo m_inputFile;
    
             Configurator::Molecule m_configurator;
             IQmol::SurfaceAnimatorDialog  m_surfaceAnimator;
+            IQmol::ParametrizeMoleculeDialog* m_parametrizeMolecule;
             
             Layer::Info      m_info;
             Layer::Container m_atomList;

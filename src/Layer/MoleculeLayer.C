@@ -109,6 +109,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
    m_surfaceAnimator(this), 
+   m_parametrizeMolecule(0),
    m_info(this),
    m_atomList(this, "Atoms"), 
    m_bondList(this, "Bonds"), 
@@ -2888,10 +2889,12 @@ void Molecule::generateConformers()
 void Molecule::parametrizeMoleculeDialog()
 {
    qDebug() << "Opening parametrize molecule dialog";
-   ParametrizeMoleculeDialog *dialog(new ParametrizeMoleculeDialog(QApplication::activeWindow(), this));
+   if (!m_parametrizeMolecule) {
+      m_parametrizeMolecule = new ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
+   }
 
-   dialog->show();
-   dialog->raise();
+   m_parametrizeMolecule->show();
+   m_parametrizeMolecule->raise();
 }
 
 } } // end namespace IQmol::Layer

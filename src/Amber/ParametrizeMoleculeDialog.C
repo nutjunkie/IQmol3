@@ -37,6 +37,10 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    m_dialog.chargeSpin->setValue(m_molecule->totalCharge());
    m_dialog.multiplicitySpin->setValue(m_molecule->multiplicity());
 
+   // set window title
+   QString name(m_molecule->text().split(' ').first());
+   setWindowTitle(tr("Parametrize ") + name);
+
    // set up the run button
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
@@ -50,8 +54,6 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    connect(stopButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::killed);
    connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
-
-   connect(this, &ParametrizeMoleculeDialog::rejected, this, &ParametrizeMoleculeDialog::killed);
 
    connect(this, &ParametrizeMoleculeDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(this, &ParametrizeMoleculeDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
