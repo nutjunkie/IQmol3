@@ -325,6 +325,11 @@ void HttpGetFiles::replyFinished()
 
 // --------- HttpPost ---------
 
+
+//create analogous called httppost json (put json code there)
+/// @param connection 
+/// @param path 
+/// @param postData 
 HttpPost::HttpPost(HttpConnection* connection, QString const& path,  
    QString const& postData) : HttpReply(connection), m_postData(postData)
 {

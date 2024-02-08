@@ -427,7 +427,7 @@ void ViewerModel::fileOpenFinished()
    QStringList errors(parser->errors());
 
    if (bank.isEmpty()) {
-      if (errors.isEmpty()) errors.append("No valid data found in " + info.filePath());
+      if (errors.isEmpty()) errors.append("No valid data found in bank " + info.filePath());
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
       parser->deleteLater();
       return;
