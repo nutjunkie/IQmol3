@@ -27,6 +27,7 @@
 #include <QNetworkReply>
 #include <QStringList>
 #include <QTimer>
+#include <QHttpMultiPart>
 
 
 class QFile;
@@ -84,6 +85,7 @@ namespace Network {
       Q_OBJECT
 
       friend class HttpGetFiles;
+      friend class HttpConnection;
 
       public:
          HttpGet(HttpConnection*, QString const& sourcePath);
@@ -129,6 +131,8 @@ namespace Network {
 
       Q_OBJECT
 
+      friend class HttpConnection;
+
       public:
          HttpPost(HttpConnection*, QString const& path, QString const& postData);
 
@@ -140,22 +144,23 @@ namespace Network {
          
    };
 
-  /* class HttpJsonPost : public HttpReply {
+class HttpJsonPost : public HttpReply {
 
       Q_OBJECT
 
+      friend class HttpConnection;
+
       public:
-         HttpJsonPost(HttpConnection*, QString const& path, QString const& postData);
+         HttpJsonPost(HttpConnection*, QString const& path, QHttpMultiPart* const& postData);
 
       protected Q_SLOTS:
          void run();
 
       private:
-         QString m_postData;
-         QNetworkRequest request;
+         QHttpMultiPart m_postData;
          
    };
-*/
+
 } } // end namespace IQmol::Network
 
 #endif

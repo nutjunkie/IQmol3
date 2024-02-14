@@ -259,10 +259,13 @@ void Server::submit(Job* job)
          QString submit(m_configuration.value(ServerConfiguration::Submit));
          submit = substituteMacros(submit);
          QJsonObject payload = job->get<QJsonObject>("JsonPayload");
-         //QNetworkReply* reply(m_connection->putJsonFile(fileName, submit,payload));
-         //connect(reply, SIGNAL(finished()), this, SLOT(submitFinished()));
-         //m_activeRequests.insert(reply, job);
-         //reply->start();
+         
+
+
+         Network::Reply* reply(m_connection->postJsonFiles(fileName,payload,submit));
+         connect(reply, SIGNAL(finished()), this, SLOT(submitFinished()));
+         m_activeRequests.insert(reply, job);
+         reply->start();
 
          }else{
       QLOG_DEBUG() << "Using the else webbased clause";

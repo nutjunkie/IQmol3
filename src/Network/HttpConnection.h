@@ -37,6 +37,8 @@ namespace Network {
 
    class HttpReply;
    class HttpGet;
+   class HttpPost;
+   class HttpJsonPost;
 
    class HttpConnection : public Connection {
 
@@ -45,6 +47,8 @@ namespace Network {
       friend class HttpPageRequest;
       friend class HttpGet;
       friend class HttpPost;
+      friend class HttpJsonPost;
+
 
       public:
          HttpConnection(QString const& hostAddress, int const port = 80, 
@@ -71,7 +75,7 @@ namespace Network {
          Reply* putFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFiles(QStringList const& fileList, QString const& destinationPath);
-         QNetworkReply* putJsonFile(QString const& sourcePath, QString const& destinationPath, QJsonObject const& payload);
+         Reply* postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath);
          Reply* get(QString const& query) { return execute(query); }
          Reply* post(QString const& path, QString const&);
 

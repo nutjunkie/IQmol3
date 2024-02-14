@@ -148,4 +148,11 @@ Reply* LocalConnection::putFile(QString const& sourcePath, QString const& destin
    return reply;
 }
 
+Reply* LocalConnection::postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath)
+{
+   qDebug() << "Warning, LocalConnection::postJsonFiles not implemented";
+   return 0;
+}
+
+
 } } // end namespace IQmol::Network

@@ -207,32 +207,6 @@ Reply* HttpConnection::putFile(QString const& sourcePath, QString const& destina
    return reply;
 }
 
-QNetworkReply* HttpConnection::putJsonFile(QString const& sourcePath, QString const& destinationPath, QJsonObject const& payload)
-{
-   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-   QHttpPart jsonPart;
-   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
-   QJsonDocument json;  
-   json.setObject(payload);
-   jsonPart.setBody(json.toJson());
- //setting up reply goes into httpPostJson use current httpPost
-   QHttpPart filePart;
-   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
-   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
-   QFile *file = new QFile("1AKI_processed.gro"); //get local file path
-   if (file->open(QIODevice::ReadOnly)){
-      filePart.setBodyDevice(file);
-      file->setParent(multiPart);
-      file->close();
-   };
-   // we cannot delete the file now, so delete it with the multiPart
-   multiPart->append(jsonPart);
-   multiPart->append(filePart);
-   QNetworkRequest request;
-   request.setUrl(destinationPath);
-   QNetworkReply* reply = m_networkAccessManager->post(request,multiPart);
-   return reply;
-}
 
 
 Reply* HttpConnection::getFiles(QStringList const& fileList, QString const& destinationPath)
@@ -252,6 +226,35 @@ Reply* HttpConnection::getFile(QString const& sourcePath, QString const& destina
 Reply* HttpConnection::post(QString const& path, QString const& postData)
 {
    HttpPost* reply(new HttpPost(this, path, postData));
+   
+   return reply;
+}
+
+
+Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath)
+{
+ QHttpMultiPart *postData = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpPart jsonPart;
+   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
+   QJsonDocument json;  
+   json.setObject(payload);
+   jsonPart.setBody(json.toJson());
+   QLOG_DEBUG()<< " json string  " << json.toJson(QJsonDocument::Compact);
+ //setting up reply goes into httpPostJson use current httpPost
+   QHttpPart filePart;
+   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
+   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
+   QFile *file = new QFile(sourcePath); //get local file path
+   if (file->open(QIODevice::ReadOnly)){
+      filePart.setBodyDevice(file);
+      file->setParent(postData);
+      file->close();
+   };
+   postData->append(jsonPart);
+   postData->append(filePart);
+
+
+   HttpJsonPost* reply(new HttpJsonPost(this, destinationPath, postData));
    return reply;
 }
 

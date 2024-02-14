@@ -216,11 +216,6 @@ void GromacsDialog::on_solvateButton_clicked(bool)
 void GromacsDialog::on_generateBoxButton_clicked(bool)
 {
 
-   //job
-   //m_gromacsjobinfo
-   //m_gromacsjobinfo.set()
-   //new job(m_gromacsjobinfo)
-   
    enableRequestWidgets(false);    
    if (m_networkReply) {
       QString msg("Request already in progress");
@@ -232,16 +227,12 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    qDebug() << "Generating Box";
    QString url(Preferences::GromacsServerAddress());
    url = url + "/editconf";
-   qDebug() << "URL set to " << url;
+   qDebug() << "URL in gromacs set test to " << url;
    QString gromacsJobType = "editconf";
    QString jobType ="gromacs";
    QNetworkRequest request;
    request.setUrl(url);
-   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-   QHttpPart jsonPart;
-   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
    QJsonObject payload(boxRequestPayload());
-   QJsonDocument json;  
    //json.setObject(payload);
    m_gromacsJobInfo.set("gromacsJobType",gromacsJobType);
    m_gromacsJobInfo.set("JsonPayload",payload);
@@ -251,24 +242,6 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    m_gromacsJobInfo.set("jobType",jobType);
    submitGromacsJobRequest(m_gromacsJobInfo);
 
-   //qDebug() << "Request body:" << json.toJson();
-   jsonPart.setBody(json.toJson());
-
-   QHttpPart filePart;
-   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
-   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
-   QFile *file = new QFile("1AKI_processed.gro");
-   file->open(QIODevice::ReadOnly);
-   filePart.setBodyDevice(file);
-   file->setParent(multiPart); // we cannot delete the file now, so delete it with the multiPart
-   multiPart->append(jsonPart);
-   multiPart->append(filePart);
-
-
-
-
-
-   m_networkReply = m_networkAccessManager->post(request,multiPart);
    qDebug() << "Request pending" ;
    connect(m_networkReply, SIGNAL(finished()),  this, SLOT(boxRequestFinished()) );
    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
