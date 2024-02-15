@@ -149,9 +149,11 @@ void ParametrizeMoleculeDialog::antechamberFinished(int exitCode, QProcess::Exit
 
    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
       qDebug() << "Antechamber finished";
+      m_dialog.logTextBrowser->append("Antechamber finished normally.\n");
       runParmchk2();
    } else {
       qDebug() << "Antechamber crashed";
+      m_dialog.logTextBrowser->append("Antechamber crashed.\n");
       finished();
    }
 }
@@ -205,8 +207,10 @@ void ParametrizeMoleculeDialog::parmchk2Finished(int exitCode, QProcess::ExitSta
 
    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
       qDebug() << "Parmchk2 finished";
+      m_dialog.logTextBrowser->append("Parmchk2 finished normally.\n");
    } else {
       qDebug() << "Parmchk2 crashed";
+      m_dialog.logTextBrowser->append("Parmchk2 crashed.\n");
    }
 
    finished();

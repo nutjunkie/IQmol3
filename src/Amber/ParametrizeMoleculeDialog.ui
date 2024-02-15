@@ -116,10 +116,10 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
      </property>
      <property name="centerButtons">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
