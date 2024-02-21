@@ -28,6 +28,7 @@ find_package(ZLIB    REQUIRED)
 if(ZLIB_FOUND)
    include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
+find_package(ZSTD    REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -133,6 +134,7 @@ if (APPLE)
    )
 #   add_custom_command(TARGET ${targetName} POST_BUILD 
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
+#target_link_libraries(${targetName} "-framework OpenGL")
 endif(APPLE)
 
 if (LINUX)
@@ -166,6 +168,7 @@ endif (WIN32)
 add_dependencies(Process Configurator)
 add_dependencies(Grid Configurator)
 add_dependencies(Viewer Process)
+#add_dependencies(Util QGLViewer)
 
 
 target_link_libraries (${targetName}
@@ -202,6 +205,7 @@ target_link_libraries (${targetName}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
+   OpenGL::GL
 )
 
 if(QARCHIVE)
