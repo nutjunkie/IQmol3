@@ -41,11 +41,13 @@
 #include "FileLayer.h"
 #include "FrequenciesLayer.h"
 #include "EfpFragmentLayer.h"
+#include "FrequenciesLayer.h"
 #include "GeometryLayer.h"
 #include "GeometryListLayer.h"
 #include "GroupLayer.h"
 #include "IsotopesLayer.h"
 #include "MoleculeLayer.h"
+#include "NmrLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
 #include "VibronicLayer.h"
@@ -214,13 +216,17 @@ void Molecule::appendData(Layer::List& list)
    }
 
    Layer::List::iterator iter;
+   Nmr*          nmr(0);
    Files*        files(0);
    Atoms*        atoms(0);
    Bonds*        bonds(0);
    Charges*      charges(0);
    CubeData*     cubeData(0);
    Orbitals*     orbitals(0);
+
+   Frequencies*  frequencies(0);
    EfpFragments* efpFragments(0);
+   GeometryList* geometryList(0);
 
    QString text;
    PrimitiveList primitiveList;
@@ -246,7 +252,18 @@ void Molecule::appendData(Layer::List& list)
           //toSet.append(*iter);
           orbitals->setMolecule(this);
 
-       // This is currently preventing the addition of primivees to an exisiting molecule
+       }else if ((nmr = qobject_cast<Nmr*>(*iter))) {
+          nmr->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((frequencies = qobject_cast<Frequencies*>(*iter))) {
+          frequencies->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
+          geometryList->setMolecule(this);
+
+       // This is currently preventing the addition of primitives to an exisiting molecule
        }else if (!labels.contains(text)) {
           labels << (*iter)->text();
 
