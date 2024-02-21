@@ -29,6 +29,11 @@
 #include <QEventLoop>
 #include <QRegularExpression>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QHttpMultiPart>
 
 
 
@@ -148,6 +153,7 @@ QString HttpConnection::getCookie()
 
    if (reply->status() == Reply::Finished) {
       QString msg(reply->message());
+      QLOG_DEBUG() << "cookie is" << msg;
       QRegularExpression rx("Qchemserv-Cookie::([0-9a-zA-Z\\-\\._]+)");
       QRegularExpressionMatch match(rx.match(msg));
       if (msg.contains("Qchemserv-Status::OK") && match.hasMatch()) {
@@ -202,6 +208,7 @@ Reply* HttpConnection::putFile(QString const& sourcePath, QString const& destina
 }
 
 
+
 Reply* HttpConnection::getFiles(QStringList const& fileList, QString const& destinationPath)
 {
    HttpGetFiles* reply(new HttpGetFiles(this, fileList, destinationPath));
@@ -219,6 +226,35 @@ Reply* HttpConnection::getFile(QString const& sourcePath, QString const& destina
 Reply* HttpConnection::post(QString const& path, QString const& postData)
 {
    HttpPost* reply(new HttpPost(this, path, postData));
+   
+   return reply;
+}
+
+
+Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath)
+{
+ QHttpMultiPart *postData = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpPart jsonPart;
+   jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
+   QJsonDocument json;  
+   json.setObject(payload);
+   jsonPart.setBody(json.toJson());
+   QLOG_DEBUG()<< " json string  " << json.toJson(QJsonDocument::Compact);
+ //setting up reply goes into httpPostJson use current httpPost
+   QHttpPart filePart;
+   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
+   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
+   QFile *file = new QFile(sourcePath); //get local file path
+   if (file->open(QIODevice::ReadOnly)){
+      filePart.setBodyDevice(file);
+      file->setParent(postData);
+      file->close();
+   };
+   postData->append(jsonPart);
+   postData->append(filePart);
+
+
+   HttpJsonPost* reply(new HttpJsonPost(this, destinationPath, postData));
    return reply;
 }
 

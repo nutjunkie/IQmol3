@@ -953,6 +953,12 @@ Reply* SshConnection::getFiles(QStringList const& fileList, QString const& desti
    return reply;
 }
 
+Reply *SshConnection::postJsonFiles(QString const &sourcePath, QJsonObject const &payload, QString const &destinationPath)
+{
+   qDebug() << "Warning, LocalConnection::postJsonFiles not implemented";
+    return nullptr;
+}
+
 
 // for debugging
 Reply* SshConnection::test(QString const& id)

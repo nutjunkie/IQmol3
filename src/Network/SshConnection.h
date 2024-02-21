@@ -69,6 +69,7 @@ namespace Network {
          Reply* putFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFiles(QStringList const& fileList, QString const& destinationPath);
+         Reply* postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath);
 
 /*
          Reply* sftpPutFile(QString const& sourcePath, QString const& destinationPath);

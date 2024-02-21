@@ -1,0 +1,51 @@
+;
+;	File 'topol.top' was generated
+;	By user: albertthie (501)
+;	On host: alberts-mbp.home
+;	At date: Thu Aug 10 11:43:44 2023
+;
+;	This is a standalone topology file
+;
+;	Created by:
+;	                    :-) GROMACS - gmx pdb2gmx, 2022.4 (-:
+;	
+;	Executable:   /usr/local/gromacs/bin/gmx
+;	Data prefix:  /usr/local/gromacs
+;	Working dir:  /Users/albertthie/projects/iqmol/IQmolGromacs/4hhbtest
+;	Command line:
+;	  gmx pdb2gmx -f 4hhb_clean.pdb -water spce
+;	Force field was read from the standard GROMACS share directory.
+;
+
+; Include forcefield parameters
+#include "oplsaa.ff/forcefield.itp"
+
+; Include chain topologies
+#include "topol_Protein_chain_A.itp"
+#include "topol_Protein_chain_B.itp"
+#include "topol_Protein_chain_C.itp"
+#include "topol_Protein_chain_D.itp"
+
+; Include water topology
+#include "oplsaa.ff/spce.itp"
+
+#ifdef POSRES_WATER
+; Position restraint for each water oxygen
+[ position_restraints ]
+;  i funct       fcx        fcy        fcz
+   1    1       1000       1000       1000
+#endif
+
+; Include topology for ions
+#include "oplsaa.ff/ions.itp"
+
+[ system ]
+; Name
+HEMOGLOBIN (DEOXY) (ALPHA CHAIN); HEMOGLOBIN (DEOXY) (BETA CHAIN)
+
+[ molecules ]
+; Compound        #mols
+Protein_chain_A     1
+Protein_chain_B     1
+Protein_chain_C     1
+Protein_chain_D     1

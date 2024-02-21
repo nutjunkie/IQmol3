@@ -23,11 +23,14 @@
 ********************************************************************************/
 
 #include "Util/QtVersionHacks.h"
+#include "Util/QsLog.h"
 #include <QStringList>
 #include <QTextStream>
 #include <QIODevice>
 #include <QRegularExpression>
 #include <stdexcept>
+#include <QDebug>
+
 
 
 namespace IQmol {
@@ -61,6 +64,19 @@ namespace Parser {
 
          QString const& previousLine() {
             return m_previousLine;
+         }
+        void skipBack(int n = 1){
+            QLOG_DEBUG() << " Linecount is " << m_lineCount;
+            int oldlinecount = m_lineCount - n;
+
+            QTextStream::seek(0);
+            QLOG_DEBUG() << readLine();
+            m_lineCount = 0;
+            QLOG_DEBUG() << " Linecount is " << m_lineCount;
+            while((m_lineCount < oldlinecount )){
+               nextLine();
+            }
+
          }
 
          QString const& nextNonEmptyLine() {

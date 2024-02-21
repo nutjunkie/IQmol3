@@ -27,6 +27,7 @@
 
 #include "Parser.h"
 #include "Data/PdbData.h"
+#include "Math/Vec.h"
 #include "Data/Residue.h"
 #include <QVector>
 

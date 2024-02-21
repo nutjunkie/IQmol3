@@ -154,7 +154,7 @@ namespace Gmx {
 
          QSplitter* m_sideSplitter;
          Qui::InputDialog* m_quiInputDialog;
-         Gmx::GromacsDialog*   m_gromacsDialog;
+         Gmx::GromacsDialog*  m_gromacsDialog;
    };
 
 } // end namespace IQmol

@@ -34,6 +34,7 @@
 #include "Geometry.h"
 #include "AtomicProperty.h"
 #include "Atom.h"
+#include "QsLog.h"
 
 #ifdef GROMACS
 #include "GromacsDialog.h" 
@@ -964,6 +965,7 @@ void MainWindow::showQChemUI()
       connect(m_quiInputDialog, SIGNAL(submitJobRequest(IQmol::Process::JobInfo&)),
          this, SLOT(submitJob(IQmol::Process::JobInfo&)));
  
+ 
       connect(&(Process::JobMonitor::instance()), SIGNAL(jobAccepted()),
          m_quiInputDialog, SLOT(closeDialog()));
 
@@ -1006,6 +1008,7 @@ void MainWindow::showQChemUI()
 
 void MainWindow::submitJob(IQmol::Process::JobInfo &jobInfo)
 {
+   QLOG_DEBUG() << "Entered submitJob";
    Process::JobMonitor::instance().submitJob(&jobInfo);
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
    if (!mol) return;
@@ -1018,6 +1021,10 @@ void MainWindow::showGromacsDialog()
 #ifdef GROMACS
    if (!m_gromacsDialog) {
       m_gromacsDialog = new Gmx::GromacsDialog(this);
+
+
+      connect(m_gromacsDialog, SIGNAL(submitGromacsJobRequest(IQmol::Process::JobInfo&)),
+         this, SLOT(submitJob(IQmol::Process::JobInfo&)));
    }
 
    Layer::Molecule* mol(m_viewerModel.activeMolecule());
@@ -1036,6 +1043,7 @@ void MainWindow::showGromacsDialog()
 
       if (mbox.exec() == QMessageBox::Cancel) return;
    }
+   
 
    //m_gromacsDialog->setWindowModality(Qt::WindowModal);
    m_gromacsDialog->show();
