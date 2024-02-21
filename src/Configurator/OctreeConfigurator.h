@@ -43,12 +43,14 @@ namespace Configurator {
 
       Q_SIGNALS:
          void selectionRadiusChanged(double);
+         void newMoleculeRequested();
 
       public Q_SLOTS:
          void init();
          void sync();
          void on_radiusSlider_valueChanged(int);
          void on_radiusSpin_valueChanged(double);
+         void on_newMoleculeButton_clicked();
 
       private:
          Layer::Octree& m_octree;

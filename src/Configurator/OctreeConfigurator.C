@@ -33,6 +33,7 @@ Octree::Octree(Layer::Octree& octree) : m_octree(octree)
 { 
    m_configurator.setupUi(this); 
    m_configurator.hitsTextEdit->setText(QString::number(0));
+   m_configurator.includeResiduesButton->setEnabled(false);
 }
 
 
@@ -76,6 +77,10 @@ void Octree::on_radiusSpin_valueChanged(double value)
     selectionRadiusChanged(value); 
 }
 
+void Octree::on_newMoleculeButton_clicked()
+{
+   newMoleculeRequested();
+}
 
 
 } } // end namespace IQmol::Configurator
