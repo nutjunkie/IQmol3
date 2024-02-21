@@ -321,22 +321,11 @@ void ViewerModel::newMoleculeFromSelection(QModelIndexList const& selection)
    Layer::Atom*     atom;
    Layer::Group*    group;
    Layer::Molecule* molecule;
-   QStandardItem*   root(0);
 
    AtomList atoms;
 
    for (auto item : selection) {
        Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
-
-       // Attempt to find a system to attach the new molecule, otherwise it will 
-       // attach to the root item.
-       if (root == 0) {
-          if ( (base = qobject_cast<Layer::Base*>(base)) ) {
-             SystemList parents(
-                base->findLayers<Layer::System>(Layer::Parents | Layer::Nested));
-             root = parents.isEmpty() ? 0 : parents.first();
-          }
-       }
 
        if ( (group = qobject_cast<Layer::Group*>(base)) ) {
           atoms.append(group->getAtoms());
@@ -347,18 +336,31 @@ void ViewerModel::newMoleculeFromSelection(QModelIndexList const& selection)
        }
    }
 
+   newMoleculeRequested(atoms);
+}
+
+
+void ViewerModel::newMoleculeRequested(AtomList const& atomList)
+{
+   if (atomList.isEmpty()) return;
+
+   // Attempt to find a system to attach the new molecule, otherwise it will 
+   // attach to the root item.
+   SystemList parents(
+      atomList.first()->findLayers<Layer::System>(Layer::Parents | Layer::Nested));
+
+   QStandardItem* root = parents.isEmpty() ? invisibleRootItem() : parents.first();
+
    Layer::PrimitiveList primitives;
-   for (auto atom : atoms) {
+   for (auto atom : atomList) {
        auto a(new Layer::Atom(atom->getAtomicNumber()));
        a->setPosition(atom->getPosition());
        primitives.append(a);
    }
 
-   molecule = newMolecule();
+   Layer::Molecule* molecule = newMolecule();
    molecule->appendPrimitives(primitives);
    molecule->reperceiveBonds(false);
-
-   if (root == 0) root = invisibleRootItem();
 
    Command::AddMolecule* cmd(new Command::AddMolecule(molecule, root));
    postCommand(cmd);
@@ -463,6 +465,13 @@ Layer::System* ViewerModel::newSystem()
       this, SIGNAL(pushAnimators(AnimatorList const&)));
    connect(system, SIGNAL(popAnimators(AnimatorList const&)), 
       this, SIGNAL(popAnimators(AnimatorList const&)));
+
+   connect(system, SIGNAL(newMoleculeRequested(AtomList const&)), 
+      this, SLOT(newMoleculeRequested(AtomList const&)));
+
+   // Used to update the Octree selection volume
+   connect(this, SIGNAL(selectionChanged()), 
+      system, SIGNAL(selectionChanged()));
 
    return system;
 }
@@ -853,6 +862,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
    Layer::GeometryList* geometryList1(0);
    Layer::GeometryList* geometryList2(0);
    Layer::GLObject* glObject;
+   Layer::Molecule* molecule;
    bool setDefaultGeometry(false);
 
    list = deselected.indexes();
@@ -863,6 +873,15 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           glObject->deselect();
           m_selectedObjects.removeAll(glObject);
 
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->deselect();
+              m_selectedObjects.removeAll(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -870,6 +889,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           if ( (frequencies = qobject_cast<Layer::Frequencies*>(base)) ) {
              frequencies->clearActiveMode();
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -887,12 +907,18 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        base = QVariantPtr<Layer::Base>::toPointer((*iter).data(Qt::UserRole+1));
        if ( (glObject = qobject_cast<Layer::GLObject*>(base)) ) {
 
-          MoleculeList 
-             parents(glObject->findLayers<Layer::Molecule>(Layer::Parents | Layer::Visible));
-//        if (parents.size() > 0) {
               glObject->select();
               m_selectedObjects.append(glObject);
-//          }
+
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->select();
+              m_selectedObjects.append(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -901,6 +927,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
              frequencies->setActiveMode(*mode);
              Layer::Atom::setDisplayVibrationVector(true);
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -913,6 +940,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        }
    }
 
+   selectionChanged();
    if (setDefaultGeometry) geometryList1->resetGeometry();
    if (m_updateEnabled) updated();
 }
@@ -1049,7 +1077,7 @@ void ViewerModel::updateVisibleObjects()
    // the Viewer.  This means the Fragment is responsible for drawing its children
    m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | Layer::Visible | 
       Layer::Nested);
-   QLOG_TRACE() << "Updating visible objects:" << m_visibleObjects.size();
+// QLOG_TRACE() << "Updating visible objects:" << m_visibleObjects.size();
 
    // Make sure the selection only contains visible objects;
    GLObjectList::iterator object(m_selectedObjects.begin());

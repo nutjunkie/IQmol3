@@ -140,6 +140,7 @@ namespace IQmol {
          void sceneRadiusChanged(double const);
          void displayMessage(QString const&);
          void postCommand(QUndoCommand*);
+         void selectionChanged();
          void selectionChanged(QItemSelection const& items, 
                  QItemSelectionModel::SelectionFlags);
          void select(QModelIndex const& item, QItemSelectionModel::SelectionFlags);
@@ -153,6 +154,9 @@ namespace IQmol {
 
       protected:
          Layer::ClippingPlane& clippingPlane() { return  m_clippingPlane; }
+
+      private Q_SLOTS:
+         void newMoleculeRequested(AtomList const&);
 
       private:
 		 /// Creates a new Molecule with the required connections to the
