@@ -40,7 +40,7 @@ set( UI_FILES
 
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} ${SOURCES} ${UI_FILES})
+add_library(${LIB} STATIC ${SOURCES} ${UI_FILES})
 target_include_directories(${LIB} PUBLIC
    "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
 )

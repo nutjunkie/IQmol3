@@ -85,7 +85,7 @@ set( SOURCES
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
 
 target_link_libraries(${LIB} PUBLIC
    Configurator
