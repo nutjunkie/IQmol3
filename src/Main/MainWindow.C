@@ -275,8 +275,6 @@ void MainWindow::createConnections()
    connect(&m_viewerModel, SIGNAL(clearSelection()),
       &m_viewerSelectionModel, SLOT(clearSelection()));
 
-//   connect(m_viewer, SIGNAL(clearSelection()),
-//      &m_viewerSelectionModel, SLOT(clearSelection()));
    connect(m_viewer, SIGNAL(clearSelection()),
       &m_viewerModel, SLOT(selectNone()));
 
