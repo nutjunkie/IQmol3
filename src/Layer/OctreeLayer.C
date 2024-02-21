@@ -21,8 +21,12 @@
 ********************************************************************************/
 
 #include "OctreeLayer.h"
-#include <limits>
+
 #include <cmath>
+#include <limits>
+#include <iterator>
+#include <algorithm>
+
 #include <QMap>
 
 #include <QtDebug>
@@ -43,7 +47,7 @@ GLfloat Octree::s_selectionColor[] = {0.0, 0.8, 1.0, 0.2};
 Octree::Octree(AtomList const& atoms) : GLObject("Octree Box"), m_atomList(atoms),
    m_configurator(*this), m_selectionRadius(0.0)
 {
-   setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+   setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
    setCheckState(Qt::Checked);
    setConfigurator(&m_configurator);
    computeBoundingBox();
@@ -55,24 +59,65 @@ Octree::Octree(AtomList const& atoms) : GLObject("Octree Box"), m_atomList(atoms
 
    boxAtoms();
 
-//   connect(newAction("Find Neighborhood"), SIGNAL(triggered()),
-//       this, SLOT(neighborhood()));
-
    connect(&m_configurator, SIGNAL(selectionRadiusChanged(double)),
       this, SLOT(selectionRadiusChanged(double)));
 
+   connect(&m_configurator, SIGNAL(newMoleculeRequested()),
+      this, SLOT(newMoleculeRequested()));
+
    setAlpha(s_selectionColor[3]);
+   selectionChanged();
+}
+
+
+void Octree::selectionChanged()
+{
+   m_selectedAtoms.clear();
+   for (auto atom : m_atomList) {
+       if (atom->isSelected()) m_selectedAtoms.append(atom);
+   }
+//qDebug() << "Selection now has" << m_selectedAtoms.size() << "atoms";
 }
 
 
 void Octree::selectionRadiusChanged(double radius)
 {
    m_selectionRadius = radius;
+   AtomList atoms(atomsInDaHood());
+   unsigned nHits(atoms.size());
    
-   unsigned hits = neighborhood(Point(0,0,0), m_selectionRadius);
-qDebug() << "Selection radius now:" << m_selectionRadius << "with hits =" << hits;
-   m_configurator.hits(hits); 
+//qDebug() << "Selection radius now:" << m_selectionRadius << "with hits =" << nHits;
+   m_configurator.hits(nHits); 
    updated();
+}
+
+
+
+AtomList Octree::atomsInDaHood() 
+{
+   // accumulate the hits for each atom, including duplicates
+   std::vector<uint32_t> hits;
+   for (auto atom : m_selectedAtoms) {
+       auto v = neighborhood(atom->getPosition(), m_selectionRadius);
+       hits.insert(hits.end(), v.begin(), v.end());
+   }
+
+   // now get a list of the unique atoms only
+   std::sort(hits.begin(), hits.end());
+   std::vector<uint32_t>::iterator it;
+   it = std::unique(hits.begin(), hits.end());
+   hits.resize(std::distance(hits.begin(), it));
+
+   AtomList atoms;
+   for (auto idx : hits)  atoms.append(m_atomList[idx]);       
+   return atoms;
+}
+
+
+void Octree::newMoleculeRequested()
+{
+   AtomList atoms(atomsInDaHood());
+   newMoleculeRequested(atoms);
 }
 
 
@@ -128,23 +173,62 @@ void Octree::draw()
       glVertex3f(m_boundingBoxMin.x, m_boundingBoxMax.y, m_boundingBoxMax.z);
    glEnd();
 
-   glEnable(GL_LIGHTING);
 
-   if (m_configurator.isVisible()) {
-      int n(std::floor(16*m_selectionRadius));
-      glColor4fv(s_selectionColor);
-
-      GLUquadric* quad = gluNewQuadric();
-      glPushMatrix();
-      glTranslatef(m_selectionCenter.x, m_selectionCenter.y, m_selectionCenter.z);
-      gluSphere(quad, m_selectionRadius, n, n);
-      glPopMatrix();
-      gluDeleteQuadric(quad);
+   if (m_configurator.isVisible() && !m_selectedAtoms.isEmpty()) {
+      drawSelection();
    }
 
    glPopMatrix();
    glDisable(GL_BLEND);
+   glEnable(GL_LIGHTING);
    glDisable(GL_LINE_SMOOTH);
+}
+
+void Octree::drawSelection()
+{
+   int n(std::floor(16*m_selectionRadius));
+   n = std::max(16, n);
+   glColor4fv(s_selectionColor);
+   GLUquadric* quad = gluNewQuadric();
+
+   glDisable(GL_LIGHTING);
+
+   glClearStencil(0x4);
+   glClear(GL_STENCIL_BUFFER_BIT);
+   glEnable(GL_STENCIL_TEST);
+   glStencilFunc(GL_ALWAYS, 0x0, 0x4);
+   glStencilMask(0x4);
+   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+/*
+   for (auto atom : m_selectedAtoms) {
+       Vec pos(atom->getPosition());
+       glPushMatrix();
+       glTranslatef(pos.x, pos.y, pos.z);
+       gluSphere(quad, m_selectionRadius, n, n);
+       glPopMatrix();
+   }
+*/
+
+   glStencilFunc(GL_EQUAL, 0x4, 0x4);
+   glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT);
+
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_ONE, GL_ONE);
+
+   for (auto atom : m_selectedAtoms) {
+       Vec pos(atom->getPosition());
+       glPushMatrix();
+       glTranslatef(pos.x, pos.y, pos.z);
+       gluSphere(quad, m_selectionRadius, n, n);
+       glPopMatrix();
+   }
+
+   gluDeleteQuadric(quad);
+
+   glDisable(GL_STENCIL_TEST);
+   glDisable(GL_BLEND);
+   glEnable(GL_LIGHTING);
 }
 
 
@@ -169,26 +253,17 @@ void Octree::computeBoundingBox()
    }
 }
 
-
-/*
-void Octree::neighborhood()
-{
-   neighborhood(Point(0,0,0), 10.0);
-}
-*/
-
-
-unsigned Octree::neighborhood(Point const& origin, double const radius)
+std::vector<uint32_t> Octree::neighborhood(Point const& origin, double const radius)
 {
     std::vector<uint32_t> results;
 
     m_octree.radiusNeighbors<unibn::L2Distance<Point> >(origin, radius, results);
 
     unsigned hits(results.size());
-    qDebug() << hits << "radius neighbors (r ="<< radius << ") found for (" 
-             << origin.x << "," << origin.y << "," << origin.z << ")" ;
+    //qDebug() << hits << "radius neighbors (r ="<< radius << ") found for (" 
+    //         << origin.x << "," << origin.y << "," << origin.z << ")" ;
 
-    return hits;
+    return results;
 }
 
 

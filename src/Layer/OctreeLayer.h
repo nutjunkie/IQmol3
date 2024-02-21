@@ -43,29 +43,37 @@ namespace IQmol {
 
             void draw();
 
+         Q_SIGNALS:
+            void newMoleculeRequested(AtomList const&);
+
+         public Q_SLOTS:
+            void selectionChanged();
+
          private Q_SLOTS:
-            //void neighborhood();
             void selectionRadiusChanged(double);
+            void newMoleculeRequested();
 
          private:
             static double s_lineWidth;
             static GLfloat s_selectionColor[4];
 
-            unsigned neighborhood(Point const& center, double const radius);
+            std::vector<uint32_t> neighborhood(Point const& center, double const radius);
+            AtomList atomsInDaHood();
             void computeBoundingBox();
+            void drawSelection();
             void boxAtoms();
 
             qglviewer::Vec m_boundingBoxMin;
             qglviewer::Vec m_boundingBoxMax;
 
             AtomList m_atomList;
+            AtomList m_selectedAtoms;
 
             unibn::Octree<Point> m_octree;
             std::vector<Point> m_points;
 
             Configurator::Octree m_configurator;
             double m_selectionRadius;
-            Point m_selectionCenter;
       };
 
    } 
