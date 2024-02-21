@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=IQmol
+Type=Application
+GenericName=Molecular Editor
+Comment=Build, visualize and animate molecules
+Terminal=false
+Exec=/usr/local/bin/iqmol
+Icon=/usr/share/icons/hicolor/512x512/apps/iqmol.png
+StartupNotify=true
+Categories=Education;Science;Chemistry;Physics;Biology;
+Name[en]=IQmol
