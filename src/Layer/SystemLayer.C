@@ -144,11 +144,15 @@ void System::boxSystem()
        delete m_octree;
     }
     m_octree = new Octree(atoms);
-qDebug() << "Appending octree layer";
+
+    connect(this, SIGNAL(selectionChanged()), m_octree, SLOT(selectionChanged()));
     connect(m_octree, SIGNAL(updated()), this, SIGNAL(updated()));
+
+    connect(m_octree, SIGNAL(newMoleculeRequested(AtomList const&)), 
+       this, SIGNAL(newMoleculeRequested(AtomList const&)));
+
     appendLayer(m_octree);
     updated();
-qDebug() << "Octree layer appended";
 }
 
 } } // end namespace IQmol::Layer

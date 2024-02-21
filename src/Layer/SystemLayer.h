@@ -54,6 +54,10 @@ namespace IQmol {
 
             double radius();
 
+         Q_SIGNALS:
+            void selectionChanged();
+            void newMoleculeRequested(AtomList const&);
+
          private Q_SLOTS:
             void boxSystem();
 
