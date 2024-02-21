@@ -59,7 +59,7 @@ set( SOURCES
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
 target_include_directories(${LIB} PUBLIC
    "${${LIB}_SOURCE_DIR}"
 )
@@ -70,10 +70,14 @@ target_include_directories(${LIB} PRIVATE
    "${OpenBabel3_INCLUDE_DIRS}"
 )
 target_link_libraries(${LIB} PRIVATE
-   Math
-   ${OpenBabel3_LIBRARIES}
-   OpenMeshCore
+#   Math
+#   ${OpenBabel3_LIBRARIES}
+#   ${OPENMESH_LIBRARIES}
+   Qt5::Gui
    Qt5::Core
    Qt5::Xml
-   Qt5::OpenGL
+   Qt5::OpenGL  # required for Vec, go figure
+#   yaml-cpp
+#   Util
+#   ${Boost_LIBRARIES}
 )
