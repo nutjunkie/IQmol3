@@ -87,7 +87,13 @@ void GeometryList::load()
    table->clearContents();
    QList<Layer::Geometry*> 
       geometries(m_geometryList.findLayers<Layer::Geometry>(Layer::Children));
-   table->setRowCount(geometries.size());
+
+   unsigned rowCount(0);
+   for (auto iter = geometries.begin(); iter != geometries.end(); ++iter) {
+       double e((*iter)->energy());
+       if (std::abs(e) >= 0.000001)  ++rowCount;
+   }
+   table->setRowCount(rowCount);
    m_rawData.clear();
 
    QTableWidgetItem* energy;
@@ -105,13 +111,13 @@ void GeometryList::load()
 
    int row(0);
    bool property(false);
-   QList<Layer::Geometry*>::iterator iter;
-   for (iter = geometries.begin(); iter != geometries.end(); ++iter, ++row) {
+   for (auto iter = geometries.begin(); iter != geometries.end(); ++iter) {
+       double e((*iter)->energy());
+       if (std::abs(e) < 0.000001)  continue;
+       double x(row+1);
        energy = new QTableWidgetItem( (*iter)->text() );
        energy->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
        table->setItem(row, 0, energy);
-       double e((*iter)->energy());
-       double x(row+1);
        Data::Geometry& geom((*iter)->data());
 
        if (geom.hasProperty<Data::Constraint>()) {
@@ -120,6 +126,7 @@ void GeometryList::load()
        }
 
        m_rawData.append(qMakePair(x, e));
+       ++row;
    }
 
    if (property) {
