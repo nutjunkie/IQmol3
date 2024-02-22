@@ -57,6 +57,7 @@ namespace IQmol {
          Q_SIGNALS:
             void selectionChanged();
             void newMoleculeRequested(AtomList const&);
+            void connectComponent(Layer::Component*);
 
          private Q_SLOTS:
             void boxSystem();

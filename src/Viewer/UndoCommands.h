@@ -24,6 +24,7 @@
 #include "Viewer/Animator.h"
 #include "Layer/Layer.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/SystemLayer.h"
 #include "QGLViewer/vec.h"
 #include "Layer/PrimitiveLayer.h"
 #include <QUndoCommand>
@@ -214,53 +215,68 @@ namespace Command {
    };
 
 
-   // Add Molecule
+   // Add/Remove Components
 
-   class AddMolecule: public QUndoCommand {
+   class AddComponent : public QUndoCommand {
       public:
-         AddMolecule(Layer::Molecule* molecule, QStandardItem* parent);
-         ~AddMolecule();
+         AddComponent(Layer::Component* component, QStandardItem* parent);
+         ~AddComponent();
          void redo();
          void undo();
+      protected:
+         virtual QString name() const { return "component"; }
       private:
-         Layer::Molecule* m_molecule;
+         Layer::Component* m_component;
          QStandardItem* m_parent;
-         bool m_deleteMolecule;
+         bool m_deleteComponent;
+   };
+
+   class RemoveComponent : public QUndoCommand {
+      public:
+         RemoveComponent(Layer::Component* component);
+         ~RemoveComponent();
+         void redo();
+         void undo();
+      protected:
+         virtual QString name() const { return "component"; }
+      private:
+         Layer::Component* m_component;
+         QStandardItem* m_parent;
+         bool m_deleteComponent;
+   };
+
+   
+   class AddMolecule : public AddComponent {
+      public:
+         AddMolecule(Layer::Molecule* molecule, QStandardItem* parent) :
+            AddComponent(molecule, parent) { }
+      protected:
+         virtual QString name() const { return "molecule"; }
+   };
+
+   class RemoveMolecule : public RemoveComponent {
+      public:
+         RemoveMolecule(Layer::Molecule* molecule) : RemoveComponent(molecule) { }
+            
+      protected:
+         virtual QString name() const { return "molecule"; }
    };
 
 
-   class RemoveMolecule: public QUndoCommand {
+   class AddSystem : public AddComponent {
       public:
-         RemoveMolecule(Layer::Molecule* molecule);
-         ~RemoveMolecule();
-         void redo();
-         void undo();
-      private:
-         Layer::Molecule* m_molecule;
-         QStandardItem* m_parent;
-         bool m_deleteMolecule;
+         AddSystem(Layer::System* system , QStandardItem* parent) :
+            AddComponent(system, parent) { }
+      protected:
+         virtual QString name() const { return "system"; }
    };
 
-
-   class AddSystem: public QUndoCommand {
+   class RemoveSystem : public RemoveComponent {
       public:
-         AddSystem(Layer::System* system, QStandardItem* parent);
-         void redo();
-         void undo();
-      private:
-         Layer::System* m_system;
-         QStandardItem* m_parent;
-   };
-
-
-   class RemoveSystem: public QUndoCommand {
-      public:
-         RemoveSystem(Layer::System* system);
-         void redo();
-         void undo();
-      private:
-         Layer::System* m_system;
-         QStandardItem* m_parent;
+         RemoveSystem(Layer::System* system) : RemoveComponent(system) { }
+            
+      protected:
+         virtual QString name() const { return "system"; }
    };
 
 

@@ -63,7 +63,7 @@ void System::appendData(Data::Bank& bank)
    for (auto iter = bank.begin(); iter != bank.end(); ++iter) {
        Layer::List list(factory.toLayers(**iter));
 
-       qDebug() << "Processing Layer:" << Data::Type::toString((*iter)->typeID());
+       qDebug() << "Processing Layer for System:" << Data::Type::toString((*iter)->typeID());
 
        switch ((*iter)->typeID()) {
           case Data::Type::MacroMolecule: 
@@ -84,6 +84,7 @@ void System::appendData(Data::Bank& bank)
              if (geom)  molecule->setText(geom->name());
              molecule->appendData(list);
              appendLayer(molecule);
+             connectComponent(molecule);
           }; break;
              
           default:
@@ -93,6 +94,7 @@ void System::appendData(Data::Bank& bank)
                  appendLayer(molecule);
              }
              molecule->appendData(list);
+             connectComponent(molecule);
        }
    }
 }

@@ -44,6 +44,7 @@ AddHydrogens::AddHydrogens(
    Layer::PrimitiveList const& primitives)
  : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
 {
+qDebug() << "AddHydrogens::AddHydrogens()";
    Layer::Atom *begin, *end, *atom;
    Layer::Bond *bond;
    Vec finalPosition;
@@ -96,6 +97,7 @@ AddHydrogens::~AddHydrogens()
 
 void AddHydrogens::redo()
 {
+qDebug() << "AddHydrogens::redo()";
    AnimatorList::iterator iter;
    for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
        (*iter)->reset();
@@ -108,6 +110,7 @@ void AddHydrogens::redo()
 
 void AddHydrogens::undo()
 {
+qDebug() << "AddHydrogens::undo()";
    m_molecule->takePrimitives(m_primitives);
    m_molecule->updated();
 }
@@ -371,150 +374,90 @@ void ChangeBondOrder::undo()
 }
 
 
-// --------------- AddMolecule ---------------
-AddMolecule::AddMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
-   : m_molecule(molecule), m_parent(parent), m_deleteMolecule(false)
+// --------------- AddComponent ---------------
+AddComponent::AddComponent(Layer::Component* component, QStandardItem* parent) 
+   : m_component(component), m_parent(parent), m_deleteComponent(false)
 { 
    QString s;
-   if (m_molecule->fileName().isEmpty()) {
-      s = "New molecule";
+   if (m_component->fileName().isEmpty()) {
+      s = "New " + name();
    }else {
-      s = "Load file " + m_molecule->fileName();
+      s = "Load file " + m_component->fileName();
    }
    setText(s);
 }
 
 
-AddMolecule::~AddMolecule()
+AddComponent::~AddComponent()
 {
-   if (m_deleteMolecule) {
-      QLOG_DEBUG() << "Deleting molecule" << m_molecule->text() << m_molecule;
+   if (m_deleteComponent) {
+      QLOG_DEBUG() << "Deleting component" << m_component->text() << m_component;
       // The following causes a crash
-      //delete m_molecule;  
+      // delete m_component;  
    }
 }
 
 
-void AddMolecule::redo()
+void AddComponent::redo()
 {
-   m_deleteMolecule = false;
-   QLOG_INFO() << "Adding molecule" << m_molecule->text() << m_molecule;
-   m_parent->appendRow(m_molecule);
-   m_molecule->updated();
+   m_deleteComponent = false;
+   QLOG_INFO() << "Adding " << name() << m_component->text() << m_component;
+   m_parent->appendRow(m_component);
+   m_component->updated();
 }
 
 
-void AddMolecule::undo()
+void AddComponent::undo()
 {
-   m_deleteMolecule = true;
-   QLOG_INFO() << "Removing molecule" << m_molecule->text() << m_molecule;
-   m_parent->takeRow(m_molecule->row());
-   m_molecule->updated();
+   m_deleteComponent = true;
+   QLOG_INFO() << "Removing " << name() << m_component->text() << m_component;
+   m_parent->takeRow(m_component->row());
+   m_component->updated();
 }
 
 
-// --------------- RemoveMolecule ---------------
-RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule) 
-   : m_molecule(molecule), m_parent(m_molecule->QStandardItem::parent()), 
-     m_deleteMolecule(false)
+// --------------- RemoveComponent ---------------
+RemoveComponent::RemoveComponent(Layer::Component* component) 
+   : m_component(component), m_parent(m_component->QStandardItem::parent()), 
+     m_deleteComponent(false)
 { 
    QString s;
-   if (m_molecule->fileName().isEmpty()) {
-      s = "Remove molecule";
+   if (m_component->fileName().isEmpty()) {
+      s = "Remove " + name();
    }else {
-      s = "Remove " + m_molecule->fileName();
+      s = "Remove " + m_component->fileName();
    }
    setText(s);
 }
 
 
-RemoveMolecule::~RemoveMolecule()
+RemoveComponent::~RemoveComponent()
 {
-   if (m_deleteMolecule) {
-      m_molecule->disconnect();
-      QLOG_DEBUG() << "Deleting Molecule" << m_molecule->text() << m_molecule;
+   if (m_deleteComponent) {
+      m_component->disconnect();
+      QLOG_DEBUG() << "Deleting Component" << m_component->text() << m_component;
       // The following causes a crash
-      //delete m_molecule;  
+      //delete m_component;  
    }
 }
 
 
-void RemoveMolecule::redo()
+void RemoveComponent::redo()
 {
-   m_deleteMolecule = true;
-   QLOG_INFO() << "Removing molecule" << m_molecule->text() << m_molecule;
-   m_parent->takeRow(m_molecule->row());
-   m_molecule->updated();
+   m_deleteComponent = true;
+   QLOG_INFO() << "Removing component" << m_component->text() << m_component
+               << "on row" << m_component->row() << "with parent" << m_parent;
+   m_parent->takeRow(m_component->row());
+   m_component->updated();
 }
 
 
-void RemoveMolecule::undo()
+void RemoveComponent::undo()
 {
-   m_deleteMolecule = false;
-   QLOG_INFO() << "Adding molecule" << m_molecule->text() << m_molecule;
-   m_parent->appendRow(m_molecule);
-   m_molecule->updated();
-}
-
-
-
-// --------------- AddSystem ---------------
-AddSystem::AddSystem(Layer::System* system, QStandardItem* parent) 
-   : m_system(system), m_parent(parent)
-{ 
-   QString s;
-   if (m_system->fileName().isEmpty()) {
-      s = "New molecule";
-   }else {
-      s = "Load file " + m_system->fileName();
-   }
-   setText(s);
-}
-
-
-void AddSystem::redo()
-{
-   QLOG_INFO() << "Adding system" << m_system->text() << m_system;
-   m_parent->appendRow(m_system);
-   m_system->updated();
-}
-
-
-void AddSystem::undo()
-{
-   QLOG_INFO() << "Removing system" << m_system->text() << m_system;
-   m_parent->takeRow(m_system->row());
-   m_system->updated();
-}
-
-
-// --------------- RemoveSystem ---------------
-RemoveSystem::RemoveSystem(Layer::System* system) 
-   : m_system(system), m_parent(system->QStandardItem::parent())
-{ 
-   QString s;
-   if (m_system->fileName().isEmpty()) {
-      s = "Remove system";
-   }else {
-      s = "Remove " + m_system->fileName();
-   }
-   setText(s);
-}
-
-
-void RemoveSystem::redo()
-{
-   QLOG_INFO() << "Removing system" << m_system->text() << m_system;
-   m_parent->takeRow(m_system->row());
-   m_system->updated();
-}
-
-
-void RemoveSystem::undo()
-{
-   QLOG_INFO() << "Adding system" << m_system->text() << m_system;
-   m_parent->appendRow(m_system);
-   m_system->updated();
+   m_deleteComponent = false;
+   QLOG_INFO() << "Adding component" << m_component->text() << m_component;
+   m_parent->appendRow(m_component);
+   m_component->updated();
 }
 
 

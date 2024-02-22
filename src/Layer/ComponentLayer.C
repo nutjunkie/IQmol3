@@ -52,6 +52,12 @@ void Component::draw() const
 }
 
 
+void Component::setFile(QString const& fileName)
+{
+   m_inputFile.setFile(fileName);
+   setText(m_inputFile.completeBaseName());
+}
+
 void Component::deleteProperties()
 {
    for (auto& property : m_properties) delete property;

@@ -367,6 +367,38 @@ void ViewerModel::newMoleculeRequested(AtomList const& atomList)
 }
 
 
+// - - - - - Component - - - - -
+
+void ViewerModel::connectComponent(Layer::Component* component) 
+{
+qDebug() << "connecting component" << component->text();
+   connect(component, SIGNAL(updated()), 
+      this, SLOT(updateVisibleObjects()));
+
+   connect(component, SIGNAL(softUpdate()), 
+      this, SIGNAL(updated()));
+
+   connect(component, SIGNAL(postMessage(QString const&)), 
+      this, SIGNAL(displayMessage(QString const&)));
+
+   connect(component, SIGNAL(postCommand(QUndoCommand*)), 
+      this, SIGNAL(postCommand(QUndoCommand*)));
+
+   connect(component, SIGNAL(pushAnimators(AnimatorList const&)), 
+      this, SIGNAL(pushAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(popAnimators(AnimatorList const&)), 
+      this, SIGNAL(popAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(removeComponent(Layer::Component*)), 
+      this, SLOT(removeComponent(Layer::Component*)));
+
+   connect(component, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
+      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
+
+}
+
+
 // - - - - - Molecule - - - - -
 
 void ViewerModel::newMoleculeMenu()
@@ -388,28 +420,20 @@ void ViewerModel::newMoleculeMenu()
 Layer::Molecule* ViewerModel::newMolecule()
 {
    Layer::Molecule* molecule = new Layer::Molecule(m_parent);
+   connect(molecule, SIGNAL(updated()), this, SLOT(computeEnergy()));
 
-   connect(molecule, SIGNAL(updated()), 
-      this, SLOT(computeEnergy()));
-   connect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
-   connect(molecule, SIGNAL(softUpdate()), 
-      this, SIGNAL(updated()));
+   //connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
+   //   this, SLOT(removeMolecule(Layer::Molecule*)));
 
-   connect(molecule, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   connect(molecule, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   connect(molecule, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   connect(molecule, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
-   connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
-      this, SLOT(removeMolecule(Layer::Molecule*)));
-   connect(molecule, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
-      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
+   connectComponent(molecule);
 
    return molecule;
+}
+
+
+void ViewerModel::removeComponent(Layer::Component* component)
+{
+   postCommand(new Command::RemoveComponent(component));
 }
 
 
@@ -451,20 +475,13 @@ void ViewerModel::forAllMolecules(std::function<void(Layer::Molecule&)> function
 Layer::System* ViewerModel::newSystem()
 {
    Layer::System* system = new Layer::System(DefaultMoleculeName, m_parent);
+   connectComponent(system);
 
-   connect(system, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
-   connect(system, SIGNAL(softUpdate()), 
-     this, SIGNAL(updated()));
+   //connect(system, SIGNAL(removeSystem(Layer::System*)), 
+   //   this, SLOT(removeSystem(Layer::System*)));
 
-   connect(system, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   connect(system, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   connect(system, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   connect(system, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
+   connect(system, SIGNAL(connectComponent(Layer::Component*)),
+      this, SLOT(connectComponent(Layer::Component*)));
 
    connect(system, SIGNAL(newMoleculeRequested(AtomList const&)), 
       this, SLOT(newMoleculeRequested(AtomList const&)));

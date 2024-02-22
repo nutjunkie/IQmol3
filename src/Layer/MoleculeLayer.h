@@ -100,9 +100,6 @@ bool save(bool prompt = false);
             void appendData(IQmol::Data::Bank&);
             void appendData(Layer::List&);
 
-            void setFile(QString const& fileName);
-            QString fileName() const { return m_inputFile.fileName(); }
-   
             bool sanityCheck();
 
             Process::JobInfo qchemJobInfo();
@@ -209,7 +206,6 @@ bool save(bool prompt = false);
             bool   hasMullikenDecompositions() const;
    
          Q_SIGNALS:
-            void softUpdate(); // issue if the number of primitives does not change
             void removeMolecule(Layer::Molecule*);
    
             void multiplicityAvailable(unsigned);
@@ -326,9 +322,6 @@ bool save(bool prompt = false);
             void deleteProperties();
 
             void saveToGeometry(Data::Geometry&);
-   
-// This should probably move to Component
-QFileInfo m_inputFile;
    
             /// State variable that determines how the Primitives are drawn (e.g.
             /// CPK or wireframe)

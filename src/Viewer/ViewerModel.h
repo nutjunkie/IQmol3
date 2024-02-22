@@ -83,6 +83,7 @@ namespace IQmol {
          void newMoleculeMenu();
          void removeMolecule(Layer::Molecule*);
          void removeSystem(Layer::System*);
+         void removeComponent(Layer::Component*);
 
          void addHydrogens();
          void reperceiveBonds();
@@ -157,6 +158,7 @@ namespace IQmol {
 
       private Q_SLOTS:
          void newMoleculeRequested(AtomList const&);
+         void connectComponent(Layer::Component*);
 
       private:
 		 /// Creates a new Molecule with the required connections to the

@@ -147,8 +147,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(reperceiveBondsSlot()));
    connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
       this, SLOT(addHydrogens()));
-   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
-      this, SLOT(generateConformersDialog()));
+//   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+//      this, SLOT(generateConformersDialog()));
 
    m_addGeometryMenu = newAction("Duplicate Geometry");
 
@@ -158,7 +158,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_atomicChargesMenu = newAction("Atomic Charges");
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
-      this, SLOT(removeMolecule()));
+      this, SLOT(removeComponent()));
 
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
@@ -169,13 +169,6 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 Molecule::~Molecule()
 {
    deleteProperties();
-}
-
-
-void Molecule::setFile(QString const& fileName)
-{
-   m_inputFile.setFile(fileName);
-   setText(m_inputFile.completeBaseName());
 }
 
 
@@ -1943,7 +1936,6 @@ void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 
 void Molecule::addHydrogens()
 {
-   QLOG_DEBUG() << "Adding hydrogens";
    AtomMap atomMap;
    BondMap bondMap;
 
@@ -1958,6 +1950,9 @@ void Molecule::addHydrogens()
    obMol->BeginModify();
    obMol->EndModify();
 
+   int numAtoms(obMol->NumAtoms());
+   QLOG_DEBUG() << "Adding hydrogens to molecule, initial number of atoms" 
+                << numAtoms;
    // We now type the atoms and overwrite the valency/hybridization info
    // if it has been changed by the user.
    OBAtomTyper atomTyper;
@@ -1987,6 +1982,8 @@ void Molecule::addHydrogens()
    obMol->Translate(-displacement);
    obMol->BeginModify();
    obMol->EndModify();
+
+   QLOG_DEBUG() << "Number of hydrogens added:" << obMol->NumAtoms() - numAtoms;
 
    Command::AddHydrogens* cmd  = 
       new Command::AddHydrogens(this, fromOBMol(obMol, &atomMap, &bondMap));
