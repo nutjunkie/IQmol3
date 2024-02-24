@@ -30,6 +30,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QProcess>
 
 namespace IQmol {
 namespace Amber { 
@@ -85,6 +86,9 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    connect(runButton, &QPushButton::clicked, this, &SystemBuilderDialog::runTleap);
    connect(runButton, &QPushButton::clicked, m_dialog.tabWidget, [this]() {
       m_dialog.tabWidget->setCurrentIndex(1);
+   });
+   connect(runButton, &QPushButton::clicked, [this]() {
+      m_dialog.outputTextEdit->clear();
    });
 }
 
@@ -154,6 +158,8 @@ void SystemBuilderDialog::addMolecule(const Layer::Molecule* molecule)
 
    connect(pushButton, SIGNAL(clicked()), molecule, SLOT(parametrizeMoleculeDialog()));
    connect(molecule, SIGNAL(parameterFileAvailable(const QString&)), this, SLOT(findParameterFile(const QString&)));
+   connect(mol2LineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(updateTleapInput()));
+   connect(frcmodLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(updateTleapInput()));
    connect(mol2ToolButton, SIGNAL(clicked()), this, SLOT(browseParameterFile()));
    connect(frcmodToolButton, SIGNAL(clicked()), this, SLOT(browseParameterFile()));
 }
@@ -176,8 +182,6 @@ void SystemBuilderDialog::findParameterFile(const QString& fileName)
       QLineEdit *lineEdit = m_dialog.parametersPage->findChild<QLineEdit *>(name + "frcmodLineEdit");
       lineEdit->setText(fileName);
    }
-
-   updateTleapInput();
 }
 
 void SystemBuilderDialog::browseParameterFile()
@@ -196,8 +200,6 @@ void SystemBuilderDialog::browseParameterFile()
       QLineEdit *lineEdit = m_dialog.parametersPage->findChild<QLineEdit *>(name + suffix + "LineEdit");
       lineEdit->setText(fileName);
    }
-
-   updateTleapInput();
 }
 
 void SystemBuilderDialog::updateTleapInput()
@@ -240,8 +242,8 @@ void SystemBuilderDialog::runTleap()
         this->m_dialog.outputTextEdit->appendPlainText(output.trimmed() + "\n");
     });
 
-   // connect(tleap, SIGNAL(finished(int,QProcess::ExitStatus)),
-      // this, SLOT(tleapFinished(int,QProcess::ExitStatus)));
+   connect(tleap, SIGNAL(finished(int,QProcess::ExitStatus)),
+      this, SLOT(tleapFinished(int,QProcess::ExitStatus)));
 
    // Find tleap executable
    QString AmberDirectory = Preferences::AmberDirectory();
@@ -271,6 +273,21 @@ void SystemBuilderDialog::runTleap()
    qDebug() << "Arguments: " << arguments;
 
    tleap->start(program, arguments);
+}
+
+void SystemBuilderDialog::tleapFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+   QProcess* tleap(qobject_cast<QProcess*>(sender()));
+   qDebug() << "tleap finished with exit code: " << exitCode;
+   tleap->deleteLater();
+
+   if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+      qDebug() << "tleap finished";
+      m_dialog.outputTextEdit->appendPlainText("tleap finished normally.\n");
+   } else {
+      qDebug() << "tleap crashed";
+      m_dialog.outputTextEdit->appendPlainText("tleap crashed.\n");
+   }
 }
 
 void SystemBuilderDialog::on_sourceAddButton_clicked()

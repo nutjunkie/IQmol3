@@ -20,9 +20,9 @@
    
 ********************************************************************************/
  
-#include <QDialog>
 #include "Amber/ui_AmberSystemBuilderDialog.h"
-
+#include <QDialog>
+#include <QProcess>
 
 namespace IQmol {
 
@@ -46,10 +46,11 @@ namespace Amber {
          void findParameterFile(const QString&);
          void browseParameterFile();
          void updateTleapInput();
+         void runTleap();
+         void tleapFinished(int, QProcess::ExitStatus);
 
       private:
          void addMolecule(const Layer::Molecule*);
-         void runTleap();
 
          Layer::System* m_system;
          Ui::SystemBuilderDialog m_dialog;
