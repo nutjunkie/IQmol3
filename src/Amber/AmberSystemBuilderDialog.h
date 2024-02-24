@@ -41,6 +41,10 @@ namespace Amber {
       public:
          SystemBuilderDialog(QWidget* parent, Layer::System*);
 
+      Q_SIGNALS:
+         void killed();
+         void finished();
+
       private Q_SLOTS:
          void on_sourceAddButton_clicked();
          void on_sourceRemoveButton_clicked();

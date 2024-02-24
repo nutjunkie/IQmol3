@@ -92,14 +92,22 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
 
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
+   QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
+   stopButton->setEnabled(false);
 
    connect(runButton, &QPushButton::clicked, this, &SystemBuilderDialog::runTleap);
+   connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
+   connect(runButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(true); });
    connect(runButton, &QPushButton::clicked, m_dialog.tabWidget, [this]() {
       m_dialog.tabWidget->setCurrentIndex(1);
    });
    connect(runButton, &QPushButton::clicked, [this]() {
       m_dialog.outputTextEdit->clear();
    });
+
+   connect(stopButton, &QPushButton::clicked, this, &SystemBuilderDialog::killed);
+   connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
 
    // Solvent
    connect(m_dialog.solventCommandComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
@@ -250,6 +258,8 @@ void SystemBuilderDialog::updateTleapInput()
       }
    }
 
+   m_dialog.inputTextEdit->appendPlainText("mol = loadpdb " + m_system->text() + "_iqmol.pdb\n");
+
    QString solventCommand(m_dialog.solventCommandComboBox->currentText());
    if (!solventCommand.isEmpty()) {
       QString solventBox(m_dialog.solventBoxComboBox->currentText());
@@ -277,8 +287,6 @@ void SystemBuilderDialog::updateTleapInput()
       m_dialog.inputTextEdit->appendPlainText(ionsInput + "\n");
    }
 
-   m_dialog.inputTextEdit->appendPlainText("mol = loadpdb " + m_system->text() + "_iqmol.pdb\n");
-
    m_dialog.inputTextEdit->appendPlainText("savepdb mol " + m_system->text() + ".pdb");
    m_dialog.inputTextEdit->appendPlainText("saveamberparm mol " + m_system->text() + ".parm7 " + m_system->text() + ".rst7");
 }
@@ -295,6 +303,7 @@ void SystemBuilderDialog::runTleap()
 
    connect(tleap, SIGNAL(finished(int,QProcess::ExitStatus)),
       this, SLOT(tleapFinished(int,QProcess::ExitStatus)));
+   connect(this, SIGNAL(killed()), tleap, SLOT(kill()));
 
    // Find tleap executable
    QString AmberDirectory = Preferences::AmberDirectory();
@@ -339,6 +348,7 @@ void SystemBuilderDialog::tleapFinished(int exitCode, QProcess::ExitStatus exitS
       qDebug() << "tleap crashed";
       m_dialog.outputTextEdit->appendPlainText("tleap crashed.\n");
    }
+   finished();
 }
 
 void SystemBuilderDialog::on_sourceAddButton_clicked()
