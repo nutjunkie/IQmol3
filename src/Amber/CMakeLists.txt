@@ -3,16 +3,19 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Xml REQUIRED)
 
 set( HEADERS
    AmberConfigDialog.h
+   AmberSystemBuilderDialog.h
    ParametrizeMoleculeDialog.h
 )
 
 set( SOURCES
    AmberConfigDialog.C
+   AmberSystemBuilderDialog.C
    ParametrizeMoleculeDialog.C
 )
 
 set( UI_FILES
    AmberConfigDialog.ui
+   AmberSystemBuilderDialog.ui
    ParametrizeMoleculeDialog.ui
 )
 

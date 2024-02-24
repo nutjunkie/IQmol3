@@ -30,6 +30,8 @@
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
 #include "Amber/AmberConfigDialog.h"
+#include "Amber/AmberSystemBuilderDialog.h"
+
 
 #ifdef GROMACS
 #include "GromacsDialog.h"
@@ -101,6 +103,7 @@ namespace Gmx {
          void showGromacsServerDialog();
          void showGromacsConfigDialog();
          void showAmberConfigDialog();
+         void showAmberSystemBuilderDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::JobInfo&);

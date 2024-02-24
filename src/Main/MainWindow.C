@@ -731,6 +731,10 @@ if (Preferences::AmberEnabled()) {
       name = "Edit Amber Config";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(showAmberConfigDialog()));
+
+      name = "Amber System Builder";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberSystemBuilderDialog()));
 }
 
    // ----- Help Menu -----
@@ -1079,6 +1083,11 @@ void MainWindow::showAmberConfigDialog()
    }
 }
 
+void MainWindow::showAmberSystemBuilderDialog()
+{
+   Amber::SystemBuilderDialog dialog(this, m_viewerModel.activeSystem());
+   dialog.exec();
+}
 
 void MainWindow::insertMoleculeDialog() 
 {
