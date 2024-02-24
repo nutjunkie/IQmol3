@@ -78,6 +78,16 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
       }
    }
 
+   QList<QString> const positiveIonsList = {"Na+", "K+"};
+   QList<QString> const negativeIonsList = {"Cl-"};
+
+   for (const QString &ion : positiveIonsList) {
+      m_dialog.ion1ComboBox->addItem(ion);
+   }
+   for (const QString &ion : negativeIonsList) {
+      m_dialog.ion1ComboBox->addItem(ion);
+   }
+
    updateTleapInput();
 
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
@@ -90,6 +100,20 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    connect(runButton, &QPushButton::clicked, [this]() {
       m_dialog.outputTextEdit->clear();
    });
+
+   // Solvent
+   connect(m_dialog.solventCommandComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.solventBoxComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.solventDistanceDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.soleventIsometricCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.solventClosenessDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(updateTleapInput()));
+
+   // Ions
+   connect(m_dialog.ionsCommandComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.ion1ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.ion2ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.numIon1SpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateTleapInput()));
+   connect(m_dialog.numIon2SpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateTleapInput()));
 }
 
 void SystemBuilderDialog::addMolecule(const Layer::Molecule* molecule)
@@ -226,6 +250,33 @@ void SystemBuilderDialog::updateTleapInput()
       }
    }
 
+   QString solventCommand(m_dialog.solventCommandComboBox->currentText());
+   if (!solventCommand.isEmpty()) {
+      QString solventBox(m_dialog.solventBoxComboBox->currentText());
+      QString distance(m_dialog.solventDistanceDoubleSpinBox->text());
+      QString isometric(m_dialog.soleventIsometricCheckBox->isChecked() ? " iso" : "");
+      QString closeness(m_dialog.solventClosenessDoubleSpinBox->text());
+      m_dialog.inputTextEdit->appendPlainText(solventCommand + " mol " + solventBox + " " + distance + isometric + " " + closeness + "\n");
+   }
+
+   QString ionsCommand(m_dialog.ionsCommandComboBox->currentText());
+   if (!ionsCommand.isEmpty()) {
+      QString ionsInput;
+      QString ion1(m_dialog.ion1ComboBox->currentText());
+      QString ion2(m_dialog.ion2ComboBox->currentText());
+      int numIon1(m_dialog.numIon1SpinBox->value());
+      int numIon2(m_dialog.numIon2SpinBox->value());
+
+      ionsInput = ionsCommand + " mol";
+      if (!ion1.isEmpty()) {
+         ionsInput += " " + ion1 + " " + QString::number(numIon1);
+      }
+      if (!ion2.isEmpty() && (numIon1 != 0)) {
+         ionsInput += " " + ion2 + " " + QString::number(numIon2);
+      }
+      m_dialog.inputTextEdit->appendPlainText(ionsInput + "\n");
+   }
+
    m_dialog.inputTextEdit->appendPlainText("mol = loadpdb " + m_system->text() + "_iqmol.pdb\n");
 
    m_dialog.inputTextEdit->appendPlainText("savepdb mol " + m_system->text() + ".pdb");
@@ -302,6 +353,26 @@ void SystemBuilderDialog::on_sourceRemoveButton_clicked()
    QListWidgetItem *item = m_dialog.sourceSelectedList->takeItem(m_dialog.sourceSelectedList->currentRow());
    m_dialog.sourceAvailList->addItem(item);
    updateTleapInput();
+}
+
+void SystemBuilderDialog::on_ion1ComboBox_currentIndexChanged(int index)
+{
+   QList<QString> const positiveIonsList = {"Na+", "K+"};
+   QList<QString> const negativeIonsList = {"Cl-"};
+
+   if (positiveIonsList.contains(m_dialog.ion1ComboBox->itemText(index))) {
+      m_dialog.ion2ComboBox->clear();
+      m_dialog.ion2ComboBox->addItem("");
+      for (const QString &ion : negativeIonsList) {
+         m_dialog.ion2ComboBox->addItem(ion);
+      }
+   } else {
+      m_dialog.ion2ComboBox->clear();
+      m_dialog.ion2ComboBox->addItem("");
+      for (const QString &ion : positiveIonsList) {
+         m_dialog.ion2ComboBox->addItem(ion);
+      }
+   }
 }
 
 } } // end namespace IQmol::Amber

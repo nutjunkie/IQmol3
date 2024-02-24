@@ -20,9 +20,9 @@
    
 ********************************************************************************/
  
-#include <QDialog>
 #include "Amber/ui_AmberConfigDialog.h"
 
+#include <QDialog>
 
 namespace IQmol {
 

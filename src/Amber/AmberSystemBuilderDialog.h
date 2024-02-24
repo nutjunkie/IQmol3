@@ -21,6 +21,7 @@
 ********************************************************************************/
  
 #include "Amber/ui_AmberSystemBuilderDialog.h"
+
 #include <QDialog>
 #include <QProcess>
 
@@ -43,6 +44,7 @@ namespace Amber {
       private Q_SLOTS:
          void on_sourceAddButton_clicked();
          void on_sourceRemoveButton_clicked();
+         void on_ion1ComboBox_currentIndexChanged(int);
          void findParameterFile(const QString&);
          void browseParameterFile();
          void updateTleapInput();
