@@ -287,7 +287,7 @@ void SystemBuilderDialog::updateTleapInput()
       m_dialog.inputTextEdit->appendPlainText(ionsInput + "\n");
    }
 
-   m_dialog.inputTextEdit->appendPlainText("savepdb mol " + m_system->text() + ".pdb");
+   m_dialog.inputTextEdit->appendPlainText("savepdb mol " + m_system->text() + "_tleap.pdb");
    m_dialog.inputTextEdit->appendPlainText("saveamberparm mol " + m_system->text() + ".parm7 " + m_system->text() + ".rst7");
 }
 

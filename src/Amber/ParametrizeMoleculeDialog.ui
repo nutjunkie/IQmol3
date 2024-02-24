@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Parametrize Molecule</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
@@ -83,12 +83,12 @@
       <widget class="QComboBox" name="forceField">
        <item>
         <property name="text">
-         <string notr="true">gaff</string>
+         <string notr="true">gaff2</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string notr="true">gaff2</string>
+         <string notr="true">gaff</string>
         </property>
        </item>
        <item>

@@ -119,12 +119,12 @@ void ParametrizeMoleculeDialog::runAntechamber()
 
    // Prepare arguments and write the input mol2 file
    QString name(m_molecule->text().split(' ').first());
-   m_molecule->writeToFile(QDir(fileInfo.absolutePath()).filePath(name + "_ac" + ".mol2"));
+   m_molecule->writeToFile(QDir(fileInfo.absolutePath()).filePath(name + "_iqmol" + ".mol2"));
    qDebug() << "charge" << m_molecule->totalCharge() << "multiplicity" << m_molecule->multiplicity() << forceField << name;
 
    // Build arguments
    QStringList arguments;
-   arguments << "-i" << name + "_ac" + ".mol2"
+   arguments << "-i" << name + "_iqmol" + ".mol2"
              << "-fi" << "mol2"
              << "-o" << name + ".mol2"
              << "-fo" << "mol2"
