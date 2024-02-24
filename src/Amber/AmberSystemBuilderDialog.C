@@ -153,7 +153,7 @@ void SystemBuilderDialog::addMolecule(const Layer::Molecule* molecule)
    m_dialog.parametersLayout->addWidget(groupBox);
 
    connect(pushButton, SIGNAL(clicked()), molecule, SLOT(parametrizeMoleculeDialog()));
-   connect(molecule, SIGNAL(parametersAvailable(const QString&)), this, SLOT(findParameterFile(const QString&)));
+   connect(molecule, SIGNAL(parameterFileAvailable(const QString&)), this, SLOT(findParameterFile(const QString&)));
    connect(mol2ToolButton, SIGNAL(clicked()), this, SLOT(browseParameterFile()));
    connect(frcmodToolButton, SIGNAL(clicked()), this, SLOT(browseParameterFile()));
 }

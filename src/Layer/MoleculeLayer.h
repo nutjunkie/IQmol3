@@ -255,7 +255,7 @@ bool save(bool prompt = false);
             void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
             void radiusAvailable(double const radius);
             void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
-            void parametersAvailable(QString const&);
+            void parameterFileAvailable(QString const&);
 
             void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
    
