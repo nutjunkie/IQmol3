@@ -20,13 +20,13 @@
    
 ********************************************************************************/
 
-#include "AmberSystemBuilderDialog.h"
 #include "Layer/SystemLayer.h"
 #include "Layer/MoleculeLayer.h"
 #include "Layer/AtomLayer.h"
 #include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
-#include "Amber/AmberConfigDialog.h"
+#include "Amber/ConfigDialog.h"
+#include "Amber/SystemBuilderDialog.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -232,7 +232,7 @@ void SystemBuilderDialog::resetTleapInput()
    if (AmberDirectory.isEmpty()) {
       QMessageBox::warning(this, tr("Amber directory not set"),
          tr("The Amber directory is not set. Please set it in the Edit Amber Config dialog."));
-      Amber::AmberConfigDialog dialog(this);
+      Amber::ConfigDialog dialog(this);
       dialog.exec();
       if (dialog.result() == QDialog::Accepted) {
          Preferences::AmberDirectory(dialog.getDirectory());

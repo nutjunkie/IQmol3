@@ -20,28 +20,27 @@
    
 ********************************************************************************/
 
-#include "AmberConfigDialog.h"
 #include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
+#include "Amber/ConfigDialog.h"
 
 #include <QDir>
 
 namespace IQmol {
 namespace Amber { 
 
-
-AmberConfigDialog::AmberConfigDialog(QWidget* parent) : QDialog(parent)
+ConfigDialog::ConfigDialog(QWidget* parent) : QDialog(parent)
 {
    m_dialog.setupUi(this);
    m_dialog.directory->setText(Preferences::AmberDirectory());
 }
 
-QString AmberConfigDialog::getDirectory() const
+QString ConfigDialog::getDirectory() const
 {
    return m_dialog.directory->text();
 }
 
-void AmberConfigDialog::accept()
+void ConfigDialog::accept()
 {
    // check if the directory exists
    QString directory = m_dialog.directory->text();

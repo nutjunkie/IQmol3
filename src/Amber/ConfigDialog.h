@@ -20,7 +20,7 @@
    
 ********************************************************************************/
  
-#include "Amber/ui_AmberConfigDialog.h"
+#include "Amber/ui_ConfigDialog.h"
 
 #include <QDialog>
 
@@ -28,17 +28,17 @@ namespace IQmol {
 
 namespace Amber {
 
-   class AmberConfigDialog: public QDialog {
+   class ConfigDialog: public QDialog {
 
       Q_OBJECT
 
       public:
-         AmberConfigDialog(QWidget* parent);
+         ConfigDialog(QWidget* parent);
 
          QString getDirectory() const;
       
       private:
-         Ui::AmberConfigDialog  m_dialog;
+         Ui::ConfigDialog m_dialog;
 
       private Q_SLOTS:
          void accept();

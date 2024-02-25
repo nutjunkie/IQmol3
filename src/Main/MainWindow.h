@@ -29,9 +29,9 @@
 #include "ViewerModel.h"
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
-#include "Amber/AmberConfigDialog.h"
-#include "Amber/AmberSystemBuilderDialog.h"
 
+#include "Amber/ConfigDialog.h"
+#include "Amber/SystemBuilderDialog.h"
 
 #ifdef GROMACS
 #include "GromacsDialog.h"

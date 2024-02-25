@@ -2,21 +2,21 @@ set(LIB Amber)
 find_package(Qt5 COMPONENTS Core Gui Widgets Xml REQUIRED)
 
 set( HEADERS
-   AmberConfigDialog.h
-   AmberSystemBuilderDialog.h
+   ConfigDialog.h
    ParametrizeMoleculeDialog.h
+   SystemBuilderDialog.h
 )
 
 set( SOURCES
-   AmberConfigDialog.C
-   AmberSystemBuilderDialog.C
+   ConfigDialog.C
    ParametrizeMoleculeDialog.C
+   SystemBuilderDialog.C
 )
 
 set( UI_FILES
-   AmberConfigDialog.ui
-   AmberSystemBuilderDialog.ui
+   ConfigDialog.ui
    ParametrizeMoleculeDialog.ui
+   SystemBuilderDialog.ui
 )
 
 qt5_wrap_ui(UI_HEADERS ${UI_FILES} )

@@ -20,7 +20,7 @@
    
 ********************************************************************************/
  
-#include "Amber/ui_AmberSystemBuilderDialog.h"
+#include "Amber/ui_SystemBuilderDialog.h"
 
 #include <QDialog>
 #include <QProcess>

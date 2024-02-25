@@ -2885,7 +2885,7 @@ void Molecule::parametrizeMoleculeDialog()
 {
    qDebug() << "Opening parametrize molecule dialog";
    if (!m_parametrizeMolecule) {
-      m_parametrizeMolecule = new ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
+      m_parametrizeMolecule = new Amber::ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
    }
 
    m_parametrizeMolecule->show();

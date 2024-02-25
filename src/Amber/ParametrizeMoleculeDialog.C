@@ -20,15 +20,16 @@
    
 ********************************************************************************/
 
-#include "ParametrizeMoleculeDialog.h"
 #include "Layer/MoleculeLayer.h"
 #include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
-#include "Amber/AmberConfigDialog.h"
+#include "Amber/ConfigDialog.h"
+#include "Amber/ParametrizeMoleculeDialog.h"
 
 #include <QDir>
 
 namespace IQmol {
+namespace Amber { 
 
 ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent, 
    Layer::Molecule* molecule) : QDialog(parent), m_molecule(molecule)
@@ -81,7 +82,7 @@ void ParametrizeMoleculeDialog::run()
    if (AmberDirectory.isEmpty()) {
       QMessageBox::warning(this, tr("Amber directory not set"),
          tr("The Amber directory is not set. Please set it in the Edit Amber Config dialog."));
-      Amber::AmberConfigDialog dialog(this);
+      Amber::ConfigDialog dialog(this);
       dialog.exec();
       if (dialog.result() == QDialog::Accepted) {
          Preferences::AmberDirectory(dialog.getDirectory());
@@ -218,4 +219,4 @@ void ParametrizeMoleculeDialog::parmchk2Finished(int exitCode, QProcess::ExitSta
    finished();
 }
 
-} // end namespace IQmol
+} } // end namespace IQmol::Amber

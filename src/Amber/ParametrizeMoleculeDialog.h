@@ -31,6 +31,8 @@ namespace IQmol {
       class Molecule;
    }
 
+namespace Amber {
+
    /// Dialog allowing the user to parametrize a molecule
    class ParametrizeMoleculeDialog : public QDialog {
 
@@ -60,4 +62,4 @@ namespace IQmol {
          Ui::ParametrizeMoleculeDialog m_dialog;
    };
 
-} // end namespace IQmol
+} } // end namespace IQmol::Amber

@@ -1076,7 +1076,7 @@ void MainWindow::showGromacsServerDialog()
 
 void MainWindow::showAmberConfigDialog()
 {
-   Amber::AmberConfigDialog dialog(this);
+   Amber::ConfigDialog dialog(this);
    dialog.exec();
    if (dialog.result() == QDialog::Accepted) {
       Preferences::AmberDirectory(dialog.getDirectory());
