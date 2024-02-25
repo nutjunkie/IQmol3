@@ -41,59 +41,13 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
 {
    m_dialog.setupUi(this);
 
-   QString AmberDirectory = Preferences::AmberDirectory();
-   if (AmberDirectory.isEmpty()) {
-      QMessageBox::warning(this, tr("Amber directory not set"),
-         tr("The Amber directory is not set. Please set it in the Edit Amber Config dialog."));
-      Amber::AmberConfigDialog dialog(this);
-      dialog.exec();
-      if (dialog.result() == QDialog::Accepted) {
-         Preferences::AmberDirectory(dialog.getDirectory());
-      }
-      AmberDirectory = Preferences::AmberDirectory();
-   }
-
-   QDir dir(AmberDirectory + "/dat/leap/cmd");
-   QList<QString> defaultSourceFiles = {"leaprc.protein.ff14SB", "leaprc.water.tip3p", "leaprc.gaff2"};
-
-   for (const QString &filename : dir.entryList(QDir::Files))
-      if (defaultSourceFiles.contains(filename)) {
-         m_dialog.sourceSelectedList->addItem(filename);
-      } else {
-         m_dialog.sourceAvailList->addItem(filename);
-      }
-
-   MoleculeList molecules(m_system->findLayers<Layer::Molecule>(Layer::Children));
-   QList<QString> names;
-   for (MoleculeList::iterator it = molecules.begin(); it != molecules.end(); ++it) {
-      AtomList atoms((*it)->findLayers<Layer::Atom>(Layer::Children));
-      if (atoms.size() > 1) {
-         QString name((*it)->text().split(' ').first());
-         if (!names.contains(name)) {
-            names.append(name);
-            addMolecule(*it);
-            findParameterFile(name + ".mol2");
-            findParameterFile(name + ".frcmod");
-         }
-      }
-   }
-
-   QList<QString> const positiveIonsList = {"Na+", "K+"};
-   QList<QString> const negativeIonsList = {"Cl-"};
-
-   for (const QString &ion : positiveIonsList) {
-      m_dialog.ion1ComboBox->addItem(ion);
-   }
-   for (const QString &ion : negativeIonsList) {
-      m_dialog.ion1ComboBox->addItem(ion);
-   }
-
-   updateTleapInput();
+   resetTleapInput();
 
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
    QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
    stopButton->setEnabled(false);
+   QPushButton* resetButton = m_dialog.buttonBox->button(QDialogButtonBox::Reset);
 
    connect(runButton, &QPushButton::clicked, this, &SystemBuilderDialog::runTleap);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
@@ -108,6 +62,8 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    connect(stopButton, &QPushButton::clicked, this, &SystemBuilderDialog::killed);
    connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
+
+   connect(resetButton, &QPushButton::clicked, this, &SystemBuilderDialog::resetTleapInput);
 
    connect(this, &SystemBuilderDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(this, &SystemBuilderDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
@@ -130,6 +86,10 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
 void SystemBuilderDialog::addMolecule(const Layer::Molecule* molecule)
 {
    QString name(molecule->text().split(' ').first());
+   if (m_dialog.parametersPage->findChild<QLabel *>(name + "molName")) {
+      return;
+   }
+
    QGroupBox *groupBox;
    QVBoxLayout *verticalLayout;
    QGridLayout *gridLayout;
@@ -235,6 +195,56 @@ void SystemBuilderDialog::browseParameterFile()
       QLineEdit *lineEdit = m_dialog.parametersPage->findChild<QLineEdit *>(name + suffix + "LineEdit");
       lineEdit->setText(fileName);
    }
+}
+
+void SystemBuilderDialog::resetTleapInput()
+{
+   QString AmberDirectory = Preferences::AmberDirectory();
+   if (AmberDirectory.isEmpty()) {
+      QMessageBox::warning(this, tr("Amber directory not set"),
+         tr("The Amber directory is not set. Please set it in the Edit Amber Config dialog."));
+      Amber::AmberConfigDialog dialog(this);
+      dialog.exec();
+      if (dialog.result() == QDialog::Accepted) {
+         Preferences::AmberDirectory(dialog.getDirectory());
+      }
+      AmberDirectory = Preferences::AmberDirectory();
+   }
+
+   QDir dir(AmberDirectory + "/dat/leap/cmd");
+   QList<QString> defaultSourceFiles = {"leaprc.protein.ff14SB", "leaprc.water.tip3p", "leaprc.gaff2"};
+
+   m_dialog.sourceSelectedList->clear();
+   m_dialog.sourceAvailList->clear();
+   for (const QString &filename : dir.entryList(QDir::Files))
+      if (defaultSourceFiles.contains(filename)) {
+         m_dialog.sourceSelectedList->addItem(filename);
+      } else {
+         m_dialog.sourceAvailList->addItem(filename);
+      }
+
+   MoleculeList molecules(m_system->findLayers<Layer::Molecule>(Layer::Children));
+   for (MoleculeList::iterator it = molecules.begin(); it != molecules.end(); ++it) {
+      AtomList atoms((*it)->findLayers<Layer::Atom>(Layer::Children));
+      if (atoms.size() > 1) {
+         QString name((*it)->text().split(' ').first());
+         addMolecule(*it);
+         findParameterFile(name + ".mol2");
+         findParameterFile(name + ".frcmod");
+      }
+   }
+
+   QList<QString> const positiveIonsList = {"Na+", "K+"};
+   QList<QString> const negativeIonsList = {"Cl-"};
+
+   for (const QString &ion : positiveIonsList) {
+      m_dialog.ion1ComboBox->addItem(ion);
+   }
+   for (const QString &ion : negativeIonsList) {
+      m_dialog.ion1ComboBox->addItem(ion);
+   }
+
+   updateTleapInput();
 }
 
 void SystemBuilderDialog::updateTleapInput()

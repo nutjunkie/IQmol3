@@ -51,6 +51,7 @@ namespace Amber {
          void on_ion1ComboBox_currentIndexChanged(int);
          void findParameterFile(const QString&);
          void browseParameterFile();
+         void resetTleapInput();
          void updateTleapInput();
          void runTleap();
          void tleapFinished(int, QProcess::ExitStatus);
