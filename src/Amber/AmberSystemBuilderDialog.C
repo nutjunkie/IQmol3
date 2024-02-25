@@ -49,9 +49,33 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    stopButton->setEnabled(false);
    QPushButton* resetButton = m_dialog.buttonBox->button(QDialogButtonBox::Reset);
 
+   connect(m_dialog.editCheckBox, &QCheckBox::toggled, m_dialog.inputTextEdit, &QPlainTextEdit::setReadOnly);
+   connect(m_dialog.editCheckBox, &QCheckBox::toggled, m_dialog.toolBox, &QWidget::setEnabled);
+   connect(m_dialog.editCheckBox, &QCheckBox::toggled, [this](bool checked) {
+      if (checked) {
+         m_dialog.inputTextEdit->setReadOnly(false);
+         m_dialog.toolBox->setEnabled(false);
+      } else {
+         int ret = QMessageBox::warning(this, tr("Warning"),
+                               tr("The manual edits will be lost.\n"
+                                  "Are you sure you want to continue?"),
+                               QMessageBox::Ok | QMessageBox::Cancel,
+                               QMessageBox::Cancel);
+         if (ret == QMessageBox::Cancel) {
+            m_dialog.editCheckBox->setChecked(true);
+            return;
+         }
+         m_dialog.inputTextEdit->setReadOnly(true);
+         m_dialog.toolBox->setEnabled(true);
+         updateTleapInput();
+      }
+   });
+
    connect(runButton, &QPushButton::clicked, this, &SystemBuilderDialog::runTleap);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
    connect(runButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(true); });
+   connect(runButton, &QPushButton::clicked, resetButton, [resetButton]() { resetButton->setEnabled(false); });
+   
    connect(runButton, &QPushButton::clicked, m_dialog.tabWidget, [this]() {
       m_dialog.tabWidget->setCurrentIndex(1);
    });
@@ -64,9 +88,14 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
 
    connect(resetButton, &QPushButton::clicked, this, &SystemBuilderDialog::resetTleapInput);
+   connect(resetButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(resetButton, &QPushButton::clicked, m_dialog.tabWidget, [this]() {
+      m_dialog.tabWidget->setCurrentIndex(0);
+   });
 
    connect(this, &SystemBuilderDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(this, &SystemBuilderDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
+   connect(this, &SystemBuilderDialog::finished, resetButton, [resetButton]() { resetButton->setEnabled(true); });
 
    // Solvent
    connect(m_dialog.solventCommandComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
