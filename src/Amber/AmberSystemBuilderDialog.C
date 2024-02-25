@@ -109,6 +109,9 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
    connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(stopButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(false); });
 
+   connect(this, &SystemBuilderDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
+   connect(this, &SystemBuilderDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
+
    // Solvent
    connect(m_dialog.solventCommandComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
    connect(m_dialog.solventBoxComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTleapInput()));
