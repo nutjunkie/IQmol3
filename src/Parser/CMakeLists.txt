@@ -38,17 +38,14 @@ endif()
 
 qt5_wrap_cpp(SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
 target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
 target_include_directories(${LIB} PRIVATE
    "${OpenBabel3_INCLUDE_DIRS}"
 )
 target_link_libraries(${LIB} PRIVATE
-   ${OpenBabel3_LIBRARIES}
    Qt5::Core
    Qt5::Gui
-   Qt5::Widgets
-   Qt5::Network
    Qt5::Xml
    Qt5::OpenGL
 )

@@ -8,7 +8,6 @@
 #include "Data/ProteinChain.h"
 #include "Data/Geometry.h"
 #include "Data/Solvent.h"
-#include "Math/Vec.h"
 #include <regex>
 
 #include <QDebug>
@@ -17,9 +16,161 @@
 #include <vector>
 
 
+
 namespace IQmol {
 namespace Parser {
 
+
+
+std::vector<QString> getTopologyFiles(QString topolPath){
+  QFile file(topolPath);
+ 
+  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+  TextStream topolTextStream(&file);
+  const QString fileString = topolTextStream.readAll();
+  QRegularExpression rx("\"(topol_Protein.*?)\"");
+  QRegularExpressionMatchIterator i = rx.globalMatch(fileString);
+  std::vector<QString> output;
+  while (i.hasNext()) {
+    QRegularExpressionMatch match = i.next();
+    QString subtopol = match.captured(1);
+    QLOG_DEBUG() << "newtopol";
+    QLOG_DEBUG() << subtopol;
+    output.push_back(subtopol);
+
+
+  }
+
+
+
+  return output;
+
+  }
+}
+
+
+bool Gro::parseChain(TextStream& textStream){
+  bool ok(true);
+  TextStream* topology;
+  QFile topolfile(m_prefix + m_topologies.at(m_topolCount));
+  if (topolfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    topology = new TextStream(&topolfile);
+    topology->seek(";   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB");
+
+  }
+  m_currentChain = m_aToZ[m_chainNumber];
+  QLOG_DEBUG() << "new chain "<< m_aToZ[m_chainNumber];
+  QLOG_DEBUG() << "new topol "<< m_prefix + m_topologies.at(m_topolCount);
+  m_chain = new Data::ProteinChain(QString(m_aToZ[m_chainNumber]));
+  m_chains.insert(m_currentChain, m_chain);
+  QString line,key;
+
+ while (!textStream.atEnd()) {   
+  line = textStream.nextLineNonTrimmed();
+  key  = line;
+
+
+
+   QString label(line.mid(11, 4).trimmed());  // eg. CHA
+    QString res(line.mid(5, 3).trimmed());    // eg. HIS
+    //QString id (line.mid(21, 1));              // eg. A
+    QString grp(line.mid(1, 4).trimmed());    // eg. 143
+    QString sym(label[0]);    // eg. C
+    char strucType(0);  
+    //QLOG_DEBUG() << "read line  "<< label << "  "<< res << " " << grp << " "<< sym;
+  //Convert to picameters
+    double x = 10*line.mid(20, 8).toFloat(&ok);
+    double y = 10*line.mid(28, 8).toFloat(&ok);  
+    double z = 10*line.mid(36, 8).toFloat(&ok); 
+    qglviewer::Vec v(x,y,z);
+
+    m_grpNumber = grp.toInt();
+    if(m_secStrucIndex ==32){
+      m_secStrucIndex =31;
+    }
+
+    if(m_currentGroup.toInt() > grp.toInt()){
+      m_currentGroup = '0';
+      QLOG_DEBUG() << "end chain loop";
+      topolfile.close();
+      textStream.skipBack();
+
+      return true;
+      /* if (topolfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+          topology = new TextStream(&topolfile);
+          topology->seek(";   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB");
+
+        
+        }else{
+            QString msg("Error parsing toplogyfile ");
+            msg +=  prefix + topologies.at(topolcount);
+            msg +=  "\n" + line;
+            m_errors.append(msg);
+        }*/
+    }else{
+      m_chain = m_chains[m_currentChain];
+    }
+  //while(!(currentGroup.toInt() > grp.toInt())){
+    if (!(m_aToZ[m_chainNumber]==m_secStrucChain[m_secStrucIndex])){
+      strucType = 0;
+    } else if (m_grpNumber < m_secStrucResStart[m_secStrucIndex]){
+      strucType = 0;
+    }else if (m_grpNumber == m_secStrucResStop[m_secStrucIndex])
+    {
+      strucType = m_secStrucType[m_secStrucIndex];
+      if (m_secStrucIndex < 32){
+      ++m_secStrucIndex;
+      }
+  
+
+    }else
+    {
+      strucType = m_secStrucType[m_secStrucIndex];
+    }
+  if(grp!= m_currentGroup){
+      topology->skipLine();
+      m_currentGroup = grp;
+      m_group = new Data::Group(grp.trimmed() + " " +res);
+      m_chain->append(m_group);
+    }
+    m_topolLine = topology->nextLineNonTrimmed();
+    m_atomCharge = m_topolLine.mid(49, 8).toFloat(&ok); 
+    Data::Atom* atom(new Data::Atom(sym, label));
+    m_group->addAtom(atom, v,m_atomCharge); 
+
+    if (label == "CA"){
+      m_CA = atom;
+      Math::Vec3 vtemp {x,y,z};
+      m_vCA = vtemp;
+    }
+   if (label == "O"){
+      m_O = atom;
+      Math::Vec3 vtemp {x,y,z};
+      m_vO = vtemp;
+      m_chain->appendAlphaCarbon(m_vCA);
+      m_chain->appendPeptideOxygen(m_vO);
+
+      if(strucType == 0 ){
+        m_chain->appendSecondaryStructure(Data::SecondaryStructure::Coil);
+      }
+      if(strucType == 1){
+        m_chain->appendSecondaryStructure(Data::SecondaryStructure::Helix);
+      }
+      if(strucType == 2){
+        m_chain->appendSecondaryStructure(Data::SecondaryStructure::Sheet);
+      }
+      //chain->addResidue(vCA, vO, strucType);
+    }
+    
+  
+  
+   // ++linenumber;
+   }
+    
+
+  
+  return true;
+  }
 
 
 bool Gro::parse(TextStream& textStream){
@@ -27,194 +178,94 @@ bool Gro::parse(TextStream& textStream){
   std::string str = m_filePath.toStdString();
   size_t index =str.find_last_of("/\\");
   QLOG_DEBUG() << "loading structure file";
-  QString path = QString::fromStdString(str.substr(0,(index+1)) + "SecStruc.dat");
+  m_prefix = QString::fromStdString(str.substr(0,(index+1)));
+  QString path = m_prefix + "SecStruc.dat";
+  QString topolpath = m_prefix + "topol.top";
   QLOG_DEBUG() << path;
   QFile file(path);
- 
+  QString line, key;
+
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
   TextStream secStrucTextStream(&file);
   QLOG_DEBUG() << "loading succesfull";
-  Data::ProteinChain* chain(0);
-  Data::Geometry* geometry(0);
-  Data::Solvent* solvent(0);
-  Data::Group* group(0);
-  Data::Atom* CA(0);
-  Data::Atom* O(0);
+  //Data::ProteinChain* chain(0);
+  m_chain = 0;
+  m_solvent = 0;
+  m_group = 0;
+  m_CA = 0;
+  m_O =0;
 
-   // loadTopologyFiles();
-  std::vector<QString> secStrucChain;
-  std::vector<int>secStrucType,secStrucResStart,secStrucResStop;
+  //TextStream* topology;
+
+
+  m_topolCount =0;
   
-  Math::Vec3 vCA;
-  Math::Vec3 vO;
+  m_topologies = getTopologyFiles(topolpath);
+  while (!secStrucTextStream.atEnd()) {
+    m_secStrucLine = secStrucTextStream.nextLineNonTrimmed();
+    m_secStrucKey = m_secStrucLine;
+    m_secStrucType.push_back(m_secStrucLine.mid(0,1).trimmed().toInt());
+    m_secStrucChain.push_back(m_secStrucLine.mid(4,1).trimmed());
+    m_secStrucResStart.push_back(m_secStrucLine.mid(8,4).trimmed().toInt());
+    m_secStrucResStop.push_back(m_secStrucLine.mid(15,4).trimmed().toInt());
 
-   QString line, key, secStrucLine, secStrucKey;
-   QString currentChain;
-   QString currentGroup;
-   int linenumber(0);
-   int secStrucIndex(0);
+    QLOG_DEBUG() << m_secStrucLine.mid(0,1).trimmed()+ " " + m_secStrucLine.mid(4,1).trimmed() + " " + m_secStrucLine.mid(8,4).trimmed() + " " + m_secStrucLine.mid(15,4).trimmed();
+
+
+   }
+   for(int i =0; i<m_secStrucResStop.size(); i++){
+    QLOG_DEBUG() << QString::number(m_secStrucResStop[i]);
+   }
+   m_secStrucIndex= 0;
    QString s;
-  QString aToZ ="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  int chainNumber(0);
-  int grpNumber(0);
+  m_aToZ ="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  m_chainNumber=0;
+  m_grpNumber=0;
 
-  chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
-  //chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
+ 
 
-  m_chains.insert(currentChain, chain);
-   while (!secStrucTextStream.atEnd()) {
-    secStrucLine = secStrucTextStream.nextLineNonTrimmed();
-    secStrucKey = secStrucLine;
-    secStrucType.push_back(secStrucLine.mid(0,1).trimmed().toInt());
-    secStrucChain.push_back(secStrucLine.mid(4,1).trimmed());
-    secStrucResStart.push_back(secStrucLine.mid(8,4).trimmed().toInt());
-    secStrucResStop.push_back(secStrucLine.mid(15,4).trimmed().toInt());
-
-    QLOG_DEBUG() << secStrucLine.mid(0,1).trimmed()+ " " + secStrucLine.mid(4,1).trimmed() + " " + secStrucLine.mid(8,4).trimmed() + " " + secStrucLine.mid(15,4).trimmed();
-
-
-   }
-   for(int i =0; i<secStrucResStop.size(); i++){
-    QLOG_DEBUG() << QString::number(secStrucResStop[i]);
-   }
    while (!textStream.atEnd()) {
+
+
       
       line = textStream.nextLineNonTrimmed();
       key  = line;
-    if(linenumber >= 2 && std::regex_search(line.toStdString(), std::regex("[A-Za-z]"))) {
+    if(textStream.lineNumber() >= 2 && std::regex_search(line.toStdString(), std::regex("[A-Za-z]"))) {
 
-    QString label(line.mid(11, 4).trimmed());  // eg. CHA
-    QString res(line.mid(5, 3).trimmed());    // eg. HIS
-    //QString id (line.mid(21, 1));              // eg. A
-    QString grp(line.mid(1, 4).trimmed());    // eg. 143
-    QString sym(label[0]);    // eg. C
-    char strucType(0);  
-
-  //Convert to picameters
-    double x = 10*line.mid(20, 8).toFloat(&ok);  if (!ok) goto error;
-    double y = 10*line.mid(28, 8).toFloat(&ok);  if (!ok) goto error;
-    double z = 10*line.mid(36, 8).toFloat(&ok);  if (!ok) goto error;
-
-    qglviewer::Vec v(x,y,z);
-
-    grpNumber = grp.toInt();
-    QLOG_DEBUG() << "chain number" <<chainNumber;
-    QLOG_DEBUG() << "secStrucIndex" <<secStrucIndex;
-    if(secStrucIndex ==32){
-      secStrucIndex =31;
+    if(!parseChain(textStream)){
+      QLOG_DEBUG() << "parseChain false";
+      continue;
     }
+    m_topolCount++;
+    m_chainNumber++;
+    QLOG_DEBUG() << "topolCount" << m_topolCount;
+    }
+    QLOG_DEBUG() << "streaming through " << line;
 
-    if (!(aToZ[chainNumber]==secStrucChain[secStrucIndex])){
-      strucType = 0;
-    } else if (grpNumber < secStrucResStart[secStrucIndex]){
-      strucType = 0;
-    }else if (grpNumber == secStrucResStop[secStrucIndex])
-    {
-      strucType = secStrucType[secStrucIndex];
-      if (secStrucIndex < 32){
-      ++secStrucIndex;
-      }
-    }else
-    {
-      strucType = secStrucType[secStrucIndex];
-    }
-    
-    
-    QLOG_DEBUG() << "current " << currentGroup <<" new " <<grp;
-    if(currentGroup.toInt() > grp.toInt()){
-      ++chainNumber;
-      currentChain = aToZ[chainNumber];
-      QLOG_DEBUG() << "new chain "<< aToZ[chainNumber];
-      chain = new Data::ProteinChain(QString("Chain ") + aToZ[chainNumber]);
-      m_chains.insert(currentChain, chain);
-    }else{
-      chain = m_chains[currentChain];
-    }
-
-    if(grp!= currentGroup){
-      currentGroup = grp;
-      group = new Data::Group(grp.trimmed() + " " +res);
-      chain->append(group);
-    }
-    Data::Atom* atom(new Data::Atom(sym, label));
-    group->addAtom(atom, v); 
-
-    if (label == "CA"){
-      CA = atom;
-      Math::Vec3 vtemp {x,y,z};
-      vCA = vtemp;
-    }
-   if (label == "O"){
-      O = atom;
-      Math::Vec3 vtemp {x,y,z};
-      vO = vtemp;
-      chain->appendAlphaCarbon(vCA);
-      chain->appendPeptideOxygen(vO);
-
-      if(strucType == 0 ){
-        chain->appendSecondaryStructure(Data::SecondaryStructure::Coil);
-      }
-      if(strucType == 1){
-        chain->appendSecondaryStructure(Data::SecondaryStructure::Helix);
-      }
-      if(strucType == 2){
-        chain->appendSecondaryStructure(Data::SecondaryStructure::Sheet);
-      }
-      //chain->addResidue(vCA, vO, strucType);
-    }
-    
-    if (!ok) goto error;
-    }
-    ++linenumber;
    }
 
-/*for (int chainId = 0; chainId < m_chains.size(); chainId++) {
-    Data::chain *C = m_chains[chainId];
+  
+ 
+
+
+
     
-    QString id(C->id);
-    Data::ProteinChain* proteinChain(m_chains[id]);
-
-       for (int r = 0; r < C->residues.size(); r++) {
-           Data::residue *R = &C->residues[r];
-           Data::atom const* CA = Data::Pdb::getAtom(*R, (char *)"CA");
-           Data::atom const* O  = Data::Pdb::getAtom(*R, (char *)"O");
-           char ss = R->ss;
-
-           if (CA == 0 || O == 0) {
-               QString msg("CA/O not found in chain ");
-               msg + C->id + " residue " + R->type + "_"  + R->id;
-               m_errors.append(msg);
-               return false;
-           }   
-
-           proteinChain->addResidue(CA->coor, O->coor, ss);
-       }   
-   }   
-  */
-
   QLOG_DEBUG() << "reached end of parsing";
   for (auto chain : m_chains.values()) m_dataBank.append(chain);
   QLOG_DEBUG() << "reached end of chains";
- for (auto geom: m_geometries.values()) m_dataBank.append(geom);
-  QLOG_DEBUG() << "reached end of geom";
-  if (solvent) m_dataBank.append(solvent);
+  for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+   QLOG_DEBUG() << "reached end of geom";
+  if (m_solvent){
 
-    return ok;
-    error:
-      QString msg("Error parsing PDB file around line number ");
-      msg +=  QString::number(textStream.lineNumber());
-      msg +=  "\n" + line;
-      m_errors.append(msg);
-      return false;
-      
-}else{
-      QString msg("Failed to open secondary structure file for reading: ");
-      msg += m_filePath;
-      m_errors.append(msg);
- }
+  m_dataBank.append(m_solvent);
+
+  return ok;
+      }
+  return ok;
+  }
+  return ok;
 }
-
-bool Gro::parseATOM(QString const& line, Data::Group& group)
+bool Gro::parseATOM(QString const& line, Data::Group& group, float atomcharge)
 {
    bool ok(true);
    double x = line.mid(20, 8).toFloat(&ok);
@@ -227,7 +278,7 @@ bool Gro::parseATOM(QString const& line, Data::Group& group)
    QString label(line.mid(11, 4).trimmed());
    QString sym(label[0]);
    Data::Atom* atom(new Data::Atom(sym, label));
-   group.addAtom(atom, qglviewer::Vec(x,y,z));
+   group.addAtom(atom, qglviewer::Vec(x,y,z),atomcharge);
   
 
    return ok;
@@ -239,9 +290,7 @@ bool Gro::parseATOM(QString const& line, Data::Group& group)
 
 
 
-void loadTopologyFiles()
-{
 
-}
+
 
 } } // end namespace IQmol::Parser

@@ -22,6 +22,7 @@
 
 #include "SystemLayer.h"
 #include "MoleculeLayer.h"
+#include "GroupLayer.h"
 #include "LayerFactory.h"
 
 #include "Data/Bank.h"
@@ -35,7 +36,8 @@ namespace IQmol {
 namespace Layer {
 
 
-System::System(QString const& label, QObject* parent) : Component(label, parent)
+System::System(QString const& label, QObject* parent) : Component(label, parent), 
+   m_octree(0)
 {
    setFlags( Qt::ItemIsEnabled 
             | Qt::ItemIsEditable
@@ -45,6 +47,9 @@ System::System(QString const& label, QObject* parent) : Component(label, parent)
    setCheckState(Qt::Checked);
 
    m_surfaceList.setText("Ribbons");
+
+   connect(newAction("Box System"), SIGNAL(triggered()), this, SLOT(boxSystem()));
+   connect(newAction("Remove System"), SIGNAL(triggered()), this, SLOT(removeSystem()));
 }
 
 
@@ -58,7 +63,7 @@ void System::appendData(Data::Bank& bank)
    for (auto iter = bank.begin(); iter != bank.end(); ++iter) {
        Layer::List list(factory.toLayers(**iter));
 
-       qDebug() << "Processing Layer:" << Data::Type::toString((*iter)->typeID());
+       qDebug() << "Processing Layer for System:" << Data::Type::toString((*iter)->typeID());
 
        switch ((*iter)->typeID()) {
           case Data::Type::MacroMolecule: 
@@ -73,21 +78,28 @@ void System::appendData(Data::Bank& bank)
              break;
 
           case Data::Type::Geometry: {
-             molecule = new Molecule();
+             molecule = new Molecule(this);
              Data::Geometry* geom = dynamic_cast<Data::Geometry*>(*iter);
              molecule->setText("Molecule");
              if (geom)  molecule->setText(geom->name());
              molecule->appendData(list);
              appendLayer(molecule);
+             connectComponent(molecule);
+             connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)),
+                this, SIGNAL(removeMolecule(Layer::Molecule*)));
+               
           }; break;
              
           default:
              if (!molecule) {
-                 molecule = new Molecule();
+                 molecule = new Molecule(this);
                  molecule->setText("Molecule");
                  appendLayer(molecule);
              }
              molecule->appendData(list);
+             connectComponent(molecule);
+             connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)),
+                this, SIGNAL(removeMolecule(Layer::Molecule*)));
        }
    }
 }
@@ -122,6 +134,32 @@ double System::radius()
    for (auto& c: components) r = std::max(r, c->radius());
 
    return r;
+}
+
+
+void System::boxSystem()
+{
+    AtomList atoms = findLayers<Atom>(); 
+    GroupList groups = findLayers<Group>(); 
+    qDebug() << "Found" << atoms.size() << "atoms";
+    qDebug() << "Found" << groups.size() << "groups";
+    for (auto group : groups) atoms += group->getAtoms();
+    qDebug() << "Found" << atoms.size() << "atoms";
+
+    if (m_octree) {
+       removeLayer(m_octree);
+       delete m_octree;
+    }
+    m_octree = new Octree(atoms);
+
+    connect(this, SIGNAL(selectionChanged()), m_octree, SLOT(selectionChanged()));
+    connect(m_octree, SIGNAL(updated()), this, SIGNAL(updated()));
+
+    connect(m_octree, SIGNAL(newMoleculeRequested(AtomList const&)), 
+       this, SIGNAL(newMoleculeRequested(AtomList const&)));
+
+    appendLayer(m_octree);
+    updated();
 }
 
 } } // end namespace IQmol::Layer

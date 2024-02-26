@@ -25,8 +25,8 @@ set( SOURCES
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
-target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
+add_library(${LIB} STATIC ${SOURCES})
+target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 
 target_link_libraries(${LIB} PRIVATE
    Util
@@ -34,5 +34,4 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Gui
    Qt5::Widgets
    Qt5::Network
-   OpenSSL::SSL
 )

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_VIBRONIC_H
-#define IQMOL_LAYER_VIBRONIC_H
+#pragma once
 /*******************************************************************************
          
   Copyright (C) 2022 Andrew Gilbert
@@ -63,5 +62,3 @@ namespace Layer {
 
 
 } } // end namespace IQmol::Layer
-
-#endif

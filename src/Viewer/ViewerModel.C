@@ -103,19 +103,10 @@ ViewerModel::ViewerModel(QWidget* parent) :
    connect(this, SIGNAL(itemChanged(QStandardItem*)), 
       this, SLOT(checkItemChanged(QStandardItem*)));
 
-#if 0
-   Layer::System* system(newSystem());
-   qDebug() << "print appending System Layer" << system;
-   appendRow(system);
- 
-   Layer::Molecule* mol(newMolecule());
-   system->appendLayer(mol);
-#else
-   // By default we create a new Molecule, Systems are more conveniently loaded
-   // from file(s)
+   // By default we create a new Molecule, Systems are more 
+   // conveniently loaded from file(s)
    Layer::Molecule* mol(newMolecule());
    appendRow(mol);
-#endif
 
    changeActiveViewerMode(Viewer::BuildAtom);
    sceneRadiusChanged(Preferences::DefaultSceneRadius());
@@ -257,6 +248,154 @@ void ViewerModel::insertMoleculeById(QString identifier)
 }
 
 
+void ViewerModel::mergeSelection(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+   Layer::Molecule* parent(0);
+
+   MoleculeList molecules;
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (parent == 0) {
+             parent = molecule;
+          } else {
+             atoms.append(molecule->findLayers<Layer::Atom>());
+             molecules.append(molecule);
+          }
+       }
+   }
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atoms) {
+       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   for (auto molecule : molecules) removeMolecule(molecule);
+
+   if (!parent) {
+      QLOG_WARN() << "No parent molecule found for mergeSelection";
+   }else {
+      parent->appendPrimitives(primitives);
+      parent->reperceiveBonds(false);
+   }
+}
+
+
+void ViewerModel::hideMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Unchecked);
+       }
+   }
+}
+
+
+void ViewerModel::showMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Checked);
+       }
+   }
+}
+
+void ViewerModel::deleteSelection(QModelIndexList const&)
+{
+   qDebug() << "ViewerModel::deleteSelection NYI !!!";
+}
+
+
+void ViewerModel::newMoleculeFromSelection(QModelIndexList const& selection)
+{
+   Layer::Atom*     atom;
+   Layer::Group*    group;
+   Layer::Molecule* molecule;
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+
+       if ( (group = qobject_cast<Layer::Group*>(base)) ) {
+          atoms.append(group->getAtoms());
+       }else if ( (atom = qobject_cast<Layer::Atom*>(base)) ) {
+           atoms.append(atom);
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+           atoms.append(molecule->findLayers<Layer::Atom>());
+       }
+   }
+
+   newMoleculeRequested(atoms);
+}
+
+
+void ViewerModel::newMoleculeRequested(AtomList const& atomList)
+{
+   if (atomList.isEmpty()) return;
+
+   // Attempt to find a system to attach the new molecule, otherwise it will 
+   // attach to the root item.
+   SystemList parents(
+      atomList.first()->findLayers<Layer::System>(Layer::Parents | Layer::Nested));
+
+   QStandardItem* root = parents.isEmpty() ? invisibleRootItem() : parents.first();
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atomList) {
+       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   Layer::Molecule* molecule = newMolecule();
+   molecule->appendPrimitives(primitives);
+   molecule->reperceiveBonds(false);
+
+   Command::AddMolecule* cmd(new Command::AddMolecule(molecule, root));
+   postCommand(cmd);
+}
+
+
+// - - - - - Component - - - - -
+
+void ViewerModel::connectComponent(Layer::Component* component) 
+{
+qDebug() << "connecting component" << component->text();
+   connect(component, SIGNAL(updated()), 
+      this, SLOT(updateVisibleObjects()));
+
+   connect(component, SIGNAL(softUpdate()), 
+      this, SIGNAL(updated()));
+
+   connect(component, SIGNAL(postMessage(QString const&)), 
+      this, SIGNAL(displayMessage(QString const&)));
+
+   connect(component, SIGNAL(postCommand(QUndoCommand*)), 
+      this, SIGNAL(postCommand(QUndoCommand*)));
+
+   connect(component, SIGNAL(pushAnimators(AnimatorList const&)), 
+      this, SIGNAL(pushAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(popAnimators(AnimatorList const&)), 
+      this, SIGNAL(popAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
+      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
+}
+
 
 // - - - - - Molecule - - - - -
 
@@ -270,7 +409,8 @@ void ViewerModel::newMoleculeMenu()
       std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
    );
 
-   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), invisibleRootItem()));
+   QStandardItem* parent(invisibleRootItem());
+   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), parent));
    changeActiveViewerMode(Viewer::BuildAtom);
    postCommand(cmd);
 }
@@ -279,26 +419,13 @@ void ViewerModel::newMoleculeMenu()
 Layer::Molecule* ViewerModel::newMolecule()
 {
    Layer::Molecule* molecule = new Layer::Molecule(m_parent);
+   connectComponent(molecule);
 
    connect(molecule, SIGNAL(updated()), 
       this, SLOT(computeEnergy()));
-   connect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
-   connect(molecule, SIGNAL(softUpdate()), 
-      this, SIGNAL(updated()));
 
-   connect(molecule, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   connect(molecule, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   connect(molecule, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   connect(molecule, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
    connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
       this, SLOT(removeMolecule(Layer::Molecule*)));
-   connect(molecule, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
-      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
 
    return molecule;
 }
@@ -306,7 +433,14 @@ Layer::Molecule* ViewerModel::newMolecule()
 
 void ViewerModel::removeMolecule(Layer::Molecule* molecule)
 {
-   postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
+qDebug() << "ViewerModel::removeMolecule called" << molecule;
+   QList<Layer::Base*> parents(molecule->findLayers<Layer::Base>(Layer::Parents));
+   
+   if (parents.isEmpty()) {
+      postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
+   }else {
+      postCommand(new Command::RemoveMolecule(molecule, parents.first()));
+   }
 }
 
 
@@ -342,20 +476,23 @@ void ViewerModel::forAllMolecules(std::function<void(Layer::Molecule&)> function
 Layer::System* ViewerModel::newSystem()
 {
    Layer::System* system = new Layer::System(DefaultMoleculeName, m_parent);
+   connectComponent(system);
 
-   connect(system, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
-   connect(system, SIGNAL(softUpdate()), 
-     this, SIGNAL(updated()));
+   connect(system, SIGNAL(removeSystem(Layer::System*)), 
+      this, SLOT(removeSystem(Layer::System*)));
 
-   connect(system, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   connect(system, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   connect(system, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   connect(system, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
+   connect(system, SIGNAL(removeMolecule(Layer::Molecule*)), 
+      this, SLOT(removeMolecule(Layer::Molecule*)));
+
+   connect(system, SIGNAL(connectComponent(Layer::Component*)),
+      this, SLOT(connectComponent(Layer::Component*)));
+
+   connect(system, SIGNAL(newMoleculeRequested(AtomList const&)), 
+      this, SLOT(newMoleculeRequested(AtomList const&)));
+
+   // Used to update the Octree selection volume
+   connect(this, SIGNAL(selectionChanged()), 
+      system, SIGNAL(selectionChanged()));
 
    return system;
 }
@@ -427,7 +564,7 @@ void ViewerModel::fileOpenFinished()
    QStringList errors(parser->errors());
 
    if (bank.isEmpty()) {
-      if (errors.isEmpty()) errors.append("No valid data found in " + info.filePath());
+      if (errors.isEmpty()) errors.append("No valid data found in bank " + info.filePath());
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
       parser->deleteLater();
       return;
@@ -746,6 +883,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
    Layer::GeometryList* geometryList1(0);
    Layer::GeometryList* geometryList2(0);
    Layer::GLObject* glObject;
+   Layer::Molecule* molecule;
    bool setDefaultGeometry(false);
 
    list = deselected.indexes();
@@ -756,6 +894,15 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           glObject->deselect();
           m_selectedObjects.removeAll(glObject);
 
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->deselect();
+              m_selectedObjects.removeAll(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -763,6 +910,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           if ( (frequencies = qobject_cast<Layer::Frequencies*>(base)) ) {
              frequencies->clearActiveMode();
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -780,12 +928,18 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        base = QVariantPtr<Layer::Base>::toPointer((*iter).data(Qt::UserRole+1));
        if ( (glObject = qobject_cast<Layer::GLObject*>(base)) ) {
 
-          MoleculeList 
-             parents(glObject->findLayers<Layer::Molecule>(Layer::Parents | Layer::Visible));
-//        if (parents.size() > 0) {
               glObject->select();
               m_selectedObjects.append(glObject);
-//          }
+
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->select();
+              m_selectedObjects.append(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -794,6 +948,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
              frequencies->setActiveMode(*mode);
              Layer::Atom::setDisplayVibrationVector(true);
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -806,6 +961,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        }
    }
 
+   selectionChanged();
    if (setDefaultGeometry) geometryList1->resetGeometry();
    if (m_updateEnabled) updated();
 }
@@ -942,7 +1098,7 @@ void ViewerModel::updateVisibleObjects()
    // the Viewer.  This means the Fragment is responsible for drawing its children
    m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | Layer::Visible | 
       Layer::Nested);
-   QLOG_TRACE() << "Updating visible objects:" << m_visibleObjects.size();
+// QLOG_TRACE() << "Updating visible objects:" << m_visibleObjects.size();
 
    // Make sure the selection only contains visible objects;
    GLObjectList::iterator object(m_selectedObjects.begin());

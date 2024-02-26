@@ -71,19 +71,10 @@ void ProteinChain::cartoonAvailable()
    }
 
    Data::Surface* surfaceData(generateCartoon->getSurface());
+   surfaceData->setDescription("Ribbon");
 
-   QList<System*> parents = findLayers<System>(Parents);
-   if (!parents.isEmpty()) {
-
-      //surfaceData->setDescription(text());
-      //parents.first()->prependSurface(surfaceData);
-      //parents.first()->addProperty(new Property::Residue(this));
-
-      surfaceData->setDescription("Ribbon");
-      Surface* surface = createSurfaceLayer(surfaceData);
-      prependLayer(surface);
-      //addProperty(new Property::Residue(this));
-   }
+   Surface* surface = createSurfaceLayer(surfaceData);
+   prependLayer(surface);
 
    updated();
    generateCartoon->deleteLater();

@@ -53,6 +53,8 @@ namespace Network {
          Reply* getFile(QString const& sourcePath, QString const& destinationPath);
          Reply* putFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFiles(QStringList const& fileList, QString const& destinationPath);
+         Reply* postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath);
+         
    };
 
 } } // end namespace IQmol::Network

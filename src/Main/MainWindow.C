@@ -195,6 +195,22 @@ void MainWindow::createConnections()
    connect(&m_viewerView, SIGNAL(expanded(QModelIndex const&)),
       &m_viewerModel, SLOT(itemExpanded(QModelIndex const&))); 
 
+   connect(&m_viewerView, SIGNAL(newMoleculeFromSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(newMoleculeFromSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(mergeSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(mergeSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(deleteSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(deleteSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(showMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(showMolecules(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(hideMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(hideMolecules(QModelIndexList const&)));
+
+
    connect(&m_viewerModel, SIGNAL(sceneRadiusChanged(double const)), 
       m_viewer, SLOT(setSceneRadius(double const)));
 
@@ -260,8 +276,6 @@ void MainWindow::createConnections()
    connect(&m_viewerModel, SIGNAL(clearSelection()),
       &m_viewerSelectionModel, SLOT(clearSelection()));
 
-//   connect(m_viewer, SIGNAL(clearSelection()),
-//      &m_viewerSelectionModel, SLOT(clearSelection()));
    connect(m_viewer, SIGNAL(clearSelection()),
       &m_viewerModel, SLOT(selectNone()));
 

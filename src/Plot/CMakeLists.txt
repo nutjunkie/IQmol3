@@ -19,4 +19,5 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Core 
    Qt5::Gui
    Qt5::Widgets
+   Qt5::PrintSupport
 )

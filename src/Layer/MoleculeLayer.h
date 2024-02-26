@@ -102,9 +102,6 @@ bool save(bool prompt = false);
             void appendData(IQmol::Data::Bank&);
             void appendData(Layer::List&);
 
-            void setFile(QString const& fileName);
-            QString fileName() const { return m_inputFile.fileName(); }
-   
             bool sanityCheck();
 
             Process::JobInfo qchemJobInfo();
@@ -187,10 +184,10 @@ bool save(bool prompt = false);
    
             QList<qglviewer::Vec> coordinates();
             QList<int> atomicNumbers();
+            QList<QString> atomicSymbols();
 
             QList<double> atomicCharges(Data::Type::ID type);
             void setGeometry(IQmol::Data::Geometry&);
-            QList<QString> atomicSymbols();
 
             // There must be a better way of doing this, but this is used
             // in Layer::GeometryList for de
@@ -213,6 +210,17 @@ bool save(bool prompt = false);
             int totalCharge() const;
             int multiplicity() const;
    
+         Q_SIGNALS:
+            void multiplicityAvailable(unsigned);
+            void chargeAvailable(int);
+            void pointGroupAvailable(Data::PointGroup const&);
+            void energyAvailable(double const, Info::EnergyUnit, QString const&);
+            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
+            void radiusAvailable(double const radius);
+            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
+            void parameterFileAvailable(QString const&);
+            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
+ 
          public Q_SLOTS:
             void groupSelection();
             void ungroupSelection();
@@ -226,7 +234,7 @@ bool save(bool prompt = false);
             void openSurfaceAnimator();
 
             /// Passes the remove signal on so that the ViewerModel can deal with it
-            void removeMolecule() { removeMolecule(this); }
+            void removeMolecule() { Component::removeMolecule(this); }
             void detectSymmetry();
             void autoDetectSymmetry();
             void invalidateSymmetry();
@@ -245,22 +253,6 @@ bool save(bool prompt = false);
             /// exception is thrown if there are any problems.
             void writeToFile(QString const& filePath);
 
-         Q_SIGNALS:
-            void softUpdate(); // issue if the number of primitives does not change
-            void removeMolecule(Layer::Molecule*);
-   
-            void multiplicityAvailable(unsigned);
-            void chargeAvailable(int);
-            void pointGroupAvailable(Data::PointGroup const&);
-            void energyAvailable(double const, Info::EnergyUnit, QString const&);
-            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
-            void radiusAvailable(double const radius);
-            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
-            void parameterFileAvailable(QString const&);
-
-            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
-   
-   
          protected:
             void updateAtomScale(double const scale);
             void updateSmallerHydrogens(bool smallerHydrogens);
@@ -333,9 +325,6 @@ bool save(bool prompt = false);
             void deleteProperties();
 
             void saveToGeometry(Data::Geometry&);
-   
-// This should probably move to Component
-QFileInfo m_inputFile;
    
             /// State variable that determines how the Primitives are drawn (e.g.
             /// CPK or wireframe)

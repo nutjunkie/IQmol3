@@ -34,6 +34,8 @@
 #include "Preferences.h"
 #include "QsLog.h"
 
+#include <QNetworkReply>
+#include <QJsonObject>
 #include <QDebug>
 #include <QRegularExpression>
 
@@ -252,13 +254,30 @@ void Server::submit(Job* job)
    // input file and we're done.  Other servers need the run file and a 
    // separate submission step.
    if (isWebBased()) {
+      if(job->get<QString>("jobType")=="gromacs"){
+         QLOG_DEBUG() << "Using the gromacs clause";
+         QString submit(m_configuration.value(ServerConfiguration::Submit));
+         submit = substituteMacros(submit);
+         QJsonObject payload = job->get<QJsonObject>("JsonPayload");
+         
+
+
+         Network::Reply* reply(m_connection->postJsonFiles(fileName,payload,submit));
+         connect(reply, SIGNAL(finished()), this, SLOT(submitFinished()));
+         m_activeRequests.insert(reply, job);
+         reply->start();
+
+         }else{
+      QLOG_DEBUG() << "Using the else webbased clause";
       QString submit(m_configuration.value(ServerConfiguration::Submit));
       submit = substituteMacros(submit);
       Network::Reply* reply(m_connection->putFile(fileName, submit));
       connect(reply, SIGNAL(finished()), this, SLOT(submitFinished()));
       m_activeRequests.insert(reply, job);
       reply->start();
-   }else {
+         }
+   }else{
+      QLOG_DEBUG() << "Using the else clause";
       QString destination(job->getRemoteFilePath("InputFileName"));
       Network::Reply* reply(m_connection->putFile(fileName, destination));
       connect(reply, SIGNAL(finished()), this, SLOT(copyRunFile()));

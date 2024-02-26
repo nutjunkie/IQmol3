@@ -24,6 +24,7 @@
 #include "Viewer/Animator.h"
 #include "Layer/Layer.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/SystemLayer.h"
 #include "QGLViewer/vec.h"
 #include "Layer/PrimitiveLayer.h"
 #include <QUndoCommand>
@@ -49,7 +50,8 @@ namespace Layer {
 namespace Command {
 
    /// Allows Primitives to be added and/or removed from a Molecule in one Command
-   class EditPrimitives : public QUndoCommand {
+   class EditPrimitives : public QUndoCommand 
+   {
       public:
          EditPrimitives(QString const& text, Layer::Molecule* molecule)
           : QUndoCommand(text), m_molecule(molecule), m_deleteRemoved(true) { }
@@ -93,7 +95,8 @@ namespace Command {
 
 
 
-   class MoveObjects : public QUndoCommand {
+   class MoveObjects : public QUndoCommand 
+   {
       public:
          MoveObjects(Layer::Component*, QString const& text = "Move items", 
             bool const animiate = false, bool invalidateSymmetry = true);
@@ -123,8 +126,8 @@ namespace Command {
    };
 
 
-
-   class AddHydrogens : public QUndoCommand {
+   class AddHydrogens : public QUndoCommand 
+   {
       public:
          AddHydrogens(Layer::Molecule* molecule, Layer::PrimitiveList const& primitives);
          ~AddHydrogens();
@@ -141,7 +144,8 @@ namespace Command {
 
    // Specialized cases of the above
 
-   class AddCharges: public EditPrimitives {
+   class AddCharges: public EditPrimitives 
+   {
       public:
          AddCharges(Layer::Molecule* molecule, Layer::PrimitiveList const& chargeList)
             : EditPrimitives("Add Charges", molecule) {
@@ -150,22 +154,24 @@ namespace Command {
    };
 
 
-   class MinimizeStructure: public MoveObjects {
+   class MinimizeStructure: public MoveObjects 
+   {
       public:
          MinimizeStructure(Layer::Molecule* molecule) 
             : MoveObjects(molecule, "Minimize energy", true, true) { }
    };
  
 
-   class SymmetrizeStructure : public MoveObjects {
+   class SymmetrizeStructure : public MoveObjects 
+   {
       public:
          SymmetrizeStructure(Layer::Molecule* molecule)
             : MoveObjects(molecule, "Symmetrize structure", true, false) { }
    };
 
 
-   class AddConstraint : public QUndoCommand {
-
+   class AddConstraint : public QUndoCommand 
+   {
       public:
          AddConstraint(Layer::Molecule*, Layer::Constraint*);
          ~AddConstraint();
@@ -184,7 +190,8 @@ namespace Command {
 
    // Commands associated with changes to primitives
 
-   class ChangeAtomType : public QUndoCommand {
+   class ChangeAtomType : public QUndoCommand 
+   {
       public:
          ChangeAtomType(Layer::Atom* bond);
          void redo();
@@ -199,7 +206,8 @@ namespace Command {
    };
 
 
-   class ChangeBondOrder : public QUndoCommand {
+   class ChangeBondOrder : public QUndoCommand 
+   {
       public:
          ChangeBondOrder(Layer::Bond* bond);
          void redo();
@@ -214,57 +222,71 @@ namespace Command {
    };
 
 
-   // Add Molecule
+   // Add/Remove Components
 
-   class AddMolecule: public QUndoCommand {
+   class AddComponent : public QUndoCommand 
+   {
       public:
-         AddMolecule(Layer::Molecule* molecule, QStandardItem* parent);
-         ~AddMolecule();
+         AddComponent(Layer::Component* component, QStandardItem* parent);
+         ~AddComponent();
          void redo();
          void undo();
+
       private:
-         Layer::Molecule* m_molecule;
+         Layer::Component* m_component;
          QStandardItem* m_parent;
-         bool m_deleteMolecule;
+         bool m_deleteComponent;
+   };
+
+   class RemoveComponent : public QUndoCommand 
+   {
+      public:
+         RemoveComponent(Layer::Component* component, QStandardItem* parent);
+         ~RemoveComponent();
+         void redo();
+         void undo();
+
+      private:
+         Layer::Component* m_component;
+         QStandardItem* m_parent;
+         bool m_deleteComponent;
+   };
+
+   
+   class AddMolecule : public AddComponent 
+   {
+      public:
+         AddMolecule(Layer::Molecule* molecule, QStandardItem* parent) :
+            AddComponent(molecule, parent) { }
+   };
+
+   class RemoveMolecule : public RemoveComponent 
+   {
+      public:
+         RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
+          : RemoveComponent(molecule, parent) { }
    };
 
 
-   class RemoveMolecule: public QUndoCommand {
+   class AddSystem : public AddComponent 
+   {
       public:
-         RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent);
-         ~RemoveMolecule();
-         void redo();
-         void undo();
-      private:
-         Layer::Molecule* m_molecule;
-         QStandardItem* m_parent;
-         bool m_deleteMolecule;
+         AddSystem(Layer::System* system , QStandardItem* parent) :
+            AddComponent(system, parent) { }
+   };
+
+   class RemoveSystem : public RemoveComponent 
+   {
+      public:
+         RemoveSystem(Layer::System* system, QStandardItem* parent) 
+          : RemoveComponent(system, parent) { }
    };
 
 
-   class AddSystem: public QUndoCommand {
-      public:
-         AddSystem(Layer::System* system, QStandardItem* parent);
-         void redo();
-         void undo();
-      private:
-         Layer::System* m_system;
-         QStandardItem* m_parent;
-   };
+   // - - - - - x - - - - -
 
-
-   class RemoveSystem: public QUndoCommand {
-      public:
-         RemoveSystem(Layer::System* system, QStandardItem* parent);
-         void redo();
-         void undo();
-      private:
-         Layer::System* m_system;
-         QStandardItem* m_parent;
-   };
-
-
-   class AppendData : public QUndoCommand {
+   class AppendData : public QUndoCommand 
+   {
       public:
          AppendData(Layer::Molecule* molecule, Layer::List const& dataList, 
             QString const& text) : QUndoCommand(text), m_molecule(molecule), 
@@ -279,7 +301,8 @@ namespace Command {
    };
 
 
-   class RemoveData : public QUndoCommand {
+   class RemoveData : public QUndoCommand 
+   {
       public:
          RemoveData(Layer::Molecule* molecule, Layer::List const& dataList, 
             QString const& text) : QUndoCommand(text), m_molecule(molecule), 
@@ -294,10 +317,10 @@ namespace Command {
    };
 
 
-
 /*
    // Groupig and ungrouping Fragments
-   class GroupPrimitives : public QUndoCommand {
+   class GroupPrimitives : public QUndoCommand 
+   {
       public:
          GroupPrimitives(Layer::Molecule* molecule, PrimitiveList const& primitiveList)
            : QUndoCommand("Create Fragment"),  m_molecule(molecule), 
@@ -315,7 +338,8 @@ namespace Command {
    };
 
 
-   class UngroupFragments: public QUndoCommand {
+   class UngroupFragments: public QUndoCommand 
+   {
       public:
          UngroupFragments(Layer::Molecule* molecule, FragmentList const& fragmentList)
            : QUndoCommand("Ungroup Fragment"),  m_molecule(molecule), 
@@ -331,6 +355,5 @@ namespace Command {
          FragmentList m_fragmentList;
    };
 */
-
 
 } } // end namespace IQmol::Command

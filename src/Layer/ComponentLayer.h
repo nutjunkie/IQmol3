@@ -26,6 +26,8 @@
 #include "Viewer/Animator.h"
 #include "Grid/Property.h"
 
+#include <QFileInfo>
+
 
 class QUndoCommand;
 
@@ -36,6 +38,9 @@ namespace IQmol {
    }
 
    namespace Layer {
+
+      class Molecule;
+      class System;
 
       // Base class for components of a System, which may include QM Molecules,
       // Solvent, Protein, etc.
@@ -117,6 +122,9 @@ namespace IQmol {
             qglviewer::Frame const& getReferenceFrame() const { return m_frame; }
             void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
 
+            void setFile(QString const& fileName);
+            QString fileName() const { return m_inputFile.fileName(); };
+
          Q_SIGNALS:
             void useShader(QString const&) const;
             void useDrawStyle(DrawStyle const) const;
@@ -130,19 +138,18 @@ namespace IQmol {
             void postMessage(QString const&);
 
             // This allows observers to disconnect from a Component once removed
-            void componentRemoved(Layer::Component*);
+            void removeMolecule(Layer::Molecule*);
+            void removeSystem(Layer::System*);
 
          protected:
             QList<Property::Base*> m_properties;
+            QFileInfo m_inputFile;
 
             virtual void deleteProperties();
             virtual void initProperties();
 
             Layer::Container m_surfaceList;
             Surface* createSurfaceLayer(Data::Surface* surfaceData);
-
-         private Q_SLOTS:
-            void  removeComponent() { componentRemoved(this); }
 
          private:
             QString   m_shaderKey;

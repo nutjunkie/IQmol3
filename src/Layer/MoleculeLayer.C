@@ -41,11 +41,13 @@
 #include "FileLayer.h"
 #include "FrequenciesLayer.h"
 #include "EfpFragmentLayer.h"
+#include "FrequenciesLayer.h"
 #include "GeometryLayer.h"
 #include "GeometryListLayer.h"
 #include "GroupLayer.h"
 #include "IsotopesLayer.h"
 #include "MoleculeLayer.h"
+#include "NmrLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
 #include "VibronicLayer.h"
@@ -92,7 +94,6 @@ extern "C" void symmol_(int*, double*, double*, int*, char*);
 
 using namespace OpenBabel;
 using namespace qglviewer;
-using namespace std::placeholders;
 
 
 namespace IQmol {
@@ -149,8 +150,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(reperceiveBondsSlot()));
    connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
       this, SLOT(addHydrogens()));
-   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
-      this, SLOT(generateConformersDialog()));
+//   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+//      this, SLOT(generateConformersDialog()));
 
    m_addGeometryMenu = newAction("Duplicate Geometry");
 
@@ -171,13 +172,6 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 Molecule::~Molecule()
 {
    deleteProperties();
-}
-
-
-void Molecule::setFile(QString const& fileName)
-{
-   m_inputFile.setFile(fileName);
-   setText(m_inputFile.completeBaseName());
 }
 
 
@@ -218,13 +212,17 @@ void Molecule::appendData(Layer::List& list)
    }
 
    Layer::List::iterator iter;
+   Nmr*          nmr(0);
    Files*        files(0);
    Atoms*        atoms(0);
    Bonds*        bonds(0);
    Charges*      charges(0);
    CubeData*     cubeData(0);
    Orbitals*     orbitals(0);
+
+   Frequencies*  frequencies(0);
    EfpFragments* efpFragments(0);
+   GeometryList* geometryList(0);
 
    QString text;
    PrimitiveList primitiveList;
@@ -250,7 +248,18 @@ void Molecule::appendData(Layer::List& list)
           //toSet.append(*iter);
           orbitals->setMolecule(this);
 
-       // This is currently preventing the addition of primivees to an exisiting molecule
+       }else if ((nmr = qobject_cast<Nmr*>(*iter))) {
+          nmr->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((frequencies = qobject_cast<Frequencies*>(*iter))) {
+          frequencies->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
+          geometryList->setMolecule(this);
+
+       // This is currently preventing the addition of primitives to an exisiting molecule
        }else if (!labels.contains(text)) {
           labels << (*iter)->text();
 
@@ -1930,7 +1939,6 @@ void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 
 void Molecule::addHydrogens()
 {
-   QLOG_DEBUG() << "Adding hydrogens";
    AtomMap atomMap;
    BondMap bondMap;
 
@@ -1945,6 +1953,9 @@ void Molecule::addHydrogens()
    obMol->BeginModify();
    obMol->EndModify();
 
+   int numAtoms(obMol->NumAtoms());
+   QLOG_DEBUG() << "Adding hydrogens to molecule, initial number of atoms" 
+                << numAtoms;
    // We now type the atoms and overwrite the valency/hybridization info
    // if it has been changed by the user.
    OBAtomTyper atomTyper;
@@ -1974,6 +1985,8 @@ void Molecule::addHydrogens()
    obMol->Translate(-displacement);
    obMol->BeginModify();
    obMol->EndModify();
+
+   QLOG_DEBUG() << "Number of hydrogens added:" << obMol->NumAtoms() - numAtoms;
 
    Command::AddHydrogens* cmd  = 
       new Command::AddHydrogens(this, fromOBMol(obMol, &atomMap, &bondMap));

@@ -24,6 +24,7 @@ set( HEADERS
    MoleculeConfigurator.h
    MullikenDecompositionsDialog.h
    NmrConfigurator.h
+   OctreeConfigurator.h
    OrbitalsConfigurator.h
    SurfaceAnimatorDialog.h
    SurfaceConfigurator.h
@@ -52,6 +53,7 @@ set( SOURCES
    MoleculeConfigurator.C
    MullikenDecompositionsDialog.C
    NmrConfigurator.C
+   OctreeConfigurator.C
    OrbitalsConfigurator.C
    SurfaceAnimatorDialog.C
    SurfaceConfigurator.C
@@ -79,6 +81,7 @@ set( UI_FILES
    MoleculeConfigurator.ui
    MullikenDecompositionsDialog.ui
    NmrConfigurator.ui
+   OctreeConfigurator.ui
    OrbitalsConfigurator.ui
    ScalarConstraintConfigurator.ui
    SurfaceAnimatorDialog.ui
@@ -90,7 +93,7 @@ set( UI_FILES
 
 qt5_wrap_ui(UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
-add_library(${LIB} ${SOURCES} ${UI_HEADERS})
+add_library(${LIB} STATIC ${SOURCES} ${UI_HEADERS})
 
 target_include_directories(${LIB} PUBLIC
    "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
@@ -105,11 +108,7 @@ target_link_libraries(${LIB} PUBLIC
 )
 
 target_link_libraries(${LIB} PRIVATE
-#  Grid
    Plot
-   Amber
-   # Process # QChemJobInfo
-   # Viewer
    Qt5::Core 
    Qt5::Gui 
    Qt5::Widgets

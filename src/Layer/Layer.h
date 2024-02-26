@@ -105,15 +105,13 @@ namespace Layer {
          {
             bool appendSelf(flags & IncludeSelf);
 
-/*
-qDebug() << "Finding children for" << text() << flags;
-qDebug() << "  Visible:      " << bool(flags & Visible);
-qDebug() << "  Nested:       " << bool(flags & Nested);
-qDebug() << "  Children:     " << bool(flags & Children);
-qDebug() << "  Parents:      " << bool(flags & Parents);
-qDebug() << "  IncludeSelf:  " << bool(flags & IncludeSelf);
-qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
-*/
+//qDebug() << "Finding Layers for" << text();
+//qDebug() << "  Visible:      " << bool(flags & Visible);
+//qDebug() << "  Nested:       " << bool(flags & Nested);
+//qDebug() << "  Children:     " << bool(flags & Children);
+//qDebug() << "  Parents:      " << bool(flags & Parents);
+//qDebug() << "  IncludeSelf:  " << bool(flags & IncludeSelf);
+//qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
 
             if (flags & SelectedOnly) {
                appendSelf = appendSelf && hasProperty(Selected);
@@ -135,6 +133,7 @@ qDebug() << "  SelectedOnly: " << bool(flags & SelectedOnly);
             }else if (flags & Parents)  {
                findParents<T>(hits, flags);
             }
+//qDebug() << "  Hits = " << hits.size();
             return hits;
          }
 

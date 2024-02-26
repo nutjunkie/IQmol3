@@ -7,8 +7,8 @@
   <http://iqmol.org> for more details.
 
   IQmol is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software  
-  Foundation, either version 3 of the License, or (at your option) any later  
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
   version.
 
   IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
@@ -21,40 +21,40 @@
 
 ********************************************************************************/
 
-#include "Layer.h"
+#include "Configurator.h"
+#include "ui_OctreeConfigurator.h"
 
 
 namespace IQmol {
 
-namespace Data {
-   class Nmr;
+namespace Layer {
+   class Octree;
 }
 
 namespace Configurator {
-   class Nmr;
-}
 
-namespace Layer {
+   class Octree: public Base {
 
-   class Molecule;
-
-   class Nmr : public Base {
-
-      Q_OBJECT 
+      Q_OBJECT
 
       public:
-         Nmr(Data::Nmr&);
-         ~Nmr();
+         Octree(Layer::Octree& octree);
+         void hits(unsigned);
 
-         void setMolecule(Molecule* molecule) { m_molecule = molecule; }
+      Q_SIGNALS:
+         void selectionRadiusChanged(double);
+         void newMoleculeRequested();
 
       public Q_SLOTS:
-         void configure();
+         void init();
+         void sync();
+         void on_radiusSlider_valueChanged(int);
+         void on_radiusSpin_valueChanged(double);
+         void on_newMoleculeButton_clicked();
 
       private:
-         Molecule*  m_molecule;
-         Data::Nmr& m_data;
-         Configurator::Nmr* m_configurator;
+         Layer::Octree& m_octree;
+         Ui::OctreeConfigurator m_configurator;
    };
 
-} } // end namespace IQmol::Layer
+} } // end namespace IQmol::Configurator

@@ -25,7 +25,6 @@
 #include <QDebug>
 #include <QInputDialog>
 
-
 namespace IQmol {
 namespace Network {
 
