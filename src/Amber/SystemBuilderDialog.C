@@ -45,6 +45,7 @@ SystemBuilderDialog::SystemBuilderDialog(QWidget* parent,
 
    QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
    runButton->setText(tr("Run"));
+   runButton->setDefault(true);
    QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
    stopButton->setEnabled(false);
    QPushButton* resetButton = m_dialog.buttonBox->button(QDialogButtonBox::Reset);
