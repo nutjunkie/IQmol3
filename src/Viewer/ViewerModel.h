@@ -83,7 +83,6 @@ namespace IQmol {
          void newMoleculeMenu();
          void removeMolecule(Layer::Molecule*);
          void removeSystem(Layer::System*);
-         void removeComponent(Layer::Component*);
 
          void addHydrogens();
          void reperceiveBonds();

@@ -276,12 +276,14 @@ void ViewerModel::mergeSelection(QModelIndexList const& selection)
        primitives.append(a);
    }
 
-   for (auto molecule : molecules) {
-       postCommand(new Command::RemoveMolecule(molecule));
-   }
+   for (auto molecule : molecules) removeMolecule(molecule);
 
-   parent->appendPrimitives(primitives);
-   parent->reperceiveBonds(false);
+   if (!parent) {
+      QLOG_WARN() << "No parent molecule found for mergeSelection";
+   }else {
+      parent->appendPrimitives(primitives);
+      parent->reperceiveBonds(false);
+   }
 }
 
 
@@ -390,12 +392,8 @@ qDebug() << "connecting component" << component->text();
    connect(component, SIGNAL(popAnimators(AnimatorList const&)), 
       this, SIGNAL(popAnimators(AnimatorList const&)));
 
-   connect(component, SIGNAL(removeComponent(Layer::Component*)), 
-      this, SLOT(removeComponent(Layer::Component*)));
-
    connect(component, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
       this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
-
 }
 
 
@@ -411,7 +409,8 @@ void ViewerModel::newMoleculeMenu()
       std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
    );
 
-   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), invisibleRootItem()));
+   QStandardItem* parent(invisibleRootItem());
+   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), parent));
    changeActiveViewerMode(Viewer::BuildAtom);
    postCommand(cmd);
 }
@@ -420,26 +419,28 @@ void ViewerModel::newMoleculeMenu()
 Layer::Molecule* ViewerModel::newMolecule()
 {
    Layer::Molecule* molecule = new Layer::Molecule(m_parent);
-   connect(molecule, SIGNAL(updated()), this, SLOT(computeEnergy()));
-
-   //connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
-   //   this, SLOT(removeMolecule(Layer::Molecule*)));
-
    connectComponent(molecule);
+
+   connect(molecule, SIGNAL(updated()), 
+      this, SLOT(computeEnergy()));
+
+   connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
+      this, SLOT(removeMolecule(Layer::Molecule*)));
 
    return molecule;
 }
 
 
-void ViewerModel::removeComponent(Layer::Component* component)
-{
-   postCommand(new Command::RemoveComponent(component));
-}
-
-
 void ViewerModel::removeMolecule(Layer::Molecule* molecule)
 {
-   postCommand(new Command::RemoveMolecule(molecule));
+qDebug() << "ViewerModel::removeMolecule called" << molecule;
+   QList<Layer::Base*> parents(molecule->findLayers<Layer::Base>(Layer::Parents));
+   
+   if (parents.isEmpty()) {
+      postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
+   }else {
+      postCommand(new Command::RemoveMolecule(molecule, parents.first()));
+   }
 }
 
 
@@ -477,8 +478,11 @@ Layer::System* ViewerModel::newSystem()
    Layer::System* system = new Layer::System(DefaultMoleculeName, m_parent);
    connectComponent(system);
 
-   //connect(system, SIGNAL(removeSystem(Layer::System*)), 
-   //   this, SLOT(removeSystem(Layer::System*)));
+   connect(system, SIGNAL(removeSystem(Layer::System*)), 
+      this, SLOT(removeSystem(Layer::System*)));
+
+   connect(system, SIGNAL(removeMolecule(Layer::Molecule*)), 
+      this, SLOT(removeMolecule(Layer::Molecule*)));
 
    connect(system, SIGNAL(connectComponent(Layer::Component*)),
       this, SLOT(connectComponent(Layer::Component*)));
@@ -496,7 +500,7 @@ Layer::System* ViewerModel::newSystem()
 
 void ViewerModel::removeSystem(Layer::System* system)
 {
-   postCommand(new Command::RemoveSystem(system));
+   postCommand(new Command::RemoveSystem(system, invisibleRootItem()));
 }
 
 

@@ -158,7 +158,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_atomicChargesMenu = newAction("Atomic Charges");
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
-      this, SLOT(removeComponent()));
+      this, SLOT(removeMolecule()));
 
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));

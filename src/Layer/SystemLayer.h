@@ -61,6 +61,7 @@ namespace IQmol {
 
          private Q_SLOTS:
             void boxSystem();
+            void removeSystem() { Component::removeSystem(this); }
 
          private:
             Octree* m_octree;

@@ -206,8 +206,6 @@ bool save(bool prompt = false);
             bool   hasMullikenDecompositions() const;
    
          Q_SIGNALS:
-            void removeMolecule(Layer::Molecule*);
-   
             void multiplicityAvailable(unsigned);
             void chargeAvailable(int);
             void pointGroupAvailable(Data::PointGroup const&);
@@ -230,7 +228,7 @@ bool save(bool prompt = false);
             void openSurfaceAnimator();
 
             /// Passes the remove signal on so that the ViewerModel can deal with it
-            void removeMolecule() { removeMolecule(this); }
+            void removeMolecule() { Component::removeMolecule(this); }
             void detectSymmetry();
             void autoDetectSymmetry();
             void invalidateSymmetry();

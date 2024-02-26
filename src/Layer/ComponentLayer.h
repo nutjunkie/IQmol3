@@ -39,6 +39,9 @@ namespace IQmol {
 
    namespace Layer {
 
+      class Molecule;
+      class System;
+
       // Base class for components of a System, which may include QM Molecules,
       // Solvent, Protein, etc.
       // Shader context switching is implemented at this level.
@@ -135,8 +138,8 @@ namespace IQmol {
             void postMessage(QString const&);
 
             // This allows observers to disconnect from a Component once removed
-            void componentRemoved(Layer::Component*);
-            void removeComponent(Layer::Component*);
+            void removeMolecule(Layer::Molecule*);
+            void removeSystem(Layer::System*);
 
          protected:
             QList<Property::Base*> m_properties;
@@ -147,9 +150,6 @@ namespace IQmol {
 
             Layer::Container m_surfaceList;
             Surface* createSurfaceLayer(Data::Surface* surfaceData);
-
-         protected Q_SLOTS:
-            void  removeComponent() { removeComponent(this); }
 
          private:
             QString   m_shaderKey;

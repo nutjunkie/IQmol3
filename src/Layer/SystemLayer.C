@@ -48,8 +48,8 @@ System::System(QString const& label, QObject* parent) : Component(label, parent)
 
    m_surfaceList.setText("Ribbons");
 
-   connect(newAction("Box System"), SIGNAL(triggered()),
-      this, SLOT(boxSystem()));
+   connect(newAction("Box System"), SIGNAL(triggered()), this, SLOT(boxSystem()));
+   connect(newAction("Remove System"), SIGNAL(triggered()), this, SLOT(removeSystem()));
 }
 
 
@@ -78,23 +78,28 @@ void System::appendData(Data::Bank& bank)
              break;
 
           case Data::Type::Geometry: {
-             molecule = new Molecule();
+             molecule = new Molecule(this);
              Data::Geometry* geom = dynamic_cast<Data::Geometry*>(*iter);
              molecule->setText("Molecule");
              if (geom)  molecule->setText(geom->name());
              molecule->appendData(list);
              appendLayer(molecule);
              connectComponent(molecule);
+             connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)),
+                this, SIGNAL(removeMolecule(Layer::Molecule*)));
+               
           }; break;
              
           default:
              if (!molecule) {
-                 molecule = new Molecule();
+                 molecule = new Molecule(this);
                  molecule->setText("Molecule");
                  appendLayer(molecule);
              }
              molecule->appendData(list);
              connectComponent(molecule);
+             connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)),
+                this, SIGNAL(removeMolecule(Layer::Molecule*)));
        }
    }
 }

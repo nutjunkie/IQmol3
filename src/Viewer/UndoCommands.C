@@ -378,13 +378,20 @@ void ChangeBondOrder::undo()
 AddComponent::AddComponent(Layer::Component* component, QStandardItem* parent) 
    : m_component(component), m_parent(parent), m_deleteComponent(false)
 { 
-   QString s;
-   if (m_component->fileName().isEmpty()) {
-      s = "New " + name();
-   }else {
-      s = "Load file " + m_component->fileName();
+   if (!m_parent) {
+      QLOG_WARN() << "No parent found for layer in AddComponent:" << component->text();
    }
-   setText(s);
+
+   if (m_component->fileName().isEmpty()) {
+      Layer::Molecule* molecule;
+      if ( (molecule = qobject_cast<Layer::Molecule*>(component)) ) {
+         setText("New molecule");
+      }else {
+         setText("New system");
+      }
+   }else {
+      setText("Load file " + m_component->fileName());
+   }
 }
 
 
@@ -401,7 +408,8 @@ AddComponent::~AddComponent()
 void AddComponent::redo()
 {
    m_deleteComponent = false;
-   QLOG_INFO() << "Adding " << name() << m_component->text() << m_component;
+   QLOG_INFO() << "Adding " << m_component->text() << m_component 
+               << "with parent" << m_parent;
    m_parent->appendRow(m_component);
    m_component->updated();
 }
@@ -410,24 +418,30 @@ void AddComponent::redo()
 void AddComponent::undo()
 {
    m_deleteComponent = true;
-   QLOG_INFO() << "Removing " << name() << m_component->text() << m_component;
+   QLOG_INFO() << "Removing " << m_component->text() << m_component;
    m_parent->takeRow(m_component->row());
    m_component->updated();
 }
 
 
 // --------------- RemoveComponent ---------------
-RemoveComponent::RemoveComponent(Layer::Component* component) 
-   : m_component(component), m_parent(m_component->QStandardItem::parent()), 
-     m_deleteComponent(false)
+RemoveComponent::RemoveComponent(Layer::Component* component, QStandardItem* parent)
+   : m_component(component), m_parent(parent), m_deleteComponent(false)
 { 
-   QString s;
-   if (m_component->fileName().isEmpty()) {
-      s = "Remove " + name();
-   }else {
-      s = "Remove " + m_component->fileName();
+   if (m_parent == 0) {
+      QLOG_WARN() << "No parent found for layer in RemoveComponent:" << component->text();
    }
-   setText(s);
+
+   if (m_component->fileName().isEmpty()) {
+      Layer::Molecule* molecule;
+      if ( (molecule = qobject_cast<Layer::Molecule*>(component)) ) {
+         setText("Remove molecule");
+      }else {
+         setText("Remove system");
+      }
+   }else {
+      setText("Remove " + m_component->fileName());
+   }
 }
 
 
@@ -435,7 +449,6 @@ RemoveComponent::~RemoveComponent()
 {
    if (m_deleteComponent) {
       m_component->disconnect();
-      QLOG_DEBUG() << "Deleting Component" << m_component->text() << m_component;
       // The following causes a crash
       //delete m_component;  
    }
@@ -445,8 +458,6 @@ RemoveComponent::~RemoveComponent()
 void RemoveComponent::redo()
 {
    m_deleteComponent = true;
-   QLOG_INFO() << "Removing component" << m_component->text() << m_component
-               << "on row" << m_component->row() << "with parent" << m_parent;
    m_parent->takeRow(m_component->row());
    m_component->updated();
 }
