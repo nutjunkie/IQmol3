@@ -1316,22 +1316,22 @@ void Molecule::appendPrimitives(PrimitiveList const& primitives)
    AtomList atoms(findLayers<Atom>(Children));
    int initialNumberOfAtoms(atoms.size());
 
-   PrimitiveList::const_iterator primitive;
-   for (primitive = primitives.begin(); primitive != primitives.end(); ++primitive) {
+   for (auto primitive : primitives) {
+       primitive->setDrawMode(m_drawMode);
 
-       if ( (atom = qobject_cast<Atom*>(*primitive)) ) {
+       if ( (atom = qobject_cast<Atom*>(primitive)) ) {
           m_atomList.appendLayer(atom);
 
-       }else if ( (bond = qobject_cast<Bond*>(*primitive)) ) {
+       }else if ( (bond = qobject_cast<Bond*>(primitive)) ) {
           m_bondList.appendLayer(bond);
 
-       }else if ( (charge = qobject_cast<Charge*>(*primitive)) ) {
+       }else if ( (charge = qobject_cast<Charge*>(primitive)) ) {
           m_chargesList.appendLayer(charge);
 
-       }else if ( (efp = qobject_cast<EfpFragment*>(*primitive)) ) {
+       }else if ( (efp = qobject_cast<EfpFragment*>(primitive)) ) {
           m_efpFragmentList.appendLayer(efp);
 
-       }else if ( (group = qobject_cast<Group*>(*primitive)) ) {
+       }else if ( (group = qobject_cast<Group*>(primitive)) ) {
           m_groupList.appendLayer(group);
           //appendPrimitives(group->ungroup());
 
