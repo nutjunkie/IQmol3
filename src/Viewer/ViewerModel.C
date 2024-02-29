@@ -271,7 +271,7 @@ void ViewerModel::mergeSelection(QModelIndexList const& selection)
 
    Layer::PrimitiveList primitives;
    for (auto atom : atoms) {
-       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       auto a(new Layer::Atom(atom->getAtomicNumber(), atom->getLabel()));
        a->setPosition(atom->getPosition());
        primitives.append(a);
    }
@@ -355,7 +355,7 @@ void ViewerModel::newMoleculeRequested(AtomList const& atomList)
 
    Layer::PrimitiveList primitives;
    for (auto atom : atomList) {
-       auto a(new Layer::Atom(atom->getAtomicNumber()));
+       auto a(new Layer::Atom(atom->getAtomicNumber(), atom->getLabel()));
        a->setPosition(atom->getPosition());
        primitives.append(a);
    }
@@ -373,7 +373,6 @@ void ViewerModel::newMoleculeRequested(AtomList const& atomList)
 
 void ViewerModel::connectComponent(Layer::Component* component) 
 {
-qDebug() << "connecting component" << component->text();
    connect(component, SIGNAL(updated()), 
       this, SLOT(updateVisibleObjects()));
 

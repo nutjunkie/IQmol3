@@ -103,7 +103,7 @@ Layer::List Factory::toLayers(Data::Base& data)
 {
    Layer::List layers;
 
-   //qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
+   qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
 
    try {
 
@@ -285,7 +285,7 @@ List Factory::convert(Data::Geometry& geometry)
        unsigned Z(geometry.atomicNumber(i));
        qglviewer::Vec position(geometry.position(i));
 
-       Atom* atom(new Atom(geometry.atomicNumber(i)));
+       Atom* atom(new Atom(geometry.atomicNumber(i), geometry.atomicLabel(i)));
        atom->setPosition(geometry.position(i));
        atoms->appendLayer(atom);
 

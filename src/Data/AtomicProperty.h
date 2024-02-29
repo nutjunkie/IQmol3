@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ATOMICPROPERTY_H
-#define IQMOL_DATA_ATOMICPROPERTY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,21 +29,22 @@ namespace Data {
 
    /// Base class for properties of atoms.  This can include things like
    /// charges, masses, chemical shifts and DMA expansions. 
-   class AtomicProperty : public Base {
-
+   class AtomicProperty : public Base 
+   {
       public:
-         Type::ID typeID() const { return Type::AtomicProperty; }
+         virtual Type::ID typeID() const { return Type::AtomicProperty; }
          virtual void setDefault(int const /* Z */) { }
          virtual QString label() const = 0;
    };
 
 
-   class AtomicNumber : public AtomicProperty {
+   class AtomicNumber : public AtomicProperty 
+   {
 
       friend class boost::serialization::access;
 
       public:
-         Type::ID typeID() const { return Type::AtomicNumber; }
+         virtual Type::ID typeID() const { return Type::AtomicNumber; }
 
          AtomicNumber(int const Z = 0) { setDefault(Z); }
          void setDefault(int const Z) { m_atomicNumber = Z; }
@@ -68,35 +68,51 @@ namespace Data {
    };
 
 
-   class AtomicSymbol : public AtomicProperty {
-
+   class StringProperty : public AtomicProperty 
+   {
       friend class boost::serialization::access;
 
       public:
-         Type::ID typeID() const { return Type::AtomicSymbol; }
+         StringProperty() : m_value("") { }
 
-         AtomicSymbol(int const Z = 0) { setDefault(Z); }
-         void setDefault(int const Z);
-
-         QString label() const { return m_symbol; }
-         void dump() const;
+         QString label() const { return m_value; }
+         QString value() const { return m_value; }
+         void setValue(QString const& value) { m_value = value; }
 
          void serialize(InputArchive& ar, unsigned int const version = 0) {
             Q_UNUSED(version);
-            ar & m_symbol;
-         }
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_symbol;
+            ar & m_value;
          }
 
-      private:
-         QString m_symbol;
+         void serialize(OutputArchive& ar, unsigned int const version = 0) {
+            Q_UNUSED(version);
+            ar & m_value;
+         }
+
+      protected:
+         QString m_value;
    };
 
 
-   class ScalarProperty : public AtomicProperty {
+   class AtomicSymbol : public StringProperty 
+   {
+      public:
+         virtual Type::ID typeID() const { return Type::AtomicSymbol; }
+         AtomicSymbol(int const Z = 0) { setDefault(Z); }
+         void setDefault(int const Z);
+   };
 
+
+   class AtomicLabel : public StringProperty 
+   {
+      public:
+         virtual Type::ID typeID() const { return Type::AtomicLabel; }
+   };
+
+
+
+   class ScalarProperty : public AtomicProperty 
+   {
       friend class boost::serialization::access;
 
       public:
@@ -122,110 +138,126 @@ namespace Data {
    };
 
 
-   class Mass: public ScalarProperty {
+   class Mass: public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::Mass; }
+         virtual Type::ID typeID() const { return Type::Mass; }
          void setDefault(int const Z);
    };
 
 
-   class VdwRadius : public ScalarProperty {
+   class VdwRadius : public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::VdwRadius; }
+         virtual Type::ID typeID() const { return Type::VdwRadius; }
          void setDefault(int const Z);
    };
 
 
-   class SpinDensity : public ScalarProperty {
+   class SpinDensity : public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::SpinDensity; }
+         virtual Type::ID typeID() const { return Type::SpinDensity; }
    };
 
 
-   class AtomicCharge : public ScalarProperty {
+   class AtomicCharge : public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::AtomicCharge; }
+         virtual Type::ID typeID() const { return Type::AtomicCharge; }
    };
 
 
-   class GasteigerCharge : public AtomicCharge {
+   class GasteigerCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::GasteigerCharge; }
+         virtual Type::ID typeID() const { return Type::GasteigerCharge; }
    };
 
  
-   class MullikenCharge : public AtomicCharge {
+   class MullikenCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::MullikenCharge; }
+         virtual Type::ID typeID() const { return Type::MullikenCharge; }
    };
 
 
-   class MultipoleDerivedCharge : public AtomicCharge {
+   class MultipoleDerivedCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::MultipoleDerivedCharge; }
+         virtual Type::ID typeID() const { return Type::MultipoleDerivedCharge; }
    };
 
 
-   class ChelpgCharge : public AtomicCharge {
+   class ChelpgCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::ChelpgCharge; }
+         virtual Type::ID typeID() const { return Type::ChelpgCharge; }
    };
 
 
-   class HirshfeldCharge : public AtomicCharge {
+   class HirshfeldCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::HirshfeldCharge; }
+         virtual Type::ID typeID() const { return Type::HirshfeldCharge; }
    };
 
 
-   class LowdinCharge : public AtomicCharge {
+   class LowdinCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::LowdinCharge; }
+         virtual Type::ID typeID() const { return Type::LowdinCharge; }
    };
 
 
-   class Cm5Charge : public AtomicCharge {
+   class Cm5Charge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::Cm5Charge; }
+         virtual Type::ID typeID() const { return Type::Cm5Charge; }
    };
 
 
-   class NaturalCharge : public AtomicCharge {
+   class NaturalCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::NaturalCharge; }
+         virtual Type::ID typeID() const { return Type::NaturalCharge; }
    };
 
 
-   class MerzKollmanEspCharge : public AtomicCharge {
+   class MerzKollmanEspCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::MerzKollmanEspCharge; }
+         virtual Type::ID typeID() const { return Type::MerzKollmanEspCharge; }
    };
 
 
-   class MerzKollmanRespCharge : public AtomicCharge {
+   class MerzKollmanRespCharge : public AtomicCharge 
+   {
       public:
-         Type::ID typeID() const { return Type::MerzKollmanRespCharge; }
+         virtual Type::ID typeID() const { return Type::MerzKollmanRespCharge; }
    };
 
 
-   class NmrShielding : public ScalarProperty {
+   class NmrShielding : public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::NmrShielding; }
+         virtual Type::ID typeID() const { return Type::NmrShielding; }
    };
 
 
-   class NmrShift : public ScalarProperty {
+   class NmrShift : public ScalarProperty 
+   {
       public:
-         Type::ID typeID() const { return Type::NmrShift; }
+         virtual Type::ID typeID() const { return Type::NmrShift; }
    };
 
 
-   class AtomColor : public AtomicProperty {
-
+   class AtomColor : public AtomicProperty 
+   {
       friend class boost::serialization::access;
 
       public:
-         Type::ID typeID() const { return Type::AtomColor; }
+         virtual Type::ID typeID() const { return Type::AtomColor; }
 
          void setDefault(int const Z);
          QString label() const { return QString(); }
@@ -248,7 +280,4 @@ namespace Data {
          double m_color[4];
    };
 
-
 } } // end namespace IQmol::Data
-
-#endif

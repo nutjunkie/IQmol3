@@ -37,7 +37,6 @@
 
 #include <QMap>
 #include <QFileInfo>
-#include <QItemSelectionModel>
 
 #include <functional>
 
@@ -213,7 +212,6 @@ bool save(bool prompt = false);
             void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
             void radiusAvailable(double const radius);
             void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
-            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
  
          public Q_SLOTS:
             void groupSelection();
@@ -256,6 +254,7 @@ bool save(bool prompt = false);
             void updateAtomicCharges();
             void generateConformersDialog();
             void generateConformers();
+            void saveAs() { save(true); }
    
          private:
             static bool s_autoDetectSymmetry;

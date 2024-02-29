@@ -160,6 +160,9 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
 
+   connect(newAction("Save As"), SIGNAL(triggered()), 
+      this, SLOT(saveAs()));
+
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_molecularSurfaces, SIGNAL(updated()), this, SIGNAL(softUpdate()));

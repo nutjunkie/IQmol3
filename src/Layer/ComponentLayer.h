@@ -27,6 +27,7 @@
 #include "Grid/Property.h"
 
 #include <QFileInfo>
+#include <QItemSelectionModel>
 
 
 class QUndoCommand;
@@ -140,6 +141,8 @@ namespace IQmol {
             // This allows observers to disconnect from a Component once removed
             void removeMolecule(Layer::Molecule*);
             void removeSystem(Layer::System*);
+            
+            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
 
          protected:
             QList<Property::Base*> m_properties;

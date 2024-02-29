@@ -588,6 +588,14 @@ void MainWindow::createMenus()
          action->setCheckable(true);
          m_labelActions << action;
 
+         name = "Atom Label";
+         action = subMenu->addAction(name);
+         connect(action, SIGNAL(triggered()), this, SLOT(setLabel()));
+         action->setData(Layer::Atom::Label);
+         action->setShortcut(Qt::Key_L);
+         action->setCheckable(true);
+         m_labelActions << action;
+
 
    // ----- Build Menu -----
    menu = menuBar()->addMenu("Build");
