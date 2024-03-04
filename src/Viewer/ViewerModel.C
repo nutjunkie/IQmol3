@@ -657,6 +657,7 @@ void ViewerModel::processSystemData(ParseJobFiles* parser)
    bool found(false);
 
    Layer::System* system(newSystem());
+   system->setFile(parser->filePath()); 
    system->setCheckState(Qt::Unchecked);
    system->setText(name);
    system->appendData(bank);
