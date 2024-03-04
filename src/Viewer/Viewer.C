@@ -492,20 +492,14 @@ Vec Viewer::worldCoordinatesOf(QMouseEvent* e, qglviewer::Vec const& hint)
 void Viewer::setLabelType(int const type)
 {
    s_labelFont.setPointSize(Preferences::LabelFontSize());
-   switch (type) {
-      case Layer::Atom::None:      m_labelType = Layer::Atom::None;      break;
-      case Layer::Atom::Index:     m_labelType = Layer::Atom::Index;     break;
-      case Layer::Atom::Element:   m_labelType = Layer::Atom::Element;   break;
-      case Layer::Atom::Charge:    m_labelType = Layer::Atom::Charge;    break;
-      case Layer::Atom::Mass:      m_labelType = Layer::Atom::Mass;      break;
-      case Layer::Atom::Spin:      m_labelType = Layer::Atom::Spin;      break;
-      case Layer::Atom::Reindex:   m_labelType = Layer::Atom::Reindex;   break;
-      case Layer::Atom::NmrShift:  m_labelType = Layer::Atom::NmrShift;  break;
-      default:
-         QLOG_DEBUG() << "Unimplemented atom label type:" << type;
-         m_labelType = Layer::Atom::None;    
-         break;
+
+   try {
+      m_labelType = static_cast<Layer::Atom::LabelType>(type);
+   } catch (...) {
+      QLOG_DEBUG() << "Unimplemented atom label type:" << type;
+      m_labelType = Layer::Atom::None;    
    }
+
    update();
 }
 

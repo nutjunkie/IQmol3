@@ -39,7 +39,6 @@
 
 #include <QMap>
 #include <QFileInfo>
-#include <QItemSelectionModel>
 
 #include <functional>
 
@@ -219,7 +218,6 @@ bool save(bool prompt = false);
             void radiusAvailable(double const radius);
             void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
             void parameterFileAvailable(QString const&);
-            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
  
          public Q_SLOTS:
             void groupSelection();
@@ -268,6 +266,7 @@ bool save(bool prompt = false);
             void generateConformersDialog();
             void generateConformers();
             void parametrizeMoleculeDialog();
+            void saveAs() { save(true); }
 
          private:
             static bool s_autoDetectSymmetry;

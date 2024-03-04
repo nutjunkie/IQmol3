@@ -21,15 +21,19 @@
 ********************************************************************************/
 
 #include "SystemLayer.h"
+#include "ProteinChainLayer.h"
+#include "SolventLayer.h"
 #include "MoleculeLayer.h"
 #include "GroupLayer.h"
 #include "LayerFactory.h"
 
 #include "Data/Bank.h"
 #include "Viewer/UndoCommands.h"
+#include "Util/QsLog.h"
+#include "Util/QMsgBox.h"
 
 #include <QtDebug>
-#include "Util/QsLog.h"
+#include <QDir>
 
 
 namespace IQmol {
@@ -49,6 +53,7 @@ System::System(QString const& label, QObject* parent) : Component(label, parent)
    m_surfaceList.setText("Ribbons");
 
    connect(newAction("Box System"), SIGNAL(triggered()), this, SLOT(boxSystem()));
+   connect(newAction("Export PDB"), SIGNAL(triggered()), this, SLOT(exportPdb()));
    connect(newAction("Remove System"), SIGNAL(triggered()), this, SLOT(removeSystem()));
 }
 
@@ -62,8 +67,6 @@ void System::appendData(Data::Bank& bank)
 
    for (auto iter = bank.begin(); iter != bank.end(); ++iter) {
        Layer::List list(factory.toLayers(**iter));
-
-       qDebug() << "Processing Layer for System:" << Data::Type::toString((*iter)->typeID());
 
        switch ((*iter)->typeID()) {
           case Data::Type::MacroMolecule: 
@@ -121,7 +124,6 @@ void System::appendData(Layer::List& list)
    QString text;
    for (auto iter = list.begin(); iter != list.end(); ++iter) {
        text = (*iter)->text();
-       qDebug() << "Appending System data" << text;
    }
 }
 
@@ -160,6 +162,183 @@ void System::boxSystem()
 
     appendLayer(m_octree);
     updated();
+}
+
+
+
+void System::exportPdb()
+{
+    QString path(m_inputFile.path());
+    path += QDir::separator() + m_inputFile.baseName();
+    path += "_iqmol." + m_inputFile.completeSuffix();
+
+    qDebug() << "Writing PDB format to " << path;
+    QFile pdbFile(path);
+
+    if (!pdbFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+       QMsgBox::critical(0, "IQmol",  "Failed to open PDB file for writing");
+       return;
+    }
+
+    QTextStream os(&pdbFile);
+
+    QList<ProteinChain*> chains(findLayers<ProteinChain>());
+    unsigned index(1);
+    QString line;
+    QString res;
+    QString resIndex;
+    QString chainId;
+
+    for (auto chain : chains) {
+        QList<Group*> residues(chain->findLayers<Group>());
+        QStringList tokens(chain->text().split(' '));
+        if (tokens.size() != 2) {
+           QLOG_ERROR() << "Invalid name for Protein chain:" << chain->text();
+           return;
+        }
+
+        chainId = tokens[1];
+  
+        for (auto residue : residues) {
+            AtomList atoms(residue->getAtoms());
+            QStringList tokens(residue->text().split(' '));
+            if (tokens.size() != 2) {
+               QLOG_ERROR() << "Invalid name for residue:" << residue->text();
+               return;
+            }
+
+            resIndex = tokens[0];
+            res = tokens[1].toUpper();
+            
+            for (auto atom : atoms) {
+               qglviewer::Vec pos(atom->getPosition());
+               QString label(atom->getLabel());
+               if (label.size() < 4) label = " " + label;
+               line = QString("%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18\n")
+                  .arg("ATOM"        ,-6)
+                  .arg(index++       , 5)
+                  .arg(' '           , 1)
+                  .arg(label         ,-4)
+                  .arg(' '           , 1)
+                  .arg(res           , 3)
+                  .arg(' '           , 1)
+                  .arg(chainId       , 1)
+                  .arg(resIndex      , 4)
+                  .arg(' '           , 4)
+                  .arg(pos.x, 8, 'f' , 3)
+                  .arg(pos.y, 8, 'f' , 3)
+                  .arg(pos.z, 8, 'f' , 3)
+                  .arg(1.0,   6, 'f' , 2)
+                  .arg(0.0,   6, 'f' , 2)
+                  .arg(' '           ,10)
+                  .arg(atom->getAtomicSymbol(), 2)
+                  .arg(atom->getFormalCharge(), 2);
+
+               os << line;
+           }
+        }
+
+        line = QString("%1%2%3%4%5%6%7\n")
+           .arg("TER", -6)
+           .arg(index++         , 5)
+           .arg(' '             , 6)
+           .arg(res             , 3)
+           .arg(' '             , 1)
+           .arg(chainId         , 1)
+           .arg(resIndex        , 4);
+           
+        os << line;
+        
+    }
+/* 
+- Parser
+   - Fix the parser to only read in the first occupancy 
+   - Add thermal temperature factor
+- relabel the new hydrogens to something more meaningfule
+- add spinner https://github.com/snowwlex/QtWaitingSpinner
+*/
+
+    QList<Molecule*> molecules(findLayers<Molecule>());
+
+    for (auto mol : molecules) {
+        QStringList tokens(mol->text().split(' '));
+        if (tokens.size() != 3) {
+           QLOG_ERROR() << "Invalid name for Ligand:" << mol->text();
+           return;
+        }
+
+        AtomList atoms(mol->findLayers<Atom>());
+
+        QString res(tokens[0]);
+        resIndex = tokens[1];
+        chainId = tokens[2];
+        chainId.replace("(", "");
+        chainId.replace(")", "");
+
+        for (auto atom : atoms) {
+            QString label(atom->getLabel());
+            if (label.size() < 4) label = " " + label;
+            qglviewer::Vec pos(atom->getPosition());
+            line = QString("%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18\n")
+               .arg("HETATM"      , 6)
+               .arg(index++       , 5)
+               .arg(' '           , 1)
+               .arg(label         , 4)
+               .arg(' '           , 1)
+               .arg(res           , 3)
+               .arg(' '           , 1)
+               .arg(chainId       , 1)
+               .arg(resIndex      , 4)
+               .arg(' '           , 4)
+               .arg(pos.x, 8, 'f' , 3)
+               .arg(pos.y, 8, 'f' , 3)
+               .arg(pos.z, 8, 'f' , 3)
+               .arg(1.0,   6, 'f' , 2)
+               .arg(0.0,   6, 'f' , 2)
+               .arg(' '           ,10)
+               .arg(atom->getAtomicSymbol(), 2)
+               .arg(atom->getFormalCharge(), 2);
+
+            os << line;
+        }
+    }
+
+    QList<Solvent*> solvent(findLayers<Solvent>());
+
+    int idx = resIndex.toInt();
+    res = "HOH";
+
+    for (auto sol : solvent) {
+
+        std::vector<qglviewer::Vec> centers(sol->centers());
+
+        for (auto pos : centers) {
+            line = QString("%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18\n")
+               .arg("HETATM"      , 6)
+               .arg(index++       , 5)
+               .arg(" "           , 1)
+               .arg(" O"          ,-4)
+               .arg(" "           , 1)
+               .arg(res           , 3)
+               .arg(" "           , 1)
+               .arg(chainId       , 1)
+               .arg(idx           , 4)
+               .arg(" "           , 4)
+               .arg(pos.x, 8, 'f' , 3)
+               .arg(pos.y, 8, 'f' , 3)
+               .arg(pos.z, 8, 'f' , 3)
+               .arg(1.0,   6, 'f' , 2)
+               .arg(0.0,   6, 'f' , 2)
+               .arg(" "           ,10)
+               .arg("O"           , 2)
+               .arg(0             , 2);
+
+            os << line;
+        }
+    }
+
+    os << "END\n";
+    pdbFile.close();
 }
 
 } } // end namespace IQmol::Layer

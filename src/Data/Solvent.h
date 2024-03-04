@@ -45,6 +45,8 @@ namespace Data {
          size_t nCenters() const { return m_solventCenters.size(); }
          qglviewer::Vec const& operator[](size_t const i) const { return m_solventCenters[i]; }
 
+         std::vector<qglviewer::Vec> centers() const { return m_solventCenters; }
+
       private:
          double m_solventRadius;
          std::vector<qglviewer::Vec> m_solventCenters;

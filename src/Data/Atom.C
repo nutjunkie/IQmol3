@@ -23,6 +23,7 @@
 #include "Atom.h"
 #include <openbabel/elements.h>
 
+#include <QDebug>
 
 namespace IQmol {
 namespace Data {

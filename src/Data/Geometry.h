@@ -53,6 +53,7 @@ namespace Data {
          bool isValid() const;
          unsigned nAtoms() const { return (unsigned)m_atoms.size(); }
          QString atomicSymbol(unsigned const i) const;
+         QString atomicLabel(unsigned const i) const;
          unsigned atomicNumber(unsigned const i) const;
          qglviewer::Vec position(unsigned const i) const;
 
@@ -72,8 +73,10 @@ namespace Data {
          bool sameAtoms(QList<unsigned> const& symbols) const;
          bool sameAtoms(QStringList const& symbols) const;
 
-         void append(unsigned const z, qglviewer::Vec const& position);
-         void append(QString const& symbol, qglviewer::Vec const& position);
+         void append(unsigned const z, qglviewer::Vec const& position, 
+            QString const& label = QString());
+         void append(QString const& symbol, qglviewer::Vec const& position, 
+            QString const& label = QString());
          void append(QList<unsigned> const& z, QList<qglviewer::Vec> const& positions);
 
          void setCharge(int const charge);

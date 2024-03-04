@@ -44,7 +44,6 @@ AddHydrogens::AddHydrogens(
    Layer::PrimitiveList const& primitives)
  : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
 {
-qDebug() << "AddHydrogens::AddHydrogens()";
    Layer::Atom *begin, *end, *atom;
    Layer::Bond *bond;
    Vec finalPosition;
@@ -97,7 +96,6 @@ AddHydrogens::~AddHydrogens()
 
 void AddHydrogens::redo()
 {
-qDebug() << "AddHydrogens::redo()";
    AnimatorList::iterator iter;
    for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
        (*iter)->reset();
@@ -110,7 +108,6 @@ qDebug() << "AddHydrogens::redo()";
 
 void AddHydrogens::undo()
 {
-qDebug() << "AddHydrogens::undo()";
    m_molecule->takePrimitives(m_primitives);
    m_molecule->updated();
 }

@@ -61,7 +61,6 @@ set( SOURCES
    ChargeLayer.C
    ClippingPlaneLayer.C
    ConstraintLayer.C
-   ContainerLayer.C
    CubeDataLayer.C
    DipoleLayer.C
    DysonOrbitalsLayer.C

@@ -118,8 +118,6 @@ void GenerateCartoon::run()
     "#ffff99"}) ;  //light yellow
 
    QColor color(colors[m_data.chainIndex()+6]);
-   qDebug() << "Chain ID: " <<  m_data.chainIndex();
-   qDebug() << "Color:    " <<  color;
    m_surface->setColors( {color,color});
 }
 

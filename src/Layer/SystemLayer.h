@@ -60,6 +60,7 @@ namespace IQmol {
             void connectComponent(Layer::Component*);
 
          private Q_SLOTS:
+            void exportPdb();
             void boxSystem();
             void removeSystem() { Component::removeSystem(this); }
 

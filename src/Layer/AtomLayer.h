@@ -1,5 +1,4 @@
-#ifndef IQMOL_ATOMLAYER_H
-#define IQMOL_ATOMLAYER_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -56,10 +55,10 @@ namespace Layer {
             return A->getIndex() < B->getIndex();
          }
 
-         enum LabelType { None, Index, Element, Charge, Mass, Spin, Reindex, NmrShift };
+         enum LabelType { None, Index, Element, Charge, Mass, Spin, Reindex, NmrShift, Label };
          //enum ChargeType { Unknown = -1, Gasteiger, Sanderson, Mulliken };
 
-         Atom(int Z);
+         Atom(int Z, QString const& label = "");
          ~Atom() { }
 
          static double distance(Atom* A, Atom* B);
@@ -99,9 +98,11 @@ namespace Layer {
          int getValency() const { return m_valency; }
          int getHybridization() const { return m_hybridization; }
          QString getAtomicSymbol() const { return m_symbol; }
+         QString getLabel() const { return getLabel(Label); }
          double getCharge() const { return m_charge; }
          double getMass() const { return m_mass; }
          double getSpin() const { return m_spin; }
+         int getFormalCharge() const { return 0; }
          int getIndex() const { return m_index; }
          int getReorderIndex() const { return m_reorderIndex; }
          double getRadius(bool const selected);
@@ -136,7 +137,7 @@ namespace Layer {
          void updateHybridization();
 
       private:
-         QString getLabel(LabelType const type);
+         QString getLabel(LabelType const) const;
          void drawPrivate(bool selected);
          void drawDisplacement(); 
          void drawArrow(const qglviewer::Vec& from, const qglviewer::Vec& to);
@@ -160,6 +161,7 @@ namespace Layer {
          double  m_nmr;
          GLfloat m_vdwRadius;
          QString m_symbol;
+         QString m_label;
          bool    m_smallerHydrogens;
          bool    m_hideHydrogens;
          bool    m_haveNmrShift;
@@ -185,5 +187,3 @@ namespace Layer {
 typedef QList<Layer::Atom*> AtomList;
 
 } // end namespace IQmol
-
-#endif

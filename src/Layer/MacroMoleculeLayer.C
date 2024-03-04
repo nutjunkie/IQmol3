@@ -23,6 +23,7 @@
 #include "AtomLayer.h"
 #include "GroupLayer.h"
 #include "MacroMoleculeLayer.h"
+#include "ContainerLayer.h"
 
 #include "Data/MacroMolecule.h"
 
@@ -40,6 +41,8 @@ MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* 
 
    AtomList m_atoms(findLayers<Atom>(Children));
 
+   Container* residues(new Container(this, "Residues"));
+
    for (auto group : groups) {
        Data::AtomList const& atoms(group->atoms());
        QList<qglviewer::Vec>const& coordinates(group->coordinates());
@@ -47,7 +50,7 @@ MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* 
        PrimitiveList primitives;
        unsigned nAtoms(atoms.size());
        for (unsigned i(0); i < nAtoms; ++i) {
-           Layer::Atom* atom(new Atom(atoms[i]->atomicNumber()));
+           Layer::Atom* atom(new Atom(atoms[i]->atomicNumber(), atoms[i]->getLabel()));
            Vec pos(coordinates[i]);
            atom->setPosition(pos);
            m_radius = std::max(m_radius, pos.norm());
@@ -56,7 +59,7 @@ MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* 
        }
 
        Layer::Group* groupLayer = new Group(primitives, group->label());
-       appendLayer(groupLayer);
+       residues->appendLayer(groupLayer);
    }
    
    //m_configurator.load();

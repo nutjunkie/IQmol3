@@ -67,7 +67,7 @@ namespace Data {
                 AngleConstraint,        TorsionConstraint,      FrozenAtomsConstraint,
                /*---------------------  *---------------------  *--------------------- */
                 AtomicProperty,         AtomicSymbol,           AtomColor, 
-                AtomicNumber,
+                AtomicNumber,           AtomicLabel,
                 NmrShielding,           NmrShift,               Mass, 
                 MultipoleExpansion,     MullikenCharge,         MultipoleDerivedCharge, 
                 AtomicCharge,           GasteigerCharge,        ChelpgCharge,
@@ -97,7 +97,7 @@ namespace Data {
 		 // Returns a portable type identification for the Data::Factory.  New
 		 // Data classes must have their TypeID added to the Factory::create()
 		 // method before they can be used by the Factory.
-		 virtual Type::ID typeID() const { return Type::Undefined; }
+		virtual Type::ID typeID() const { return Type::Undefined; }
 
 		 // These can't be template functions as templates and virtual
 		 // functions don't play nicely together.
