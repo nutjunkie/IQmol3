@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
    m_viewerView(this),
    m_undoStack(this),
    m_undoStackView(&m_undoStack, this),
+   m_statusWidget(this),
    m_viewerSelectionModel(&m_viewerModel, this),
    m_logMessageDialog(0),
    m_preferencesBrowser(this),
@@ -102,6 +103,11 @@ MainWindow::~MainWindow()
 }
 
 
+void MainWindow::setStatus()
+{
+}
+
+
 void MainWindow::createLayout()
 {
    QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -113,25 +119,20 @@ void MainWindow::createLayout()
 
    mainLayout->addWidget(&m_toolBar);
    m_helpBrowser.setWindowFlags(Qt::Tool);
+   m_statusWidget.showMessage("Welcome to IQmol");
 
    // sideSplitter (ha ha) is a data member as we need to control its visibility
    m_sideSplitter = new QSplitter(Qt::Vertical, this);
    m_sideSplitter->addWidget(&m_viewerView);
-
-/*
-   QWidget* progress = new QWidget(this);
-   progress->setLayoutDirection(
-   progress->addWidget();
-   progress->addWidget(&m_status);
-   progress->addWidget(&m_progressBar);
-*/
-   
    m_sideSplitter->addWidget(&m_undoStackView);
+   m_sideSplitter->addWidget(&m_statusWidget);
    m_sideSplitter->setCollapsible(0, true);
    m_sideSplitter->setCollapsible(1, true);
 
+   m_statusWidget.show();
+
    QList<int> sizes;
-   sizes << Preferences::MainWindowSize().height()-220 << 220;
+   sizes << Preferences::MainWindowSize().height()- 220 - 12 << 220 << 12;
    m_sideSplitter->setSizes(sizes);
 
    // Main splitter
@@ -219,6 +220,9 @@ void MainWindow::createConnections()
 
    connect(&m_viewerModel, SIGNAL(displayMessage(QString const&)),
        m_viewer, SLOT(displayMessage(QString const&)));
+
+   connect(&m_viewerModel, SIGNAL(displayMessage(QString const&)),
+       &m_statusWidget, SLOT(showMessage(QString const&)));
 
    connect(&m_viewerModel, SIGNAL(postCommand(QUndoCommand*)),
        this, SLOT(addCommand(QUndoCommand*)));
@@ -812,7 +816,10 @@ void MainWindow::openFile()
 {
    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), 
       Preferences::LastFileAccessed());
-   if (!fileName.isEmpty()) open(fileName);
+   if (!fileName.isEmpty()) {
+      m_statusWidget.showMessage("Loading", true);
+      open(fileName);
+   }
 }
 
 
@@ -820,14 +827,21 @@ void MainWindow::openDir()
 {
    QString dirName = QFileDialog::getExistingDirectory(this, tr("Open Job Directory"), 
       Preferences::LastFileAccessed());
-   if (!dirName.isEmpty()) open(dirName);
+   if (!dirName.isEmpty()) {
+      m_statusWidget.showMessage("Loading", true);
+      open(dirName);
+   }
 }
 
 
 void MainWindow::openRecentFile()
 {
    QAction* action = qobject_cast<QAction*>(sender());
-   if (action) open(action->data().toString());
+   if (action) {
+      QString name(action->data().toString());
+      m_statusWidget.showMessage("Loading", true);
+      open(name);
+   }
 }
 
 
@@ -836,6 +850,7 @@ void MainWindow::fileOpened(QString const& filePath)
    Preferences::AddRecentFile(filePath);
    Preferences::LastFileAccessed(filePath);
    updateRecentFilesMenu();
+   m_statusWidget.clearMessage();
 }
 
 

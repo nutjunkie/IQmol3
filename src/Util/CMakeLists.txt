@@ -26,8 +26,10 @@ set( SOURCES
    RemoveDirectory.C
    ScanDirectory.C
    SetButtonColor.C
+   StatusWidget.C
    Task.C
    Timer.C
+   WaitingSpinner.C
    WriteToTemporaryFile.C
 )
 
