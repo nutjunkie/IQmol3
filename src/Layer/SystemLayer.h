@@ -59,8 +59,10 @@ namespace IQmol {
             void newMoleculeRequested(AtomList const&);
             void connectComponent(Layer::Component*);
 
-         private Q_SLOTS:
+         public Q_SLOTS:
             void exportPdb();
+
+         private Q_SLOTS:
             void boxSystem();
             void removeSystem() { Component::removeSystem(this); }
 

@@ -359,7 +359,7 @@ void SystemBuilderDialog::runTleap()
    qDebug() << "Tleap working directory: " << fileInfo.absolutePath();
 
    // Write the input PDB file
-   QFile pdbFile(QDir(fileInfo.absolutePath()).filePath(m_system->text() + "_iqmol.pdb"));
+   m_system->exportPdb();
 
    // Write input for tleap
    QFile file(QDir(fileInfo.absolutePath()).filePath("tleap.in"));
