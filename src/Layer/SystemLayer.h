@@ -49,6 +49,8 @@ namespace IQmol {
                m_inputFile.setFile(fileName);
                setText(m_inputFile.completeBaseName());
             }
+            
+            QFileInfo const& getFile() const { return m_inputFile; }
 
             void appendData(Data::Bank&);
 

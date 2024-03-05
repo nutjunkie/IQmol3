@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 #include "Layer/MoleculeLayer.h"
+#include "Layer/SystemLayer.h"
 #include "Util/QMsgBox.h"
 #include "Util/Preferences.h"
 #include "Amber/ConfigDialog.h"
@@ -114,13 +115,13 @@ void ParametrizeMoleculeDialog::runAntechamber()
    qDebug () << "Antechamber executable location: " << program;
 
    // Set working directory
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   antechamber->setWorkingDirectory(fileInfo.absolutePath());
-   qDebug() << "Antechamber working directory: " << fileInfo.absolutePath();
+   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
+   antechamber->setWorkingDirectory(system->getFile().absolutePath());
+   qDebug() << "Antechamber working directory: " << system->getFile().absolutePath();
 
    // Prepare arguments and write the input mol2 file
    QString name(m_molecule->text().split(' ').first());
-   m_molecule->writeToFile(QDir(fileInfo.absolutePath()).filePath(name + "_iqmol" + ".mol2"));
+   m_molecule->writeToFile(QDir(system->getFile().absolutePath()).filePath(name + "_iqmol" + ".mol2"));
    qDebug() << "charge" << m_molecule->totalCharge() << "multiplicity" << m_molecule->multiplicity() << forceField << name;
 
    // Build arguments
@@ -181,9 +182,9 @@ void ParametrizeMoleculeDialog::runParmchk2()
    qDebug() << "Parmchk2 executable location: " << program;
 
    // Set working directory
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   parmchk2->setWorkingDirectory(fileInfo.absolutePath());
-   qDebug() << "Parmchk2 working directory: " << fileInfo.absolutePath();
+   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
+   parmchk2->setWorkingDirectory(system->getFile().absolutePath());
+   qDebug() << "Parmchk2 working directory: " << system->getFile().absolutePath();
 
    // Prepare arguments
    QString name(m_molecule->text().split(' ').first());

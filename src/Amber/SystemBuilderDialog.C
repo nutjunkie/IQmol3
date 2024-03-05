@@ -191,14 +191,15 @@ void SystemBuilderDialog::addMolecule(const Layer::Molecule* molecule)
 
 void SystemBuilderDialog::findParameterFile(const QString& fileName)
 {
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   if (!QDir(fileInfo.absolutePath()).exists(fileName)) {
+   if (!QDir(m_system->getFile().absolutePath()).exists(fileName)) {
       return;
    }
 
-   QFileInfo fi(fileName);
-   QString name = fi.baseName();
-   QString suffix = fi.suffix();
+   QFileInfo fileInfo(fileName);
+   QString name = fileInfo.baseName();
+   QString suffix = fileInfo.suffix();
+
+   qDebug() << "Found Parameter File: " << name << " " << suffix;
 
    if (suffix == "mol2") {
       QLineEdit *lineEdit = m_dialog.parametersPage->findChild<QLineEdit *>(name + "mol2LineEdit");
@@ -215,11 +216,10 @@ void SystemBuilderDialog::browseParameterFile()
    QString nameSuffix = button->objectName().split("ToolButton").first();
    QString suffix = nameSuffix.endsWith("mol2") ? "mol2" : "frcmod";
    QString name = nameSuffix.split(suffix).first();
-   QString fileName = QFileDialog::getOpenFileName(this, tr("Open") + suffix + tr("file"), Preferences::LastFileAccessed(),
+   QString fileName = QFileDialog::getOpenFileName(this, tr("Open") + suffix + tr("file"), m_system->getFile().absolutePath(),
       tr("*.") + suffix);
 
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   fileName = QDir(fileInfo.absolutePath()).relativeFilePath(fileName);
+   fileName = QDir(m_system->getFile().absolutePath()).relativeFilePath(fileName);
 
    if (!fileName.isEmpty()) {
       QLineEdit *lineEdit = m_dialog.parametersPage->findChild<QLineEdit *>(name + suffix + "LineEdit");
@@ -351,18 +351,17 @@ void SystemBuilderDialog::runTleap()
    // Find tleap executable
    QString AmberDirectory = Preferences::AmberDirectory();
    QString program = QDir(AmberDirectory).filePath("bin/tleap");
-   qDebug () << "Tleap executable location: " << program;
+   qDebug () << "tleap executable location: " << program;
 
    // Set working directory
-   QFileInfo fileInfo(Preferences::LastFileAccessed());
-   tleap->setWorkingDirectory(fileInfo.absolutePath());
-   qDebug() << "Tleap working directory: " << fileInfo.absolutePath();
+   tleap->setWorkingDirectory(m_system->getFile().absolutePath());
+   qDebug() << "tleap working directory: " << m_system->getFile().absolutePath();
 
    // Write the input PDB file
    m_system->exportPdb();
 
    // Write input for tleap
-   QFile file(QDir(fileInfo.absolutePath()).filePath("tleap.in"));
+   QFile file(QDir(m_system->getFile().absolutePath()).filePath("tleap.in"));
    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
       return;
    QTextStream out(&file);

@@ -124,6 +124,7 @@ namespace IQmol {
             void setReferenceFrame(qglviewer::Frame const& frame) { m_frame = frame; }
 
             void setFile(QString const& fileName);
+            QFileInfo const& getFile() const { return m_inputFile; }
             QString fileName() const { return m_inputFile.fileName(); };
 
          Q_SIGNALS:
