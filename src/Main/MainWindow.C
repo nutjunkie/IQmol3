@@ -750,9 +750,8 @@ void MainWindow::createMenus()
 
 #endif
 
-
-// ----- Amber Menu -----
-if (Preferences::AmberEnabled()) {
+   // ----- Amber Menu -----
+   if (Preferences::AmberEnabled()) {
       menu->addSeparator();
       name = "Edit Amber Config";
       action = menu->addAction(name);
@@ -761,7 +760,10 @@ if (Preferences::AmberEnabled()) {
       name = "Amber System Builder";
       action = menu->addAction(name);
       connect(action, SIGNAL(triggered()), this, SLOT(showAmberSystemBuilderDialog()));
-}
+      connect(menu, &QMenu::aboutToShow, [this, action](){
+         action->setEnabled(m_viewerModel.activeSystem() != 0);
+      });
+   }
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
