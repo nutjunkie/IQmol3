@@ -45,11 +45,11 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    setWindowTitle(tr("Parametrize ") + name);
 
    // set up the run button
-   QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
-   runButton->setText(tr("Run"));
-   QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
+   QPushButton* runButton = m_dialog.runButton;
+   QPushButton* stopButton = m_dialog.stopButton;
    stopButton->setEnabled(false);
 
+   // add a spinner
    WaitingSpinner* spinner = new WaitingSpinner(this, false, false);
    spinner->setRoundness(70.0);
    spinner->setMinimumTrailOpacity(15.0);
@@ -59,8 +59,7 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    spinner->setLineWidth(2);
    spinner->setInnerRadius(3);
    spinner->setRevolutionsPerSecond(1);
-   m_dialog.horizontalLayout->addWidget(spinner);
-   m_dialog.horizontalLayout->setAlignment(spinner, Qt::AlignLeft);
+   m_dialog.horizontalLayout->insertWidget(2, spinner);
 
    connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::run);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
