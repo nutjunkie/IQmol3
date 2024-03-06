@@ -416,6 +416,19 @@ void DefaultForceField(QString const& forceField)
 
 // ---------
 
+bool AmberEnabled()
+{
+   QVariant value(Get("AmberEnabled"));
+   return value.isNull() ? true : value.value<bool>();
+}
+
+void AmberEnabled(bool const tf)
+{
+   Set("AmberEnabled", QVariant::fromValue(tf));
+}
+
+// ---------
+
 double SymmetryTolerance()
 {
    QVariant value(Get("SymmetryTolerance"));
@@ -839,6 +852,29 @@ void GromacsPositionsFile(QString const& position){
 }
 
 
+// ---------
+
+QString AmberDirectory()
+{
+   QString directory;
+   QVariant value(Get("AmberDirectory"));
+
+   if (value.isNull() || value.toString().isEmpty()) {
+      if (!qgetenv("AMBERHOME").isEmpty()) {
+         directory = qgetenv("AMBERHOME");
+      } else {
+         directory = QString("");
+      }
+   } else {
+      directory = value.value<QString>();
+   }
+   return directory;
+}
+
+void AmberDirectory(QString const& directory)
+{
+   Set("AmberDirectory", directory);
+}
 
 // ---------
 

@@ -31,6 +31,9 @@
 #include "LogMessageDialog.h"
 #include "Util/StatusWidget.h"
 
+#include "Amber/ConfigDialog.h"
+#include "Amber/SystemBuilderDialog.h"
+
 #ifdef GROMACS
 #include "GromacsDialog.h"
 #include "GromacsServerDialog.h"
@@ -100,6 +103,8 @@ namespace Gmx {
          void showGromacsDialog();
          void showGromacsServerDialog();
          void showGromacsConfigDialog();
+         void showAmberConfigDialog();
+         void showAmberSystemBuilderDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::JobInfo&);

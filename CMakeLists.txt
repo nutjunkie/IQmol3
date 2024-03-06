@@ -110,8 +110,8 @@ endif ()
 
 set(ICON_PATH resources/IQmol.icns)
 
-if (EXISTS /opt/local/lib/)
-   link_directories(/opt/local/lib/)
+if (EXISTS /opt/homebrew/lib/)
+   link_directories(/opt/homebrew/lib/)
 endif()
 
 
@@ -178,6 +178,7 @@ target_link_libraries (${targetName}
    Math
    Plot
    Fort
+   Amber
    libssh2
    yaml-cpp
    openbabel

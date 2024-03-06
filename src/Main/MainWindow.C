@@ -750,7 +750,20 @@ void MainWindow::createMenus()
 
 #endif
 
+   // ----- Amber Menu -----
+   if (Preferences::AmberEnabled()) {
+      menu->addSeparator();
+      name = "Edit Amber Config";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberConfigDialog()));
 
+      name = "Amber System Builder";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberSystemBuilderDialog()));
+      connect(menu, &QMenu::aboutToShow, [this, action](){
+         action->setEnabled(m_viewerModel.activeSystem() != 0);
+      });
+   }
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
@@ -1100,7 +1113,20 @@ void MainWindow::showGromacsServerDialog()
 }
 
 
+void MainWindow::showAmberConfigDialog()
+{
+   Amber::ConfigDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      Preferences::AmberDirectory(dialog.getDirectory());
+   }
+}
 
+void MainWindow::showAmberSystemBuilderDialog()
+{
+   Amber::SystemBuilderDialog dialog(this, m_viewerModel.activeSystem());
+   dialog.exec();
+}
 
 void MainWindow::insertMoleculeDialog() 
 {

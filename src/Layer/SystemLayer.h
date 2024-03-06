@@ -49,6 +49,8 @@ namespace IQmol {
                m_inputFile.setFile(fileName);
                setText(m_inputFile.completeBaseName());
             }
+            
+            QFileInfo const& getFile() const { return m_inputFile; }
 
             void appendData(Data::Bank&);
 
@@ -59,8 +61,10 @@ namespace IQmol {
             void newMoleculeRequested(AtomList const&);
             void connectComponent(Layer::Component*);
 
-         private Q_SLOTS:
+         public Q_SLOTS:
             void exportPdb();
+
+         private Q_SLOTS:
             void boxSystem();
             void removeSystem() { Component::removeSystem(this); }
 

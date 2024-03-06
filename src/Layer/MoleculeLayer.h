@@ -57,6 +57,10 @@ namespace IQmol {
       class  JobInfo;
    }
 
+   namespace Amber {
+      class ParametrizeMoleculeDialog;
+   }
+
    namespace Layer {
 
       class Isotopes;
@@ -203,6 +207,9 @@ bool save(bool prompt = false);
             void   setMullikenDecompositions(Matrix const& M);
             double mullikenDecomposition(int const a, int const b) const;
             bool   hasMullikenDecompositions() const;
+
+            int totalCharge() const;
+            int multiplicity() const;
    
          Q_SIGNALS:
             void multiplicityAvailable(unsigned);
@@ -212,6 +219,7 @@ bool save(bool prompt = false);
             void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
             void radiusAvailable(double const radius);
             void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
+            void parameterFileAvailable(QString const&);
  
          public Q_SLOTS:
             void groupSelection();
@@ -239,7 +247,12 @@ bool save(bool prompt = false);
             void reperceiveBondsSlot() { reperceiveBonds(true); }
 
             void reperceiveBondsForAnimation();
-  
+   
+            /// Writes the molecule to the specified file.  The format is
+            /// determined from the file extension and a Parser::IOError 
+            /// exception is thrown if there are any problems.
+            void writeToFile(QString const& filePath);
+
          protected:
             void updateAtomScale(double const scale);
             void updateSmallerHydrogens(bool smallerHydrogens);
@@ -254,12 +267,11 @@ bool save(bool prompt = false);
             void updateAtomicCharges();
             void generateConformersDialog();
             void generateConformers();
+            void parametrizeMoleculeDialog();
             void saveAs() { save(true); }
-   
+
          private:
             static bool s_autoDetectSymmetry;
-            int totalCharge() const;
-            int multiplicity() const;
 
             QString constraintsAsString();
             QString scanCoordinatesAsString();
@@ -274,11 +286,6 @@ bool save(bool prompt = false);
 
             QList<double> zeroCharges();
             QList<double> gasteigerCharges();
-
-            /// Writes the molecule to the specified file.  The format is
-            /// determined from the file extension and a Parser::IOError 
-            /// exception is thrown if there are any problems.
-            void writeToFile(QString const& filePath);
    
             /// Translates the coordinates of all the atoms so that the constraint is satisfied.
             void applyPositionConstraint(Constraint*);
@@ -340,7 +347,8 @@ bool save(bool prompt = false);
    
             Configurator::Molecule m_configurator;
             IQmol::SurfaceAnimatorDialog  m_surfaceAnimator;
-            
+            Amber::ParametrizeMoleculeDialog* m_parametrizeMolecule;
+
             Layer::Info      m_info;
             Layer::Container m_atomList;
             Layer::Container m_bondList;
