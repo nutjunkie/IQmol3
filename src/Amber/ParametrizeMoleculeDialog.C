@@ -26,6 +26,7 @@
 #include "Util/Preferences.h"
 #include "Amber/ConfigDialog.h"
 #include "Amber/ParametrizeMoleculeDialog.h"
+#include "WaitingSpinner.h"
 
 #include <QDir>
 
@@ -49,9 +50,22 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
    stopButton->setEnabled(false);
 
+   WaitingSpinner* spinner = new WaitingSpinner(this, false, false);
+   spinner->setRoundness(70.0);
+   spinner->setMinimumTrailOpacity(15.0);
+   spinner->setTrailFadePercentage(70.0);
+   spinner->setNumberOfLines(12);
+   spinner->setLineLength(5);
+   spinner->setLineWidth(2);
+   spinner->setInnerRadius(3);
+   spinner->setRevolutionsPerSecond(1);
+   m_dialog.horizontalLayout->addWidget(spinner);
+   m_dialog.horizontalLayout->setAlignment(spinner, Qt::AlignLeft);
+
    connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::run);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
    connect(runButton, &QPushButton::clicked, stopButton, [stopButton]() { stopButton->setEnabled(true); });
+   connect(runButton, &QPushButton::clicked, spinner, &WaitingSpinner::start);
 
    connect(stopButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::killed);
    connect(stopButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(true); });
@@ -59,6 +73,7 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
 
    connect(this, &ParametrizeMoleculeDialog::finished, runButton, [runButton]() { runButton->setEnabled(true); });
    connect(this, &ParametrizeMoleculeDialog::finished, stopButton, [stopButton]() { stopButton->setEnabled(false); });
+   connect(this, &ParametrizeMoleculeDialog::finished, spinner, &WaitingSpinner::stop);
 }
 
 void ParametrizeMoleculeDialog::on_chargeSpin_valueChanged(int value)
