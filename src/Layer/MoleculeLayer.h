@@ -35,8 +35,6 @@
 
 #include "Viewer/Animator.h"
 
-#include "Amber/ParametrizeMoleculeDialog.h"
-
 #include <QMap>
 #include <QFileInfo>
 
@@ -57,6 +55,10 @@ namespace IQmol {
 
    namespace Process {
       class  JobInfo;
+   }
+
+   namespace Amber {
+      class ParametrizeMoleculeDialog;
    }
 
    namespace Layer {
@@ -345,8 +347,8 @@ bool save(bool prompt = false);
    
             Configurator::Molecule m_configurator;
             IQmol::SurfaceAnimatorDialog  m_surfaceAnimator;
-            IQmol::Amber::ParametrizeMoleculeDialog* m_parametrizeMolecule;
-            
+            Amber::ParametrizeMoleculeDialog* m_parametrizeMolecule;
+
             Layer::Info      m_info;
             Layer::Container m_atomList;
             Layer::Container m_bondList;
