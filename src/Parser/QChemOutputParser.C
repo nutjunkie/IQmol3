@@ -371,6 +371,28 @@ bool QChemOutput::parse(TextStream& textStream)
             }
          }
 
+      }else if (line.contains("SCF   energy =")) {
+         tokens = TextStream::tokenize(line);
+         if (tokens.size() == 4 && currentGeometry) {
+            bool ok;
+            double energy(tokens[3].toDouble(&ok));
+            if (ok) {
+               Data::ScfEnergy& scf(currentGeometry->getProperty<Data::ScfEnergy>());
+               scf.setValue(energy, Data::Energy::Hartree);
+            }
+         }
+
+      }else if (line.contains("Total energy =")) {
+         tokens = TextStream::tokenize(line);
+         if (tokens.size() == 4 && currentGeometry) {
+            bool ok;
+            double energy(tokens[3].toDouble(&ok));
+            if (ok) {
+               Data::TotalEnergy& total(currentGeometry->getProperty<Data::TotalEnergy>());
+               total.setValue(energy, Data::Energy::Hartree);
+            }
+         }
+
       }else if (line.contains("RIMP2         total energy")) {
          tokens = TextStream::tokenize(line);
          if (tokens.size() >= 5) setTotalEnergy(tokens[4], currentGeometry, "RIMP2");
