@@ -34,4 +34,5 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Gui
    Qt5::Widgets
    Qt5::Network
+   OpenSSL::SSL
 )
