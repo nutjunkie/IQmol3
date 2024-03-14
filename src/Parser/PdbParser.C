@@ -207,6 +207,7 @@ bool Pdb::parse(TextStream& textStream)
                }else {
                   chain = new Data::ProteinChain(currentChainId);
                   m_chains.insert(currentChainId, chain);
+                  m_chainOrder.append(currentChainId);
                }
             }
 
@@ -243,6 +244,7 @@ bool Pdb::parse(TextStream& textStream)
                   geometry = new Data::Geometry();
                   geometry->name(residueName + " " + geom);
                   m_geometries.insert(currentGeometry, geometry);
+                  m_geometryOrder.append(currentGeometry);
                }
             }
             
@@ -264,10 +266,14 @@ bool Pdb::parse(TextStream& textStream)
       goto error;
    }
 
-   for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   //for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   for (auto c : m_chainOrder) m_dataBank.append(m_chains[c]);
+
    if (solvent) m_dataBank.append(solvent);
    // These are the non-protein HETATM systems
-   for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+   // for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+   for (auto g : m_geometryOrder) m_dataBank.append(m_geometries[g]);
+  
  
    return ok;
 
@@ -304,6 +310,7 @@ bool Pdb::setSecondaryStructure()
 {
    bool ok(true);
 
+qDebug() << "!!!Secondary structure order based on Map keys!!!";
    for (auto const& key : m_chains.keys()) {
        Data::ProteinChain* chain(m_chains[key]);
        QList<Data::Group*> groups(chain->groups());
