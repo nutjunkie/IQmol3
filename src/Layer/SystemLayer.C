@@ -193,11 +193,10 @@ void System::exportPdb()
         QList<Group*> residues(chain->findLayers<Group>());
         QStringList tokens(chain->text().split(' '));
         if (tokens.size() != 2) {
-           QLOG_ERROR() << "Invalid name for Protein chain:" << chain->text();
-           return;
+           chainId = " ";
+        }else {
+           chainId = tokens[1];
         }
-
-        chainId = tokens[1];
   
         for (auto residue : residues) {
             AtomList atoms(residue->getAtoms());
@@ -212,13 +211,18 @@ void System::exportPdb()
             
             for (auto atom : atoms) {
                qglviewer::Vec pos(atom->getPosition());
+
                QString label(atom->getLabel());
-               if (label.size() < 4) label = " " + label;
+               QString symbol(atom->getAtomicSymbol());
+               if (symbol.length() == 1) label.prepend(' ');
+               while (label.length() < 4) label += " ";
+
+//ATG: This should be the first 2 character are the atomic symbol, second 2 are a label
                line = QString("%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18\n")
                   .arg("ATOM"        ,-6)
                   .arg(index++       , 5)
                   .arg(' '           , 1)
-                  .arg(label         ,-4)
+                  .arg(label         , 4)
                   .arg(' '           , 1)
                   .arg(res           , 3)
                   .arg(' '           , 1)
@@ -231,7 +235,7 @@ void System::exportPdb()
                   .arg(1.0,   6, 'f' , 2)
                   .arg(0.0,   6, 'f' , 2)
                   .arg(' '           ,10)
-                  .arg(atom->getAtomicSymbol(), 2)
+                  .arg(symbol, 2)
                   .arg(atom->getFormalCharge(), 2);
 
                os << line;
@@ -252,10 +256,26 @@ void System::exportPdb()
     }
 /* 
 - Parser
-   - Fix the parser to only read in the first occupancy 
-   - Add thermal temperature factor
-- relabel the new hydrogens to something more meaningfule
-- add spinner https://github.com/snowwlex/QtWaitingSpinner
+   - Fix the parser to only read in the first occupancy (10th column)
+   - Add thermal temperature factor (11th column)
+   - relabel the new hydrogens to something more meaningful
+
+   - need a pdb ordering index as well as what is written in the pdb
+ATOM   1695  CD  PRO A 215       7.230   9.064   2.229  1.00 53.73           C    
+TER    1696      PRO A 215                               
+HETATM 1697 MG    MG A 300      -5.179 -10.868 -13.937  1.00 31.08          MG   
+HETATM 1698  K     K A 303      11.371  -3.739  -0.291  1.00 39.45           K    
+HETATM 1699  N   SAM A 301      -9.436  -7.062 -12.623  1.00 30.55           N   
+  eg. 3bwm has MG 300, then
+
+check sorting of residue from parser, shouldn't be done
+make ordering of residues consistent with pdb file, not index
+
+- sort chain ids
+
+- MOL2 export, should preserve the name of the atoms, current
+  name of mol2 file
+- export charges from group layer to QChem input file
 */
 
     QList<Molecule*> molecules(findLayers<Molecule>());
@@ -277,7 +297,11 @@ void System::exportPdb()
 
         for (auto atom : atoms) {
             QString label(atom->getLabel());
-            if (label.size() < 4) label = " " + label;
+            QString symbol(atom->getAtomicSymbol());
+            if (symbol.length() == 1) label.prepend(' ');
+            while (label.length() < 4) label += " ";
+
+
             qglviewer::Vec pos(atom->getPosition());
             line = QString("%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18\n")
                .arg("HETATM"      , 6)
@@ -296,7 +320,7 @@ void System::exportPdb()
                .arg(1.0,   6, 'f' , 2)
                .arg(0.0,   6, 'f' , 2)
                .arg(' '           ,10)
-               .arg(atom->getAtomicSymbol(), 2)
+               .arg(symbol, 2)
                .arg(atom->getFormalCharge(), 2);
 
             os << line;
