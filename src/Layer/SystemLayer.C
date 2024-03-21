@@ -275,7 +275,9 @@ make ordering of residues consistent with pdb file, not index
 
 - MOL2 export, should preserve the name of the atoms, current
   name of mol2 file
+  adding label ? to mol2
 - export charges from group layer to QChem input file
+- Filter A/B column for alternatives
 */
 
     QList<Molecule*> molecules(findLayers<Molecule>());

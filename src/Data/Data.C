@@ -133,6 +133,7 @@ QString toString(ID const id)
       case ScfEnergy:                  s = "Data::ScfEnergy";                 break;
       case ForceFieldEnergy:           s = "Data::ForceFieldEnergy";          break;
       case PointGroup:                 s = "Data::PointGroup";                break;
+      case ResidueName:                s = "Data::ResidueName";               break;
 
       case Constraint:                 s = "Data::Constraint:";               break;
       case PositionConstraint:         s = "Data::PositionConstraint:";       break;

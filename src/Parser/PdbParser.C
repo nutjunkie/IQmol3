@@ -117,6 +117,7 @@
 #include "Data/Geometry.h"
 #include "Data/ProteinChain.h"
 #include "Data/Solvent.h"
+#include "Data/ResidueName.h"
 #include "Util/QsLog.h"
 #include "Math/Vec.h"
 
@@ -242,6 +243,7 @@ bool Pdb::parse(TextStream& textStream)
                   geometry = m_geometries[currentGeometry];
                }else {
                   geometry = new Data::Geometry();
+                  geometry->getProperty<Data::ResidueName>().setName(residueName);
                   geometry->name(residueName + " " + geom);
                   m_geometries.insert(currentGeometry, geometry);
                   m_geometryOrder.append(currentGeometry);
