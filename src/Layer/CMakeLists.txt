@@ -46,6 +46,7 @@ set( HEADERS
    SurfaceLayer.h
    SymmetryLayer.h
    SystemLayer.h
+   TagLayer.h
    VibronicLayer.h
 )
 
@@ -92,6 +93,7 @@ set( SOURCES
    SurfaceLayer.C
    SymmetryLayer.C
    SystemLayer.C
+   TagLayer.C
    VibronicLayer.C
 )
 

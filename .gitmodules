@@ -31,3 +31,6 @@
 [submodule "modules/cgal"]
 	path = modules/cgal
 	url = https://github.com/CGAL/cgal.git
+[submodule "modules/Qt-Advanced-Stylesheets"]
+	path = modules/Qt-Advanced-Stylesheets
+	url = https://github.com/githubuser0xFFFF/Qt-Advanced-Stylesheets.git

@@ -1,12 +1,10 @@
-#ifndef IQMOL_LAYER_GEOMETRY_H
-#define IQMOL_LAYER_GEOMETRY_H
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -18,44 +16,20 @@
   details.
       
   You should have received a copy of the GNU General Public License along
-  with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
-   
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+      
 ********************************************************************************/
 
-#include "Layer.h"
-#include "QGLViewer/vec.h"
+#include "TagLayer.h"
 
 
 namespace IQmol {
-
-namespace Data {
-   class Geometry;
-}
-
 namespace Layer {
 
-   class Geometry : public Base {
+Tag::Tag(QString const& tag) : m_tag(tag) 
+ 
+{
+}
 
-      Q_OBJECT
-
-      public:
-         Geometry(Data::Geometry&);
-
-         qglviewer::Vec dipole() const;
-         unsigned nAtoms() const;
-         double energy() const;
-         QString label() const;
-         QString residueName() const;
-         Data::Geometry& geomData() { return m_geometry; }
-
-         qglviewer::Vec atomicPosition(unsigned i) const;
-         double atomicCharge(unsigned i) const;
-         double atomicSpin(unsigned i) const;
-
-      private:
-         Data::Geometry& m_geometry;
-   };
 
 } } // end namespace IQmol::Layer
-
-#endif

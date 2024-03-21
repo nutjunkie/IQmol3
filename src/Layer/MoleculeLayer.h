@@ -341,6 +341,7 @@ bool save(bool prompt = false);
             bool m_smallerHydrogens;
             bool m_hideHydrogens;
 
+            QString m_residueName;  // hack
 
             bool m_modified;
             bool m_reperceiveBondsForAnimation;
@@ -367,7 +368,6 @@ bool save(bool prompt = false);
             Data::Geometry* m_currentGeometry;
             Data::Type::ID m_chargeType;
             QAction* m_atomicChargesMenu;
-//            unsigned m_maxAtomicNumber;
             QAction* m_addGeometryMenu;;
 
             Matrix m_mullikenDecompositions;

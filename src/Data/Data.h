@@ -57,7 +57,7 @@ namespace Data {
                 PointGroup,             Frequencies,            
                 Orbitals,               OrbitalsList,           LocalizedOrbitals, 
                 CanonicalOrbitals,      NaturalBondOrbitals,    NaturalTransitionOrbitals,
-                DysonOrbitals,
+                DysonOrbitals,          ResidueName,
                 Density,                DensityList,
                 Shell,                  ShellList,              Mesh,
                 MeshList,               Surface,                SurfaceList,
