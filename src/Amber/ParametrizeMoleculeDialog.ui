@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>245</width>
-    <height>420</height>
+    <height>461</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,32 +96,53 @@
          <string notr="true">amber</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string notr="true">bcc</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string notr="true">sybyl</string>
-        </property>
-       </item>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
-     </property>
-     <property name="centerButtons">
-      <bool>false</bool>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="runButton">
+       <property name="text">
+        <string>Run</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="stopButton">
+       <property name="text">
+        <string>Stop</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="Line" name="line">
@@ -131,39 +152,32 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Output:</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Output:</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QTextBrowser" name="logTextBrowser"/>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ParametrizeMoleculeDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>122</x>
-     <y>210</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>122</x>
-     <y>115</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
@@ -172,7 +186,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>122</x>
-     <y>210</y>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
      <x>122</x>
