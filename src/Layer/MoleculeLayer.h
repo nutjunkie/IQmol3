@@ -210,6 +210,8 @@ bool save(bool prompt = false);
 
             int totalCharge() const;
             int multiplicity() const;
+            int numberOfElectrons() const;
+
    
          Q_SIGNALS:
             void multiplicityAvailable(unsigned);

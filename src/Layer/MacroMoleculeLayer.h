@@ -51,6 +51,7 @@ namespace Layer {
     
       private:
          double m_radius;
+         Data::MacroMolecule m_macroMolecule;
    };
 
 } } // end namespace IQmol::Layer 

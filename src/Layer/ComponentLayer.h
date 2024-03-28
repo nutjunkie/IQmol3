@@ -25,6 +25,7 @@
 #include "ContainerLayer.h"
 #include "Viewer/Animator.h"
 #include "Grid/Property.h"
+#include "Process/JobInfo.h"
 
 #include <QFileInfo>
 #include <QItemSelectionModel>
@@ -126,6 +127,9 @@ namespace IQmol {
             void setFile(QString const& fileName);
             QFileInfo const& getFile() const { return m_inputFile; }
             QString fileName() const { return m_inputFile.fileName(); };
+
+            virtual Process::JobInfo qchemJobInfo()  { return Process::JobInfo(); };
+            virtual bool sanityCheck() { return true; }
 
          Q_SIGNALS:
             void useShader(QString const&) const;

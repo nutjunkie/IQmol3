@@ -68,6 +68,8 @@ namespace IQmol {
          SystemList systemList(bool visibleOnly = true);
          Layer::System* activeSystem();
 
+         Layer::Component* activeComponent();
+
          bool saveAllAndClose();
          bool saveRequired();
 
