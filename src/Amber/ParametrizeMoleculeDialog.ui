@@ -96,16 +96,6 @@
          <string notr="true">amber</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string notr="true">bcc</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string notr="true">sybyl</string>
-        </property>
-       </item>
       </widget>
      </item>
     </layout>
