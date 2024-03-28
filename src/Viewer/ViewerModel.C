@@ -531,6 +531,13 @@ void ViewerModel::forAllSystems(std::function<void(Layer::System&)> function)
 }
 
 
+Layer::Component* ViewerModel::activeComponent()
+{
+   Layer::Component* comp(activeSystem());
+   return (comp ? comp : activeMolecule());
+}
+
+
 
 // - - - - - I/O - - - - -
 

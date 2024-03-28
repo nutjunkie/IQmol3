@@ -2689,6 +2689,12 @@ int Molecule::totalCharge() const
 }
 
 
+int Molecule::numberOfElectrons() const
+{
+   return m_info.numberOfElectrons();
+}
+
+
 int Molecule::multiplicity() const
 {
    return m_info.getMultiplicity();

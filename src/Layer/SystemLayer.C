@@ -26,13 +26,17 @@
 #include "MoleculeLayer.h"
 #include "GroupLayer.h"
 #include "LayerFactory.h"
+#include "FileLayer.h"
 
 #include "Data/Bank.h"
 #include "Viewer/UndoCommands.h"
 #include "Util/QsLog.h"
 #include "Util/QMsgBox.h"
+#include "Util/Preferences.h"
+#include "Process/JobInfo.h"
 
 #include <QtDebug>
+#include <QFileInfo>
 #include <QDir>
 
 
@@ -273,9 +277,6 @@ make ordering of residues consistent with pdb file, not index
 
 - sort chain ids
 
-- MOL2 export, should preserve the name of the atoms, current
-  name of mol2 file
-  adding label ? to mol2
 - export charges from group layer to QChem input file
 - Filter A/B column for alternatives
 */
@@ -365,6 +366,79 @@ make ordering of residues consistent with pdb file, not index
 
     os << "END\n";
     pdbFile.close();
+}
+
+
+Process::JobInfo System::qchemJobInfo()
+{
+   Process::JobInfo jobInfo;
+
+   QList<Molecule*> molecules(findLayers<Molecule>());
+
+   QString coordinates;
+   QString externalCharges;
+   int totalCharge(0);
+   int numberOfElectrons(0);
+
+   for (auto mol : molecules) {
+       coordinates += mol->coordinatesAsString() + "\n";
+       totalCharge += mol->totalCharge();
+       numberOfElectrons += mol->totalCharge();
+   }
+
+   QList<ProteinChain*> chains(findLayers<ProteinChain>());
+
+   for (auto chain : chains) {
+       QList<Group*> residues(chain->findLayers<Group>());
+       for (auto res : residues) {
+            AtomList atoms(res->getAtoms());
+            for (auto atom : atoms) {
+                
+                qglviewer::Vec pos(atom->getPosition());
+                double q(atom->getCharge());
+                externalCharges += QString("%1%2%3%4\n")
+                  .arg(pos.x, 8, 'f' , 3)
+                  .arg(pos.y, 8, 'f' , 3)
+                  .arg(pos.z, 8, 'f' , 3)
+                  .arg(q,     8, 'f' , 3);
+            }
+       }
+   }
+
+   jobInfo.set("Coordinates",   coordinates);
+   jobInfo.set("Charge",        totalCharge);
+   jobInfo.set("NumElectrons",  numberOfElectrons);
+   jobInfo.set("Multiplicity",  1+(numberOfElectrons%2)); // hack, assume low spin
+   jobInfo.set("LocalFilesExist", false);
+   jobInfo.set("PromptOnOverwrite", true);
+   jobInfo.set("ExternalCharges", externalCharges);
+
+   QString name;
+
+   if (m_inputFile.filePath().isEmpty()) {
+      QFileInfo fileInfo(Preferences::LastFileAccessed());
+      jobInfo.set("LocalWorkingDirectory", fileInfo.path());
+      jobInfo.set("BaseName",text());
+   }else {
+      jobInfo.set("LocalWorkingDirectory", m_inputFile.path());
+      jobInfo.set("BaseName", m_inputFile.completeBaseName());
+      name =  + "/" + m_inputFile.completeBaseName() + ".inp";
+   }
+
+   //jobInfo.set("MoleculePointer", (qint64)this);
+   jobInfo.set("SystemPointer", (qint64)this);
+
+   // input file format
+   FileList fileList(findLayers<File>(Children));
+   FileList::iterator file;
+   for (file = fileList.begin(); file != fileList.end(); ++file) {
+       if ((*file)->fileName().endsWith(".inp")) {
+          jobInfo.set("InputFileTemplate", (*file)->contents());
+          break;
+       }
+   }
+
+   return jobInfo;
 }
 
 } } // end namespace IQmol::Layer

@@ -1009,10 +1009,10 @@ void MainWindow::showQChemUI()
          m_quiInputDialog, SLOT(showMessage(QString const&)));
    }
 
-   Layer::Molecule* mol(m_viewerModel.activeMolecule());
-   if (!mol) return;
+   Layer::Component* comp(m_viewerModel.activeComponent());
+   if (!comp) return;
    
-   if (!mol->sanityCheck()) {
+   if (!comp->sanityCheck()) {
       QMessageBox mbox;
       mbox.setText("Wonky molecule detected");
       mbox.setInformativeText("Do you want to proceed?");
@@ -1026,7 +1026,8 @@ void MainWindow::showQChemUI()
       if (mbox.exec() == QMessageBox::Cancel) return;
    }
 
-   Process::JobInfo jobInfo(mol->qchemJobInfo());
+   Process::JobInfo jobInfo(comp->qchemJobInfo());
+
    m_quiInputDialog->setJobInfo(jobInfo);
 
    // (Re-)Load the servers here in case the user has made any modifications

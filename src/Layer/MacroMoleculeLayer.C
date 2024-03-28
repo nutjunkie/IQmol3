@@ -35,7 +35,7 @@ namespace Layer {
 
 
 MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* parent) : 
-   Component(macroMolecule.label(), parent), m_radius(0)
+   Component(macroMolecule.label(), parent), m_radius(0), m_macroMolecule(macroMolecule)
 {
    QList<Data::Group*> const& groups(macroMolecule.groups());
 
@@ -46,6 +46,7 @@ MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* 
    for (auto group : groups) {
        Data::AtomList const& atoms(group->atoms());
        QList<qglviewer::Vec>const& coordinates(group->coordinates());
+       QList<double> const& charges(group->charges());
 
        PrimitiveList primitives;
        unsigned nAtoms(atoms.size());
@@ -53,6 +54,7 @@ MacroMolecule::MacroMolecule(Data::MacroMolecule const& macroMolecule, QObject* 
            Layer::Atom* atom(new Atom(atoms[i]->atomicNumber(), atoms[i]->getLabel()));
            Vec pos(coordinates[i]);
            atom->setPosition(pos);
+           atom->setCharge(charges[i]);
            m_radius = std::max(m_radius, pos.norm());
   
            primitives.append(atom);

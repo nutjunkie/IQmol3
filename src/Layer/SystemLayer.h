@@ -32,6 +32,10 @@ namespace IQmol {
       class Bank;
    }   
 
+   namespace Process {
+     class JobInfo;
+   }
+
    namespace Layer {
 
       // This is the top-level Layer to handle a collection of Components. 
@@ -55,6 +59,8 @@ namespace IQmol {
             void appendData(Data::Bank&);
 
             double radius();
+
+            Process::JobInfo qchemJobInfo(); 
 
          Q_SIGNALS:
             void selectionChanged();
