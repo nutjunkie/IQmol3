@@ -25,6 +25,7 @@
 #include "Layer/FrequenciesLayer.h"
 #include "Layer/GeometryListLayer.h"
 #include "Layer/GeometryLayer.h"
+#include "Layer/SurfaceLayer.h"
 #include "Data/MacroMolecule.h"
 #include "Preferences.h"
 #include "UndoCommands.h"

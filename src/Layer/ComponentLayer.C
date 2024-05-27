@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+#include "SurfaceLayer.h"
 #include "AtomLayer.h"
 #include "GroupLayer.h"
 #include "Util/QsLog.h"

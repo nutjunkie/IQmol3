@@ -31,7 +31,6 @@
 #include "EfpFragmentListLayer.h"
 #include "MolecularSurfacesLayer.h"
 #include "Configurator/MoleculeConfigurator.h"
-#include "Configurator/SurfaceAnimatorDialog.h"
 
 #include "Viewer/Animator.h"
 
@@ -60,6 +59,8 @@ namespace IQmol {
    namespace Amber {
       class ParametrizeMoleculeDialog;
    }
+
+   class SurfaceAnimatorDialog;
 
    namespace Layer {
 
@@ -349,7 +350,7 @@ bool save(bool prompt = false);
             bool m_reperceiveBondsForAnimation;
    
             Configurator::Molecule m_configurator;
-            IQmol::SurfaceAnimatorDialog  m_surfaceAnimator;
+            IQmol::SurfaceAnimatorDialog*  m_surfaceAnimator;
             Amber::ParametrizeMoleculeDialog* m_parametrizeMolecule;
 
             Layer::Info      m_info;

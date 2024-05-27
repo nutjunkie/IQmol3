@@ -55,6 +55,7 @@
 #include "TagLayer.h"
 
 
+#include "Configurator/SurfaceAnimatorDialog.h"
 #include "Configurator/GenerateConformersDialog.h"
 #include "Viewer/UndoCommands.h"
 
@@ -111,7 +112,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_modified(false),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
-   m_surfaceAnimator(this), 
+   m_surfaceAnimator(0),
    m_parametrizeMolecule(0),
    m_info(this),
    m_atomList(this, "Atoms"), 
@@ -176,6 +177,9 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 
 Molecule::~Molecule()
 {
+   if (!m_surfaceAnimator) {
+      delete m_surfaceAnimator;
+   }
    deleteProperties();
 }
 
@@ -2183,8 +2187,11 @@ void Molecule::minimizeEnergy(QString const& forceFieldName)
 
 void Molecule::openSurfaceAnimator()
 {
-   m_surfaceAnimator.update();
-   m_surfaceAnimator.show();
+   if (!m_surfaceAnimator) {
+      m_surfaceAnimator = new SurfaceAnimatorDialog(this);
+   }
+   m_surfaceAnimator->update();
+   m_surfaceAnimator->show();
 }
 
 
