@@ -103,8 +103,6 @@ QString OptSection::formatContents() const
       List constraints, dummyAtoms, fixedAtoms;
       List::const_iterator iter;
 
-      s += "$opt\n";
-
       if (m_constraints.size() != 0) {
          s+= "CONSTRAINT\n";
          for (iter = m_constraints.begin(); iter != m_constraints.end(); ++iter) {
@@ -136,7 +134,6 @@ QString OptSection::formatContents() const
          }
          s+= "ENDCONNECT\n";
       }
-      s += "$end\n";
   }
 
   return s;
