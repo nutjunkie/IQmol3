@@ -42,7 +42,6 @@ std::vector<QString> getTopologyFiles(QString topolPath){
   }
 
 
-
   return output;
 
   }
