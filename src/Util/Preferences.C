@@ -262,7 +262,7 @@ QString QChemDatabaseFilePath()
       dir.cdUp();
       dir.cd("share");
 #else  
-      dir.setPath("/usr/share/IQmol");
+      dir.setPath("/usr/share/iqmol");
 #endif
       databaseFilePath = dir.absolutePath() + "/qchem_option.db";
    }else {
@@ -290,7 +290,7 @@ QString ShaderDirectory()
       dir.cdUp();
       dir.cd("share/shaders");
 #else
-      dir.setPath("/usr/share/IQmol/shaders");
+      dir.setPath("/usr/share/iqmol/shaders");
 #endif
       shaderDir = dir.absolutePath();
    }else {
@@ -412,6 +412,19 @@ QString DefaultForceField()
 void DefaultForceField(QString const& forceField)
 {
    Set("DefaultForceField", QVariant::fromValue(forceField));
+}
+
+// ---------
+
+bool AmberEnabled()
+{
+   QVariant value(Get("AmberEnabled"));
+   return value.isNull() ? true : value.value<bool>();
+}
+
+void AmberEnabled(bool const tf)
+{
+   Set("AmberEnabled", QVariant::fromValue(tf));
 }
 
 // ---------
@@ -839,6 +852,29 @@ void GromacsPositionsFile(QString const& position){
 }
 
 
+// ---------
+
+QString AmberDirectory()
+{
+   QString directory;
+   QVariant value(Get("AmberDirectory"));
+
+   if (value.isNull() || value.toString().isEmpty()) {
+      if (!qgetenv("AMBERHOME").isEmpty()) {
+         directory = qgetenv("AMBERHOME");
+      } else {
+         directory = QString("");
+      }
+   } else {
+      directory = value.value<QString>();
+   }
+   return directory;
+}
+
+void AmberDirectory(QString const& directory)
+{
+   Set("AmberDirectory", directory);
+}
 
 // ---------
 

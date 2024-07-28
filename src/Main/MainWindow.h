@@ -29,6 +29,10 @@
 #include "ViewerModel.h"
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
+#include "Util/StatusWidget.h"
+
+#include "Amber/ConfigDialog.h"
+#include "Amber/SystemBuilderDialog.h"
 
 #ifdef GROMACS
 #include "GromacsDialog.h"
@@ -43,7 +47,7 @@
 #include <QUndoView>
 #include <QTreeView>
 #include <QSplitter>
-#include <QProgressBar>
+#include <QStatusBar>
 #include <QList>
 #include <QAction>
 
@@ -99,6 +103,8 @@ namespace Gmx {
          void showGromacsDialog();
          void showGromacsServerDialog();
          void showGromacsConfigDialog();
+         void showAmberConfigDialog();
+         void showAmberSystemBuilderDialog();
          void showJobMonitor();
          void testInternetConnection();
          void submitJob(IQmol::Process::JobInfo&);
@@ -124,6 +130,7 @@ namespace Gmx {
          void generatePovRay() { m_viewer->generatePovRay(); }
 
       private:
+         void setStatus();
          void createMenus();
          void createLayout();
          void createConnections();
@@ -137,8 +144,7 @@ namespace Gmx {
          ViewerModelView m_viewerView;
          QUndoStack      m_undoStack;
          QUndoView       m_undoStackView;
-         QProgressBar    m_progressBar;
-         QLabel          m_status;
+         Util::StatusWidget m_statusWidget;
 
          Viewer*               m_viewer;
 

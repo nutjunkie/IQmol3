@@ -37,6 +37,7 @@ set( HEADERS
    NaturalBondOrbitalsLayer.h
    NaturalTransitionOrbitalsLayer.h
    NmrLayer.h
+   OctreeLayer.h
    OrbitalsLayer.h
    PrimitiveLayer.h
    ProteinChainLayer.h
@@ -45,6 +46,7 @@ set( HEADERS
    SurfaceLayer.h
    SymmetryLayer.h
    SystemLayer.h
+   TagLayer.h
    VibronicLayer.h
 )
 
@@ -60,7 +62,6 @@ set( SOURCES
    ChargeLayer.C
    ClippingPlaneLayer.C
    ConstraintLayer.C
-   ContainerLayer.C
    CubeDataLayer.C
    DipoleLayer.C
    DysonOrbitalsLayer.C
@@ -83,6 +84,7 @@ set( SOURCES
    NaturalBondOrbitalsLayer.C
    NaturalTransitionOrbitalsLayer.C
    NmrLayer.C
+   OctreeLayer.C
    OrbitalsLayer.C
    PrimitiveLayer.C
    ProteinChainLayer.C
@@ -91,12 +93,13 @@ set( SOURCES
    SurfaceLayer.C
    SymmetryLayer.C
    SystemLayer.C
+   TagLayer.C
    VibronicLayer.C
 )
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
 
 target_link_libraries(${LIB} PUBLIC
    Configurator

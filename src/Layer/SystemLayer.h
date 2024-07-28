@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "ComponentLayer.h"
+#include "OctreeLayer.h"
 #include <QFileInfo>
 
 
@@ -30,6 +31,10 @@ namespace IQmol {
    namespace Data {
       class Bank;
    }   
+
+   namespace Process {
+     class JobInfo;
+   }
 
    namespace Layer {
 
@@ -48,12 +53,29 @@ namespace IQmol {
                m_inputFile.setFile(fileName);
                setText(m_inputFile.completeBaseName());
             }
+            
+            QFileInfo const& getFile() const { return m_inputFile; }
 
             void appendData(Data::Bank&);
 
             double radius();
 
+            Process::JobInfo qchemJobInfo(); 
+
+         Q_SIGNALS:
+            void selectionChanged();
+            void newMoleculeRequested(AtomList const&);
+            void connectComponent(Layer::Component*);
+
+         public Q_SLOTS:
+            void exportPdb();
+
+         private Q_SLOTS:
+            void boxSystem();
+            void removeSystem() { Component::removeSystem(this); }
+
          private:
+            Octree* m_octree;
             void appendData(Layer::List& list);
 
             QFileInfo m_inputFile;

@@ -29,6 +29,7 @@
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
 #include "Data/SurfaceInfo.h"
+#include "Data/ResidueName.h"
 
 // Layers
 #include "LayerFactory.h"
@@ -41,14 +42,17 @@
 #include "FileLayer.h"
 #include "FrequenciesLayer.h"
 #include "EfpFragmentLayer.h"
+#include "FrequenciesLayer.h"
 #include "GeometryLayer.h"
 #include "GeometryListLayer.h"
 #include "GroupLayer.h"
 #include "IsotopesLayer.h"
 #include "MoleculeLayer.h"
+#include "NmrLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
 #include "VibronicLayer.h"
+#include "TagLayer.h"
 
 
 #include "Configurator/GenerateConformersDialog.h"
@@ -60,6 +64,8 @@
 #include "Util/Preferences.h"
 #include "Process/JobInfo.h" 
 #include "Parser/IQmolParser.h"
+
+#include "Amber/ParametrizeMoleculeDialog.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"
@@ -90,7 +96,6 @@ extern "C" void symmol_(int*, double*, double*, int*, char*);
 
 using namespace OpenBabel;
 using namespace qglviewer;
-using namespace std::placeholders;
 
 
 namespace IQmol {
@@ -107,6 +112,7 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
    m_surfaceAnimator(this), 
+   m_parametrizeMolecule(0),
    m_info(this),
    m_atomList(this, "Atoms"), 
    m_bondList(this, "Bonds"), 
@@ -146,8 +152,8 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
       this, SLOT(reperceiveBondsSlot()));
    connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
       this, SLOT(addHydrogens()));
-   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
-      this, SLOT(generateConformersDialog()));
+//   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+//      this, SLOT(generateConformersDialog()));
 
    m_addGeometryMenu = newAction("Duplicate Geometry");
 
@@ -159,6 +165,9 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
 
+   connect(newAction("Save As"), SIGNAL(triggered()), 
+      this, SLOT(saveAs()));
+
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_molecularSurfaces, SIGNAL(updated()), this, SIGNAL(softUpdate()));
@@ -168,13 +177,6 @@ Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
 Molecule::~Molecule()
 {
    deleteProperties();
-}
-
-
-void Molecule::setFile(QString const& fileName)
-{
-   m_inputFile.setFile(fileName);
-   setText(m_inputFile.completeBaseName());
 }
 
 
@@ -202,6 +204,7 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
 
 void Molecule::appendData(Layer::List& list)
 {
+qDebug() << "Molecule::appendData(Layer::List)";
    // !!! This needs fixing !!!
    // This is a bit cheesy, we rely on the QStandardItem text 
    // to determine the type of Layer.  
@@ -215,13 +218,18 @@ void Molecule::appendData(Layer::List& list)
    }
 
    Layer::List::iterator iter;
+   Tag*          tag(0);
+   Nmr*          nmr(0);
    Files*        files(0);
    Atoms*        atoms(0);
    Bonds*        bonds(0);
    Charges*      charges(0);
    CubeData*     cubeData(0);
    Orbitals*     orbitals(0);
+
+   Frequencies*  frequencies(0);
    EfpFragments* efpFragments(0);
+   GeometryList* geometryList(0);
 
    QString text;
    PrimitiveList primitiveList;
@@ -247,7 +255,18 @@ void Molecule::appendData(Layer::List& list)
           //toSet.append(*iter);
           orbitals->setMolecule(this);
 
-       // This is currently preventing the addition of primivees to an exisiting molecule
+       }else if ((nmr = qobject_cast<Nmr*>(*iter))) {
+          nmr->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((frequencies = qobject_cast<Frequencies*>(*iter))) {
+          frequencies->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
+          geometryList->setMolecule(this);
+
+       // This is currently preventing the addition of primitives to an exisiting molecule
        }else if (!labels.contains(text)) {
           labels << (*iter)->text();
 
@@ -279,7 +298,8 @@ void Molecule::appendData(Layer::List& list)
                  efpFragments->removeLayer(*efp);
                  primitiveList.append(*efp);
              }
-
+          }else if ((tag = qobject_cast<Tag*>(*iter))) {
+             m_residueName = tag->tag();
           }else {
 		     // The ordering of this is all wrong as the atoms have not been
 		     // appended yet and some Layers need this in their setMolecule
@@ -300,11 +320,14 @@ void Molecule::appendData(Layer::List& list)
    if (bondList.isEmpty()) reperceiveBonds(postCmd);
 
    Surface* surface(0);
+   Geometry* geometry(0);
 
    for (iter = toSet.begin(); iter != toSet.end(); ++iter) {
        if ((surface = qobject_cast<Surface*>(*iter))) {
           surface->setComponent(this);
           m_surfaceList.appendLayer(surface);
+       }else if ((geometry = qobject_cast<Geometry*>(*iter))) {
+          appendLayer(*iter);
        }else {
           appendLayer(*iter);
        }
@@ -362,9 +385,12 @@ bool Molecule::save(bool prompt)
    try {
 
       qDebug() << "Attempting to save" << m_inputFile.filePath();
+saveToCurrentGeometry();
+
       if (m_inputFile.suffix().endsWith("iqmol", Qt::CaseInsensitive)) {
          Parser::IQmol iqmol;
 
+/*
          if (!m_currentGeometry) {
             m_currentGeometry = new Data::Geometry();
             m_bank.prepend(m_currentGeometry);
@@ -374,6 +400,7 @@ bool Molecule::save(bool prompt)
                 m_currentGeometry->append(Z, atoms[i]->getPosition());
             }
          }
+*/
 
          iqmol.save(m_inputFile.filePath(), m_bank);
       }else {
@@ -401,8 +428,6 @@ void Molecule::writeToFile(QString const& filePath)
    Preferences::LastFileAccessed(filePath);
 
    QString tmpName(filePath + ".iqmoltmp");
-   qDebug() << "file path reached";
-   qDebug() << "file path = " << tmpName;
    std::ofstream ofs;
    ofs.open(QFile::encodeName(tmpName).data());
    if (!ofs) { 
@@ -459,7 +484,7 @@ PrimitiveList Molecule::fromOBMol(OBMol* obMol, AtomMap* atomMap, BondMap* bondM
    FOR_ATOMS_OF_MOL(obAtom, obMol) {
       Vec pos(obAtom->x(), obAtom->y(), obAtom->z());
       atom = atomMap->value(&*obAtom); 
-//qDebug() << "Valency ended up  " << obAtom->GetImplicitValence();
+      //qDebug() << "Valency ended up  " << obAtom->GetImplicitValence();
       if (!atom) {
          atom = createAtom(obAtom->GetAtomicNum(), pos);
          addedPrimitives.append(atom);
@@ -522,14 +547,23 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
    OBBond* obBond;
    Vec     position;
 
+
    OBMol* obMol(new OBMol());
    atomMap->clear();
    bondMap->clear();
    AtomList atoms(findLayers<Atom>(Children));
    AtomList::iterator atomIter;
 
+   OBResidue* residue(0);
+
    obMol->BeginModify();
    obMol->SetHybridizationPerceived();
+   obMol->SetChainsPerceived(true);
+
+   if (!m_residueName.isEmpty()) {
+      residue = obMol->NewResidue();
+      residue->SetName(m_residueName.toStdString());
+   }
 
    for (atomIter = atoms.begin(); atomIter != atoms.end(); ++atomIter) {
        obAtom = obMol->NewAtom();
@@ -538,6 +572,14 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        obAtom->SetAtomicNum((*atomIter)->getAtomicNumber());
        obAtom->SetVector(position.x, position.y, position.z);
        OBAtomAssignTypicalImplicitHydrogens(obAtom);
+
+       if (residue) {
+          residue->AddAtom(obAtom);
+          residue->SetAtomID(obAtom, (*atomIter)->getLabel().toStdString());
+          obAtom->SetResidue(residue);
+          //qDebug() << "Setting atom ID to:" << residue->GetAtomID(obAtom).c_str() 
+          //         << "  " << obAtom << "residue" << residue << " atom res" << obAtom->GetResidue();
+       }
    }
 
    BondList bonds(findLayers<Bond>(Children));
@@ -606,6 +648,7 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
    obMol->SetTotalCharge(totalCharge());
    obMol->SetTotalSpinMultiplicity(multiplicity());
    obMol->EndModify();
+   obMol->SetChainsPerceived(true);
 
    return obMol;
 }
@@ -917,9 +960,6 @@ QString Molecule::isotopesAsString()
        s += list[i]->formatQChem();
    }
    
-   qDebug() << "Formatted isotopes string";
-   qDebug() << s;
-
    return s;
 }
 
@@ -1307,22 +1347,22 @@ void Molecule::appendPrimitives(PrimitiveList const& primitives)
    AtomList atoms(findLayers<Atom>(Children));
    int initialNumberOfAtoms(atoms.size());
 
-   PrimitiveList::const_iterator primitive;
-   for (primitive = primitives.begin(); primitive != primitives.end(); ++primitive) {
+   for (auto primitive : primitives) {
+       primitive->setDrawMode(m_drawMode);
 
-       if ( (atom = qobject_cast<Atom*>(*primitive)) ) {
+       if ( (atom = qobject_cast<Atom*>(primitive)) ) {
           m_atomList.appendLayer(atom);
 
-       }else if ( (bond = qobject_cast<Bond*>(*primitive)) ) {
+       }else if ( (bond = qobject_cast<Bond*>(primitive)) ) {
           m_bondList.appendLayer(bond);
 
-       }else if ( (charge = qobject_cast<Charge*>(*primitive)) ) {
+       }else if ( (charge = qobject_cast<Charge*>(primitive)) ) {
           m_chargesList.appendLayer(charge);
 
-       }else if ( (efp = qobject_cast<EfpFragment*>(*primitive)) ) {
+       }else if ( (efp = qobject_cast<EfpFragment*>(primitive)) ) {
           m_efpFragmentList.appendLayer(efp);
 
-       }else if ( (group = qobject_cast<Group*>(*primitive)) ) {
+       }else if ( (group = qobject_cast<Group*>(primitive)) ) {
           m_groupList.appendLayer(group);
           //appendPrimitives(group->ungroup());
 
@@ -1927,7 +1967,6 @@ void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 
 void Molecule::addHydrogens()
 {
-   QLOG_DEBUG() << "Adding hydrogens";
    AtomMap atomMap;
    BondMap bondMap;
 
@@ -1942,6 +1981,9 @@ void Molecule::addHydrogens()
    obMol->BeginModify();
    obMol->EndModify();
 
+   int numAtoms(obMol->NumAtoms());
+   QLOG_DEBUG() << "Adding hydrogens to molecule, initial number of atoms" 
+                << numAtoms;
    // We now type the atoms and overwrite the valency/hybridization info
    // if it has been changed by the user.
    OBAtomTyper atomTyper;
@@ -1971,6 +2013,8 @@ void Molecule::addHydrogens()
    obMol->Translate(-displacement);
    obMol->BeginModify();
    obMol->EndModify();
+
+   QLOG_DEBUG() << "Number of hydrogens added:" << obMol->NumAtoms() - numAtoms;
 
    Command::AddHydrogens* cmd  = 
       new Command::AddHydrogens(this, fromOBMol(obMol, &atomMap, &bondMap));
@@ -2645,6 +2689,12 @@ int Molecule::totalCharge() const
 }
 
 
+int Molecule::numberOfElectrons() const
+{
+   return m_info.numberOfElectrons();
+}
+
+
 int Molecule::multiplicity() const
 {
    return m_info.getMultiplicity();
@@ -2876,6 +2926,17 @@ void Molecule::generateConformers()
    }
 
    delete obMol;
+}
+
+void Molecule::parametrizeMoleculeDialog()
+{
+   qDebug() << "Opening parametrize molecule dialog";
+   if (!m_parametrizeMolecule) {
+      m_parametrizeMolecule = new Amber::ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
+   }
+
+   m_parametrizeMolecule->show();
+   m_parametrizeMolecule->raise();
 }
 
 } } // end namespace IQmol::Layer

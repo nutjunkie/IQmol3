@@ -36,22 +36,17 @@ namespace Data {
 
          Type::ID typeID() const { return Type::Group; }
 
-         void addAtom(Data::Atom* atom, qglviewer::Vec const& position, float atomcharge)
+         void addAtom(Data::Atom* atom, qglviewer::Vec const& position, double atomCharge = 0)
          {
             m_atoms.append(atom);
             m_coordinates.append(position);
-            m_atomcharges.append(atomcharge);
-         }
-
-         void addAtom(Data::Atom* atom, qglviewer::Vec const& position)
-         {
-            m_atoms.append(atom);
-            m_coordinates.append(position);
+            m_atomCharges.append(atomCharge);
          }
 
          AtomList const& atoms() const { return m_atoms; }
 
          QList<qglviewer::Vec> const& coordinates() const { return m_coordinates; }
+         QList<double> const& charges() const { return m_atomCharges; }
 
          int charge() const { return m_charge; }
          QString label() const { return m_label; }
@@ -75,7 +70,7 @@ namespace Data {
          int          m_charge;
          QString      m_label;
          AtomList     m_atoms;
-         QList<float> m_atomcharges;
+         QList<double> m_atomCharges;
          QList<qglviewer::Vec> m_coordinates;
    };
 

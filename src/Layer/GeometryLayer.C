@@ -25,6 +25,7 @@
 #include "Data/AtomicProperty.h"
 #include "Data/Geometry.h"
 #include "Data/Energy.h"
+#include "Data/ResidueName.h"
 
 
 namespace IQmol {
@@ -43,6 +44,13 @@ double Geometry::energy() const
    Data::Energy& energy(m_geometry.getProperty<Data::TotalEnergy>());
    return energy.value();
 }
+
+
+QString Geometry::residueName() const
+{
+   return m_geometry.getProperty<Data::ResidueName>().name();
+}
+
 
 
 QString Geometry::label() const

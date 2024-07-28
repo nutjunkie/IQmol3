@@ -25,7 +25,8 @@ set( SOURCES
 
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
+
 target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 
 

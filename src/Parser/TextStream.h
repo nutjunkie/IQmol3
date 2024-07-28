@@ -177,7 +177,10 @@ namespace Parser {
              return m_previousLine;
          }
 
-         void rewind() { seek(0); }
+         void rewind() { 
+            m_lineCount = 0;
+            seek(0); 
+         }
         
       private:
          int m_lineCount;

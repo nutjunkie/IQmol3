@@ -71,19 +71,10 @@ void ProteinChain::cartoonAvailable()
    }
 
    Data::Surface* surfaceData(generateCartoon->getSurface());
+   surfaceData->setDescription("Ribbon");
 
-   QList<System*> parents = findLayers<System>(Parents);
-   if (!parents.isEmpty()) {
-
-      //surfaceData->setDescription(text());
-      //parents.first()->prependSurface(surfaceData);
-      //parents.first()->addProperty(new Property::Residue(this));
-
-      surfaceData->setDescription("Ribbon");
-      Surface* surface = createSurfaceLayer(surfaceData);
-      prependLayer(surface);
-      //addProperty(new Property::Residue(this));
-   }
+   Surface* surface = createSurfaceLayer(surfaceData);
+   prependLayer(surface);
 
    updated();
    generateCartoon->deleteLater();
@@ -127,8 +118,6 @@ void GenerateCartoon::run()
     "#ffff99"}) ;  //light yellow
 
    QColor color(colors[m_data.chainIndex()+6]);
-   qDebug() << "Chain ID: " <<  m_data.chainIndex();
-   qDebug() << "Color:    " <<  color;
    m_surface->setColors( {color,color});
 }
 

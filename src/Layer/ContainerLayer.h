@@ -30,12 +30,16 @@ namespace Layer {
    /// Template Layer that holds a list of other Layers of a single type. 
    /// Container Layers are unattached when empty, and automatically attach
    /// themselves to the persistent parent when children are added. 
-   class Container : public Base {
-
+   class Container : public Base 
+   {
       Q_OBJECT
 
       public:
-		 Container(Layer::Base* parent, QString const& label);
+		 Container(Layer::Base* parent, QString const& label) : Base(label)
+         {
+            setPersistentParent(parent);
+            setProperty(RemoveWhenChildless);
+         }
    };
 
 } } // end namespace IQmol::Layer

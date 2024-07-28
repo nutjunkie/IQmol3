@@ -37,10 +37,8 @@ namespace Data {
          ProteinChain(QString const& chainId) 
           : MacroMolecule(QString("Chain " + chainId))
          { 
-            qDebug() << "Attempting to set chain Id to" << chainId;
             QString const letters("ABCDEFGHIJKLMNOPQRTSUVWXYZ");
             m_chainIndex = letters.indexOf(chainId);
-            qDebug() << "set to" << m_chainIndex;
          }
 
          Type::ID typeID() const { return Type::ProteinChain; }
@@ -72,7 +70,10 @@ namespace Data {
 
          void appendPeptideOxygen(Math::Vec3 const& v) { m_peptideOxygens.append(v); }
 
-         void appendSecondaryStructure(SecondaryStructure sstype){m_secondaryStructure.append(sstype); }
+         void appendSecondaryStructure(SecondaryStructure sstype)
+         {
+            m_secondaryStructure.append(sstype); 
+         }
 
          bool setSecondaryStructure(
              QVector<SecondaryStructure> const& secondaryStructure)

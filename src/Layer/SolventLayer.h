@@ -48,6 +48,7 @@ namespace Layer {
              col.setRgbF(m_color[0],m_color[1],m_color[2],m_color[3]); 
              return col;
          }
+         std::vector<qglviewer::Vec> centers() const { return m_solvent.centers(); }
 
       protected:
          GLfloat m_color[4];

@@ -26,21 +26,24 @@
 
   COLUMNS        DATA  TYPE    FIELD        DEFINITION
   -------------------------------------------------------------------------------------
-   1 -  6        Record name   "ATOM  "
-   7 - 11        Integer       serial       Atom  serial number.
-  13 - 16        Atom          name         Atom name.
-  17 - 17        Character     altLoc       Alternate location indicator.
-  18 - 20        Residue name  resName      Residue name.
-  22 - 22        Character     chainID      Chain identifier.
-  23 - 26        Integer       resSeq       Residue sequence number.
-  27 - 30        AChar         iCode        Code for insertion of residues.
-  31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-  39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
-  47 - 54        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
-  55 - 60        Real(6.2)     occupancy    Occupancy.
-  61 - 66        Real(6.2)     tempFactor   Temperature  factor.
-  77 - 78        LString(2)    element      Element symbol, right-justified.
-  79 - 80        LString(2)    charge       Charge  on the atom.
+   1 -  6   6    Record name   "ATOM  "
+   7 - 11   5    Integer       serial       Atom  serial number.
+  12 - 12   1   space
+  13 - 16   4    Atom          name         Atom name.
+  17 - 17   1    Character     altLoc       Alternate location indicator.
+  18 - 20   3    Residue name  resName      Residue name.
+  21 - 21   1   space
+  22 - 22   1    Character     chainID      Chain identifier.
+  23 - 26   4    Integer       resSeq       Residue sequence number.
+  27 - 30   4    AChar         iCode        Code for insertion of residues.
+  31 - 38   8    Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
+  39 - 46   8    Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
+  47 - 54   8    Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
+  55 - 60   6    Real(6.2)     occupancy    Occupancy.
+  61 - 66   6    Real(6.2)     tempFactor   Temperature  factor.
+  67 - 76  10   space
+  77 - 78   2    LString(2)    element      Element symbol, right-justified.
+  79 - 80   2    LString(2)    charge       Charge  on the atom.
 
 
   COLUMNS        DATA  TYPE     FIELD         DEFINITION
@@ -114,6 +117,7 @@
 #include "Data/Geometry.h"
 #include "Data/ProteinChain.h"
 #include "Data/Solvent.h"
+#include "Data/ResidueName.h"
 #include "Util/QsLog.h"
 #include "Math/Vec.h"
 
@@ -204,6 +208,7 @@ bool Pdb::parse(TextStream& textStream)
                }else {
                   chain = new Data::ProteinChain(currentChainId);
                   m_chains.insert(currentChainId, chain);
+                  m_chainOrder.append(currentChainId);
                }
             }
 
@@ -229,7 +234,8 @@ bool Pdb::parse(TextStream& textStream)
             solvent->addSolvent(qv);
 
          }else {  // HETATM
-            QString geom = chainId+QString::number(residueId);
+            QString geom = QString::number(residueId) + " ("+chainId+")";
+
             if (geom != currentGeometry) {
                currentGeometry = geom;
 
@@ -237,12 +243,14 @@ bool Pdb::parse(TextStream& textStream)
                   geometry = m_geometries[currentGeometry];
                }else {
                   geometry = new Data::Geometry();
+                  geometry->getProperty<Data::ResidueName>().setName(residueName);
                   geometry->name(residueName + " " + geom);
                   m_geometries.insert(currentGeometry, geometry);
+                  m_geometryOrder.append(currentGeometry);
                }
             }
             
-            geometry->append(atomSymbol, qv);
+            geometry->append(atomSymbol, qv, label);
          }         
 
       }else if (key == "ENDMDL" || key == "END") {
@@ -260,10 +268,14 @@ bool Pdb::parse(TextStream& textStream)
       goto error;
    }
 
-   for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   //for (auto chain : m_chains.values()) m_dataBank.append(chain);
+   for (auto c : m_chainOrder) m_dataBank.append(m_chains[c]);
+
    if (solvent) m_dataBank.append(solvent);
    // These are the non-protein HETATM systems
-   for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+   // for (auto geom: m_geometries.values()) m_dataBank.append(geom);
+   for (auto g : m_geometryOrder) m_dataBank.append(m_geometries[g]);
+  
  
    return ok;
 
@@ -300,6 +312,7 @@ bool Pdb::setSecondaryStructure()
 {
    bool ok(true);
 
+qDebug() << "!!!Secondary structure order based on Map keys!!!";
    for (auto const& key : m_chains.keys()) {
        Data::ProteinChain* chain(m_chains[key]);
        QList<Data::Group*> groups(chain->groups());

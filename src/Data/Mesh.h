@@ -31,11 +31,6 @@
 
 namespace IQmol {
 
-class MeshDecimator;
-
-namespace Parser {
-   class Mesh;
-}
 
 namespace Layer {
    class Surface;
@@ -55,8 +50,6 @@ namespace Data {
    class Mesh : public Base {
 
       friend class boost::serialization::access;
-      friend class IQmol::Parser::Mesh;
-      friend class IQmol::MeshDecimator;
       friend class IQmol::Layer::Surface;
 
     public:

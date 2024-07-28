@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
    m_viewerView(this),
    m_undoStack(this),
    m_undoStackView(&m_undoStack, this),
+   m_statusWidget(this),
    m_viewerSelectionModel(&m_viewerModel, this),
    m_logMessageDialog(0),
    m_preferencesBrowser(this),
@@ -102,6 +103,11 @@ MainWindow::~MainWindow()
 }
 
 
+void MainWindow::setStatus()
+{
+}
+
+
 void MainWindow::createLayout()
 {
    QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -113,25 +119,20 @@ void MainWindow::createLayout()
 
    mainLayout->addWidget(&m_toolBar);
    m_helpBrowser.setWindowFlags(Qt::Tool);
+   m_statusWidget.showMessage("Welcome to IQmol");
 
    // sideSplitter (ha ha) is a data member as we need to control its visibility
    m_sideSplitter = new QSplitter(Qt::Vertical, this);
    m_sideSplitter->addWidget(&m_viewerView);
-
-/*
-   QWidget* progress = new QWidget(this);
-   progress->setLayoutDirection(
-   progress->addWidget();
-   progress->addWidget(&m_status);
-   progress->addWidget(&m_progressBar);
-*/
-   
    m_sideSplitter->addWidget(&m_undoStackView);
+   m_sideSplitter->addWidget(&m_statusWidget);
    m_sideSplitter->setCollapsible(0, true);
    m_sideSplitter->setCollapsible(1, true);
 
+   m_statusWidget.show();
+
    QList<int> sizes;
-   sizes << Preferences::MainWindowSize().height()-220 << 220;
+   sizes << Preferences::MainWindowSize().height()- 220 - 12 << 220 << 12;
    m_sideSplitter->setSizes(sizes);
 
    // Main splitter
@@ -195,6 +196,22 @@ void MainWindow::createConnections()
    connect(&m_viewerView, SIGNAL(expanded(QModelIndex const&)),
       &m_viewerModel, SLOT(itemExpanded(QModelIndex const&))); 
 
+   connect(&m_viewerView, SIGNAL(newMoleculeFromSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(newMoleculeFromSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(mergeSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(mergeSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(deleteSelection(QModelIndexList const&)),
+      &m_viewerModel, SLOT(deleteSelection(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(showMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(showMolecules(QModelIndexList const&)));
+
+   connect(&m_viewerView, SIGNAL(hideMolecules(QModelIndexList const&)),
+      &m_viewerModel, SLOT(hideMolecules(QModelIndexList const&)));
+
+
    connect(&m_viewerModel, SIGNAL(sceneRadiusChanged(double const)), 
       m_viewer, SLOT(setSceneRadius(double const)));
 
@@ -203,6 +220,9 @@ void MainWindow::createConnections()
 
    connect(&m_viewerModel, SIGNAL(displayMessage(QString const&)),
        m_viewer, SLOT(displayMessage(QString const&)));
+
+   connect(&m_viewerModel, SIGNAL(displayMessage(QString const&)),
+       &m_statusWidget, SLOT(showMessage(QString const&)));
 
    connect(&m_viewerModel, SIGNAL(postCommand(QUndoCommand*)),
        this, SLOT(addCommand(QUndoCommand*)));
@@ -260,8 +280,6 @@ void MainWindow::createConnections()
    connect(&m_viewerModel, SIGNAL(clearSelection()),
       &m_viewerSelectionModel, SLOT(clearSelection()));
 
-//   connect(m_viewer, SIGNAL(clearSelection()),
-//      &m_viewerSelectionModel, SLOT(clearSelection()));
    connect(m_viewer, SIGNAL(clearSelection()),
       &m_viewerModel, SLOT(selectNone()));
 
@@ -574,6 +592,14 @@ void MainWindow::createMenus()
          action->setCheckable(true);
          m_labelActions << action;
 
+         name = "Atom Label";
+         action = subMenu->addAction(name);
+         connect(action, SIGNAL(triggered()), this, SLOT(setLabel()));
+         action->setData(Layer::Atom::Label);
+         action->setShortcut(Qt::Key_L);
+         action->setCheckable(true);
+         m_labelActions << action;
+
 
    // ----- Build Menu -----
    menu = menuBar()->addMenu("Build");
@@ -724,7 +750,20 @@ void MainWindow::createMenus()
 
 #endif
 
+   // ----- Amber Menu -----
+   if (Preferences::AmberEnabled()) {
+      menu->addSeparator();
+      name = "Edit Amber Config";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberConfigDialog()));
 
+      name = "Amber System Builder";
+      action = menu->addAction(name);
+      connect(action, SIGNAL(triggered()), this, SLOT(showAmberSystemBuilderDialog()));
+      connect(menu, &QMenu::aboutToShow, [this, action](){
+         action->setEnabled(m_viewerModel.activeSystem() != 0);
+      });
+   }
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
@@ -790,7 +829,10 @@ void MainWindow::openFile()
 {
    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), 
       Preferences::LastFileAccessed());
-   if (!fileName.isEmpty()) open(fileName);
+   if (!fileName.isEmpty()) {
+      m_statusWidget.showMessage("Loading", true);
+      open(fileName);
+   }
 }
 
 
@@ -798,14 +840,21 @@ void MainWindow::openDir()
 {
    QString dirName = QFileDialog::getExistingDirectory(this, tr("Open Job Directory"), 
       Preferences::LastFileAccessed());
-   if (!dirName.isEmpty()) open(dirName);
+   if (!dirName.isEmpty()) {
+      m_statusWidget.showMessage("Loading", true);
+      open(dirName);
+   }
 }
 
 
 void MainWindow::openRecentFile()
 {
    QAction* action = qobject_cast<QAction*>(sender());
-   if (action) open(action->data().toString());
+   if (action) {
+      QString name(action->data().toString());
+      m_statusWidget.showMessage("Loading", true);
+      open(name);
+   }
 }
 
 
@@ -814,6 +863,7 @@ void MainWindow::fileOpened(QString const& filePath)
    Preferences::AddRecentFile(filePath);
    Preferences::LastFileAccessed(filePath);
    updateRecentFilesMenu();
+   m_statusWidget.clearMessage();
 }
 
 
@@ -959,10 +1009,10 @@ void MainWindow::showQChemUI()
          m_quiInputDialog, SLOT(showMessage(QString const&)));
    }
 
-   Layer::Molecule* mol(m_viewerModel.activeMolecule());
-   if (!mol) return;
+   Layer::Component* comp(m_viewerModel.activeComponent());
+   if (!comp) return;
    
-   if (!mol->sanityCheck()) {
+   if (!comp->sanityCheck()) {
       QMessageBox mbox;
       mbox.setText("Wonky molecule detected");
       mbox.setInformativeText("Do you want to proceed?");
@@ -976,7 +1026,8 @@ void MainWindow::showQChemUI()
       if (mbox.exec() == QMessageBox::Cancel) return;
    }
 
-   Process::JobInfo jobInfo(mol->qchemJobInfo());
+   Process::JobInfo jobInfo(comp->qchemJobInfo());
+
    m_quiInputDialog->setJobInfo(jobInfo);
 
    // (Re-)Load the servers here in case the user has made any modifications
@@ -1063,7 +1114,20 @@ void MainWindow::showGromacsServerDialog()
 }
 
 
+void MainWindow::showAmberConfigDialog()
+{
+   Amber::ConfigDialog dialog(this);
+   dialog.exec();
+   if (dialog.result() == QDialog::Accepted) {
+      Preferences::AmberDirectory(dialog.getDirectory());
+   }
+}
 
+void MainWindow::showAmberSystemBuilderDialog()
+{
+   Amber::SystemBuilderDialog dialog(this, m_viewerModel.activeSystem());
+   dialog.exec();
+}
 
 void MainWindow::insertMoleculeDialog() 
 {

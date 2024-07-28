@@ -1,11 +1,11 @@
 #pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2023 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -15,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -60,10 +60,14 @@ namespace Parser {
          };
 
          QString m_label;
+         QVector<SS> m_secondaryStructure;
 
          QMap<QChar, Data::ProteinChain*> m_chains;
          QMap<QString, Data::Geometry*> m_geometries;  // HETATM components
-         QVector<SS> m_secondaryStructure;
+
+         // Need these to keep the order of the pdb
+         QList<QChar> m_chainOrder;
+         QList<QString> m_geometryOrder;
          
 		 // Scatters the interval-based SS specifications read from the 
          // PDB to one type per residue

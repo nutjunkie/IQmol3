@@ -37,6 +37,7 @@
 #include "Data/Surface.h"
 #include "Data/Solvent.h"
 #include "Data/Vibronic.h"
+#include "Data/ResidueName.h"
 
 #include "LayerFactory.h"
 #include "AtomLayer.h"
@@ -63,6 +64,7 @@
 #include "SolventLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
+#include "TagLayer.h"
 #include "VibronicLayer.h"
 
 #include "Util/QsLog.h"
@@ -103,7 +105,7 @@ Layer::List Factory::toLayers(Data::Base& data)
 {
    Layer::List layers;
 
-   //qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
+   qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
 
    try {
 
@@ -285,7 +287,7 @@ List Factory::convert(Data::Geometry& geometry)
        unsigned Z(geometry.atomicNumber(i));
        qglviewer::Vec position(geometry.position(i));
 
-       Atom* atom(new Atom(geometry.atomicNumber(i)));
+       Atom* atom(new Atom(geometry.atomicNumber(i), geometry.atomicLabel(i)));
        atom->setPosition(geometry.position(i));
        atoms->appendLayer(atom);
 
@@ -307,6 +309,11 @@ List Factory::convert(Data::Geometry& geometry)
        Bond* bond(new Bond(begin, end));
        bond->setOrder(obBond->GetBondOrder());
        bonds->appendLayer(bond);
+   }
+
+   if (geometry.hasProperty<Data::ResidueName>()) {
+      Tag* tag(new Tag(geometry.getProperty<Data::ResidueName>().name()));
+      list.append(tag);
    }
 
    return list;

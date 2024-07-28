@@ -24,9 +24,6 @@
 #include "ComponentLayer.h"
 #include "Data/MacroMolecule.h"
 
-//#include "Util/octree/octree.h"
-//#include "Util/octree/point3d.h"
-
 
 namespace IQmol {
 
@@ -54,7 +51,7 @@ namespace Layer {
     
       private:
          double m_radius;
-//         Octree< Point3D<double> >  m_octree;
+         Data::MacroMolecule m_macroMolecule;
    };
 
 } } // end namespace IQmol::Layer 

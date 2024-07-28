@@ -48,14 +48,14 @@ PrimitiveList::PrimitiveList(IQmol::Data::Geometry const& geometry, bool include
    AtomList atomList;
 
    for (unsigned i = 0; i < geometry.nAtoms(); ++i) {
-       Layer::Atom* atom = new Layer::Atom(geometry.atomicNumber(i));
+       Atom* atom = new Atom(geometry.atomicNumber(i));
        atom->setPosition(geometry.position(i));
        atomList.append(atom);
        append(atom);
    }   
 
    if (includeBonds) {
-      QMap<OpenBabel::OBAtom*, Layer::Atom*> atomMap;
+      QMap<OpenBabel::OBAtom*, Atom*> atomMap;
       OpenBabel::OBMol obMol;
       OpenBabel::OBAtom* obAtom;
       qglviewer::Vec position;
@@ -74,9 +74,9 @@ PrimitiveList::PrimitiveList(IQmol::Data::Geometry const& geometry, bool include
       obMol.PerceiveBondOrders();
 
       for (OpenBabel::OBMolBondIter obBond(&obMol); obBond; ++obBond) {
-         Layer::Atom* begin = atomMap.value(obBond->GetBeginAtom());
-         Layer::Atom* end   = atomMap.value(obBond->GetEndAtom());
-         Layer::Bond* bond  = new Layer::Bond(begin, end);
+         Atom* begin = atomMap.value(obBond->GetBeginAtom());
+         Atom* end   = atomMap.value(obBond->GetEndAtom());
+         Bond* bond  = new Bond(begin, end);
          bond->setOrder(obBond->GetBondOrder());
          append(bond);
       }   

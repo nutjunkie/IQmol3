@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_LIST_H
-#define IQMOL_DATA_LIST_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -36,8 +35,6 @@ namespace Data {
       friend class boost::serialization::access;
 
       public:
-         Type::ID typeID() const  = 0;
-
          virtual void serialize(InputArchive& ar, unsigned int const version = 0) 
          {
             serializeList(ar, version);
@@ -92,5 +89,3 @@ namespace Data {
    };
 
 } } // end namepspace Data::IQmol
-
-#endif

@@ -49,7 +49,9 @@ Geometry::Geometry(Geometry const& that) : Base()
 }
 
 
-Geometry::Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates)
+Geometry::Geometry(
+   std::vector<unsigned> const& atomicNumbers, 
+   std::vector<double> const& coordinates)
 {
 
 
@@ -74,7 +76,7 @@ void Geometry::set(QList<unsigned> const& atomicNumbers, QList<double> const& co
 {
    unsigned n(atomicNumbers.size());
    if (3*n > (unsigned)coordinates.size()) {
-      qDebug() << "Array length mismatch in Geometry constructor: 3x" 
+      QLOG_ERROR() << "Array length mismatch in Geometry constructor: 3x" 
                << atomicNumbers.size() << "!=" << coordinates.size();
       n = coordinates.size()/3;
    }
@@ -90,6 +92,13 @@ void Geometry::set(QList<unsigned> const& atomicNumbers, QList<double> const& co
    m_multiplicity = 1;
 }
 
+
+QString Geometry::atomicLabel(unsigned const i) const
+{
+   QString label;
+   if (i < (unsigned)m_atoms.size()) label= m_atoms[i]->Atom::getLabel();
+   return label;
+}
 
 
 QString Geometry::atomicSymbol(unsigned const i) const
@@ -196,17 +205,19 @@ bool Geometry::sameAtoms(QList<unsigned> const& atomicNumbers) const
 
 
 
-void Geometry::append(unsigned const z, qglviewer::Vec const& position)
+void Geometry::append(unsigned const z, qglviewer::Vec const& position, 
+   QString const& label)
 {
-   QmAtom* atom = new QmAtom(z);
+   QmAtom* atom = new QmAtom(z, label);
    m_atoms.push_back(atom);
    m_coordinates.push_back(position);
 }
 
 
-void Geometry::append(QString const& symbol, qglviewer::Vec const& position)
+void Geometry::append(QString const& symbol, qglviewer::Vec const& position, 
+   QString const& label)
 {
-   QmAtom* atom = new QmAtom(symbol);
+   QmAtom* atom = new QmAtom(symbol, label);
    m_atoms.push_back(atom);
    m_coordinates.push_back(position);
 }

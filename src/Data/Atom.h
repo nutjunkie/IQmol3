@@ -32,12 +32,12 @@ namespace Data {
    class Atom : public Base 
    {
       public:
+         Type::ID typeID() const { return Type::Atom; }
+
          Atom(unsigned const Z = 0, QString const& label = QString()) 
           : m_atomicNumber(Z), m_label(label) { }
 
          Atom(QString const& symbol, QString const& label = QString());
-
-         Type::ID typeID() const { return Type::Atom; }
 
          unsigned atomicNumber() const { return m_atomicNumber; }
 

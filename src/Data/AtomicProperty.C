@@ -32,13 +32,7 @@ namespace Data {
 //  ---------- AtomicSymbol ----------
 void AtomicSymbol::setDefault(int const Z)
 {
-   if (Z > 0) m_symbol = QString(OpenBabel::OBElements::GetSymbol(Z));
-}
-
-
-void AtomicSymbol::dump() const
-{
-   qDebug() << m_symbol;
+   if (Z > 0) m_value = QString(OpenBabel::OBElements::GetSymbol(Z));
 }
 
 

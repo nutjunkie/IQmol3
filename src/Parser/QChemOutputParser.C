@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -366,6 +366,28 @@ bool QChemOutput::parse(TextStream& textStream)
             if (ok) {
                Data::ScfEnergy& scf(currentGeometry->getProperty<Data::ScfEnergy>());
                scf.setValue(energy, Data::Energy::Hartree);
+               Data::TotalEnergy& total(currentGeometry->getProperty<Data::TotalEnergy>());
+               total.setValue(energy, Data::Energy::Hartree);
+            }
+         }
+
+      }else if (line.contains("SCF   energy =")) {
+         tokens = TextStream::tokenize(line);
+         if (tokens.size() == 4 && currentGeometry) {
+            bool ok;
+            double energy(tokens[3].toDouble(&ok));
+            if (ok) {
+               Data::ScfEnergy& scf(currentGeometry->getProperty<Data::ScfEnergy>());
+               scf.setValue(energy, Data::Energy::Hartree);
+            }
+         }
+
+      }else if (line.contains("Total energy =")) {
+         tokens = TextStream::tokenize(line);
+         if (tokens.size() == 4 && currentGeometry) {
+            bool ok;
+            double energy(tokens[3].toDouble(&ok));
+            if (ok) {
                Data::TotalEnergy& total(currentGeometry->getProperty<Data::TotalEnergy>());
                total.setValue(energy, Data::Energy::Hartree);
             }

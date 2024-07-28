@@ -73,8 +73,8 @@ QString toString(ID const id)
       case PointCharge:                s = "Data::PointCharge";               break;
       case PointChargeList:            s = "Data::List<PointCharge>";         break;
       case EfpFragment:                s = "Data::EfpFragment";               break;
-      case EfpFragmentList:            s = "Data::List<EfpFragment>";         break;
       case EfpFragmentLibrary:         s = "Data::EfpFragmentLibrary";        break;
+      case EfpFragmentList:            s = "Data::List<EfpFragment>";         break;
       case CubeData:                   s = "Data::CubeData";                  break;
       case GridData:                   s = "Data::GridData";                  break;
       case GridDataList:               s = "Data::GridDataList";              break;
@@ -133,6 +133,7 @@ QString toString(ID const id)
       case ScfEnergy:                  s = "Data::ScfEnergy";                 break;
       case ForceFieldEnergy:           s = "Data::ForceFieldEnergy";          break;
       case PointGroup:                 s = "Data::PointGroup";                break;
+      case ResidueName:                s = "Data::ResidueName";               break;
 
       case Constraint:                 s = "Data::Constraint:";               break;
       case PositionConstraint:         s = "Data::PositionConstraint:";       break;

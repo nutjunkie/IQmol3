@@ -75,6 +75,12 @@ void Browser::init()
       m_preferencesBrowser.loggingEnabledCheckBox->setCheckState(Qt::Unchecked);
    }
 
+   if (AmberEnabled()) {
+      m_preferencesBrowser.amberEnabledCheckBox->setCheckState(Qt::Checked);
+   }else {
+      m_preferencesBrowser.amberEnabledCheckBox->setCheckState(Qt::Unchecked);
+   }
+
    int idx(m_preferencesBrowser.forceFieldCombo->findText(DefaultForceField()));
    m_preferencesBrowser.forceFieldCombo->setCurrentIndex(idx);
    m_preferencesBrowser.undoLimit->setValue(UndoLimit());
@@ -117,6 +123,7 @@ void Browser::on_buttonBox_accepted()
    if (oldLocation != newLocation) FragmentDirectory(newLocation);
 
    DefaultForceField(m_preferencesBrowser.forceFieldCombo->currentText());
+   AmberEnabled(m_preferencesBrowser.amberEnabledCheckBox->checkState() == Qt::Checked);
    UndoLimit(m_preferencesBrowser.undoLimit->value());
    LabelFontSize(m_preferencesBrowser.labelFontSize->value());
    updated();

@@ -37,7 +37,6 @@
 
 #include <QMap>
 #include <QFileInfo>
-#include <QItemSelectionModel>
 
 #include <functional>
 
@@ -56,6 +55,10 @@ namespace IQmol {
 
    namespace Process {
       class  JobInfo;
+   }
+
+   namespace Amber {
+      class ParametrizeMoleculeDialog;
    }
 
    namespace Layer {
@@ -100,9 +103,6 @@ bool save(bool prompt = false);
             void appendData(IQmol::Data::Bank&);
             void appendData(Layer::List&);
 
-            void setFile(QString const& fileName);
-            QString fileName() const { return m_inputFile.fileName(); }
-   
             bool sanityCheck();
 
             Process::JobInfo qchemJobInfo();
@@ -185,10 +185,10 @@ bool save(bool prompt = false);
    
             QList<qglviewer::Vec> coordinates();
             QList<int> atomicNumbers();
+            QList<QString> atomicSymbols();
 
             QList<double> atomicCharges(Data::Type::ID type);
             void setGeometry(IQmol::Data::Geometry&);
-            QList<QString> atomicSymbols();
 
             // There must be a better way of doing this, but this is used
             // in Layer::GeometryList for de
@@ -207,7 +207,22 @@ bool save(bool prompt = false);
             void   setMullikenDecompositions(Matrix const& M);
             double mullikenDecomposition(int const a, int const b) const;
             bool   hasMullikenDecompositions() const;
+
+            int totalCharge() const;
+            int multiplicity() const;
+            int numberOfElectrons() const;
+
    
+         Q_SIGNALS:
+            void multiplicityAvailable(unsigned);
+            void chargeAvailable(int);
+            void pointGroupAvailable(Data::PointGroup const&);
+            void energyAvailable(double const, Info::EnergyUnit, QString const&);
+            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
+            void radiusAvailable(double const radius);
+            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
+            void parameterFileAvailable(QString const&);
+ 
          public Q_SLOTS:
             void groupSelection();
             void ungroupSelection();
@@ -221,7 +236,7 @@ bool save(bool prompt = false);
             void openSurfaceAnimator();
 
             /// Passes the remove signal on so that the ViewerModel can deal with it
-            void removeMolecule() { removeMolecule(this); }
+            void removeMolecule() { Component::removeMolecule(this); }
             void detectSymmetry();
             void autoDetectSymmetry();
             void invalidateSymmetry();
@@ -235,21 +250,11 @@ bool save(bool prompt = false);
 
             void reperceiveBondsForAnimation();
    
-         Q_SIGNALS:
-            void softUpdate(); // issue if the number of primitives does not change
-            void removeMolecule(Layer::Molecule*);
-   
-            void multiplicityAvailable(unsigned);
-            void chargeAvailable(int);
-            void pointGroupAvailable(Data::PointGroup const&);
-            void energyAvailable(double const, Info::EnergyUnit, QString const&);
-            void dipoleAvailable(qglviewer::Vec const& dipole, bool const estimated);
-            void radiusAvailable(double const radius);
-            void centerOfNuclearChargeAvailable(qglviewer::Vec const&);
+            /// Writes the molecule to the specified file.  The format is
+            /// determined from the file extension and a Parser::IOError 
+            /// exception is thrown if there are any problems.
+            void writeToFile(QString const& filePath);
 
-            void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
-   
-   
          protected:
             void updateAtomScale(double const scale);
             void updateSmallerHydrogens(bool smallerHydrogens);
@@ -264,11 +269,11 @@ bool save(bool prompt = false);
             void updateAtomicCharges();
             void generateConformersDialog();
             void generateConformers();
-   
+            void parametrizeMoleculeDialog();
+            void saveAs() { save(true); }
+
          private:
             static bool s_autoDetectSymmetry;
-            int totalCharge() const;
-            int multiplicity() const;
 
             QString constraintsAsString();
             QString scanCoordinatesAsString();
@@ -283,11 +288,6 @@ bool save(bool prompt = false);
 
             QList<double> zeroCharges();
             QList<double> gasteigerCharges();
-
-            /// Writes the molecule to the specified file.  The format is
-            /// determined from the file extension and a Parser::IOError 
-            /// exception is thrown if there are any problems.
-            void writeToFile(QString const& filePath);
    
             /// Translates the coordinates of all the atoms so that the constraint is satisfied.
             void applyPositionConstraint(Constraint*);
@@ -329,9 +329,6 @@ bool save(bool prompt = false);
 
             void saveToGeometry(Data::Geometry&);
    
-// This should probably move to Component
-QFileInfo m_inputFile;
-   
             /// State variable that determines how the Primitives are drawn (e.g.
             /// CPK or wireframe)
             Primitive::DrawMode m_drawMode;
@@ -346,13 +343,15 @@ QFileInfo m_inputFile;
             bool m_smallerHydrogens;
             bool m_hideHydrogens;
 
+            QString m_residueName;  // hack
 
             bool m_modified;
             bool m_reperceiveBondsForAnimation;
    
             Configurator::Molecule m_configurator;
             IQmol::SurfaceAnimatorDialog  m_surfaceAnimator;
-            
+            Amber::ParametrizeMoleculeDialog* m_parametrizeMolecule;
+
             Layer::Info      m_info;
             Layer::Container m_atomList;
             Layer::Container m_bondList;
@@ -371,7 +370,6 @@ QFileInfo m_inputFile;
             Data::Geometry* m_currentGeometry;
             Data::Type::ID m_chargeType;
             QAction* m_atomicChargesMenu;
-//            unsigned m_maxAtomicNumber;
             QAction* m_addGeometryMenu;;
 
             Matrix m_mullikenDecompositions;

@@ -9,6 +9,7 @@ echo "IQmol configured by `whoami`@`hostname`:" > configure.log
 date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
+echo "CXX set to $CXX" >> configure.log
 echo "" >> configure.log
 
 ARCH=$(uname)
@@ -19,13 +20,12 @@ DEFINES="-DBUILD_SHARED=OFF -DWITH_QARCHIVE=OFF -DWITH_GROMACS=ON"
 
 if [ $ARCH == 'Darwin' ]; then
    CMAKE_GENERATOR="Unix Makefiles"
-   QT=/opt/homebrew/Cellar/qt@5/5.15.10_1
+   QT=/opt/homebrew/Cellar/qt@5/5.15.12
 
 elif [ $ARCH == 'Linux' ]; then
    CMAKE_GENERATOR="Unix Makefiles"
    QT=/scratch/software_test/Qt5/5.12.12/gcc_64
-
-   DEFINES+=" -DBOOST_ROOT=BOOST_ROOT=/sw/boost/1.72.0/serial/gcc72"
+   QT=/usr/lib/x86_64-linux-gnu/qt5/
 
 else 
    ARCH='Windoze'
@@ -66,6 +66,11 @@ cmake -G "$CMAKE_GENERATOR" $DEFINES $TOPDIR 2>&1 | tee -a ../configure.log
 
 if [ $ARCH == 'Windoze' ]; then
    echo "-- Run $MINGW_ROOT/bin/mingw32-make.exe inside the build directory"
+fi
+
+if [ $ARCH == 'Linux' ]; then
+   echo "-- May have to manually edit build/CMakeFiles/IQmol.dir/link.txt to fix linking:"
+   echo "   Replace /path/to/libm.a with -lm"
 fi
 
 exit ${PIPESTATUS[0]}

@@ -38,8 +38,10 @@ namespace Data {
       friend class boost::serialization::access;
 
       public:
-         QmAtom(unsigned const Z = 0) :  Atom(Z) { }
-         QmAtom(QString const& symbol) :  Atom(symbol) { };
+         QmAtom(unsigned const Z = 0, QString const& label = QString()) 
+          :  Atom(Z,label) { }
+         QmAtom(QString const& symbol, QString const& label = QString()) 
+          : Atom(symbol,label) { };
 
          Type::ID typeID() const { return Type::QmAtom; }
 
