@@ -151,13 +151,13 @@ class HttpJsonPost : public HttpReply {
       friend class HttpConnection;
 
       public:
-         HttpJsonPost(HttpConnection*, QString const& path, QHttpMultiPart* const& postData);
+         HttpJsonPost(HttpConnection*, QString const& path, QHttpMultiPart* postData);
 
       protected Q_SLOTS:
          void run();
 
       private:
-         QHttpMultiPart m_postData;
+         QHttpMultiPart* m_postData;
          
    };
 

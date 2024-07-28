@@ -118,6 +118,7 @@ bool Gro::parseChain(TextStream& textStream){
     }else if (m_grpNumber == m_secStrucResStop[m_secStrucIndex])
     {
       strucType = m_secStrucType[m_secStrucIndex];
+      //Check if this shouldnt be length?
       if (m_secStrucIndex < 32){
       ++m_secStrucIndex;
       }
@@ -218,6 +219,7 @@ bool Gro::parse(TextStream& textStream){
    }
    m_secStrucIndex= 0;
    QString s;
+   // static variable
   m_aToZ ="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   m_chainNumber=0;
   m_grpNumber=0;
