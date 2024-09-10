@@ -45,11 +45,11 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    setWindowTitle(tr("Parametrize ") + name);
 
    // set up the run button
-   QPushButton* runButton = m_dialog.buttonBox->button(QDialogButtonBox::Apply);
-   runButton->setText(tr("Run"));
-   QPushButton* stopButton = m_dialog.buttonBox->addButton("Stop", QDialogButtonBox::ActionRole);
+   QPushButton* runButton = m_dialog.runButton;
+   QPushButton* stopButton = m_dialog.stopButton;
    stopButton->setEnabled(false);
 
+   // add a spinner
    WaitingSpinner* spinner = new WaitingSpinner(this, false, false);
    spinner->setRoundness(70.0);
    spinner->setMinimumTrailOpacity(15.0);
@@ -59,8 +59,7 @@ ParametrizeMoleculeDialog::ParametrizeMoleculeDialog(QWidget* parent,
    spinner->setLineWidth(2);
    spinner->setInnerRadius(3);
    spinner->setRevolutionsPerSecond(1);
-   m_dialog.horizontalLayout->addWidget(spinner);
-   m_dialog.horizontalLayout->setAlignment(spinner, Qt::AlignLeft);
+   m_dialog.horizontalLayout->insertWidget(2, spinner);
 
    connect(runButton, &QPushButton::clicked, this, &ParametrizeMoleculeDialog::run);
    connect(runButton, &QPushButton::clicked, runButton, [runButton]() { runButton->setEnabled(false); });
@@ -129,15 +128,20 @@ void ParametrizeMoleculeDialog::runAntechamber()
    QString program = QDir(AmberDirectory).filePath("bin/antechamber");
    qDebug () << "Antechamber executable location: " << program;
 
-   // Set working directory
-   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
-   antechamber->setWorkingDirectory(system->getFile().absolutePath());
-   qDebug() << "Antechamber working directory: " << system->getFile().absolutePath();
-
    // Prepare arguments and write the input mol2 file
    QString name(m_molecule->text().split(' ').first());
-   m_molecule->writeToFile(QDir(system->getFile().absolutePath()).filePath(name + "_iqmol" + ".mol2"));
+   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
+   QString cwd(system->getFile().absolutePath() + QDir::separator() + name);
+   
+   if (!QDir(cwd).exists()) {
+      QDir().mkpath(cwd);
+   }
+   m_molecule->writeToFile(QDir(cwd).filePath(name + "_iqmol" + ".mol2"));
    qDebug() << "charge" << m_molecule->totalCharge() << "multiplicity" << m_molecule->multiplicity() << forceField << name;
+
+   // Set working directory
+   antechamber->setWorkingDirectory(cwd);
+   qDebug() << "Antechamber working directory: " << cwd;
 
    // Build arguments
    QStringList arguments;
@@ -148,8 +152,6 @@ void ParametrizeMoleculeDialog::runAntechamber()
              << "-nc" << QString::number(m_molecule->totalCharge())
              << "-m" << QString::number(m_molecule->multiplicity())
              << "-s" << "2"
-             << "-pf" << "yes"
-             << "-dr" << "no"
              << "-rn" << name
              << "-at" << forceField
              << "-c" << "bcc";
@@ -167,7 +169,8 @@ void ParametrizeMoleculeDialog::antechamberFinished(int exitCode, QProcess::Exit
    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
       qDebug() << "Antechamber finished";
       m_dialog.logTextBrowser->append("Antechamber finished normally.\n");
-      emit m_molecule->parameterFileAvailable(m_molecule->text().split(' ').first() + ".mol2");
+      QString name(m_molecule->text().split(' ').first());
+      emit m_molecule->parameterFileAvailable(name + QDir::separator() + name + ".mol2");
       runParmchk2();
    } else {
       qDebug() << "Antechamber crashed";
@@ -197,19 +200,27 @@ void ParametrizeMoleculeDialog::runParmchk2()
    qDebug() << "Parmchk2 executable location: " << program;
 
    // Set working directory
-   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
-   parmchk2->setWorkingDirectory(system->getFile().absolutePath());
-   qDebug() << "Parmchk2 working directory: " << system->getFile().absolutePath();
-
-   // Prepare arguments
    QString name(m_molecule->text().split(' ').first());
+   Layer::System* system(m_molecule->findLayers<Layer::System>(Layer::Parents).first());
+   QString cwd(system->getFile().absolutePath() + QDir::separator() + name);
+   parmchk2->setWorkingDirectory(cwd);
+   qDebug() << "Parmchk2 working directory: " << cwd;
+
+   QString forceFieldOption;
+   if (forceField == "gaff") {
+      forceFieldOption = "1";
+   } else if (forceField == "gaff2") {
+      forceFieldOption = "2";
+   } else {
+      forceFieldOption = "3";
+   }
 
    // Build arguments
    QStringList arguments;
    arguments << "-i" << name + ".mol2"
             << "-f" << "mol2"
             << "-o" << name + ".frcmod"
-            << "-s" << "2"
+            << "-s" << forceFieldOption
             << "-a" << "N"
             << "-w" << "Y";
    qDebug() << "Arguments: " << arguments;
@@ -226,7 +237,8 @@ void ParametrizeMoleculeDialog::parmchk2Finished(int exitCode, QProcess::ExitSta
    if (exitStatus == QProcess::NormalExit && exitCode == 0) {
       qDebug() << "Parmchk2 finished";
       m_dialog.logTextBrowser->append("Parmchk2 finished normally.\n");
-      emit m_molecule->parameterFileAvailable(m_molecule->text().split(' ').first() + ".frcmod");
+      QString name(m_molecule->text().split(' ').first());
+      emit m_molecule->parameterFileAvailable(name + QDir::separator() + name + ".frcmod");
    } else {
       qDebug() << "Parmchk2 crashed";
       m_dialog.logTextBrowser->append("Parmchk2 crashed.\n");
