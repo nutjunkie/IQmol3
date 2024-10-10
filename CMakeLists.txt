@@ -50,7 +50,7 @@ set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
 include_directories(modules/yaml-cpp/include)
 add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
-include_directories(modules/openbabel/includel)
+include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
 

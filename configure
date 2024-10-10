@@ -19,7 +19,8 @@ DEFINES="-DBUILD_SHARED=OFF -DQARCHIVE=OFF"
 
 if [ $ARCH == 'Darwin' ]; then
    CMAKE_GENERATOR="Unix Makefiles"
-   QT=/opt/homebrew/Cellar/qt@5/5.15.8_2
+   QT=/opt/homebrew/Cellar/qt@5/5.15.13_1
+   #QT=/opt/homebrew/Cellar/qt@5/5.15.8_2
    #DEFINES+=" -DCMAKE_CXX_FLAGS=-arch x86_64"
 
 elif [ $ARCH == 'Linux' ]; then
