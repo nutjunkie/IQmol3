@@ -95,6 +95,8 @@ namespace Layer {
             glPopMatrix();
          }
 
+         virtual void drawFlat() { draw(); }
+
          virtual void select()   { setProperty(Selected);   }
          virtual void deselect() { unsetProperty(Selected); }
          bool isSelected() const { return hasProperty(Selected); }

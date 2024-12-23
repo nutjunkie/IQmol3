@@ -201,24 +201,35 @@ void Atom::povray(PovRayGen& povray)
 
 void Atom::draw()
 {
-   drawPrivate(false);
+   glColor4fv(m_color);
+   drawPrivate(getRadius(false));
    if (s_vibrationDisplayVector) drawDisplacement();
 }
 
 
 void Atom::drawFast()
 {
-   drawPrivate(false);
+   glColor4fv(m_color);
+   drawPrivate(getRadius(false));
 }
+
+void Atom::drawFlat()
+{
+   glDisable(GL_LIGHTING);
+   drawPrivate(getRadius(false));
+   glEnable(GL_LIGHTING);
+}
+
 
 
 void Atom::drawSelected()
 {
-   drawPrivate(true);
+   glColor4fv(Primitive::s_selectColor);
+   drawPrivate(getRadius(true));
 }
 
 
-void Atom::drawPrivate(bool selected) 
+void Atom::drawPrivate(double const radius)
 {
    if (hideHydrogens()) return;
    glPushMatrix();
@@ -228,53 +239,18 @@ void Atom::drawPrivate(bool selected)
                 s_vibrationAmplitude * m_displacement.y, 
                 s_vibrationAmplitude * m_displacement.z);
 
-   if (selected) {
-      glColor4fv(Primitive::s_selectColor);
-   }else {
-      glColor4fv(m_color);
-   }
-
    if (m_drawMode == Primitive::WireFrame) {
       glDisable(GL_LIGHTING);
-      glPointSize(getRadius(selected));
+      glPointSize(radius);
       glBegin(GL_POINTS);
          glVertex3f(0.0, 0.0, 0.0);
       glEnd();
       glEnable(GL_LIGHTING);
    }else {
       GLUquadric* quad = gluNewQuadric();
-      gluSphere(quad, getRadius(selected), Primitive::s_resolution, Primitive::s_resolution);
+      gluSphere(quad, radius, Primitive::s_resolution, Primitive::s_resolution);
       gluDeleteQuadric(quad); 
    }
-
-
-/*
-if (true) {
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glEnable(GL_LINE_SMOOTH);
-   glDisable(GL_LIGHTING);
-
-   glPointSize(2.0);
-   glColor3f(0.4, 0.4, 0.4);
-   GLfloat r(1.001*getRadius(false));
-   GLShape::Circle(r, r/Primitive::s_resolution);
-
-   glPushMatrix();
-   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-   GLShape::Circle(r, r/Primitive::s_resolution);
-   glPopMatrix();
-
-   glPushMatrix();
-   glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-   GLShape::Circle(r, r/Primitive::s_resolution);
-   glPopMatrix();
-
-   glDisable(GL_BLEND);
-   glDisable(GL_LINE_SMOOTH);
-   glEnable(GL_LIGHTING);
-}
-*/
 
    glPopMatrix();
 }

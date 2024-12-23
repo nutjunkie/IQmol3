@@ -78,6 +78,7 @@ namespace Layer {
 
          void draw();
          void drawFast();
+         void drawFlat();
          void drawSelected();
          void drawLabel(Viewer& viewer, LabelType const, QFontMetrics&);
          void povray(PovRayGen&);
@@ -138,7 +139,7 @@ namespace Layer {
 
       private:
          QString getLabel(LabelType const) const;
-         void drawPrivate(bool selected);
+         void drawPrivate(double const radius);
          void drawDisplacement(); 
          void drawArrow(const qglviewer::Vec& from, const qglviewer::Vec& to);
          void drawArrow(float length);

@@ -50,6 +50,7 @@
 class QUndoCommand;
 class QDropEvent;
 class QDragEnterEvent;
+class QOpenGLFramebufferObject;
 
 namespace qglviewer {
    class Vec;
@@ -174,6 +175,7 @@ namespace IQmol {
          void displayGeometricParameter(GLObjectList const& selection);
          void displayMullikenDecomposition(GLObjectList const& selection);
          void drawWithNames(); 
+         void renderSelectionBuffer(); 
          void generatePovRay(QString const& filename);
 
          void drawSelectionRectangle(QRect const& rect);
@@ -184,6 +186,9 @@ namespace IQmol {
          void removeFromSelection(int const id);
          void toggleSelection(int const id);
          void setHandler(Viewer::Mode const);
+
+         void resizeSelectionBuffer(QSize const& size);
+         void makeSelection(QPoint const&);
 
          // Event handlers
          void mousePressEvent(QMouseEvent *e);
@@ -240,6 +245,9 @@ namespace IQmol {
          ShaderDialog*   m_shaderDialog;
          CameraDialog*   m_cameraDialog;
          QOpenGLContext* m_context;
+
+         QOpenGLFramebufferObject* m_selectionBuffer;
+void testSelectionRender();
     };
 
 } // end namespace IQmol
