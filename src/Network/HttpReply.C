@@ -54,6 +54,7 @@ void HttpReply::finishedSlot()
 
    QString status(headerValue("Qchemserv-Status"));
    QString cloud(headerValue("Qcloud-Server-Status"));
+   //add Gromacs-Server-Status
 
    if (status.contains("OK") || cloud.contains("OK")) {
       if (m_status != Error) m_status = m_interrupt ? Interrupted : Finished;
@@ -392,7 +393,7 @@ void HttpPost::run()
 
 
 HttpJsonPost::HttpJsonPost(HttpConnection* connection, QString const& path,  
-   QHttpMultiPart* const& postData) : HttpReply(connection), m_postData(postData)
+   QHttpMultiPart* postData) : HttpReply(connection), m_postData(postData)
 {
    setUrl(path);
 }
@@ -416,7 +417,7 @@ void HttpJsonPost::run()
        request.setRawHeader(it.key().toLatin1(), it.value().toLatin1());
    }*/
    //QByteArray data(m_posyoutData.toLatin1());
-   m_networkReply = m_connection->m_networkAccessManager->post(request, &m_postData);
+   m_networkReply = m_connection->m_networkAccessManager->post(request, m_postData);
 
    //QList<QByteArray> headers(m_networkReply->request().rawHeaderList());
 

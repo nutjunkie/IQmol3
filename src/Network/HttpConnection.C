@@ -233,7 +233,7 @@ Reply* HttpConnection::post(QString const& path, QString const& postData)
 
 Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject const& payload,QString const& destinationPath)
 {
- QHttpMultiPart *postData = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+   QHttpMultiPart *postData = new QHttpMultiPart(QHttpMultiPart::FormDataType);
    QHttpPart jsonPart;
    jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"json\""));
    QJsonDocument json;  
@@ -248,7 +248,6 @@ Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject cons
    if (file->open(QIODevice::ReadOnly)){
       filePart.setBodyDevice(file);
       file->setParent(postData);
-      file->close();
    };
    postData->append(jsonPart);
    postData->append(filePart);
