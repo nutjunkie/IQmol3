@@ -44,7 +44,7 @@ namespace Gmx {
       Q_OBJECT
 
       Q_SIGNALS:
-      void submitGromacsJobRequest(IQmol::Process::JobInfo&);
+         void submitGromacsJobRequest(IQmol::Process::JobInfo&);
 
       
 

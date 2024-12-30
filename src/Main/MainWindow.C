@@ -1064,26 +1064,12 @@ void MainWindow::showGromacsDialog()
          this, SLOT(submitJob(IQmol::Process::JobInfo&)));
    }
 
-   Layer::Molecule* mol(m_viewerModel.activeMolecule());
-   if (!mol) return;
+   Layer::System* sys(m_viewerModel.activeSystem());
+   if (!sys) return;
    
-   if (!mol->sanityCheck()) {
-      QMessageBox mbox;
-      mbox.setText("Wonky molecule detected");
-      mbox.setInformativeText("Do you want to proceed?");
-      mbox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-      mbox.setDefaultButton(QMessageBox::Ok);
-   
-      QPixmap pixmap;
-      pixmap.load(":/imageQuestion");
-      mbox.setIconPixmap(pixmap);
-
-      if (mbox.exec() == QMessageBox::Cancel) return;
-   }
-   
-
    //m_gromacsDialog->setWindowModality(Qt::WindowModal);
    m_gromacsDialog->show();
+   m_gromacsDialog->raise();
 #endif
 }
 

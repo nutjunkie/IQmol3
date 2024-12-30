@@ -159,7 +159,7 @@ namespace Gmx {
          QList<QAction*> m_labelActions;
 
          QSplitter* m_sideSplitter;
-         Qui::InputDialog* m_quiInputDialog;
+         Qui::InputDialog* iim_quiInputDialog;
          Gmx::GromacsDialog*  m_gromacsDialog;
    };
 
