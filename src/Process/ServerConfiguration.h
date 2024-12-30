@@ -48,7 +48,7 @@ namespace Process {
                        
          // The order of these is used to set the queueSystem combo box
          // in the ServerConfigutationDialog.C
-         enum QueueSystemT { Basic, PBS, SGE, SLURM, Web };
+         enum QueueSystemT { Basic, PBS, SGE, SLURM, Web, QCloud };
 
          typedef QMap<FieldT, QVariant> ConfigMap;
 
@@ -76,7 +76,8 @@ namespace Process {
          QVariantList queueResourcesList() const;
 
          bool isWebBased() const {
-            return (connection() == Network::HTTP || connection() == Network::HTTPS);
+            return (connection() == Network::HTTP || 
+                    connection() == Network::HTTPS);
          }
 
          bool isLocal() const {

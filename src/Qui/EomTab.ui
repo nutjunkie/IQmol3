@@ -102,14 +102,14 @@
       <widget class="QLineEdit" name="qui_eom_states2"/>
      </item>
      <item row="0" column="2">
-      <widget class="QCheckBox" name="cc_eom_properties">
+      <widget class="QCheckBox" name="cc_eom_prop">
        <property name="text">
         <string>Excited State Properties</string>
        </property>
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QCheckBox" name="cc_eom_transition_properties">
+      <widget class="QCheckBox" name="cc_eom_trans_prop">
        <property name="text">
         <string>Transition Properties</string>
        </property>

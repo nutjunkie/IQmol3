@@ -81,6 +81,7 @@ QString ServerConfiguration::toString(QueueSystemT const queue)
       case SGE:     s = "SGE";    break;
       case SLURM:   s = "SLURM";  break;
       case Web:     s = "Web";    break;
+      case QCloud:  s = "Q-Cloud"; break;
    }
    return s;
 }
@@ -119,10 +120,11 @@ ServerConfiguration::FieldT ServerConfiguration::toFieldT(QString const& field)
 ServerConfiguration::QueueSystemT ServerConfiguration::toQueueSystemT(
    QString const& queueSystem)
 {
-   if (queueSystem.contains("pbs",   Qt::CaseInsensitive)) return PBS;
-   if (queueSystem.contains("sge",   Qt::CaseInsensitive)) return SGE;
-   if (queueSystem.contains("web",   Qt::CaseInsensitive)) return Web;
-   if (queueSystem.contains("slurm", Qt::CaseInsensitive)) return SLURM;
+   if (queueSystem.contains("pbs",    Qt::CaseInsensitive)) return PBS;
+   if (queueSystem.contains("sge",    Qt::CaseInsensitive)) return SGE;
+   if (queueSystem.contains("web",    Qt::CaseInsensitive)) return Web;
+   if (queueSystem.contains("q-cloud",Qt::CaseInsensitive)) return QCloud;
+   if (queueSystem.contains("slurm",  Qt::CaseInsensitive)) return SLURM;
 
    return Basic;
 }
@@ -441,6 +443,17 @@ void ServerConfiguration::setDefaults(QueueSystemT const queueSystem)
          m_configuration.insert(RunFileTemplate, "(unused)");
          m_configuration.insert(JobFileList, "GET /list?cookie=${COOKIE}&jobid=${JOB_ID}");
       } break;
+
+      case QCloud: {
+         m_configuration.insert(Kill,      "GET  /delete?cookie=${COOKIE}&jobid=${JOB_ID}");
+         m_configuration.insert(Query,     "GET  /status?cookie=${COOKIE}&jobid=${JOB_ID}");
+         m_configuration.insert(Submit,    "POST /submit?cookie=${COOKIE}");
+         m_configuration.insert(QueueInfo, 
+            "GET  /download?cookie=${COOKIE}&jobid=${JOB_ID}&file=${FILE_NAME}");
+         m_configuration.insert(RunFileTemplate, "(unused)");
+         m_configuration.insert(JobFileList, "GET /list?cookie=${COOKIE}&jobid=${JOB_ID}");
+      } break;
+
    }
 }
 

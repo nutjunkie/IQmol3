@@ -484,6 +484,9 @@ bool JobMonitor::getQueueResources(Server* server, JobInfo* jobInfo)
          case ServerConfiguration::Web:
             // nothing to parse
             break;
+         case ServerConfiguration::QCloud:
+            qDebug() << "WARN: QCloud ServerConfiguration not handled";
+            break;
       }
    }
 
