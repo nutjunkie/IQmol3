@@ -215,7 +215,6 @@ void GromacsDialog::on_solvateButton_clicked(bool)
 
 void GromacsDialog::on_generateBoxButton_clicked(bool)
 {
-   enableRequestWidgets(false);    
    if (m_networkReply) {
       QString msg("Request already in progress");
       QMsgBox::warning(this, "IQmol", msg);
@@ -241,9 +240,10 @@ void GromacsDialog::on_generateBoxButton_clicked(bool)
    m_gromacsJobInfo.set("jobType",jobType);
    submitGromacsJobRequest(m_gromacsJobInfo);
 
-   qDebug() << "Request pending" ;
-   connect(m_networkReply, SIGNAL(finished()),  this, SLOT(boxRequestFinished()) );
-   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
+   qDebug() << "Gromacs request submitted" ;
+   //enableRequestWidgets(false);    
+   //connect(m_networkReply, SIGNAL(finished()),  this, SLOT(boxRequestFinished()) );
+   //connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
 }
 
 
