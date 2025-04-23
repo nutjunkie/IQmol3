@@ -360,8 +360,15 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          key.replace("Orbital Coefficients", "");
          genericData.label = key.trimmed();
 
-      // Geminals
+      // Generic Orbitals
+      }else if (key.contains("MO Coefficients")) {
+         if (!toInt(n, list, 2)) goto error;
+         genericData.alphaCoefficients.append(readDoubleArray(textStream, n));
+         key.replace("MO Coefficients", "");
+         genericData.label = key.trimmed();
 
+
+      // Geminals
       }else if (key == "Alpha GMO coefficients") {
          if (!toInt(n, list, 2)) goto error;
          gmoData.alphaCoefficients = readDoubleArray(textStream, n);

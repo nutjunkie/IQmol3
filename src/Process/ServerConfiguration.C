@@ -310,10 +310,10 @@ void ServerConfiguration::setDefaults(Network::ConnectionT const connection)
          break;
 
       case Network::HTTPS:
-         m_configuration.insert(ServerName, "Q-Chem");
+         m_configuration.insert(ServerName, "Q-Cloud");
          m_configuration.insert(Port, 443);
-         m_configuration.insert(HostAddress, "iqmol.q-chem.com");
-         m_configuration.insert(UserName, "guest");
+         m_configuration.insert(HostAddress, "");
+         m_configuration.insert(UserName, "");
          m_configuration.insert(WorkingDirectory, "(unused)");
          m_configuration.insert(Authentication, Network::Anonymous);
          break;

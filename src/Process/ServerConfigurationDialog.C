@@ -67,8 +67,8 @@ void ServerConfigurationDialog::updateQueueSystemsCombo(
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::Web));
          break;
       case Network::HTTPS:
-         qs->addItem(ServerConfiguration::toString(ServerConfiguration::Web));
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::QCloud));
+         //qs->addItem(ServerConfiguration::toString(ServerConfiguration::Web));
          break;
       case Network::Local:
       case Network::SSH:
@@ -94,8 +94,7 @@ void ServerConfigurationDialog::updateQueueSystemsCombo(
 
 
 
-void ServerConfigurationDialog::updateAuthenticationCombo(
-   Network::ConnectionT const connection)
+void ServerConfigurationDialog::updateAuthenticationCombo(Network::ConnectionT const connection)
 {
    QComboBox* auth(m_dialog.authentication);
    QString currentText(auth->currentText());
@@ -107,11 +106,11 @@ void ServerConfigurationDialog::updateAuthenticationCombo(
       case Network::HTTP:
          auth->addItem(Network::ToString(Network::Anonymous)); 
          // This is insecure and only here for testing
-         auth->addItem(Network::ToString(Network::Password)); 
+         // auth->addItem(Network::ToString(Network::Password)); 
          break;
 
       case Network::HTTPS:
-         auth->addItem(Network::ToString(Network::Anonymous)); 
+         //auth->addItem(Network::ToString(Network::Anonymous)); 
          auth->addItem(Network::ToString(Network::Password)); 
          break;
 
@@ -235,11 +234,11 @@ void ServerConfigurationDialog::on_httpsRadioButton_toggled(bool tf)
    updateQueueSystemsCombo(Network::HTTPS);
    updateAuthenticationCombo(Network::HTTPS);
 
-   if (setDefaults()) {
+   //if (setDefaults()) {
       qDebug() << "Setting defaults for HTTPS";
       m_currentConfiguration.setDefaults(Network::HTTPS);
       copyFrom(m_currentConfiguration);
-   }
+   //}
 }
 
 
@@ -270,8 +269,8 @@ void ServerConfigurationDialog::on_queueSystem_currentIndexChanged(QString const
 
 void ServerConfigurationDialog::on_authentication_currentIndexChanged(QString const& auth)
 {
-   if (m_dialog.queueSystem->currentText() == 
-      ServerConfiguration::toString(ServerConfiguration::Web)) {
+   if (m_dialog.queueSystem->currentText() == ServerConfiguration::toString(ServerConfiguration::Web) || 
+       m_dialog.queueSystem->currentText() == ServerConfiguration::toString(ServerConfiguration::QCloud) ) {
       bool pw(auth == Network::ToString(Network::Password));
       m_dialog.authenticationPort->setEnabled(pw);
       m_dialog.authenticationPortLabel->setEnabled(pw);
