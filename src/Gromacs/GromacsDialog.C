@@ -149,7 +149,8 @@ QString GromacsDialog::readToString()
    qint64 size(m_networkReply->bytesAvailable());
    s = m_networkReply->read(size);
    qDebug() << "Reading" << size << " bytes to string";
-   QString qPath("1AKI_newbox.gro");
+   QString qPath(Preferences::LastFileAccessed());
+   qDebug() << "last file name is" << qPath;
    QFile qFile(qPath);
    if (qFile.open(QIODevice::WriteOnly)) {
       QTextStream out(&qFile);
@@ -206,7 +207,7 @@ void GromacsDialog::on_solvateButton_clicked(bool)
    multiPart->append(jsonPart);
    multiPart->append(filePart);
    multiPart->append(topologyPart);
-   m_networkReply = m_networkAccessManager->post(request,multiPart);
+   m_networkReply = m_networkAccessManager->postJsonFiles(request,multiPart,url);
    qDebug() << "Request pending" ;
    connect(m_networkReply, SIGNAL(finished()),  this, SLOT(solvateRequestFinished()) );
    connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()) );
