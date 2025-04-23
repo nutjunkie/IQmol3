@@ -245,6 +245,7 @@ Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject cons
    filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("file/gro"));
    filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\""));
    QFile *file = new QFile(sourcePath); //get local file path
+   QLOG_DEBUG()<< " sourcepath is   " << sourcePath;
    if (file->open(QIODevice::ReadOnly)){
       filePart.setBodyDevice(file);
       file->setParent(postData);
