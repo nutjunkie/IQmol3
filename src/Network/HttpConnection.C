@@ -253,12 +253,6 @@ Reply* HttpConnection::postJsonFiles(QString const& sourcePath, QJsonObject cons
    postData->append(jsonPart);
    postData->append(filePart);
 
-   qDebug() << "==================================";
-   qDebug() << jsonPart;
-   qDebug() << "----------------------------------";
-   qDebug() << "==================================";
-
-
    HttpJsonPost* reply(new HttpJsonPost(this, destinationPath, postData));
    return reply;
 }
