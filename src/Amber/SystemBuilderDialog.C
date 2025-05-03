@@ -259,8 +259,8 @@ void SystemBuilderDialog::resetTleapInput()
       if (atoms.size() > 1) {
          QString name((*it)->text().split(' ').first());
          addMolecule(*it);
-         findParameterFile(name + ".mol2");
-         findParameterFile(name + ".frcmod");
+         findParameterFile(name + QDir::separator() + name + ".mol2");
+         findParameterFile(name + QDir::separator() + name + ".frcmod");
       }
    }
 
