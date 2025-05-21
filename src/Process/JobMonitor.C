@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -519,6 +519,7 @@ bool JobMonitor::getQueueResources(Server* server, QChemJobInfo& qchemJobInfo)
             list.fromSlurmQueueInfoString(info);
             break;
          case ServerConfiguration::Web:
+         case ServerConfiguration::AWS:
             // nothing to parse
             break;
       }
@@ -551,7 +552,7 @@ void JobMonitor::jobSubmissionFailed(Job* job)
    if (!job) return;
    QString msg("Job submission failed");
    if (!(job->message().isEmpty())) msg += ":\n" + job->message();
-   QMsgBox::warning(QApplication::activeWindow(), "IQmol", msg);
+   QMsgBox::warning(msg);
    s_deletedJobs.append(job);
 }
 
@@ -1063,17 +1064,6 @@ void JobMonitor::cleanUp(Job* job)
       if (dir.exists(newName)) dir.remove(newName);
       dir.rename(oldName, newName);
    }
-
-//   This is a hangover from past versions of QChem that used to write the
-//   checkpoint file to Test.FChk.  Now it causes problems if the user calls
-//   the job 'test' on OSX (stupid case inconsistencies).
-//   oldName = "Test.FChk";
-//   if (dir.exists(oldName) && oldName != newName) {
-//      if (dir.exists(newName)) dir.remove(newName);
-//      dir.rename(oldName, newName);
-//   }
-
-   if (dir.exists("pathtable")) dir.remove("pathtable");
 
    // Check for errors and update the run time
    QString output(qchemJobInfo.getLocalFilePath(QChemJobInfo::OutputFileName));

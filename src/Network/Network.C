@@ -69,6 +69,7 @@ QString ToString(ConnectionT const type)
       case SFTP:   s = "SFTP";   break;
       case HTTP:   s = "HTTP";   break;
       case HTTPS:  s = "HTTPS";  break;
+      case AWS:    s = "AWS";  break;
    }
 
    return s;
@@ -147,8 +148,6 @@ AuthenticationT ToAuthenticationT(QString const& s)
 
 
 
-
-
    //Network::HttpConnection* http = new Network::HttpConnection("cactus.nci.nih.gov");
    //if (http->openConnection()) {
    //   http->request("chemical/structure/Benzene/smiles");
@@ -167,49 +166,7 @@ bool TestNetworkConnection()
 
       QEventLoop loop;
       Reply* reply;
-/*
-      QStringList input;
 
-      input << "$molecule"
-            << "0  1"
-            << "He"
-            << "$end"
-
-            << "$rem
-            << "  exchange  hf"
-            << "  gui       2"
-            << "  basis     6-31G"
-            << "$end";
-
-      reply = http.post("submit", input.join("\n"));
-
-
-      QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-      loop.exec();
-
-      okay = (reply->status() == Reply::Finished);
-      if (okay) {
-         QLOG_DEBUG() << "--------- SUCCESS -------------";
-         QLOG_DEBUG() << reply->message();
-         QLOG_DEBUG() << "-------------------------------";
-      }
-      else {
-         QLOG_DEBUG() << "----------- ERROR -------------";
-         QLOG_DEBUG() << reply->message();
-         QLOG_DEBUG() << "-------------------------------";
-      }
-
-      delete reply;
-
-*/
-
-
-      // reply = http.get("list?jobid=db33b0f063b511e4bda190b11c4a068c");
-
-      //reply = http.get("status?jobid=db33b0f063b511e4bda190b11c4a068c");
-
-      //reply = http.get("register");
-      //reply = http.get("download?jobid=22dbd72c647211e4a1d190b11c4a068c&cookie=4b6d8c1c5b3743efbc2acd550887b7a4&file=input.FChk");
       reply = http.get("download?cookie=4b6d8c1c5b3743efbc2acd550887b7a4&jobid=22dbd72c647211e4a1d190b11c4a068c&file=input.FChk");
 
       QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));

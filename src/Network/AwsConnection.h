@@ -1,5 +1,5 @@
-#ifndef IQMOL_NETWORK_HTTPCONNECTION_H
-#define IQMOL_NETWORK_HTTPCONNECTION_H
+#ifndef IQMOL_NETWORK_AWSCONNECTION_H
+#define IQMOL_NETWORK_AWSCONNECTION_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,62 +23,79 @@
 ********************************************************************************/
 
 #include "Connection.h"
-
-typedef QMap<QString, QString> QStringMap;
+#include <QJsonArray>
+#include <QJsonObject>
 
 
 class QNetworkAccessManager;
+class QNetworkReply;
 
 namespace IQmol {
 namespace Network {
 
-   class HttpReply;
-   class HttpGet;
+   struct AwsConfig {
+      QString AwsRegion;
+      QString CognitoUserPool; 
+      QString CognitoAppClient;
+      QString ApiGateway;
+   };
 
-   class HttpConnection : public Connection {
+   class AwsGet;
+
+   class AwsConnection : public Connection {
 
       Q_OBJECT
 
-      friend class HttpPageRequest;
-      friend class HttpGet;
-      friend class HttpPost;
+      //friend class HttpPageRequest;
+      friend class AwsGet;
+      friend class AwsPost;
 
       public:
-         HttpConnection(QString const& hostAddress, int const port = 80, 
-             bool const https = false);
-         ~HttpConnection() { close(); }
+         AwsConnection(AwsConfig& config, int const port = 443);
+         ~AwsConnection() { close(); }
 
-         ConnectionT type() const;
-
-         bool isSecure() const { return m_secure; }
+         ConnectionT type() const { return AWS; }
 
          void open();
          void close();
-         void authenticate(AuthenticationT const, QString& cooke);
+         void authenticate(AuthenticationT const, QString& userName);
 
-         bool blockingExecute(QString const&, QString*) { return false; } // unused
+         bool blockingExecute(QString const&, QString*) { return false; } // unused 
          bool exists(QString const& ) { return false; }         // setup, not used
          bool makeDirectory(QString const&) { return true; }    // setup, not used
          bool removeDirectory(QString const&) { return true; }  // setup, not used
 
-
          Reply* execute(QString const& query);
-         Reply* execute(QString const& query, QString const& /*workingDirectory*/);
+         Reply* execute(QString const& query, QString const& /* Working directory, not used */); 
          Reply* execute(QString const& query, QStringMap const& headers);
          Reply* putFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFile(QString const& sourcePath, QString const& destinationPath);
          Reply* getFiles(QStringList const& fileList, QString const& destinationPath);
-
          Reply* get(QString const& query) { return execute(query); }
-         Reply* post(QString const& path, QString const&);
+         Reply* post(QString const& path, QByteArray const&);
+
+         // Returns Job::Status as a string
+         QStringMap parseQueryMessage(QString const&);
 
       protected:
          QNetworkAccessManager* m_networkAccessManager;
-         bool m_secure; 
 
       private:
-         QString getJwt(QString const& userName);
-         QString getCookie();
+         bool getCognitoJwks(QString const& region, QString const& userPoolId);
+         bool authenticateUser(QString const& userName, QString const& password);
+         bool resetPassword(QString const& username, QString const& password, QString const& session);
+         bool respondToNewPasswordChallenge(const QString& username, const QString& newPassword, 
+            const QString& session);
+   
+         QJsonObject parseReply(QNetworkReply*);
+         bool extractTokens(QJsonObject const&);
+
+         AwsConfig& m_config;
+         QJsonArray m_jwksKeys;
+
+         QString m_accessToken;
+         QString m_refreshToken;
+         QString m_idToken;
    };
 
 } } // end namespace IQmol::Network

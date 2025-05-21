@@ -1,5 +1,5 @@
-#ifndef IQMOL_PROCESS_QUEUESYSTEM_H
-#define IQMOL_PROCESS_QUEUESYSTEM_H
+#ifndef IQMOL_PROCESS_AWSCONFIGURATIONDIALOG_H
+#define IQMOL_PROCESS_AWSCONFIGURATIONDIALOG_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,32 +22,38 @@
    
 ********************************************************************************/
 
+#include "ui_AwsConfigurationDialog.h"
+#include <QRegularExpressionValidator>
+
 
 namespace IQmol {
 namespace Process {
 
-   /// Base class for queueing systems on a server.
-   class QueueSystem {
+   class ServerConfiguration;
 
-      public:
-         // required for serialization
-         enum Type { None, Basic, PBS, SGE, QCLOUD };
+   /// Dialog to allow the user to enter the configutation options for Q-Cloud on AWS
+   class AwsConfigurationDialog : public QDialog {
 
-         static QueueSystem* Factory(Type const);
+      Q_OBJECT
 
-         Transaction* setup() = 0;
-         Transaction* submit() = 0;
-         Transaction* query() = 0;
-         Transaction* cleanup() = 0;
-         Transaction* kill() = 0;
+      public: 
+         AwsConfigurationDialog(ServerConfiguration&, QWidget* parent = 0);
 
-      protected:
-         QueueSystem() { }
+      private Q_SLOTS:
+         bool verify();
+         void finished();
 
       private:
-         // No copying
-         QueueSystem(QueueSystem const&);
-         QueueSystem& operator=(QueueSystem const&);
+         void copyTo(ServerConfiguration&);
+         void copyFrom(ServerConfiguration const&);
+
+         ServerConfiguration& m_config;
+         Ui::AwsConfigurationDialog m_dialog;
+
+         QRegularExpressionValidator m_regionValidator;
+         QRegularExpressionValidator m_userPoolValidator;
+         QRegularExpressionValidator m_appClientValidator;
+         QRegularExpressionValidator m_gatewayValidator;
    };
 
 } } // end namespace IQmol::Process

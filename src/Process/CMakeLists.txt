@@ -2,6 +2,7 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml OpenGL REQUIRED)
 set(LIB Process)
 
 set( HEADERS 
+   AwsConfigurationDialog.h
    Job.h
    JobMonitor.h
    QueueOptionsDialog.h
@@ -13,6 +14,7 @@ set( HEADERS
 )
 
 set( SOURCES
+   AwsConfigurationDialog.C
    Job.C
    JobInfo.C
    JobMonitor.C
@@ -35,6 +37,7 @@ if (WIN32)
 endif()
 
 set( UI_FILES
+   AwsConfigurationDialog.ui
    JobMonitor.ui
    QueueOptionsDialog.ui
    QueueResourcesDialog.ui

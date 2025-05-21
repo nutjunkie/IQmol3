@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -28,6 +28,7 @@
 #include "LocalConnection.h"
 #include "SshConnection.h"
 #include "HttpConnection.h"
+#include "AwsConnection.h"
 #include "WriteToTemporaryFile.h"
 #include "SystemDependent.h"
 #include "TextStream.h"
@@ -95,6 +96,12 @@ bool Server::open()
    QString publicKeyFile(m_configuration.value(ServerConfiguration::PublicKeyFile));
    QString privateKeyFile(m_configuration.value(ServerConfiguration::PrivateKeyFile));
    QString knownHostsFile(m_configuration.value(ServerConfiguration::KnownHostsFile));
+   
+   Network::AwsConfig awsConfig;
+   awsConfig.AwsRegion        = m_configuration.value(ServerConfiguration::AwsRegion);
+   awsConfig.CognitoUserPool  = m_configuration.value(ServerConfiguration::CognitoUserPool);
+   awsConfig.CognitoAppClient = m_configuration.value(ServerConfiguration::CognitoAppClient);
+   awsConfig.ApiGateway       = m_configuration.value(ServerConfiguration::ApiGateway);
 
    if (!m_connection) {
       QLOG_TRACE() << "Creating connection" 
@@ -117,6 +124,9 @@ bool Server::open()
          case Network::HTTPS:
             m_connection = new Network::HttpConnection(address, port, true);
             break;
+         case Network::AWS:
+            m_connection = new Network::AwsConnection(awsConfig, port);
+            break;
       }
    }
 
@@ -129,7 +139,7 @@ bool Server::open()
       Network::AuthenticationT 
          authentication(m_configuration.authentication());
 
-      if (m_configuration.isWebBased()) {
+      if (m_configuration.isWebBased() && m_configuration.connection() != Network::AWS) {
          QString cookie(m_configuration.value(ServerConfiguration::Cookie));
 
          if (authentication == Network::Password) {
@@ -424,6 +434,14 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
          }
       } break;
 
+      case ServerConfiguration::AWS: {
+         QStringList tokens(message.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts));
+         if (message.contains("Submitted job id") && tokens.size() == 4) {
+            job->setJobId(tokens[3]);
+            ok = true;
+         }
+      } break;
+
       case ServerConfiguration::SGE: {
          // A successful submission returns a string like:
          //   Your job 2834 ("test.sh") has been submitted
@@ -536,7 +554,7 @@ bool Server::parseSubmitMessage(Job* job, QString const& message)
       } break;
 
       default:
-         qDebug() << "Need to parse submit message for server type "
+         qDebug() << "########### Need to parse submit message for server type ###########"
                   << ServerConfiguration::toString(m_configuration.queueSystem());
          break;
    }
@@ -662,6 +680,15 @@ bool Server::parseQueryMessage(Job* job, QString const& message)
             if (rv == "ERROR")   status = Job::Error;
             ok = true;
           }
+      } break;
+
+      case ServerConfiguration::AWS: {
+         if (m_connection) {
+            QStringMap map = m_connection->parseQueryMessage(message);
+            status = Job::fromString(map["status"]);
+            statusMessage = map["message"];
+            ok = true;
+         }
       } break;
 
       case ServerConfiguration::SGE: {
@@ -868,7 +895,7 @@ void Server::listFinished()
       qDebug() << "File list from server:" << fileList;
       // Remove unwanted files
       fileList.removeAll("batch");
-      // This one is for the IQmol server, whcih can't handle directories.  This is the name
+      // This one is for the IQmol server, which can't handle directories.  This is the name
       // of the directory that holds the FSM files.
       unsigned pos(fileList.indexOf(QRegularExpression(".*input.files")));
       if (pos >= 0) fileList.removeAt(pos);
@@ -903,7 +930,14 @@ QStringList Server::parseListMessage(Job* job, QString const& message)
        }
    }
 
-   if (m_configuration.isWebBased()) {
+   if (m_configuration.connection() == Network::AWS) {
+      QString download(m_configuration.value(ServerConfiguration::QueueInfo));
+      download = substituteMacros(download);
+      download = job->substituteMacros(download);
+      list.clear();
+      list.append(download);
+
+   }else if (m_configuration.isWebBased()) {
       QString download(m_configuration.value(ServerConfiguration::QueueInfo));
       download = substituteMacros(download);
       download = job->substituteMacros(download);
