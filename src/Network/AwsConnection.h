@@ -77,6 +77,8 @@ namespace Network {
          // Returns Job::Status as a string
          QStringMap parseQueryMessage(QString const&);
 
+void expireToken();
+
       protected:
          QNetworkAccessManager* m_networkAccessManager;
 
@@ -90,7 +92,7 @@ namespace Network {
          QJsonObject parseReply(QNetworkReply*);
          bool extractTokens(QJsonObject const&);
 
-         AwsConfig& m_config;
+         AwsConfig m_config;
          QJsonArray m_jwksKeys;
 
          QString m_accessToken;

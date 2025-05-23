@@ -191,7 +191,6 @@ bool Server::open()
 
 bool Server::exists(QString const& filePath)
 {
-   
    return open() && m_connection->exists(filePath);
 }
 
@@ -227,16 +226,14 @@ void Server::queryAllJobs()
    // has modified the server while running.
    setUpdateInterval(m_configuration.updateInterval());
 
-   if (m_watchedJobs.isEmpty()) {
+   if (m_watchedJobs.isEmpty() || m_connection->status() != Network::Authenticated) {
       stopUpdates(); 
       return;
    }
 
-   if (open()) {
-      QList<Job*>::iterator iter;
-      for (iter = m_watchedJobs.begin(); iter != m_watchedJobs.end(); ++iter) {
-          query(*iter);
-      }
+   QList<Job*>::iterator iter;
+   for (iter = m_watchedJobs.begin(); iter != m_watchedJobs.end(); ++iter) {
+       query(*iter);
    }
 }
 
@@ -887,7 +884,9 @@ void Server::listFinished()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, "Copy failed");
+         QString s("Copy failed:\n");
+         s += reply->message();
+         job->setStatus(Job::Error, s);
          return;
       }
 
@@ -965,7 +964,9 @@ void Server::copyResultsFinished()
       }
 
       if (reply->status() != Network::Reply::Finished) {
-         job->setStatus(Job::Error, "Copy failed");
+         QString s("Copy failed:\n");
+         s += reply->message();
+         job->setStatus(Job::Error, s);
          return;
       }
 

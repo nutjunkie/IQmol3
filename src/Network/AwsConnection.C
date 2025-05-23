@@ -65,7 +65,7 @@ void AwsConnection::open()
       m_status = Opened;
 
       for (const QJsonValue &key : m_jwksKeys) {
-          qDebug() << key.toObject();
+          //qDebug() << key.toObject();
       }
    }
 
@@ -93,9 +93,8 @@ bool AwsConnection::getCognitoJwks(QString const& region, QString const& userPoo
               m_jwksKeys = obj.value("keys").toArray();
           }
        } else {
-          qWarning() << "Failed to fetch JWKS:" << reply->errorString();
+          QLOG_ERROR() << "Failed to fetch JWKS:" << reply->errorString();
        }
-       reply->deleteLater();
     });
 
     // Block until the reply is finished, not ideal but should be acceptable
@@ -165,7 +164,6 @@ bool AwsConnection::authenticateUser(const QString &username, const QString &pas
     loop.exec();
 
     QJsonObject object = parseReply(reply);
-    reply->deleteLater();
 
     QString sessionToken = object.value("Session").toString();
     QString challenge = object.value("ChallengeName").toString();
@@ -189,17 +187,6 @@ bool AwsConnection::extractTokens(QJsonObject const& obj)
     m_refreshToken = object.value("RefreshToken").toString();
     m_idToken      = object.value("IdToken").toString();
 
-#if 0
-    qDebug() << "============================";
-    qDebug() << "AccessToken:";
-    qDebug() << m_accessToken;
-    qDebug() << "RefreshToken:";
-    qDebug() << m_refreshToken;
-    qDebug() << "IdToken:";
-    qDebug() << m_idToken;
-    qDebug() << "============================";
-#endif
-
     if (m_accessToken.isEmpty()  || 
         m_refreshToken.isEmpty() || 
         m_idToken.isEmpty() ) {
@@ -211,17 +198,21 @@ bool AwsConnection::extractTokens(QJsonObject const& obj)
 }
 
 
-/*
-bool AwsConnection::checkToken(QString const& )
+void AwsConnection::expireToken()
 {
+qDebug() << "#############################################################";
+qDebug() << "#############################################################";
+qDebug() << "################# USING EPIRED TOKEN ########################";
+qDebug() << "#############################################################";
+qDebug() << "#############################################################";
+   m_idToken = "eyJraWQiOiJpUDFiczYycm9wN1ZKUEFRQnkxb0hhUUZ1V1llUlZPb0F1WTJKSTJGdnU4PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIxNGQ4MzRjOC03MDYxLTcwMTctOGU4My01NjZiM2E3M2JhYzgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfNVhhekk4dEU4IiwiY29nbml0bzp1c2VybmFtZSI6ImJlcnQiLCJvcmlnaW5fanRpIjoiMmZjZWMyNGItMTY5Yi00NGVjLTk5YWYtYWY3MGEzNDFiMTE4IiwiYXVkIjoiNDQxZTVlMWsxaWlwbGIybXFpbWxibnZpcDgiLCJldmVudF9pZCI6IjIzY2JmM2MwLTZmYWQtNDRmNy05MTJhLTA2ZWMyMzZkNTU1NSIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQ3ODI0MzI2LCJleHAiOjE3NDc4Mjc5MjYsImlhdCI6MTc0NzgyNDMyNiwianRpIjoiODcxY2Q0YTMtMDMxYi00ODExLWFiZGUtYjQwMzlkMzdkNzYzIiwiZW1haWwiOiJhbmRyZXcuaXFtb2xAZ21haWwuY29tIn0.U9w6ssJx0gUazW180e0NZ3mgYc4n2V875Ub93drpa6-weQ_wvJeJMLNKZfnYxQZERv2pQxahvEDaVNRTG8GF3NmefF1FPyEwXciQeQndEArEHK8AgMCkvhrI_Q97bU4-sHcv8ztE_1FsY6joEHaXoMjHTjKiL6LbX99bHq3tBhuw-pFHyoBe6aSf5RIQTQNEVlwQC0amkAK9Co0DHJFfGlplJXQ7tbl3F1SN1u2BK6zDqLo8WTXAIyyV_b_t7LZhRZqzOBDAVyffq-LRWews-KwdeRQslFx4DwzmV13gHSW8Vob6OR6WD7AHd8gwOKRmRLWx08gakYZcIdZiCurxhw";
 }
-*/
+
 
 
 bool AwsConnection::resetPassword(QString const& userName, QString const& oldPassword, 
    QString const& session ) 
 {
-qDebug() << "resetPassword called";
     QString msg1("Q-Cloud password reset required.\nEnter new password for user: " );
     QString msg2("Confirm password");
     msg1 += userName;
@@ -236,7 +227,7 @@ qDebug() << "resetPassword called";
         if (pw1 == pw2) {
            return respondToNewPasswordChallenge(userName, pw2, session);
         }else {
-           QMsgBox::warning("Passwords do not match");
+           QMsgBox::warning(0, "IQmol", "Passwords do not match");
         }
     }
 
@@ -247,14 +238,14 @@ qDebug() << "resetPassword called";
 QJsonObject AwsConnection::parseReply(QNetworkReply* reply)
 {
    QByteArray data = reply->readAll(); 
-   //qDebug() << "Server response data :" << data;
    QJsonParseError parseError;
    QJsonDocument document = QJsonDocument::fromJson(data, &parseError); 
    QJsonObject object;
 
    if (parseError.error != QJsonParseError::NoError) {
-      QString msg = QString("JSON parse error:") + parseError.errorString();
-      QMsgBox::warning(msg);
+      qDebug() << "Server response data in parseReply: " << data;
+      QString msg = QString("JSON parse error: ") + parseError.errorString();
+      QMsgBox::warning(0, "IQmol", msg);
       return object;
    }
 
@@ -265,13 +256,13 @@ QJsonObject AwsConnection::parseReply(QNetworkReply* reply)
    if (type == "NotAuthorizedException" ||
        type == "InvalidPasswordException" ) {
       QString msg = object.value("message").toString();
-      QMsgBox::warning(msg);
+      QMsgBox::warning(0, "IQmol", msg);
       return object;
    }
 
    if (reply->error() != QNetworkReply::NoError) {
       QString msg = QString("Authentication failed: ") + reply->errorString();
-      QMsgBox::warning(msg);
+      QMsgBox::warning(0, "IQmol", msg);
    }
 
    return object;
@@ -282,7 +273,6 @@ QJsonObject AwsConnection::parseReply(QNetworkReply* reply)
 bool AwsConnection::respondToNewPasswordChallenge(const QString& username, 
    const QString& newPassword, const QString& session)
 {
-qDebug() << "respondToNewPasswordChallenge called";
     QString url = QString("https://cognito-idp.%1.amazonaws.com/").arg(m_config.AwsRegion);
 
     QNetworkRequest request{QUrl(url)};
@@ -303,7 +293,6 @@ qDebug() << "respondToNewPasswordChallenge called";
 
     QJsonDocument doc(body);
     QByteArray data = doc.toJson(QJsonDocument::Compact);
-    qDebug().noquote() << "Sending challenge response:\n" << data;
 
     QNetworkReply* reply = m_networkAccessManager->post(request, data);
 
@@ -312,7 +301,6 @@ qDebug() << "respondToNewPasswordChallenge called";
     loop.exec();
 
     QJsonObject object = parseReply(reply);
-    reply->deleteLater();
 
     return extractTokens(object);
 }
@@ -424,6 +412,7 @@ Reply* AwsConnection::getFiles(QStringList const& fileList, QString const& desti
    QByteArray auth = QString("Bearer %1").arg(m_idToken).toUtf8();
    AwsGetFiles* reply(new AwsGetFiles(this, fileList, destinationPath));
    reply->setHeader("Authorization", auth);
+//expireToken();
    return reply;
 }
 

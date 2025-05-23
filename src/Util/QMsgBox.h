@@ -24,7 +24,6 @@
 #define QMSGBOX_H
 
 #include <QMessageBox>
-#include <QApplication>
 
 class QMsgBox: public QMessageBox {
 	Q_OBJECT
@@ -47,9 +46,11 @@ public:
 			StandardButton defaultButton = NoButton);
 
 
+/*
 	static StandardButton warning(
         const QString& text, 
-        QWidget* parent = QApplication::activeWindow(),
+        // Can't use aciveWindow in case it gets closed/deleted.
+        QWidget* parent = 0, //QApplication::activeWindow(),  
         const QString& title = QString("IQmol"), 
         StandardButtons buttons = Ok,
 		StandardButton defaultButton = NoButton)
@@ -59,7 +60,7 @@ public:
 
 	static StandardButton information(
         const QString& text, 
-        QWidget* parent = QApplication::activeWindow(),
+        QWidget* parent = 0, //QApplication::activeWindow(),
         const QString& title = QString("IQmol"), 
         StandardButtons buttons = Ok,
 		StandardButton defaultButton = NoButton)
@@ -69,7 +70,7 @@ public:
 
 	static StandardButton critical(
         const QString& text, 
-        QWidget* parent = QApplication::activeWindow(),
+        QWidget* parent = 0, //QApplication::activeWindow(),
         const QString& title = QString("IQmol"), 
         StandardButtons buttons = Ok,
 		StandardButton defaultButton = NoButton)
@@ -79,13 +80,14 @@ public:
 
 	static StandardButton question(
         const QString& text, 
-        QWidget* parent = QApplication::activeWindow(),
+        QWidget* parent = 0, //QApplication::activeWindow(),
         const QString& title = QString("IQmol"), 
         StandardButtons buttons = Ok,
 		StandardButton defaultButton = NoButton)
     {
         return question(parent, title, text, buttons, defaultButton);
     }
+*/
 };
 
 #endif // QMSGBOX_H

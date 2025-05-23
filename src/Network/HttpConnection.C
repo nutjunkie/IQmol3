@@ -156,7 +156,6 @@ QString HttpConnection::getCookie()
       QLOG_DEBUG() << "Returning cookie:" << cookie;
    }
 
-   reply->deleteLater();
    return cookie;
 }
 

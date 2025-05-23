@@ -218,19 +218,19 @@ void JobMonitor::loadJobListFromPreferences()
          QString msg("IQmol found processes on remote servers that were still active "
            "in the last session. \n\nWould you like to reconnect to the server(s)?");
 
-         if (QMsgBox::question(this, "IQmol", msg,
+         if (QMsgBox::question(0, "IQmol", msg,
             QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) reconnectServers();
       }
 
    }catch (Exception& ex) {
       if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
 
    }catch (...) {
       if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", "Error encountered");
+      QMsgBox::warning(0, "IQmol", "Error encountered");
    }
 
 }
@@ -282,7 +282,7 @@ void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
    if (!server) {
       QString msg("Invalid server: ");
       msg += serverName;
-      QMsgBox::warning(this, "IQmol", msg);
+      QMsgBox::warning(0, "IQmol", msg);
       return;
    }
 
@@ -294,7 +294,7 @@ void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
          QString msg("Failed to connnect to server ");
          msg += server->name();
          msg += ":\n" + server->message();
-         QMsgBox::warning(this, "IQmol", msg);
+         QMsgBox::warning(0, "IQmol", msg);
          postUpdateMessage("");
          return;
       }
@@ -326,23 +326,23 @@ void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
       if (job) s_deletedJobs.append(job);
       server->closeConnection();
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", "Invalid username or password");
+      QMsgBox::warning(0, "IQmol", "Invalid username or password");
 
    }catch (Network::NetworkTimeout& ex) {
       if (job) s_deletedJobs.append(job);
       server->closeConnection();
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", "Network timeout");
+      QMsgBox::warning(0, "IQmol", "Network timeout");
 
    }catch (Exception& ex) {
       if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
 
    }catch (...) {
       if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
-      QMsgBox::warning(this, "IQmol", "Error encountered");
+      QMsgBox::warning(0, "IQmol", "Error encountered");
    }
 }
 
@@ -414,7 +414,7 @@ bool JobMonitor::getRemoteWorkingDirectory(Server* server, QString& name)
 
       exists = server->exists(pathName);
       QString msg("Directory " + name + " exists.  Overwrite?");
-      if (exists && QMsgBox::question(QApplication::activeWindow(), "IQmol", msg) == 
+      if (exists && QMsgBox::question(0, "IQmol", msg) == 
          QMessageBox::Ok) {
          exists = false;
        }
@@ -423,7 +423,7 @@ bool JobMonitor::getRemoteWorkingDirectory(Server* server, QString& name)
    if (!server->makeDirectory(pathName)) {
       QString msg("Failed to create directory: ");
       msg += pathName;
-      QMsgBox::warning(QApplication::activeWindow(), "IQmol", msg);
+      QMsgBox::warning(0, "IQmol", msg);
       return false;
    }
    
@@ -470,7 +470,7 @@ bool JobMonitor::getLocalWorkingDirectory(QString& dirName, bool allowSpace)
          QString msg("Directory ");
          msg += dir.dirName() + " exists, overwrite?";
 
-         if (QMsgBox::question(QApplication::activeWindow(), "IQmol", msg,
+         if (QMsgBox::question(0, "IQmol", msg,
             QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
             // We don't actually overwrite the directory, only the files within
             // the directory with the same name as the ones we create.
@@ -552,7 +552,7 @@ void JobMonitor::jobSubmissionFailed(Job* job)
    if (!job) return;
    QString msg("Job submission failed");
    if (!(job->message().isEmpty())) msg += ":\n" + job->message();
-   QMsgBox::warning(msg);
+   QMsgBox::warning(0, "IQmol", msg);
    s_deletedJobs.append(job);
 }
 
@@ -590,7 +590,7 @@ void JobMonitor::addToTable(Job* job)
 
    connect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
-   //connect(job, SIGNAL(error()),    this, SLOT(jobError()));
+   connect(job, SIGNAL(error()),    this, SLOT(jobError()));
    saveJobListToPreferences();
 }
 
@@ -614,7 +614,7 @@ void JobMonitor::removeJob(Job* job)
 
    disconnect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    disconnect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
-   //disconnect(job, SIGNAL(error()),    this, SLOT(jobError()));
+   disconnect(job, SIGNAL(error()),    this, SLOT(jobError()));
 
    Server* server = ServerRegistry::instance().find(job->serverName());
    if (server) server->unwatchJob(job);
@@ -737,12 +737,10 @@ void JobMonitor::jobFinished()
    }else {
       QString msg("Job " + job->jobName() + " finished.\n");
       msg += "Copy results from server?";
-       
-      if (QMsgBox::question(0, "IQmol", msg, QMessageBox::Yes | QMessageBox::No,
-          QMessageBox::Yes) == QMessageBox::Yes) {
+      if (QMsgBox::question(0, "IQmol", msg, 
+            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
          copyResults(job);
       }
-
    }
 }
 
@@ -858,7 +856,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          }else {
             QString msg = "Job failed:\n";
             msg += job->message();
-            QMsgBox::information(this, "IQmol", msg);
+            QMsgBox::information(0, "IQmol", msg);
          }
          break;
 
@@ -866,7 +864,7 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          if (localFiles) {
             openResults(job);
          }else {
-            if (QMsgBox::question(this, "IQmol", "Copy results from server?",
+            if (QMsgBox::question(0, "IQmol", "Copy results from server?",
                QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
                copyResults(job);
             }
@@ -895,7 +893,7 @@ void JobMonitor::cancelCopy()
       Server* server = ServerRegistry::instance().find(job->serverName());
       if (server) server->cancelCopy(job);
    } catch (Exception& ex) {
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
    }
 }
 
@@ -916,13 +914,13 @@ void JobMonitor::killJob()
       msg += job->jobName() + "?";
    }    
 
-   if (QMsgBox::question(this, "IQmol", msg) == QMessageBox::Cancel) return;
+   if (QMsgBox::question(0, "IQmol", msg) == QMessageBox::Cancel) return;
     
    try {
       Server* server = ServerRegistry::instance().find(job->serverName());
       if (server) server->kill(job);
    } catch (Exception& ex) {
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
    }
 }
 
@@ -955,7 +953,7 @@ void JobMonitor::viewOutput(Job* job)
    QFileInfo output(job->jobInfo().getLocalFilePath(QChemJobInfo::OutputFileName));
 
    if (!output.exists()) {
-      QMsgBox::warning(this,"IQmol", "Output file no longer exists");
+      QMsgBox::warning(0,"IQmol", "Output file no longer exists");
       job->jobInfo().localFilesExist(false);
       return;
    }   
@@ -990,7 +988,7 @@ void JobMonitor::copyResults(Job* job)
          QString msg("Results are in the directory:\n\n");
          msg += dirPath;
          msg += "\n\nDownload results again?";
-         if (QMsgBox::question(this, "IQmol", msg) == QMessageBox::Cancel) return;
+         if (QMsgBox::question(0, "IQmol", msg) == QMessageBox::Cancel) return;
       }
 
       // clean the path
@@ -1007,7 +1005,7 @@ void JobMonitor::copyResults(Job* job)
       server->copyResults(job);
 
    } catch (Exception& ex) {
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
    }
 }
 
@@ -1025,7 +1023,7 @@ void JobMonitor::cleanUp(Job* job)
     
    QDir dir (job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory));
    if (!dir.exists()) {
-      QMsgBox::warning(this, "IQmol", QString("Unable to find results for") + job->jobName());
+      QMsgBox::warning(0, "IQmol", QString("Unable to find results for") + job->jobName());
       return;
    }
 
@@ -1104,7 +1102,7 @@ void JobMonitor::queryJob(Job* job)
       if (!server) throw Exception("Invalid server");
       server->query(job);
    } catch (Exception& ex) {
-      QMsgBox::warning(this, "IQmol", ex.what());
+      QMsgBox::warning(0, "IQmol", ex.what());
    }
 }
 

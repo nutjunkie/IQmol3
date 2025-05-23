@@ -65,6 +65,30 @@ QString networkRequestToCurl(const QNetworkRequest &request,
 }
 
 
+void networkReplyDump(const QNetworkReply& reply, QString const& body)
+{
+ // Status Code
+    QVariant statusCode = reply.attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    if (statusCode.isValid())
+        qDebug() << "Status Code:" << statusCode.toInt();
+
+    // Reason Phrase (if available)
+    QVariant reason = reply.attribute(QNetworkRequest::HttpReasonPhraseAttribute);
+    if (reason.isValid())
+        qDebug() << "Reason Phrase:" << reason.toString();
+
+    // Headers
+    const QList<QNetworkReply::RawHeaderPair> headers = reply.rawHeaderPairs();
+    qDebug() << "Headers:";
+    for (const auto &header : headers) {
+        qDebug() << "  " << header.first << ":" << header.second;
+    }
+
+    // Body
+    qDebug() << body;
+}
+
+
 namespace IQmol {
 namespace Network {
 
@@ -96,35 +120,38 @@ void AwsReply::finishedSlot()
       finished();
       return;
    }   
+/*
+*/
 
    if (m_status != Error) m_status = m_interrupt ? Interrupted : Finished;
 
-#if 0
-QList<QByteArray> headerList = m_networkReply->rawHeaderList();
-foreach(QByteArray head, headerList) {
-    qDebug() << "HEADER" << head << ":" << m_networkReply->rawHeader(head);
-}
-#endif
-
    // Attempt to parse the return as JSON, but if this fails we go to text
    QByteArray data = m_message.toUtf8();
+
+ networkReplyDump(*m_networkReply, data);
+
    QJsonParseError parseError;
    QJsonDocument document = QJsonDocument::fromJson(data, &parseError); 
 
    if (parseError.error == QJsonParseError::NoError) {
-      // JSON
       QJsonObject object = document.object();
 
-       // Check for expired token (how??)
+      // Check for expired token (how??)
       QString type = object.value("__type").toString();
       if (type == "NotAuthorizedException" ||
           type == "InvalidPasswordException" ) { 
           m_message = object.value("message").toString();
           m_connection->setStatus(Opened);
-      }   
+      } else if (m_status == Error) {
+          m_message = object.value("message").toString();
+      }
 
    }else {
-      if (m_message.contains("Submitted job id")) { } // Do we need to do anything?
+      if (m_message.contains("Submitted job id")) { 
+        // Do we need to do anything?
+      }else {
+        qDebug() << "Raw reply message:" << m_message;
+      }
    }
 
    if (m_message.isEmpty()) m_message = "Q-Cloud server unavailable";
@@ -135,9 +162,17 @@ foreach(QByteArray head, headerList) {
 
 void AwsReply::errorSlot(QNetworkReply::NetworkError /*error*/)
 {
-   m_message = m_networkReply->errorString();
+   // networkReplyDump(*m_networkReply, m_message);
+
+   // Handle expired token here
+   QVariant statusCode = m_networkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+   if (statusCode.toInt() == 401) {
+      // de-authorise the status
+      m_connection->setStatus(Opened);
+   }else {
+      m_message += "\n" + m_networkReply->errorString();
+   }
    m_status  = Error;
-   finished();
 }
 
 
@@ -245,16 +280,12 @@ void AwsGet::closeFile()
 
     QByteArray source = fileInfo.filePath().toUtf8();
     QByteArray destination = fileInfo.path().toUtf8();
-
-    qDebug() << "QFile returned source:     " << source;
-    qDebug() << "QFile returned destination:" << destination;
-
     Util::extract_tgz(source.data(),destination.data()); 
 
     QDir dir(fileInfo.path() +"/" + fileInfo.baseName());
 
     if (!dir.exists()) {
-       qDebug() << "Failed to find directory" << dir.path();
+       qDebug() << "Failed to find directory for AwsGet" << dir.path();
        return;
     }
 
@@ -271,10 +302,8 @@ void AwsGet::closeFile()
 
            QString newFilePath = parentDir.absoluteFilePath(fileInfo.fileName());
 
-           if (QFile::rename(oldFilePath, newFilePath)) {
-               qDebug() << "Moved:" << oldFilePath << "->" << newFilePath;
-           } else {
-               qWarning() << "Failed to move:" << oldFilePath;
+           if (!QFile::rename(oldFilePath, newFilePath)) {
+               qWarning() << "Failed to move:" << oldFilePath << "to" <<newFilePath;
            }
         }
     }
@@ -349,21 +378,19 @@ void AwsGetFiles::run()
    QRegularExpression rx("job_id=(.*)");
    m_status = Running;
 
-   
-   qDebug() << m_headers;
+   //qDebug() << m_headers;
 
    QString auth = m_headers.value("Authorization");
 
    QStringList::iterator iter;
    for (iter = m_fileList.begin(); iter != m_fileList.end(); ++iter) {
        QString source(*iter);
-qDebug() << "Downloading file:" << source;
        QRegularExpressionMatch match(rx.match(source));
 
        if (match.hasMatch()) {
           QString destination(m_destinationPath);
           destination += "/" + match.captured(1);
-qDebug() << "Downloading file:" << source;
+          QLOG_DEBUG() << "Downloading file:" << source;
 
           AwsGet* reply(new AwsGet(m_connection, source, destination));
           reply->setHeader("Authorization", auth.toUtf8());
@@ -391,7 +418,6 @@ void AwsGetFiles::replyFinished()
    double progress(m_totalReplies-m_replies.size());
    if (m_totalReplies > 0) copyProgress(progress/m_totalReplies);
    m_allOk = m_allOk && reply->status() == Finished;
-   reply->deleteLater();
 
    if (m_replies.isEmpty()) {
       if (m_allOk) {
