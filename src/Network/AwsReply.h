@@ -1,5 +1,5 @@
-#ifndef IQMOL_NETWORK_HTTPREPLY_H
-#define IQMOL_NETWORK_HTTPREPLY_H
+#ifndef IQMOL_NETWORK_AWSREPLY_H
+#define IQMOL_NETWORK_AWSREPLY_H
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,7 +23,6 @@
 ********************************************************************************/
 
 #include "Reply.h"
-#include "HttpConnection.h"
 #include <QNetworkReply>
 #include <QStringList>
 #include <QTimer>
@@ -37,13 +36,15 @@ typedef QMap<QString, QString> QStringMap;
 namespace IQmol {
 namespace Network {
 
-   class HttpReply : public Reply {
+   class AwsConnection;
 
+   class AwsReply : public Reply 
+   {
       Q_OBJECT
 
       public:
-         HttpReply(HttpConnection*);
-         virtual ~HttpReply();
+         AwsReply(AwsConnection*);
+         virtual ~AwsReply();
 
          QString headerValue(QString const& headerName);
          void setHeader(QString const& header, QString const& value);
@@ -55,7 +56,7 @@ namespace Network {
          void interrupted();
 
       protected:
-         HttpConnection* m_connection;
+         AwsConnection* m_connection;
          unsigned m_timeout;
          QNetworkReply* m_networkReply;  // We take ownership of this
          QStringMap m_headers;
@@ -70,25 +71,22 @@ namespace Network {
          void readToString();
          void finishedSlot();
          void errorSlot(QNetworkReply::NetworkError);
-         void dumpHeader();
 
       private Q_SLOTS:
          void timeout();
-
-      private:
-         QString headerAsString();
    };
 
 
-   class HttpGet : public HttpReply {
+   class AwsGet : public AwsReply 
+   {
 
       Q_OBJECT
 
-      friend class HttpGetFiles;
+      friend class AwsGetFiles;
 
       public:
-         HttpGet(HttpConnection*, QString const& sourcePath);
-         HttpGet(HttpConnection*, QString const& sourcePath, QString const& destinationPath);
+         AwsGet(AwsConnection*, QString const& sourcePath);
+         AwsGet(AwsConnection*, QString const& sourcePath, QString const& destinationPath);
 
       protected Q_SLOTS:
          void run();
@@ -98,16 +96,17 @@ namespace Network {
          void closeFile();
 
       private:
+         QByteArray m_base64;
          QFile* m_file;
    };
 
 
-   class HttpGetFiles : public HttpReply {
-
+   class AwsGetFiles : public AwsReply 
+   {
       Q_OBJECT
 
       public:
-         HttpGetFiles(HttpConnection*, QStringList const& fileList, 
+         AwsGetFiles(AwsConnection*, QStringList const& fileList, 
             QString const& destinationPath);
 
       protected Q_SLOTS:
@@ -119,25 +118,25 @@ namespace Network {
       private:
          QStringList m_fileList;
          QString m_destinationPath;
-         QList<HttpGet*> m_replies;
+         QList<AwsGet*> m_replies;
          int  m_totalReplies;
          bool m_allOk;
    };
 
 
 
-   class HttpPost : public HttpReply {
-
+   class AwsPost : public AwsReply 
+   {
       Q_OBJECT
 
       public:
-         HttpPost(HttpConnection*, QString const& path, QString const& postData);
+         AwsPost(AwsConnection*, QString const& path, QByteArray const& postData);
 
       protected Q_SLOTS:
          void run();
 
       private:
-         QString m_postData;
+         QByteArray m_postData;
          
    };
 

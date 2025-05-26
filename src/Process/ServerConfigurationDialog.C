@@ -22,6 +22,7 @@
 
 #include "ServerConfigurationDialog.h"
 #include "QueueOptionsDialog.h"
+#include "AwsConfigurationDialog.h"
 #include "QueueResourcesList.h"
 #include "SshConnection.h"
 #include "SshReply.h"
@@ -39,7 +40,7 @@ namespace IQmol {
 namespace Process {
 
 ServerConfigurationDialog::ServerConfigurationDialog(ServerConfiguration& configuration, 
-   QWidget* parent) : QDialog(parent), m_tested(false), m_setDefaults(false),
+   QWidget* parent) : QDialog(parent), m_setDefaults(true),
    m_originalConfiguration(configuration)
 {
    m_dialog.setupUi(this);
@@ -47,10 +48,144 @@ ServerConfigurationDialog::ServerConfigurationDialog(ServerConfiguration& config
 
    copyFrom(m_originalConfiguration);
 
-   // Hide this temporarily as it causes the server to not appear in the list
-   m_dialog.testConnectionButton->hide();
+   connect(m_dialog.buttonBox, SIGNAL(accepted()), this, SLOT(finished()));
+   connect(m_dialog.buttonBox, SIGNAL(rejected()), this, SLOT(close()));
+}
 
-   connect(m_dialog.buttonBox, SIGNAL(accepted()), this, SLOT(verify()));
+
+void ServerConfigurationDialog::finished()
+{
+   if (!verify()) return;
+   copyTo(m_currentConfiguration);
+   m_originalConfiguration = m_currentConfiguration;
+   accept();
+}
+
+
+/* Verifies the contents of the various fields are valid, does not verify m_serverConfiguration */
+bool ServerConfigurationDialog::verify()
+{
+   if (m_dialog.serverName->text().trimmed().isEmpty()) {
+      QMsgBox::warning(this, "IQmol", "Server name not set");
+      return false;
+   }
+
+   Network::ConnectionT connection(Network::Local);
+   if (m_dialog.sshRadioButton->isChecked()) {
+      connection = Network::SSH;
+   }else if (m_dialog.sftpRadioButton->isChecked()) {
+      connection = Network::SFTP;
+   }else if (m_dialog.httpRadioButton->isChecked()) {
+      connection = Network::HTTP;
+   }else if (m_dialog.httpsRadioButton->isChecked()) {
+      connection = Network::HTTPS;
+   }else if (m_dialog.awsRadioButton->isChecked()) {
+      connection = Network::AWS;
+   }
+
+   if (connection != Network::Local) {
+      if (m_dialog.hostAddress->text().trimmed().isEmpty()) {
+         QMsgBox::warning(this, "IQmol", "Host address not set");
+         return false;
+      }
+   }
+
+   Network::AuthenticationT authentication = 
+      Network::ToAuthenticationT(m_dialog.authentication->currentText());
+
+   if (authentication == Network::Password) {
+      if (m_dialog.userName->text().trimmed().isEmpty()) {
+         QMsgBox::warning(this, "IQmol", "User name must be set");
+         return false;
+      }
+   }
+
+   if (m_dialog.workingDirectory->text().contains("~")) {
+      QString msg("Use of ~ shortcut in working directory may not work\n");
+      msg += "Suggest using $HOME or full path";
+      QMsgBox::warning(this, "IQmol", msg);
+      return false;
+   }
+
+   return true;
+}
+
+
+
+void ServerConfigurationDialog::copyTo(ServerConfiguration& config)
+{
+   Network::ConnectionT connection(Network::Local);
+
+   if (m_dialog.sshRadioButton->isChecked()) {
+      connection = Network::SSH;
+   }else if (m_dialog.sftpRadioButton->isChecked()) {
+      connection = Network::SFTP;
+   }else if (m_dialog.httpRadioButton->isChecked()) {
+      connection = Network::HTTP;
+   }else if (m_dialog.httpsRadioButton->isChecked()) {
+      connection = Network::HTTPS;
+   }else if (m_dialog.awsRadioButton->isChecked()) {
+      connection = Network::AWS;
+   }
+
+   config.setValue(ServerConfiguration::ServerName, m_dialog.serverName->text());
+   config.setValue(ServerConfiguration::Connection, connection);
+
+   QString queue(m_dialog.queueSystem->currentText());
+   config.setValue(ServerConfiguration::QueueSystem, 
+      ServerConfiguration::toQueueSystemT(queue));
+   config.setValue(ServerConfiguration::HostAddress, "localhost");
+
+   if (connection == Network::Local) return;
+
+   config.setValue(ServerConfiguration::HostAddress, 
+      m_dialog.hostAddress->text());
+
+   config.setValue(ServerConfiguration::Port, 
+      m_dialog.port->value());
+
+   config.setValue(ServerConfiguration::Authentication, 
+      Network::ToAuthenticationT(m_dialog.authentication->currentText()));
+
+   config.setValue(ServerConfiguration::UserName, 
+      m_dialog.userName->text());
+
+   QString dirPath(m_dialog.workingDirectory->text());
+   while (dirPath.endsWith("/")) { dirPath.chop(1); }
+   while (dirPath.endsWith("\\")) { dirPath.chop(1); }
+   
+   config.setValue(ServerConfiguration::WorkingDirectory, dirPath);
+}
+
+
+void ServerConfigurationDialog::copyFrom(ServerConfiguration const& config)
+{
+   m_setDefaults = false;
+   switch (config.connection()) {
+      case Network::Local:  m_dialog.localRadioButton->setChecked(true);  break;
+      case Network::SSH:    m_dialog.sshRadioButton->setChecked(true);    break;
+      case Network::SFTP:   m_dialog.sftpRadioButton->setChecked(true);   break;
+      case Network::HTTP:   m_dialog.httpRadioButton->setChecked(true);   break;
+      case Network::HTTPS:  m_dialog.httpsRadioButton->setChecked(true);  break;
+      case Network::AWS:    m_dialog.awsRadioButton->setChecked(true);    break;
+   }
+
+   m_dialog.queueSystem->setCurrentText(
+      ServerConfiguration::toString(config.queueSystem()));
+
+   m_dialog.serverName->setText(config.value(ServerConfiguration::ServerName));
+   m_dialog.hostAddress->setText(config.value(ServerConfiguration::HostAddress));
+   m_dialog.port->setValue(config.port());
+
+   m_dialog.authentication->setCurrentText(
+      Network::ToString(config.authentication()));
+
+   m_dialog.userName->setText(config.value(ServerConfiguration::UserName));
+
+   m_dialog.workingDirectory->setText(
+      config.value(ServerConfiguration::WorkingDirectory));
+
+   m_setDefaults = true;
 }
 
 
@@ -69,6 +204,9 @@ void ServerConfigurationDialog::updateQueueSystemsCombo(
       case Network::HTTPS:
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::Web));
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::QCloud));
+         break;
+      case Network::AWS:
+         qs->addItem(ServerConfiguration::toString(ServerConfiguration::AWS));
          break;
       case Network::Local:
       case Network::SSH:
@@ -115,6 +253,10 @@ void ServerConfigurationDialog::updateAuthenticationCombo(
          auth->addItem(Network::ToString(Network::Password)); 
          break;
 
+      case Network::AWS:
+         auth->addItem(Network::ToString(Network::Password)); 
+         break;
+
       case Network::SSH:
       case Network::SFTP:
          auth->addItem(Network::ToString(Network::Anonymous)); 
@@ -147,7 +289,7 @@ void ServerConfigurationDialog::on_localRadioButton_toggled(bool tf)
    updateQueueSystemsCombo(Network::Local);
    updateAuthenticationCombo(Network::Local);
 
-   if (setDefaults()) {
+   if (m_setDefaults) {
       qDebug() << "Setting defaults for Local";
       m_currentConfiguration.setDefaults(Network::Local);
       copyFrom(m_currentConfiguration);
@@ -165,11 +307,13 @@ void ServerConfigurationDialog::on_sshRadioButton_toggled(bool tf)
    m_dialog.userName->setEnabled(true);
    m_dialog.workingDirectory->setEnabled(true);
    m_dialog.workingDirectoryLabel->setEnabled(true);
+   m_dialog.awsConfiguration->setVisible(false);
+   m_dialog.hostAddress->setEnabled(true);
 
    updateQueueSystemsCombo(Network::SSH);
    updateAuthenticationCombo(Network::SSH);
 
-   if (setDefaults()) {
+   if (m_setDefaults) {
       qDebug() << "Setting defaults for SSH";
       m_currentConfiguration.setDefaults(Network::SSH);
       copyFrom(m_currentConfiguration);
@@ -187,11 +331,13 @@ void ServerConfigurationDialog::on_sftpRadioButton_toggled(bool tf)
    m_dialog.userName->setEnabled(true);
    m_dialog.workingDirectory->setEnabled(true);
    m_dialog.workingDirectoryLabel->setEnabled(true);
+   m_dialog.awsConfiguration->setVisible(false);
+   m_dialog.hostAddress->setEnabled(true);
 
    updateQueueSystemsCombo(Network::SFTP);
    updateAuthenticationCombo(Network::SFTP);
 
-   if (setDefaults()) {
+   if (m_setDefaults) {
       qDebug() << "Setting defaults for SFTP";
       m_currentConfiguration.setDefaults(Network::SFTP);
       copyFrom(m_currentConfiguration);
@@ -209,11 +355,13 @@ void ServerConfigurationDialog::on_httpRadioButton_toggled(bool tf)
    m_dialog.userName->setEnabled(false);
    m_dialog.workingDirectory->setEnabled(false);
    m_dialog.workingDirectoryLabel->setEnabled(false);
+   m_dialog.awsConfiguration->setVisible(false);
+   m_dialog.hostAddress->setEnabled(true);
 
    updateQueueSystemsCombo(Network::HTTP);
    updateAuthenticationCombo(Network::HTTP);
 
-   if (setDefaults()) {
+   if (m_setDefaults) {
       qDebug() << "Setting defaults for HTTP";
       m_currentConfiguration.setDefaults(Network::HTTP);
       copyFrom(m_currentConfiguration);
@@ -231,13 +379,39 @@ void ServerConfigurationDialog::on_httpsRadioButton_toggled(bool tf)
    m_dialog.userName->setEnabled(true);
    m_dialog.workingDirectory->setEnabled(false);
    m_dialog.workingDirectoryLabel->setEnabled(false);
+   m_dialog.awsConfiguration->setVisible(false);
+   m_dialog.hostAddress->setEnabled(true);
 
    updateQueueSystemsCombo(Network::HTTPS);
    updateAuthenticationCombo(Network::HTTPS);
 
-   if (setDefaults()) {
+   if (m_setDefaults) {
       qDebug() << "Setting defaults for HTTPS";
       m_currentConfiguration.setDefaults(Network::HTTPS);
+      copyFrom(m_currentConfiguration);
+   }
+}
+
+
+void ServerConfigurationDialog::on_awsRadioButton_toggled(bool tf)
+{
+   if (!tf) return;
+
+   m_dialog.remoteHostGroupBox->setEnabled(true);
+   m_dialog.configureSshButton->setEnabled(false);
+   m_dialog.authentication->setEnabled(true);
+   m_dialog.userName->setEnabled(true);
+   m_dialog.workingDirectory->setEnabled(false);
+   m_dialog.workingDirectoryLabel->setEnabled(false);
+   m_dialog.awsConfiguration->setVisible(true);
+   m_dialog.hostAddress->setEnabled(false);
+
+   updateQueueSystemsCombo(Network::AWS);
+   updateAuthenticationCombo(Network::AWS);
+
+   if (m_setDefaults) {
+      qDebug() << "Setting defaults for AWS";
+      m_currentConfiguration.setDefaults(Network::AWS);
       copyFrom(m_currentConfiguration);
    }
 }
@@ -253,15 +427,22 @@ void ServerConfigurationDialog::on_configureSshButton_clicked(bool)
 
 void ServerConfigurationDialog::on_configureQueueButton_clicked(bool)
 {
-   copyTo(&m_currentConfiguration);
+   copyTo(m_currentConfiguration);
    QueueOptionsDialog dialog(&m_currentConfiguration, this);
+   dialog.exec();
+}
+
+
+void ServerConfigurationDialog::on_awsConfiguration_clicked(bool)
+{
+   AwsConfigurationDialog dialog(m_currentConfiguration, this);
    dialog.exec();
 }
 
 
 void ServerConfigurationDialog::on_queueSystem_currentIndexChanged(QString const& queue)
 {
-   if (setDefaults()) {
+   if (m_setDefaults) {
       ServerConfiguration::QueueSystemT queueT(ServerConfiguration::toQueueSystemT(queue));
       m_currentConfiguration.setDefaults(queueT);
    }
@@ -273,278 +454,13 @@ void ServerConfigurationDialog::on_authentication_currentIndexChanged(QString co
    if (m_dialog.queueSystem->currentText() == 
       ServerConfiguration::toString(ServerConfiguration::Web)) {
       bool pw(auth == Network::ToString(Network::Password));
-      m_dialog.authenticationPort->setEnabled(pw);
-      m_dialog.authenticationPortLabel->setEnabled(pw);
       m_dialog.userName->setEnabled(pw);
       m_dialog.userNameLabel->setEnabled(pw);
-   }else {
-      m_dialog.authenticationPort->setEnabled(false);
-      m_dialog.authenticationPortLabel->setEnabled(false);
    }
 }
 
 
 
-void ServerConfigurationDialog::copyFrom(ServerConfiguration const& config)
-{
-   setDefaults(false);
-   switch (config.connection()) {
-      case Network::Local:  m_dialog.localRadioButton->setChecked(true);  break;
-      case Network::SSH:    m_dialog.sshRadioButton->setChecked(true);    break;
-      case Network::SFTP:   m_dialog.sftpRadioButton->setChecked(true);   break;
-      case Network::HTTP:   m_dialog.httpRadioButton->setChecked(true);   break;
-      case Network::HTTPS:  m_dialog.httpsRadioButton->setChecked(true);  break;
-   }
-
-   m_dialog.queueSystem->setCurrentText(
-      ServerConfiguration::toString(config.queueSystem()));
-
-   m_dialog.serverName->setText(config.value(ServerConfiguration::ServerName));
-   m_dialog.hostAddress->setText(config.value(ServerConfiguration::HostAddress));
-   m_dialog.port->setValue(config.port());
-
-   m_dialog.authentication->setCurrentText(
-      Network::ToString(config.authentication()));
-   m_dialog.authenticationPort->setValue(config.authenticationPort());
-
-   m_dialog.userName->setText(config.value(ServerConfiguration::UserName));
-
-   m_dialog.workingDirectory->setText(
-      config.value(ServerConfiguration::WorkingDirectory));
-
-   setDefaults(true);
-   m_tested = false;
-}
-
-
-bool ServerConfigurationDialog::copyTo(ServerConfiguration* config)
-{
-   Network::AuthenticationT authentication = 
-      Network::ToAuthenticationT(m_dialog.authentication->currentText());
-
-   Network::ConnectionT connection(Network::Local);
-
-   if (m_dialog.sshRadioButton->isChecked()) {
-      connection = Network::SSH;
-   }else if (m_dialog.sftpRadioButton->isChecked()) {
-      connection = Network::SFTP;
-   }else if (m_dialog.httpRadioButton->isChecked()) {
-      connection = Network::HTTP;
-   }else if (m_dialog.httpsRadioButton->isChecked()) {
-      connection = Network::HTTPS;
-   }
-
-   // Sanity checks
-   if (m_dialog.serverName->text().trimmed().isEmpty()) {
-      QMsgBox::warning(this, "IQmol", "Server name not set");
-      return false;
-   }
-
-   if (connection != Network::Local) {
-      if (m_dialog.hostAddress->text().trimmed().isEmpty()) {
-         QMsgBox::warning(this, "IQmol", "Host address not set");
-         return false;
-      }
-   }
-
-   if (connection == Network::SSH || connection == Network::SFTP || 
-       authentication == Network::Password) {
- 
-      if (m_dialog.userName->text().trimmed().isEmpty()) {
-         QMsgBox::warning(this, "IQmol", "User name must be set");
-         return false;
-      }
-
-      if (m_dialog.workingDirectory->text().contains("~")) {
-         QString msg("Use of ~ shortcut in working directory may not work\n");
-         msg += "Suggest using $HOME or full path";
-         QMsgBox::warning(this, "IQmol", msg);
-         return false;
-      }
-   }
-   // end sanity checks
-
-   config->setValue(ServerConfiguration::ServerName, m_dialog.serverName->text());
-   config->setValue(ServerConfiguration::Connection, connection);
-
-   QString queue(m_dialog.queueSystem->currentText());
-   config->setValue(ServerConfiguration::QueueSystem, 
-      ServerConfiguration::toQueueSystemT(queue));
-   config->setValue(ServerConfiguration::HostAddress, "localhost");
-
-   if (connection == Network::Local) return true;
-
-   config->setValue(ServerConfiguration::HostAddress, 
-      m_dialog.hostAddress->text());
-
-   config->setValue(ServerConfiguration::Port, 
-      m_dialog.port->value());
-
-   config->setValue(ServerConfiguration::Authentication, 
-      Network::ToAuthenticationT(m_dialog.authentication->currentText()));
-
-   config->setValue(ServerConfiguration::AuthenticationPort, 
-      m_dialog.authenticationPort->value());
-
-   config->setValue(ServerConfiguration::UserName, 
-      m_dialog.userName->text());
-
-   QString dirPath(m_dialog.workingDirectory->text());
-   while (dirPath.endsWith("/")) { dirPath.chop(1); }
-   while (dirPath.endsWith("\\")) { dirPath.chop(1); }
-   
-   config->setValue(ServerConfiguration::WorkingDirectory, dirPath);
-
-   return true;
-}
-
-
-void ServerConfigurationDialog::on_testConnectionButton_clicked(bool) 
-{ 
-   testConnection(); 
-}
-
-
-bool ServerConfigurationDialog::testConnection()
-{
-   bool okay(false);
-
-   if (!copyTo(&m_currentConfiguration)) return okay;
-
-   switch (m_currentConfiguration.connection()) {
-      case Network::Local:
-         QMsgBox::information(this, "IQmol", "Local connection just fine");
-         break;
-      case Network::SSH:
-      case Network::SFTP:
-         okay = testSshConnection(m_currentConfiguration);
-         break;
-      case Network::HTTP:
-      case Network::HTTPS:
-         okay = testHttpConnection(m_currentConfiguration);
-         break;
-   }
-
-   if (okay) {
-      QMsgBox::information(0, "IQmol", "Connection successful");
-      m_tested = true;
-   }
-
-   return okay;
-}
-   
-
-bool ServerConfigurationDialog::testSshConnection(ServerConfiguration const& configuration)
-{
-   bool okay(false);
-
-   try {
-      QString hostAddress(configuration.value(ServerConfiguration::HostAddress));
-      QString userName(configuration.value(ServerConfiguration::UserName));
-      Network::AuthenticationT authentication(configuration.authentication());
-
-      QString publicKeyFile(configuration.value(ServerConfiguration::KnownHostsFile));
-      QString privateKeyFile(configuration.value(ServerConfiguration::PrivateKeyFile));
-      QString knownHostsFile(configuration.value(ServerConfiguration::PublicKeyFile));
-
-      int port(configuration.port());
-
-      Network::SshConnection ssh(hostAddress, port, publicKeyFile, privateKeyFile, 
-         knownHostsFile);
-      ssh.open();
-      ssh.authenticate(authentication, userName);
-      QLOG_TRACE() << "Authentication successful";
-
-      QEventLoop loop;
-      Network::Reply* reply(ssh.execute("ls"));
-      QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-      loop.exec();
-
-      okay = (reply->status() == Network::Reply::Finished);
-      if (okay) {
-         QLOG_DEBUG() << "----------------------------";
-         QLOG_DEBUG() << reply->message();
-         QLOG_DEBUG() << "----------------------------";
-      }else {
-         QString msg("Connection failed:\n");
-         msg += reply->message();
-         QMsgBox::warning(this, "IQmol", msg);
-      }
-      delete reply;
-
-   }catch (Network::AuthenticationCancelled& err) {
-      // don't do anything
-
-   }catch (Network::AuthenticationError& err) {
-      QMsgBox::warning(0, "IQmol", "Invalid username or password");
-
-   }catch (Exception& err) {
-      okay = false;
-      QMsgBox::warning(0, "IQmol", err.what());
-   }
-
-   return okay;
-}
-
-
-bool ServerConfigurationDialog::testHttpConnection(ServerConfiguration const& configuration)
-{
-   bool okay(false);
-
-   try {
-      QString hostAddress(configuration.value(ServerConfiguration::HostAddress));
-      int port(configuration.port());
-
-      Network::HttpConnection http(hostAddress, port);
-      http.open();
-
-      Network::Reply* reply(http.get("index.html"));
-
-      QEventLoop loop;
-      QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-      loop.exec();
-
-      okay = reply->status() == Network::Reply::Finished;
-      if (okay) {
-         QLOG_DEBUG() << "----------------------------";
-         QLOG_DEBUG() << reply->message();
-         QLOG_DEBUG() << "----------------------------";
-      }else {
-         QString msg("Connection failed:\n");
-         msg += reply->message();
-         QMsgBox::warning(this, "IQmol", msg);
-      }
-      delete reply;
-
-   }catch (Network::AuthenticationError& err) {
-      QMsgBox::warning(this, "IQmol", "Invalid username or password");
-
-   }catch (Exception& err) {
-      QMsgBox::warning(this, "IQmol", err.what());
-   }
-
-   return okay;
-}
-
-
-void ServerConfigurationDialog::verify()
-{
-   if (!copyTo(&m_currentConfiguration)) return;
-
-/* don't bother with the testing at the moment, it is just annoying
-   if (!m_tested && !m_dialog.localRadioButton->isChecked()) {
-      QString msg("Would you like to try connecting to the server?");
-      if (QMsgBox::question(this, "IQmol", msg,
-         QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes) {
-         if (!testConnection()) return;
-      }
-   }
-*/
-
-   m_originalConfiguration = m_currentConfiguration;
-
-   accept();
-}
 
 
 // This should be refactored to use the ServerRegistry::loadFromFile() code.
@@ -587,9 +503,7 @@ void ServerConfigurationDialog::on_loadButton_clicked(bool)
       if (yaml.first()) {
          yaml.first()->dump();
          m_currentConfiguration = ServerConfiguration(*(yaml.first()));
-         setDefaults(false);
          copyFrom(m_currentConfiguration);
-         setDefaults(true);
       }
 
    } catch (YAML::Exception& err) {
@@ -601,7 +515,9 @@ void ServerConfigurationDialog::on_loadButton_clicked(bool)
 
 void ServerConfigurationDialog::on_exportButton_clicked(bool)
 {
-   if (!copyTo(&m_currentConfiguration)) return;
+   if (!verify()) return;
+
+   copyTo(m_currentConfiguration);
 
    QString filePath(QDir::homePath()); 
    filePath += "/iqmol_server.cfg";
@@ -614,18 +530,6 @@ void ServerConfigurationDialog::on_exportButton_clicked(bool)
    if (!node.saveToFile(filePath)) {
       QMsgBox::warning(this, "IQmol", "Failed to export server configuration");
    }
-}
-
-
-void ServerConfigurationDialog::setDefaults(bool const tf)
-{
-   m_setDefaults = tf;
-}
-
-
-bool ServerConfigurationDialog::setDefaults() const
-{
-   return m_setDefaults;
 }
 
 } } // end namespace IQmol::Process

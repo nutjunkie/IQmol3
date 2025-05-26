@@ -2,6 +2,8 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network REQUIRED)
 set(LIB Network)
 
 set(HEADERS
+   AwsConnection.h
+   AwsReply.h
    Connection.h
    HttpConnection.h
    HttpReply.h
@@ -13,6 +15,8 @@ set(HEADERS
 )
 
 set( SOURCES
+   AwsConnection.C
+   AwsReply.C
    Connection.C
    HttpConnection.C
    HttpReply.C

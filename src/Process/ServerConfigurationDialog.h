@@ -43,33 +43,28 @@ namespace Process {
          void on_sftpRadioButton_toggled(bool);
          void on_httpRadioButton_toggled(bool);
          void on_httpsRadioButton_toggled(bool);
+         void on_awsRadioButton_toggled(bool);
 
          void on_configureSshButton_clicked(bool);
          void on_configureQueueButton_clicked(bool);
          void on_queueSystem_currentIndexChanged(QString const& queue);
          void on_authentication_currentIndexChanged(QString const& queue);
-
-         void on_testConnectionButton_clicked(bool);
+         void on_awsConfiguration_clicked(bool);
 
          void on_loadButton_clicked(bool);
          void on_exportButton_clicked(bool);
 
-         void verify();
+         bool verify();
+         void finished();
 
       private:
-         bool testConnection();
-         bool testSshConnection(ServerConfiguration const&);
-         bool testHttpConnection(ServerConfiguration const&);
-         bool m_tested;
-
          void copyFrom(ServerConfiguration const&);
-         bool copyTo(ServerConfiguration*);
+         void copyTo(ServerConfiguration&);
 
          void updateAuthenticationCombo(Network::ConnectionT const);
          void updateQueueSystemsCombo(Network::ConnectionT const);
 
-         bool setDefaults() const;
-         void setDefaults(bool const tf);
+         // Used to disable the setting of default updates when copying
          bool m_setDefaults;
 
          Ui::ServerConfigurationDialog m_dialog;

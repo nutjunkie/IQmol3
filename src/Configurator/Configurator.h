@@ -43,7 +43,8 @@ namespace Configurator {
       Q_OBJECT
 
       public:
-         explicit Base() : QDialog(QApplication::activeWindow()), m_initialized(false) { }
+         //explicit Base() : QDialog(QApplication::activeWindow()), m_initialized(false) { }
+         explicit Base() : QDialog(nullptr), m_initialized(false) { }
          virtual ~Base() { }
 
 		 /// Initialization function that should take care of anything that
@@ -51,7 +52,7 @@ namespace Configurator {
 		 /// be called explicitly as it will be called the first time display()
 		 /// is called.
 		 virtual void init() { m_initialized = true; }
-         
+
 		 /// Displays the configurator dialog.  The dialog will appear
 		 /// initially in the middle of the MainWindow and subsequently where 
 		 /// the user closed it.

@@ -662,13 +662,13 @@ int SshConnection::connectPassword()
    int rc(LIBSSH2_ERROR_AUTHENTICATION_FAILED);
 
    for (int count = 0; count < 3; ++count) {
-      QString password(getPasswordFromUser(msg));
-      if (password.isEmpty()) return LIBSSH2_ERROR_AUTHENTICATION_CANCELLED;
+       QString password(getPasswordFromUser(msg));
+       if (password.isEmpty()) return LIBSSH2_ERROR_AUTHENTICATION_CANCELLED;
 
-      while ((rc = libssh2_userauth_password(m_session, m_username.toLatin1().data(), 
-         password.toLatin1().data())) == LIBSSH2_ERROR_EAGAIN);
-
-      if (rc != LIBSSH2_ERROR_AUTHENTICATION_FAILED) break;
+       while ((rc = libssh2_userauth_password(m_session, m_username.toLatin1().data(), 
+          password.toLatin1().data())) == LIBSSH2_ERROR_EAGAIN);
+ 
+       if (rc != LIBSSH2_ERROR_AUTHENTICATION_FAILED) break;
    }
 
    return rc;

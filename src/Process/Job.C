@@ -48,6 +48,27 @@ QString Job::toString(Status const& status)
 }
 
 
+// Allows delegation of message passing to Connection classes without creating
+// a dependency on libProcess.a
+Job::Status Job::fromString(QString const& s) 
+{
+   Status status(Unknown);
+
+   if (s == "Not Running") { status = NotRunning;  } else
+   if (s == "Queued")      { status = Queued;      } else
+   if (s == "Running")     { status = Running;     } else
+   if (s == "Suspended")   { status = Suspended;   } else
+   if (s == "Killed")      { status = Killed;      } else
+   if (s == "Error")       { status = Error;       } else
+   if (s == "Finished")    { status = Finished;    } else
+   if (s == "Copying")     { status = Copying;     }
+
+   return status;
+}
+
+
+
+
 Job::Job(QChemJobInfo const& qchemJobInfo) : m_qchemJobInfo(qchemJobInfo)
 {
    m_julianDay  = QDate::currentDate().toJulianDay();

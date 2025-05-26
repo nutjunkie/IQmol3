@@ -8,6 +8,7 @@ set(HEADERS
    ProgressDialog.h
    Task.h
    Timer.h
+   Zip.h
 )
 
 set( SOURCES
@@ -28,6 +29,7 @@ set( SOURCES
    Task.C
    Timer.C
    WriteToTemporaryFile.C
+   Zip.C
 )
 
 set( UI_FILES
@@ -47,4 +49,5 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Widgets
    Qt5::Xml
    Qt5::OpenGL
+   archive
 )

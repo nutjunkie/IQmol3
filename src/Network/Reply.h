@@ -46,6 +46,7 @@ namespace Network {
          QString message() const { return m_message; }
          Status status() const { return m_status; }
          void start() { startSignal(); }
+         void waitForFinish() { run(); }
 
       public Q_SLOTS:
          void interrupt() { m_interrupt = true; qDebug() << "interrupt received" << m_interrupt; }

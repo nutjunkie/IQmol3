@@ -12,8 +12,12 @@ include(FortranCInterface)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+#set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
+
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # We need this to be able to include e.g. "Data/Bank.h" in the sources
@@ -52,7 +56,9 @@ add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
 include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
-add_subdirectory(modules/openbabel EXCLUDE_FROM_ALL)
+add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
+
+add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
 
 
 if(QARCHIVE)
@@ -182,6 +188,7 @@ target_link_libraries (${targetName}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
    ${FORTRAN_LIBRARIES}
+   archive
 )
 
 if(QARCHIVE)

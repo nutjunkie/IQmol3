@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -66,6 +66,12 @@ QString ServerConfiguration::toString(FieldT const field)
       case PublicKeyFile:       s = "SSH Public Key File";  break;
       case KnownHostsFile:      s = "SSH Known Hosts File"; break;
       case AuthenticationPort:  s = "Authentication Port";  break;
+
+      case AwsRegion:           s = "AWS Region";           break;
+      case CognitoUserPool:     s = "Cognito User Pool";    break;
+      case CognitoAppClient:    s = "Cognito App Client";   break;
+      case ApiGateway:          s = "Api Gateway";          break;
+
       case MaxFieldT:           s = "";                     break;
    }
    return s;
@@ -81,7 +87,7 @@ QString ServerConfiguration::toString(QueueSystemT const queue)
       case SGE:     s = "SGE";    break;
       case SLURM:   s = "SLURM";  break;
       case Web:     s = "Web";    break;
-      case QCloud:  s = "Q-Cloud"; break;
+      case AWS:     s = "AWS";    break;
    }
    return s;
 }
@@ -120,11 +126,11 @@ ServerConfiguration::FieldT ServerConfiguration::toFieldT(QString const& field)
 ServerConfiguration::QueueSystemT ServerConfiguration::toQueueSystemT(
    QString const& queueSystem)
 {
-   if (queueSystem.contains("pbs",    Qt::CaseInsensitive)) return PBS;
-   if (queueSystem.contains("sge",    Qt::CaseInsensitive)) return SGE;
-   if (queueSystem.contains("web",    Qt::CaseInsensitive)) return Web;
-   if (queueSystem.contains("q-cloud",Qt::CaseInsensitive)) return QCloud;
-   if (queueSystem.contains("slurm",  Qt::CaseInsensitive)) return SLURM;
+   if (queueSystem.contains("pbs",   Qt::CaseInsensitive)) return PBS;
+   if (queueSystem.contains("sge",   Qt::CaseInsensitive)) return SGE;
+   if (queueSystem.contains("web",   Qt::CaseInsensitive)) return Web;
+   if (queueSystem.contains("aws",   Qt::CaseInsensitive)) return AWS;
+   if (queueSystem.contains("slurm", Qt::CaseInsensitive)) return SLURM;
 
    return Basic;
 }
@@ -317,6 +323,15 @@ void ServerConfiguration::setDefaults(Network::ConnectionT const connection)
          m_configuration.insert(WorkingDirectory, "(unused)");
          m_configuration.insert(Authentication, Network::Anonymous);
          break;
+
+      case Network::AWS:
+         m_configuration.insert(ServerName, "Q-Cloud");
+         m_configuration.insert(Port, 443);
+         m_configuration.insert(HostAddress, "API Gateway");
+         m_configuration.insert(UserName, "");
+         m_configuration.insert(WorkingDirectory, "(unused)");
+         m_configuration.insert(Authentication, Network::Password);
+         break;
    }
 }
 
@@ -444,16 +459,14 @@ void ServerConfiguration::setDefaults(QueueSystemT const queueSystem)
          m_configuration.insert(JobFileList, "GET /list?cookie=${COOKIE}&jobid=${JOB_ID}");
       } break;
 
-      case QCloud: {
-         m_configuration.insert(Kill,      "GET  /delete?cookie=${COOKIE}&jobid=${JOB_ID}");
-         m_configuration.insert(Query,     "GET  /status?cookie=${COOKIE}&jobid=${JOB_ID}");
-         m_configuration.insert(Submit,    "POST /submit?cookie=${COOKIE}");
-         m_configuration.insert(QueueInfo, 
-            "GET  /download?cookie=${COOKIE}&jobid=${JOB_ID}&file=${FILE_NAME}");
+      case AWS: {
+         m_configuration.insert(Submit,      "POST /exec/qcloud?function=submit");
+         m_configuration.insert(Kill,        "GET  /exec/qcloud?function=cancel&job_id=${JOB_ID}");
+         m_configuration.insert(Query,       "GET  /exec/qcloud?function=status&job_id=${JOB_ID}");
+         m_configuration.insert(QueueInfo,   "GET  /exec/qcloud?function=download&job_id=${JOB_ID}");
+         m_configuration.insert(JobFileList, "GET  /exec/qcloud?function=meta&job_id=${JOB_ID}"); // file size
          m_configuration.insert(RunFileTemplate, "(unused)");
-         m_configuration.insert(JobFileList, "GET /list?cookie=${COOKIE}&jobid=${JOB_ID}");
       } break;
-
    }
 }
 
