@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2011-2015 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,12 +14,11 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
 ********************************************************************************/
-
 
 #define _USE_MATH_DEFINES
 #include "ShaderLibrary.h"
@@ -28,7 +27,6 @@
 #include "Exception.h"
 #include "QsLog.h"
 #include "GLSLmath.h"
-#include "Parser/ParseFile.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QOpenGLFramebufferObject>
