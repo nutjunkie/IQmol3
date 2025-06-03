@@ -22,16 +22,15 @@
 
 #include "Preferences.h"
 #include "PreferencesBrowser.h"
+#include "FileDialog.h"
+
 #include <QApplication>
-#include <QFileDialog>
 #include <QColorDialog>
 #include <QSettings>
 #include <QFileInfo>
 #include <QtGlobal>
 #include <QMap>
 #include <QDir>
-
-#include <QDebug>
 
 
 namespace IQmol {
@@ -62,6 +61,7 @@ void Browser::init()
    m_preferencesBrowser.fragmentDirectoryLineEdit->setText(FragmentDirectory());
    m_preferencesBrowser.qchemDatabaseFileLineEdit->setText(QChemDatabaseFilePath());
    m_preferencesBrowser.logFileLineEdit->setText(LogFilePath());
+   m_preferencesBrowser.ffmpegLineEdit->setText(FFmpegPath());
 
    if (LogFileHidden()) {
       m_preferencesBrowser.logFileHiddenCheckBox->setCheckState(Qt::Checked);
@@ -116,6 +116,10 @@ void Browser::on_buttonBox_accepted()
    newLocation = m_preferencesBrowser.fragmentDirectoryLineEdit->text();
    if (oldLocation != newLocation) FragmentDirectory(newLocation);
 
+   oldLocation = FFmpegPath();
+   newLocation = m_preferencesBrowser.ffmpegLineEdit->text();
+   if (oldLocation != newLocation) FFmpegPath(newLocation);
+
    DefaultForceField(m_preferencesBrowser.forceFieldCombo->currentText());
    UndoLimit(m_preferencesBrowser.undoLimit->value());
    LabelFontSize(m_preferencesBrowser.labelFontSize->value());
@@ -127,6 +131,13 @@ void Browser::on_buttonBox_accepted()
 void Browser::on_browseFragmentDirectoryButton_clicked(bool) 
 {
    setPath(m_preferencesBrowser.fragmentDirectoryLineEdit);
+}
+
+
+void Browser::on_browseFFmpegButton_clicked(bool) 
+{
+   bool mustExist(true);
+   setFilePath(m_preferencesBrowser.ffmpegLineEdit, mustExist);
 }
 
 
@@ -157,7 +168,7 @@ void Browser::on_resetButton_clicked(bool)
 void Browser::setPath(QLineEdit* edit) 
 {
    QString s(edit->text());
-   QString path(QFileDialog::getExistingDirectory(this, tr("Select Path"), s));
+   QString path(FileDialog::getExistingDirectory(this, tr("Select Path"), s));
    if (!path.isEmpty()) edit->setText(path);
 }
 
@@ -169,9 +180,9 @@ void Browser::setFilePath(QLineEdit* edit, bool const mustExist)
    QString s(edit->text());
    QString path;
    if (mustExist) {
-      path = QFileDialog::getOpenFileName(this, tr("Select File"), s);
+      path = FileDialog::getOpenFileName(this, tr("Select File"), s);
    }else {
-      path = QFileDialog::getSaveFileName(this, tr("Select File"), s);
+      path = FileDialog::getSaveFileName(this, tr("Select File"), s);
    }
    if (!path.isEmpty()) edit->setText(path);
 }

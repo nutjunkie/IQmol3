@@ -52,8 +52,18 @@ namespace IQmol {
 
       public:
          ViewerModel(QWidget* parent = 0);
-         GLObjectList getVisibleObjects();
-         GLObjectList getSelectedObjects();
+
+         GLObjectList getOpaqueObjects() {
+            return m_opaqueObjects;
+         }
+
+         GLObjectList getTransparentObjects() {
+            return m_transparentObjects;
+         }
+
+         GLObjectList getSelectedObjects() {
+            return m_selectedObjects;
+         }
 
          void displayGlobals();
          QColor backgroundColor() const { return m_background.color(); }
@@ -112,7 +122,7 @@ namespace IQmol {
          void checkItemChanged(QStandardItem*);
          void itemDoubleClicked(QModelIndex const&);
          void itemExpanded(QModelIndex const&);
-         void updateVisibleObjects();
+         void updateObjectLists();
          void toggleAxes();
          void saveAll();
          void saveAs();
@@ -184,7 +194,8 @@ namespace IQmol {
          Layer::Background m_background;
          Layer::ClippingPlane m_clippingPlane;
 
-         GLObjectList m_visibleObjects;
+         GLObjectList m_opaqueObjects;
+         GLObjectList m_transparentObjects;
          GLObjectList m_selectedObjects;
          double m_symmetryTolerance;
          QString m_forceField;

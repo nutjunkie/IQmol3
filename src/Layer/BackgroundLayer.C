@@ -14,10 +14,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-      
+
 ********************************************************************************/
 
 #include "BackgroundLayer.h"
@@ -49,16 +49,10 @@ void Background::draw()
    } else {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glDepthMask(false);
-
       backgroundColorChanged(QColor(255,255,255,0));
       glClearColor(1.0f, 1.0f, 1.0f, 0.0f); 
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-      glDepthMask(true);
    }
-
- //  glClear(GL_COLOR_BUFFER_BIT);
 
    if (false) {
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 

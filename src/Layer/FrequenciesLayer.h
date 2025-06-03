@@ -1,12 +1,11 @@
-#ifndef IQMOL_LAYER_FREQUENCIES_H
-#define IQMOL_LAYER_FREQUENCIES_H
+#pragma once
 /*******************************************************************************
-         
-  Copyright (C) 2022 Andrew Gilbert
-      
+
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -82,6 +81,7 @@ namespace Layer {
          void playMode(Mode const& mode); 
          void playMode(int mode); 
          void clearActiveMode();
+         void displayModeVector(bool on);
 
       private:
          Data::Frequencies const& m_frequencies;
@@ -91,7 +91,8 @@ namespace Layer {
          double m_loop;  // -1.0 => loop forever
          double m_speed;
          double m_scale;
-         const Mode*  m_activeMode;
+         bool   m_displayModeVector;
+         const  Mode*  m_activeMode;
          QList<Mode*> m_modeList;
    };
 
@@ -114,7 +115,4 @@ namespace Layer {
          Data::VibrationalMode const& m_mode;
    };
 
-
 } } // end namespace IQmol::Layer
-
-#endif

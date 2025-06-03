@@ -1,12 +1,11 @@
-#ifndef IQMOL_CONFIGURATOR_FREQUENCIES_H
-#define IQMOL_CONFIGURATOR_FREQUENCIES_H
+#pragma once
 /*******************************************************************************
-       
-  Copyright (C) 2022 Andrew Gilbert
-           
+
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -69,6 +68,7 @@ namespace Configurator {
          void on_frequencyTable_itemDoubleClicked(QTableWidgetItem*);
          void on_colorButton_clicked(bool);
          void on_loopButton_clicked(bool);
+         void on_vectorCheckbox_clicked(bool);
 
          void on_scaleFactor_valueChanged(double);
          void on_impulseButton_clicked(bool);
@@ -103,5 +103,3 @@ namespace Configurator {
    };
 
 } } // end namespace IQmol::Configurator
-
-#endif

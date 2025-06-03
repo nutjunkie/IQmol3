@@ -106,19 +106,6 @@ ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
 }
 
 
-GLObjectList ViewerModel::getVisibleObjects() 
-{ 
-   //qDebug() << "Number of visible objects" << m_visibleObjects.size(); 
-   return m_visibleObjects; 
-}
-
-
-GLObjectList ViewerModel::getSelectedObjects() 
-{ 
-   return m_selectedObjects; 
-}
-
-
 QStringList ViewerModel::mimeTypes () const
 {
    QStringList types;
@@ -343,7 +330,7 @@ void ViewerModel::pasteSelectionFromClipboard()
       // This should be added as an Undo action
       activeMolecule()->appendPrimitives(Layer::PrimitiveList(*geom));
       invertSelection(); 
-      updateVisibleObjects();
+      updateObjectLists();
       delete geom;
    }
 }
@@ -427,7 +414,7 @@ void ViewerModel::connectMolecule(Layer::Molecule* molecule)
       this, SLOT(computeEnergy()));
 
    connect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
+      this, SLOT(updateObjecctLists()));
    connect(molecule, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
    connect(molecule, SIGNAL(postMessage(QString const&)), 
@@ -448,7 +435,7 @@ void ViewerModel::connectMolecule(Layer::Molecule* molecule)
 void ViewerModel::disconnectMolecule(Layer::Molecule* molecule)
 {
    disconnect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateVisibleObjects()));
+      this, SLOT(updateObjectLists()));
    disconnect(molecule, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
    disconnect(molecule, SIGNAL(postMessage(QString const&)), 
@@ -484,29 +471,45 @@ void ViewerModel::toggleAxes()
 }
 
 
-void ViewerModel::updateVisibleObjects()
+void ViewerModel::updateObjectLists()
 {
    if (!m_updateEnabled) return;
-   //QLOG_TRACE() << "Updating visible objects";
+
    // We don't want nested objects as Fragments should appear as one object in
    // the Viewer.  This means the Fragment is respnsible for drawing its children
-   m_visibleObjects = findLayers<Layer::GLObject>(Layer::Children | Layer::Visible | 
+   GLObjectList allObjects = findLayers<Layer::GLObject>(Layer::Children | Layer::Visible | 
       Layer::Nested);
 
    // Make sure the selection only contains visible objects;
    GLObjectList::iterator object(m_selectedObjects.begin());
    while (object != m_selectedObjects.end()) {
-       if ( m_visibleObjects.contains(*object)) {
+       if ( allObjects.contains(*object)) {
           ++object;
        } else {
-//!!!
           (*object)->deselect();
           object = m_selectedObjects.erase(object);
        }
    }
 
-   // Sort our objects based on opacity, high to low
-   std::sort(m_visibleObjects.begin(), m_visibleObjects.end(), Layer::GLObject::AlphaSort);
+   m_opaqueObjects.clear();
+   m_transparentObjects.clear();
+
+   for (auto object : allObjects) {
+       if (object->isTransparent()) {
+          m_transparentObjects << object;
+       }else {
+          m_opaqueObjects << object;
+       }
+   }
+
+   // Sort transparent objects based on opacity, high to low
+   std::sort(m_transparentObjects.begin(), 
+             m_transparentObjects.end(), 
+             Layer::GLObject::AlphaSort);
+   // Hack to ensure that atoms (which are given alpha = 0.999 are drawn after bonds
+   std::sort(m_opaqueObjects.begin(), 
+             m_opaqueObjects.end(), 
+             Layer::GLObject::AlphaSort);
    updated();
 }
 
@@ -596,9 +599,11 @@ void ViewerModel::invertSelection()
 {
    QItemSelection select;
    QItemSelection deselect;
+
+   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    
    GLObjectList::iterator iter;
-   for (iter = m_visibleObjects.begin(); iter != m_visibleObjects.end(); ++iter) {
+   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
        if ((*iter)->isSelected()) {
           deselect.select((*iter)->index(), (*iter)->index());
        }else {
@@ -613,9 +618,10 @@ void ViewerModel::invertSelection()
 
 void ViewerModel::selectAll()
 {
+   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    QItemSelection select;
    GLObjectList::iterator iter;
-   for (iter = m_visibleObjects.begin(); iter != m_visibleObjects.end(); ++iter) {
+   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
        if ( ! (*iter)->isSelected()) {
           select.append(QItemSelectionRange((*iter)->index()));
        }
@@ -628,12 +634,14 @@ void ViewerModel::selectAll()
 void ViewerModel::selectNone()
 {
    enableUpdate(false);
-   updateVisibleObjects();
+   updateObjectLists();
    enableUpdate(true);
 
+   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    QItemSelection all;
+
    GLObjectList::iterator iter;
-   for (iter = m_visibleObjects.begin(); iter != m_visibleObjects.end(); ++iter) {
+   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
        all.append(QItemSelectionRange((*iter)->index()));
    }
    selectionChanged(all, QItemSelectionModel::Deselect);
@@ -894,7 +902,7 @@ void ViewerModel::deleteSelection()
    enableUpdate(false);
    forAllMolecules(boost::bind(&Layer::Molecule::deleteSelection, _1));
    enableUpdate(true);
-   updateVisibleObjects();
+   updateObjectLists();
 }
 
 
@@ -1028,7 +1036,7 @@ void ViewerModel::checkItemChanged(QStandardItem* item)
 
       connect(this, SIGNAL(itemChanged(QStandardItem*)), 
          this, SLOT(checkItemChanged(QStandardItem*)));
-      updateVisibleObjects();
+      updateObjectLists();
    }
 }
 

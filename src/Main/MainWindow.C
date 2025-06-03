@@ -26,6 +26,7 @@
 #include "ServerRegistry.h" 
 #include "InsertMoleculeDialog.h" 
 #include "QMsgBox.h"
+#include "FileDialog.h"
 #include "Animator.h"
 #include "Preferences.h"
 #include "Network.h"
@@ -39,7 +40,6 @@
 #include <QDropEvent>
 #include <QVBoxLayout>
 #include <QMenuBar>
-#include <QFileDialog>
 #include <QtDebug>
 #include <QActionGroup>
 #include <fstream>
@@ -152,7 +152,7 @@ void MainWindow::createConnections()
    connect(&m_toolBar, SIGNAL(addHydrogens()),    &m_viewerModel, SLOT(addHydrogens()));
    connect(&m_toolBar, SIGNAL(minimizeEnergy()),  &m_viewerModel, SLOT(minimizeEnergy()));
    connect(&m_toolBar, SIGNAL(deleteSelection()), &m_viewerModel, SLOT(deleteSelection()));
-   connect(&m_toolBar, SIGNAL(takeSnapshot()),    m_viewer,       SLOT(saveSnapshot()));
+   connect(&m_toolBar, SIGNAL(takeSnapshot()),    m_viewer,       SLOT(takeSnapshot()));
    connect(&m_toolBar, SIGNAL(record(bool)),      this,           SLOT(setRecord(bool)));
    connect(&m_toolBar, SIGNAL(fullScreen()),      this,           SLOT(fullScreen()));
    connect(&m_toolBar, SIGNAL(showHelp()),        this,           SLOT(showHelp()));
@@ -385,7 +385,7 @@ void MainWindow::createMenus()
 
       name = "Save Picture";
       action = menu->addAction(name);
-      connect(action, SIGNAL(triggered()), m_viewer, SLOT(saveSnapshot()));
+      connect(action, SIGNAL(triggered()), m_viewer, SLOT(takeSnapshot()));
       action->setShortcut(Qt::CTRL | Qt::Key_P);
 
 /*
@@ -754,7 +754,7 @@ void MainWindow::newViewer()
 
 void MainWindow::openFile()
 {
-   QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), 
+   QString fileName = FileDialog::getOpenFileName(this, tr("Open File"), 
       Preferences::LastFileAccessed());
    if (!fileName.isEmpty()) open(fileName);
 }
@@ -762,7 +762,7 @@ void MainWindow::openFile()
 
 void MainWindow::openDir()
 {
-   QString dirName = QFileDialog::getExistingDirectory(this, tr("Open Job Directory"), 
+   QString dirName = FileDialog::getExistingDirectory(this, tr("Open Job Directory"), 
       Preferences::LastFileAccessed());
    if (!dirName.isEmpty()) open(dirName);
 }

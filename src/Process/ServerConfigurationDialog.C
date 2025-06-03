@@ -32,7 +32,7 @@
 #include "QMsgBox.h"
 #include "YamlNode.h"
 #include "ParseFile.h"
-#include <QFileDialog>
+#include "FileDialog.h"
 
 
 
@@ -203,7 +203,6 @@ void ServerConfigurationDialog::updateQueueSystemsCombo(
          break;
       case Network::HTTPS:
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::Web));
-         qs->addItem(ServerConfiguration::toString(ServerConfiguration::QCloud));
          break;
       case Network::AWS:
          qs->addItem(ServerConfiguration::toString(ServerConfiguration::AWS));
@@ -467,7 +466,7 @@ void ServerConfigurationDialog::on_authentication_currentIndexChanged(QString co
 void ServerConfigurationDialog::on_loadButton_clicked(bool)
 {
    QString filePath(QDir::homePath()); 
-   filePath = QFileDialog::getOpenFileName(this, tr("Open Server Configuration"),
+   filePath = FileDialog::getOpenFileName(this, tr("Open Server Configuration"),
       filePath, tr("Configuration Files (*.cfg)"));
 
    if (filePath.isEmpty()) return;
@@ -522,7 +521,7 @@ void ServerConfigurationDialog::on_exportButton_clicked(bool)
    QString filePath(QDir::homePath()); 
    filePath += "/iqmol_server.cfg";
 
-   filePath = QFileDialog::getSaveFileName(this, tr("Save File"), filePath, 
+   filePath = FileDialog::getSaveFileName(this, tr("Save File"), filePath, 
        tr("Configuration Files (*.cfg)"));
 
    if (filePath.isEmpty()) return;

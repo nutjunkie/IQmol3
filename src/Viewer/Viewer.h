@@ -44,7 +44,6 @@
 #include <QFontMetrics>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
-#include <QTimer>
 #include <QOpenGLFunctions>
 
 
@@ -97,6 +96,9 @@ namespace IQmol {
          void editShaders();
          void editCamera();
 
+         void saveImage(QString const& filename, QSize const& size, int const dpi, int const antialias);
+         void savePovRay(QString const& filename);
+
       Q_SIGNALS:
          void activeViewerModeChanged(Viewer::Mode const);
          void clearSelection();
@@ -119,11 +121,11 @@ namespace IQmol {
          void resizeGL(int width, int height);
 
          void generatePovRay();
+         void takeSnapshot();
 
          //void displayMessage(QString const& msg) { QGLViewer::displayMessage(msg, FOREVER); }
          void displayMessage(QString const& msg) { QGLViewer::displayMessage(msg, 3000); }
          void setActiveViewerMode(Viewer::Mode const mode);
-         void saveSnapshot();
          void setDefaultBuildElement(unsigned int element);
          void setDefaultBuildFragment(QString const& fileName, Viewer::Mode const);
          void setLabelType(int const);
@@ -175,7 +177,6 @@ namespace IQmol {
          void displayGeometricParameter(GLObjectList const& selection);
          void displayMullikenDecomposition(GLObjectList const& selection);
          void drawWithNames(); 
-         void generatePovRay(QString const& filename);
 
          void drawSelectionRectangle(QRect const& rect);
          void endSelection(QPoint const&);
@@ -204,12 +205,13 @@ namespace IQmol {
 		 /// MouseGrabber.  If only a bond is selected then it is used to
 		 /// partition the atoms into two groups, the closest of which is added
 		 /// to the ManipulatedFrameSetConstraint.  The translations and rotations
-         //  are then constrained to be along and around the bond, respectively.
+         /// are then constrained to be along and around the bond, respectively.
          GLObjectList startManipulation(QMouseEvent *e);
 
          AnimatorList m_animatorList;
-         GLObjectList m_objects;
+         GLObjectList m_opaqueObjects;
          GLObjectList m_selectedObjects;
+         GLObjectList m_transparentObjects;
 
          // State variables
          Viewer::Mode m_activeMode;
@@ -236,7 +238,6 @@ namespace IQmol {
          bool m_blockUpdate;
          bool m_shadersInit;
 
-         QTimer          m_recordTimer;
          ShaderLibrary*  m_shaderLibrary;
          ShaderDialog*   m_shaderDialog;
          CameraDialog*   m_cameraDialog;

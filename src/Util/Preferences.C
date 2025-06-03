@@ -373,7 +373,6 @@ void DefaultFilterParameters(QVariantMap const& map)
 
 // ---------
 
-
 QString FragmentDirectory() 
 {
    QString fragDir;
@@ -403,6 +402,29 @@ void FragmentDirectory(QString const& filePath)
 
 // ---------
 
+QString FFmpegPath()
+{
+   QString path;
+   QVariant value(Get("FFmpegPath"));
+
+   if (value.isNull() || value.toString().isEmpty()) {
+      QFileInfo info(QApplication::applicationDirPath(), "ffmpeg");
+      path = info.filePath();
+   }else {
+      path = value.value<QString>();      
+   }
+
+   return path;
+}
+
+void FFmpegPath(QString const& filePath) 
+{
+   Set("FFmpegPath", QVariant::fromValue(filePath));
+}
+
+
+// ---------
+
 QString DefaultForceField()
 {
    QVariant value(Get("DefaultForceField"));
@@ -413,6 +435,7 @@ void DefaultForceField(QString const& forceField)
 {
    Set("DefaultForceField", QVariant::fromValue(forceField));
 }
+
 
 // ---------
 
@@ -523,7 +546,7 @@ void VibrationVectorColor(QColor const& color)
 QColor VibrationVectorColor() 
 {
    QVariant value(Get("VibrationVectorColor"));
-   return value.isNull() ? QColor(255, 0, 255) : value.value<QColor>();
+   return value.isNull() ? QColor(240, 142, 220) : value.value<QColor>();
 }
 
 // ---------

@@ -47,7 +47,7 @@ void BuildAtom::initPointers()
 
 void BuildAtom::leftMousePressEvent(QMouseEvent* e) 
 {
-   int nObjects(m_viewer->m_objects.size());
+   int nObjects(m_viewer->m_opaqueObjects.size());
    if ((m_beginAtom == 0) && 
        (nObjects > 0)     && 
        (e->modifiers() != Viewer::s_buildModifier)) {
@@ -217,7 +217,7 @@ void BuildAtom::leftMouseReleaseEvent(QMouseEvent* e)
 
 void BuildAtom::rightMousePressEvent(QMouseEvent* e) 
 {
-   int nObjects(m_viewer->m_objects.size());
+   int nObjects(m_viewer->m_opaqueObjects.size());
    if ((m_beginAtom == 0) && 
        (nObjects > 0) && 
        (e->modifiers() != Viewer::s_buildModifier)) {

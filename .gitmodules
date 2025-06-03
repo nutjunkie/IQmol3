@@ -1,33 +1,27 @@
-[submodule "modules/openmesh"]
-	path = modules/openmesh
-	url = https://github.com/Lawrencemm/openmesh.git
-[submodule "modules/openbabel"]
-	path = modules/openbabel
-	url = https://github.com/openbabel/openbabel.git
-[submodule "modules/yaml-cpp"]
-	path = modules/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
-[submodule "modules/libQGLViewer"]
-	path = modules/libQGLViewer
-	url = https://github.com/GillesDebunne/libQGLViewer.git
 [submodule "modules/libssh2"]
 	path = modules/libssh2
 	url = https://github.com/libssh2/libssh2.git
+[submodule "modules/openmesh"]
+	path = modules/openmesh
+	url = https://github.com/Lawrencemm/openmesh.git
+[submodule "modules/yaml-cpp"]
+	path = modules/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "modules/openbabel"]
+	path = modules/openbabel
+	url = https://github.com/openbabel/openbabel.git
+[submodule "modules/libxml2"]
+	path = modules/libxml2
+	url = https://github.com/GNOME/libxml2.git
+[submodule "modules/libQGLViewer"]
+	path = modules/libQGLViewer
+	url = https://github.com/GillesDebunne/libQGLViewer.git
+[submodule "modules/libarchive"]
+	path = modules/libarchive
+	url = https://github.com/libarchive/libarchive.git
 [submodule "modules/hdf5"]
 	path = modules/hdf5
 	url = https://github.com/HDFGroup/hdf5.git
 [submodule "modules/HighFive"]
 	path = modules/HighFive
 	url = https://github.com/BlueBrain/HighFive.git
-[submodule "modules/FFmpeg"]
-	path = modules/FFmpeg
-	url = https://github.com/FFmpeg/FFmpeg.git
-[submodule "modules/openssl"]
-	path = modules/openssl
-	url = https://github.com/openssl/openssl.git
-[submodule "modules/libxml2"]
-	path = modules/libxml2
-	url = https://github.com/GNOME/libxml2.git
-[submodule "modules/libarchive"]
-	path = modules/libarchive
-	url = https://github.com/libarchive/libarchive.git

@@ -97,7 +97,6 @@ namespace IQmol {
          private:
             void recompile();
             GLuint compile(Data::Mesh const&);
-            bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
             void drawVertexNormals();
             void drawFaceNormals();
             void drawVertexNormals(Data::Mesh const&);

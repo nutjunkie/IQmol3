@@ -64,6 +64,7 @@
 #include "Process/QChemJobInfo.h" 
 #include "Util/Preferences.h"
 #include "Parser/IQmolParser.h"
+#include "FileDialog.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"
@@ -77,7 +78,6 @@
 #include "openbabel/plugin.h"
 #include "openbabel/obfunctions.h"
 
-#include <QFileDialog>
 #include <QDropEvent>
 #include <QProcess>
 #include <QElapsedTimer>
@@ -348,7 +348,7 @@ bool Molecule::save(bool prompt)
                  << tr("SMILES") + " (*.smi)"
                  << tr("IQmol Archive") + " (*.iqmol)";
 
-      QString fileName(QFileDialog::getSaveFileName(0, tr("Save File"), 
+      QString fileName(FileDialog::getSaveFileName(0, tr("Save File"), 
          tmp.filePath(), extensions.join(";;"), &filter));
 
       if (fileName.isEmpty()) {

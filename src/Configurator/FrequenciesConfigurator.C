@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
-  Copyright (C) 2022 Andrew Gilbert
-           
+
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -61,6 +61,7 @@ Frequencies::Frequencies(Layer::Frequencies& frequencies) : m_frequencies(freque
 
    setVectorColor(Preferences::VibrationVectorColor());
 
+   connect(this, SIGNAL(update()), &m_frequencies, SIGNAL(update()));
    connect(this, SIGNAL(update()), &m_frequencies, SIGNAL(update()));
 
    m_pen.setColor(Qt::blue);
@@ -409,6 +410,14 @@ void Frequencies::on_loopButton_clicked(bool tf)
 {
    m_frequencies.setLoop(tf);
    on_frequencyTable_itemSelectionChanged();
+}
+
+
+void Frequencies::on_vectorCheckbox_clicked(bool tf)
+{
+   m_frequencies.displayModeVector(tf);
+   m_configurator.colorButton->setEnabled(tf); 
+   update();
 }
 
 

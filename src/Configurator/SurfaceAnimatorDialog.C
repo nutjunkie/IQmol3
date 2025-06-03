@@ -33,7 +33,6 @@
 #include "Geometry.h"
 #include "QMsgBox.h"
 #include <QColorDialog>
-#include <QFileDialog>
 #include <QProgressDialog>
 
 

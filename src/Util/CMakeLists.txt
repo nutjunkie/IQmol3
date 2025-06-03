@@ -14,6 +14,7 @@ set(HEADERS
 set( SOURCES
    ColorGradient.C
    ColorGradientDialog.C
+   FileDialog.C
    GLShape.C
    GLShapeLibrary.C
    LogMessageDialog.C

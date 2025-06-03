@@ -11,7 +11,6 @@
 #include <QFile>
 #include <QtDebug>
 #include <QFileInfo>
-#include <QFileDialog>
 #include <QRegularExpression>
 
 

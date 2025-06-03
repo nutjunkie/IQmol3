@@ -33,13 +33,13 @@
 #include "NetworkException.h"
 #include "QMsgBox.h"
 #include "QsLog.h"
+#include "FileDialog.h"
 #include "Layer/FileLayer.h"
 
 #include <QCloseEvent>
 #include <QInputDialog>
 #include <QShowEvent>
 #include <QHeaderView>
-#include <QFileDialog>
 #include <QProgressBar>
 #include <QDir>
 #include <QDate>
@@ -448,6 +448,9 @@ bool JobMonitor::getLocalWorkingDirectory(QString& dirName, bool allowSpace)
       // The following may need to be switched depending on which version of
       // the Qt libraries are being used.
       dialog.setOption(QFileDialog::ShowDirsOnly, true);
+#ifdef Q_OS_MAC
+      dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
       dialog.setFileMode(QFileDialog::Directory);
       // dialog.setFileMode(QFileDialog::DirectoryOnly);
 
@@ -521,9 +524,6 @@ bool JobMonitor::getQueueResources(Server* server, QChemJobInfo& qchemJobInfo)
          case ServerConfiguration::Web:
          case ServerConfiguration::AWS:
             // nothing to parse
-            break;
-         case ServerConfiguration::QCloud:
-            qDebug() << "WARN: QCloud ServerConfiguration not handled";
             break;
       }
    }

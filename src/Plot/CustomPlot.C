@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
-  Copyright (C) 2022 Andrew Gilbert
-           
+
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,17 +14,17 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
 ********************************************************************************/
 
 #include "CustomPlot.h"
+#include "FileDialog.h"
 #include "Preferences.h"
-#include <QDebug>
+
 #include <QContextMenuEvent>
-#include <QFileInfo>
 #include <QRegularExpression>
 
 
@@ -42,51 +42,46 @@ void CustomPlot::contextMenuEvent(QContextMenuEvent* event)
 void CustomPlot::saveAs()
 {
    QFileInfo info(Preferences::LastFileAccessed());
-   info.setFile(info.dir(), info.completeBaseName());
+
+   QString selectedFilter(tr("PNG") + " (*.png)");
+   QStringList filter;
+   filter << selectedFilter
+          << tr("JPG") + " (*.jpg)"
+          << tr("PDF") + " (*.pdf)";
 
    while (1) {
-      QString filter(tr("PNG") + " (*.png)");
-      QStringList extensions;
-      extensions << filter
-                 << tr("JPG") + " (*.jpg)"
-                 << tr("PDF") + " (*.pdf)";
+	  QString fileName = FileDialog::getSaveFileName(
+          this, 
+          tr("Save File"),
+          info.filePath(), 
+          filter.join(";;"), 
+          &selectedFilter);
 
-      QString fileName(QFileDialog::getSaveFileName(this, tr("Save File"), 
-         info.filePath(), extensions.join(";;"), &filter));
+      if (fileName.isEmpty()) return; // user cancels action
 
-      if (fileName.isEmpty()) {
-         // This will occur if the user cancels the action.
-         return;
-      }else {
-         QRegularExpression rx("\\*(\\..+)\\)");
-         QRegularExpressionMatch match(rx.match(filter));
-         if (match.hasMatch()) { 
-            filter = match.captured(1);
-            if (!fileName.endsWith(filter, Qt::CaseInsensitive)) {
-               fileName += filter;
-            }    
+      QRegularExpression rx("\\*(\\..+)\\)");
+      QRegularExpressionMatch match(rx.match(selectedFilter));
+      if (match.hasMatch()) { 
+         selectedFilter = match.captured(1);
+         if (!fileName.endsWith(selectedFilter, Qt::CaseInsensitive)) {
+            fileName += selectedFilter;
          }    
-
-         QSize dim(size());
-         int upscale(2);
-
-         if (filter == ".pdf") {
-            //qDebug() << "Saving with filter " << fileName << filter;
-            //bool noCosmeticPen = true;
-            //savePdf(fileName, noCosmeticPen, dim.width(), dim.height());
-            savePdf(fileName, dim.width(), dim.height());
-         }else if (filter == ".png") {
-            //qDebug() << "Saving with filter " << fileName << filter;
-            savePng(fileName, dim.width(), dim.height(), upscale);
-         }else if (filter == ".jpg") {
-            //qDebug() << "Saving with filter " << fileName << filter;
-            saveJpg(fileName, dim.width(), dim.height(), upscale);
-         }
-
-         Preferences::LastFileAccessed(fileName);
-         break;
       }    
-   } 
+
+      QSize dim(size());
+      int upscale(2);
+
+      if (selectedFilter == ".pdf") {
+         savePdf(fileName, dim.width(), dim.height());
+      }else if (selectedFilter == ".png") {
+         savePng(fileName, dim.width(), dim.height(), upscale);
+      }else if (selectedFilter == ".jpg") {
+         saveJpg(fileName, dim.width(), dim.height(), upscale);
+      }
+
+      Preferences::LastFileAccessed(fileName);
+      break;
+   }    
 }
 
 } // end namespace IQmol

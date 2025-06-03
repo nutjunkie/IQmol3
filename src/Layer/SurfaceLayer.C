@@ -298,9 +298,11 @@ void Surface::draw()
    glGetBooleanv(GL_BLEND, &blend);
 
    if (isTransparent()) {
+/*
       glEnable(GL_BLEND);
       glDepthMask(GL_TRUE);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+*/
       glEnable(GL_CULL_FACE);
    }
 

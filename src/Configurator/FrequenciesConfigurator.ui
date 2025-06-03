@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1106</width>
-    <height>387</height>
+    <width>1166</width>
+    <height>399</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -101,11 +101,11 @@ QToolTip {
        <attribute name="horizontalHeaderCascadingSectionResizes">
         <bool>true</bool>
        </attribute>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>100</number>
-       </attribute>
        <attribute name="horizontalHeaderMinimumSectionSize">
         <number>60</number>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>100</number>
        </attribute>
        <attribute name="horizontalHeaderStretchLastSection">
         <bool>true</bool>
@@ -225,9 +225,12 @@ QToolTip {
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QCheckBox" name="vectorCheckbox">
          <property name="text">
           <string>Vector Color</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

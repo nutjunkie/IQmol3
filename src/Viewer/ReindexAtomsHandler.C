@@ -75,7 +75,7 @@ void ReindexAtoms::keyReleaseEvent(QKeyEvent* e)
 {
    // We only accept the new order if the return key is pressed
    if ( e->key() == Qt::Key_Return ) {
-      GLObjectList objects(m_viewer->m_objects);
+      GLObjectList objects(m_viewer->m_opaqueObjects);
       GLObjectList::iterator iter;
       Layer::Atom* atom;
 

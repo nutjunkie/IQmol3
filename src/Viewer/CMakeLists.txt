@@ -7,6 +7,7 @@ set( HEADERS
    CameraDialog.h
    ShaderDialog.h
    Snapshot.h
+   SnapshotDialog.h
    SymmetryToleranceDialog.h
    Viewer.h
    ViewerModel.h
@@ -33,6 +34,7 @@ set( SOURCES
    ShaderDialog.C
    ShaderLibrary.C
    Snapshot.C
+   SnapshotDialog.C
    SymmetryToleranceDialog.C
    UndoCommands.C
    Viewer.C
@@ -44,7 +46,8 @@ set( UI_FILES
    CameraDialog.ui
    ShaderDialog.ui
    SymmetryToleranceDialog.ui
-   Snapshot.ui
+   SnapshotImageDialog.ui
+   SnapshotVideoDialog.ui
 )
 
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )

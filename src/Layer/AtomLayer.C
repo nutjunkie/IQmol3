@@ -155,6 +155,9 @@ void Atom::resetMass()
 
 void Atom::setAtomicNumber(unsigned int const Z) 
 {
+   // Little bit of a hack to allow allpha sorting to draw atoms after
+   // bonds in case of ordering problems
+   setAlpha(0.999);
    m_atomicNumber = Z;
    m_vdwRadius = OpenBabel::OBElements::GetVdwRad(Z);
    m_mass      = OpenBabel::OBElements::GetMass(Z);

@@ -32,12 +32,12 @@
 #include "PovRayGen.h"
 #include "ManipulatedFrameSetConstraint.h"
 #include "QGLViewer/manipulatedFrame.h"
+
 #include <QStandardItem>
 #include <QDropEvent>
 #include <QtDebug>
 #include <QUrl>
 #include <QOpenGLFramebufferObject>
-#include <QFileDialog>
 #include <QMimeData>
 #include <QRegularExpression>
 #include <cmath>
@@ -104,8 +104,6 @@ Viewer::Viewer(ViewerModel& model, QWidget* parent) :
    // The following two lines must be in this order
    setDefaultBuildElement(6);
    setActiveViewerMode(BuildAtom);  // this should get overwritten by the MainWindow class
-
-   m_recordTimer.setInterval(30);  // ~15 frames per second
 
    setSurfaceFormat();
 }
@@ -181,7 +179,6 @@ void Viewer::init()
 void Viewer::initShaders()
 {
    makeCurrent();
-   qDebug() << "Default Frame Buffer" << defaultFramebufferObject();
    QOpenGLFunctions* functions = QOpenGLContext::currentContext()->functions();
 
    m_shaderLibrary = new ShaderLibrary(functions);
@@ -246,71 +243,22 @@ void Viewer::resizeGL(int width, int height)
    m_shaderLibrary->resizeScreenBuffers(QSize(width, height), m);
 }
 
-void Viewer::generatePovRay()
-{
-   QFileInfo info(Preferences::LastFileAccessed());
-   info.setFile(info.dir(), info.completeBaseName() + ".pov");
-
-   while (1) {
-      QString filter(tr("POV") + " (*.pov)");
-      QStringList extensions;
-      extensions << filter;
-
-      QString fileName(QFileDialog::getSaveFileName(this, tr("Save File"), 
-         info.filePath(), extensions.join(";;"), &filter));
-
-      if (fileName.isEmpty()) {
-         // This will occur if the user cancels the action.
-         return;
-      }else {
-         QRegularExpression rx("\\*(\\..+)\\)");
-         QRegularExpressionMatch match(rx.match(filter));
-         if (match.hasMatch()) { 
-            filter = match.captured(1);
-            if (!fileName.endsWith(filter, Qt::CaseInsensitive)) {
-               fileName += filter;
-            }    
-         }    
-         Preferences::LastFileAccessed(fileName);
-         generatePovRay(fileName);
-         break;
-      }    
-   } 
-}
-
-
-void Viewer::generatePovRay(QString const& filename)
-{
-   // The ordering of these calls is important
-   PovRayGen povRayGen(filename, m_shaderLibrary->povrayVariables());
-   povRayGen.setCamera(camera());
-   povRayGen.setBackground(m_viewerModel.backgroundColor());
-   povRayGen.setClippingPlane(m_viewerModel.clippingPlane());
-
-   m_objects = m_viewerModel.getVisibleObjects();
-   for (int i = 0; i < int(m_objects.size()); ++i) {
-       m_objects.at(i)->povray(povRayGen);
-   }
-}
-
 
 void Viewer::draw()
 {
-  //qDebug() << "draw() called";
    if (m_blockUpdate || !m_shaderLibrary) return;
 
    if (m_cameraDialog) m_cameraDialog->sync();
-
-   m_objects = m_viewerModel.getVisibleObjects();
+   m_opaqueObjects = m_viewerModel.getOpaqueObjects();
    m_selectedObjects = m_viewerModel.getSelectedObjects();
+   m_transparentObjects = m_viewerModel.getTransparentObjects();
 
    if (!m_shaderLibrary->filtersActive() || animationIsStarted()) return fastDraw();
+
    qDebug() << "Filters are on in drawNew";
 
-   makeCurrent();
    Layer::GLObject::SetCameraPosition(camera()->position());
    Layer::GLObject::SetCameraDirection(camera()->viewDirection());
-//   Layer::GLObject::SetCameraPivot(camera()->pivotPoint());
 
    QString shader(m_shaderLibrary->currentShader());
 
@@ -320,7 +268,8 @@ void Viewer::draw()
 
    // Generate normal and filter maps
    m_shaderLibrary->bindNormalMap(camera()->zNear(), camera()->zFar());
-   drawObjects(m_objects);
+   drawObjects(m_opaqueObjects);
+   drawObjects(m_transparentObjects);
    m_shaderLibrary->releaseNormalMap();
    m_shaderLibrary->generateFilters();
 
@@ -332,11 +281,11 @@ void Viewer::draw()
 
    drawGlobals();
 
-   drawObjects(m_objects);
+   drawObjects(m_opaqueObjects);
+   drawObjects(m_transparentObjects);
    drawSelected(m_selectedObjects);
    drawObjects(m_currentBuildHandler->buildObjects());
    
-
    // Suspend the shader for text rendering
    m_shaderLibrary->suspend();
    m_shaderLibrary->releaseTextures();
@@ -344,7 +293,7 @@ void Viewer::draw()
 
    if (m_labelType != Layer::Atom::None) {
        glEnable(GL_DEPTH_TEST);
-       drawLabels(m_objects);
+       drawLabels(m_opaqueObjects);
    }
    if (m_currentHandler->selectionMode() != Handler::None) {
       drawSelectionRectangle(m_selectHandler.region());
@@ -368,31 +317,36 @@ void Viewer::draw()
 void Viewer::fastDraw()
 {
    if (m_blockUpdate) return;
+   m_shaderLibrary->resume();
 
-   makeCurrent();
    Layer::GLObject::SetCameraPosition(camera()->position());
 
    glEnable(GL_LIGHTING);
    glEnable(GL_DEPTH_TEST);
    glShadeModel(GL_SMOOTH);
    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  
-   glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-   glDepthMask (GL_TRUE);
+   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-   m_shaderLibrary->resume();
-   drawGlobals();
+   glDepthMask(GL_TRUE);
+   glDisable(GL_BLEND);
 
    m_viewerModel.clippingPlane().setEquation();
-   drawObjects(m_objects);
+
+   drawGlobals();
+   drawObjects(m_opaqueObjects);
    drawObjects(m_currentBuildHandler->buildObjects());
+
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_DEPTH_TEST);
+   drawObjects(m_transparentObjects);
    m_viewerModel.clippingPlane().draw();
 
    // suspend the shader for writing text and highlighting
    m_shaderLibrary->suspend();
    drawSelected(m_selectedObjects);
 
-   if (m_labelType != Layer::Atom::None) drawLabels(m_objects);
+   if (m_labelType != Layer::Atom::None) drawLabels(m_opaqueObjects);
    if (m_currentHandler->selectionMode() != Handler::None) {
       drawSelectionRectangle(m_selectHandler.region());
    }
@@ -405,7 +359,6 @@ void Viewer::fastDraw()
    color[2] = foregroundColor().blue()  / 255.0;
    color[3] = 1.0;
    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
-
 
    glDisable(GL_LIGHTING);
    //glDisable(GL_DEPTH_TEST);
@@ -545,8 +498,7 @@ void Viewer::drawGlobals()
 
 void Viewer::drawObjects(GLObjectList const& objects)
 {
-   GLObjectList::const_iterator object;
-   for (object = objects.begin(); object != objects.end(); ++object) {
+   for (auto object = objects.begin(); object != objects.end(); ++object) {
        (*object)->draw();
    }
 }
@@ -887,45 +839,6 @@ void Viewer::clearAnimators()
 }
 
 
-void Viewer::setRecord(bool activate)
-{
-   if (activate) {
-      if (m_snapper) {
-         QLOG_WARN() << "Animation recording started with existing Snapshot object";
-      }else {
-         m_snapper = new Snapshot(this, Snapshot::Movie);
-         // For continuous snapping:
-         //connect(&m_recordTimer, SIGNAL(timeout()), m_snapper, SLOT(capture()));
-         connect(this, SIGNAL(animationStep()), m_snapper, SLOT(capture()));
-         connect(m_snapper, SIGNAL(movieFinished()), this, SLOT(movieMakingFinished()));
-         if (!m_snapper->requestFileName()) {
-            delete m_snapper;
-            m_snapper = 0;
-            recordingCanceled();
-         }else {
-            m_recordTimer.start();
-         }
-      } 
-   }else {
-       m_recordTimer.stop();
-       disconnect(&m_recordTimer, SIGNAL(timeout()), m_snapper, SLOT(capture()));
-      //if (m_snapper) m_snapper->makeFfmpegMovie();
-      if (m_snapper) m_snapper->makeMovie();
-   }
-}
-
-
-void Viewer::movieMakingFinished()
-{
-   if (m_snapper) {
-      delete m_snapper;
-      m_snapper = 0;
-   }else {
-      QLOG_WARN() << "movieMakingFinished called with null snapshot taker";
-   }
-}
-
-
 void Viewer::blockUpdate(bool tf)
 { 
    if (tf) {
@@ -941,21 +854,25 @@ void Viewer::blockUpdate(bool tf)
 // ---------------- Selection functions ---------------
 void Viewer::drawWithNames() 
 {
-   //glInitNames(); 
+   int count(0);
 
-   int i;
-   for (i = 0; i < int(m_objects.size()); ++i) {
-       glPushName(i);
-       m_objects.at(i)->draw();
+   for (auto object : m_opaqueObjects) {
+       glPushName(count++);
+       object->draw();
+       glPopName();
+   }
+
+   for (auto object : m_transparentObjects) {
+       glPushName(count++);
+       object->draw();
        glPopName();
    }
 
    GLObjectList buildObjects(m_currentBuildHandler->buildObjects());
-   for (int j = 0; j < int(buildObjects.size()); ++j) {
-       glPushName(i);
-       buildObjects.at(j)->draw();
+   for (auto object : buildObjects) {
+       glPushName(count++);
+       object->draw();
        glPopName();
-       ++i;
    }
 }
 
@@ -996,15 +913,6 @@ void Viewer::endSelection(const QPoint&)
       }
 
       GLuint name = (selectBuffer())[4*iMin+3];
-
-/*
-      if (name < m_objects.size()) {
-         QLOG_TRACE() << "  Selection made:" << iMin << name << m_objects[name]->index();
-      }else {
-         QLOG_TRACE() << "  Selection made:" << iMin << name << "Out of range!";
-      }
-*/
-
 
       enableUpdate(false);
       setSelectedName(4*iMin+3);
@@ -1050,7 +958,6 @@ void Viewer::endSelection(const QPoint&)
       update();
    }
    m_selectedObjects = m_viewerModel.getSelectedObjects();
-   //QLOG_TRACE() << "              number of objects:" << m_objects.size();
    //QLOG_TRACE() << "     number of selected objects:" << m_selectedObjects;
 }
 
@@ -1098,25 +1005,26 @@ void Viewer::addToSelection(Layer::GLObject* object)
 
 void Viewer::addToSelection(int id) 
 {
-   if (id < m_objects.size()) select(m_objects[id]->index(), QItemSelectionModel::Select);
+   int total = m_opaqueObjects.size();// + m_transparentObjects.size();
+   if (id < total) select(m_opaqueObjects[id]->index(), QItemSelectionModel::Select);
 }
 
 
 void Viewer::removeFromSelection(int id) 
 {
-   if (id < m_objects.size()) {
-      select(m_objects[id]->index(), QItemSelectionModel::Deselect);
-   }
+   int total = m_opaqueObjects.size();// + m_transparentObjects.size();
+   if (id < total) select(m_opaqueObjects[id]->index(), QItemSelectionModel::Deselect);
 }
 
 
 void Viewer::toggleSelection(int id) 
 {
-   if (id < m_objects.size()) {
-      if (m_objects[id]->isSelected()) {
-         select(m_objects[id]->index(), QItemSelectionModel::Deselect);
+   int total = m_opaqueObjects.size();// + m_transparentObjects.size();
+   if (id < total) {
+      if (m_opaqueObjects[id]->isSelected()) {
+         select(m_opaqueObjects[id]->index(), QItemSelectionModel::Deselect);
       }else {
-         select(m_objects[id]->index(), QItemSelectionModel::Select);
+         select(m_opaqueObjects[id]->index(), QItemSelectionModel::Select);
       }
    }
 }
@@ -1382,12 +1290,109 @@ GLObjectList Viewer::startManipulation(QMouseEvent* event)
 }
 
 
-void Viewer::saveSnapshot()
-{ 
-   QGLViewer::saveSnapshot(false); 
-   //Snapshot snap(this);
-   //snap.capture();
+
+// --------------- Picture/Movie capture ---------------
+
+void Viewer::setRecord(bool activate)
+{
+   if (activate && m_snapper) {
+      QLOG_WARN() << "Animation recording started with existing Snapshot object";
+      return;
+   }
+
+   if (activate) {
+      m_snapper = new Snapshot(this, Snapshot::Movie);
+
+      if (!m_snapper->requestFileName()) {
+         delete m_snapper;
+         m_snapper = 0;
+         recordingCanceled();
+      }else {
+         m_snapper->startRecord();
+         connect(m_snapper, SIGNAL(movieFinished()), this, SLOT(movieMakingFinished()));
+      }
+
+   }else if (m_snapper) {
+      m_snapper->stopRecord();
+      m_snapper->makeMovie();
+      // delete occurs after movie has been made
+   }
 }
 
+
+void Viewer::movieMakingFinished()
+{
+   if (!m_snapper) { QLOG_WARN() << "movieMakingFinished called with null snapshot taker"; }
+
+   delete m_snapper;
+   m_snapper = 0;
+}
+
+
+void Viewer::takeSnapshot()
+{ 
+   Snapshot snap(this);
+   if (snap.requestFileName()) snap.capture();
+}
+
+
+void Viewer::generatePovRay()
+{
+   Snapshot snap(this, Snapshot::Vector);
+   if (snap.requestFileName()) snap.capture();
+}
+
+
+void Viewer::saveImage(QString const&filename, QSize const& size, int const dpi, int const antialias)
+{
+   makeCurrent();
+
+   // Multisampled buffer
+   QOpenGLFramebufferObjectFormat msFormat;
+   msFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+   msFormat.setSamples(antialias);
+   msFormat.setInternalTextureFormat(GL_RGBA8);
+   QOpenGLFramebufferObject msFbo(size, msFormat);
+
+   msFbo.bind();
+   glViewport(0, 0, size.width(), size.height());
+   glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+   draw();
+   msFbo.release();
+
+   // Resolve buffer
+   QOpenGLFramebufferObjectFormat rsFormat;
+   msFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+   msFormat.setInternalTextureFormat(GL_RGBA8);
+   QOpenGLFramebufferObject rsFbo(size, rsFormat);
+
+   QOpenGLFramebufferObject::blitFramebuffer(
+       &rsFbo, QRect(0, 0, size.width(), size.height()),
+       &msFbo, QRect(0, 0, size.width(), size.height()),
+       GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+   QImage image = rsFbo.toImage();
+   double dotsPerMeter = dpi*100.0/2.54;
+   image.setDotsPerMeterX(dotsPerMeter);
+   image.setDotsPerMeterY(dotsPerMeter);
+   //qDebug() << "Saving snapshot to filename" << filename;
+   image.save(filename);
+}
+
+
+void Viewer::savePovRay(QString const& filename)
+{
+   // The ordering of these calls is important
+   PovRayGen povRayGen(filename, m_shaderLibrary->povrayVariables());
+   povRayGen.setCamera(camera());
+   povRayGen.setBackground(m_viewerModel.backgroundColor());
+   povRayGen.setClippingPlane(m_viewerModel.clippingPlane());
+
+   GLObjectList objects = m_viewerModel.getOpaqueObjects();
+   objects+=m_viewerModel.getTransparentObjects();
+   for (int i = 0; i < int(objects.size()); ++i) {
+       objects.at(i)->povray(povRayGen);
+   }
+}
 
 } // end namespace IQmol

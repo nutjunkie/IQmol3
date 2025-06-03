@@ -32,6 +32,7 @@
 #include "QtNode.h"
 #include "Qui.h"
 #include "QMsgBox.h"
+#include "FileDialog.h"
 
 #include "RemSection.h"
 #include "ExternalChargesSection.h"
@@ -42,7 +43,6 @@
 //#include <QClipboard>
 
 #include <QMenuBar>
-#include <QFileDialog>
 #include <QFontDialog>
 #include <QKeySequence>
 #include <QResizeEvent>
@@ -461,7 +461,7 @@ bool InputDialog::saveFile(bool prompt)
    bool saved(false);
 
    if (prompt) {
-      tmp.setFile(QFileDialog::getSaveFileName(this, tr("Save Input File"), tmp.filePath()));
+      tmp.setFile(FileDialog::getSaveFileName(this, tr("Save Input File"), tmp.filePath()));
    }
 
    if (tmp.fileName().isEmpty()) return false;
@@ -785,7 +785,7 @@ void InputDialog::on_disableControlsButton_clicked(bool tf)
 
 void InputDialog::on_readChargesButton_clicked(bool) 
 {
-   QString filePath(QFileDialog::getOpenFileName(this, tr("Open File"), 
+   QString filePath(FileDialog::getOpenFileName(this, tr("Open File"), 
      Preferences::LastFileAccessed()));
    while (filePath.endsWith("/")) {
       filePath.chop(1);

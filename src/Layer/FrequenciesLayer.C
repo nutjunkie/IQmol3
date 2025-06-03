@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
-  Copyright (C) 2022 Andrew Gilbert
-      
+
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -35,7 +35,7 @@ namespace Layer {
 
 Frequencies::Frequencies(Data::Frequencies const& frequencies) : Base("Frequencies"), 
    m_frequencies(frequencies), m_configurator(*this), m_play(false), m_loop(-1.0), 
-   m_speed(0.0625), m_scale(0.25), m_activeMode(0)
+   m_speed(0.0625), m_scale(0.25), m_displayModeVector(true), m_activeMode(0)
 {
    Data::VibrationalModeList::const_iterator iter;
    Data::VibrationalModeList const& modes(m_frequencies.modes());
@@ -130,6 +130,15 @@ void Frequencies::setPlay()
 }
 
 
+void Frequencies::displayModeVector(bool on) 
+{ 
+   m_displayModeVector = on; 
+   Atom::setDisplayVibrationVector(m_displayModeVector);
+   update();
+}
+
+
+
 void Frequencies::setPlay(bool const play) 
 {
    m_play = play;
@@ -139,7 +148,7 @@ void Frequencies::setPlay(bool const play)
       pushAnimators(m_animatorList);
    }else {
       popAnimators(m_animatorList);
-      Atom::setDisplayVibrationVector(true);
+      Atom::setDisplayVibrationVector(m_displayModeVector);
       AnimatorList::iterator iter;
       for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
           (*iter)->reset();
