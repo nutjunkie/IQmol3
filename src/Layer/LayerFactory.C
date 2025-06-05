@@ -20,43 +20,51 @@
 
 ********************************************************************************/
 
-#include "Data/File.h"
-#include "Data/Data.h"
 #include "Data/Bank.h"
+#include "Data/CubeData.h"
+#include "Data/Data.h"
+#include "Data/EfpFragment.h"
+#include "Data/ExcitedStates.h"
+#include "Data/File.h"
+#include "Data/Frequencies.h"
+#include "Data/GeminalOrbitals.h"
+#include "Data/MacroMolecule.h"
 #include "Data/Mesh.h"
 #include "Data/NmrData.h"
 #include "Data/PointCharge.h"
-#include "Data/EfpFragment.h"
-#include "Data/ExcitedStates.h"
-#include "Data/Surface.h"
-#include "Data/CubeData.h"
-#include "Data/Frequencies.h"
+#include "Data/ProteinChain.h"
 #include "Data/OrbitalsList.h"
-#include "Data/GeminalOrbitals.h"
+#include "Data/Surface.h"
+#include "Data/Solvent.h"
 #include "Data/Vibronic.h"
+#include "Data/ResidueName.h"
 
 #include "LayerFactory.h"
 #include "AtomLayer.h"
 #include "BondLayer.h"
 #include "CanonicalOrbitalsLayer.h"
-#include "DysonOrbitalsLayer.h"
-#include "NaturalBondOrbitalsLayer.h"
-#include "NaturalTransitionOrbitalsLayer.h"
 #include "ChargeLayer.h"
 #include "CubeDataLayer.h"
-#include "FileLayer.h"
 #include "DipoleLayer.h"
-#include "GeometryLayer.h"
-#include "GeometryListLayer.h"
+#include "DysonOrbitalsLayer.h"
+#include "FileLayer.h"
 #include "EfpFragmentListLayer.h"
 #include "EfpFragmentLayer.h"
-#include "FrequenciesLayer.h"
 #include "ExcitedStatesLayer.h"
-#include "MoleculeLayer.h"
-#include "OrbitalsLayer.h"
+#include "FrequenciesLayer.h"
+#include "GeometryLayer.h"
+#include "GeometryListLayer.h"
 #include "GeminalOrbitalsLayer.h"
+#include "MacroMoleculeLayer.h"
+#include "MoleculeLayer.h"
+#include "NaturalBondOrbitalsLayer.h"
+#include "NaturalTransitionOrbitalsLayer.h"
+#include "OrbitalsLayer.h"
+#include "ProteinChainLayer.h"
+#include "SolventLayer.h"
 #include "NmrLayer.h"
 #include "RemLayer.h"
+#include "TagLayer.h"
 #include "VibronicLayer.h"
 
 #include "Util/QsLog.h"
@@ -97,7 +105,7 @@ Layer::List Factory::toLayers(Data::Base& data)
 {
    Layer::List layers;
 
-   //qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
+   qDebug() << "Layer::Factory converting" << Data::Type::toString(data.typeID());
 
    try {
 
@@ -179,9 +187,11 @@ Layer::List Factory::toLayers(Data::Base& data)
          } break;
 
          case Data::Type::Mesh: {
+            // Note we create  surface on the heap as otherwise it will
+            // go out of scope which can lead to seg faults
             Data::Mesh&  meshData(dynamic_cast<Data::Mesh&>(data));
-            Data::Surface surface(meshData);
-            Layer::Surface* surfaceLayer(new Surface(surface));
+            Data::Surface* surface(new Data::Surface(meshData));
+            Layer::Surface* surfaceLayer(new Surface(*surface));
             surfaceLayer->setCheckState(Qt::Checked);
             layers.append(surfaceLayer);
          } break;
@@ -212,7 +222,23 @@ Layer::List Factory::toLayers(Data::Base& data)
             layers.append(new Vibronic(vibronic));
          } break;
 
+         case Data::Type::ProteinChain: {
+            Data::ProteinChain& 
+               proteinChain(dynamic_cast<Data::ProteinChain&>(data));
+            layers.append(new ProteinChain(proteinChain));
+         } break;
 
+         case Data::Type::MacroMolecule: {
+            Data::MacroMolecule& 
+               macroMolecule(dynamic_cast<Data::MacroMolecule&>(data));
+            layers.append(new MacroMolecule(macroMolecule));
+         } break;
+
+         case Data::Type::Solvent: {
+            Data::Solvent& 
+               solvent(dynamic_cast<Data::Solvent&>(data));
+            layers.append(new Solvent(solvent));
+         } break;
 
          default:
             QLOG_WARN() << "Unimplemented data type in Layer::Factory"
@@ -261,7 +287,7 @@ List Factory::convert(Data::Geometry& geometry)
        unsigned Z(geometry.atomicNumber(i));
        qglviewer::Vec position(geometry.position(i));
 
-       Atom* atom(new Atom(geometry.atomicNumber(i)));
+       Atom* atom(new Atom(geometry.atomicNumber(i), geometry.atomicLabel(i)));
        atom->setPosition(geometry.position(i));
        atoms->appendLayer(atom);
 
@@ -283,6 +309,11 @@ List Factory::convert(Data::Geometry& geometry)
        Bond* bond(new Bond(begin, end));
        bond->setOrder(obBond->GetBondOrder());
        bonds->appendLayer(bond);
+   }
+
+   if (geometry.hasProperty<Data::ResidueName>()) {
+      Tag* tag(new Tag(geometry.getProperty<Data::ResidueName>().name()));
+      list.append(tag);
    }
 
    return list;

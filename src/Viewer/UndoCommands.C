@@ -22,6 +22,8 @@
 
 #include "UndoCommands.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ComponentLayer.h"
+#include "Layer/SystemLayer.h"
 #include "Layer/AtomLayer.h"
 #include "Layer/BondLayer.h"
 #include "Layer/GroupLayer.h"
@@ -37,8 +39,10 @@ namespace Command {
 
 
 // --------------- AddHydrogens ---------------
-AddHydrogens::AddHydrogens(Layer::Molecule* molecule, Layer::PrimitiveList const& primitives)
-  : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
+AddHydrogens::AddHydrogens(
+   Layer::Molecule* molecule, 
+   Layer::PrimitiveList const& primitives)
+ : QUndoCommand("Add hydrogens"), m_molecule(molecule), m_primitives(primitives)
 {
    Layer::Atom *begin, *end, *atom;
    Layer::Bond *bond;
@@ -109,6 +113,7 @@ void AddHydrogens::undo()
 }
 
 
+
 // --------------- EditPrimitives ---------------
 EditPrimitives::~EditPrimitives()
 {
@@ -141,38 +146,38 @@ void EditPrimitives::undo()
 
 
 // --------------- MoveObjects ---------------
-MoveObjects::MoveObjects(Layer::Molecule* molecule, QString const& text, bool const animate,
-   bool const invalidateSymmetry) : QUndoCommand(text), m_molecule(molecule), 
+MoveObjects::MoveObjects(Layer::Component* component, QString const& text, bool const animate,
+   bool const invalidateSymmetry) : QUndoCommand(text), m_component(component), 
    m_finalStateSaved(false), m_animate(animate), m_invalidateSymmetry(invalidateSymmetry)
 { 
-   m_objectList = m_molecule->findLayers<Layer::GLObject>(Layer::Children);
+   m_objectList = m_component->findLayers<Layer::GLObject>(Layer::Children);
    saveFrames(m_initialFrames);
 }
 
 
 MoveObjects::MoveObjects(GLObjectList const& objectList, QString const& text, 
-   bool const animate, bool const invalidateSymmetry) : QUndoCommand(text), m_molecule(0),
+   bool const animate, bool const invalidateSymmetry) : QUndoCommand(text), m_component(0),
    m_objectList(objectList), m_finalStateSaved(false), m_animate(animate), 
    m_invalidateSymmetry(invalidateSymmetry)
 { 
-   // Need a Molecule handle for the Viewer update (yugh)
-   MoleculeList parents;
+   // Need a Component handle for the Viewer update (yugh)
+   ComponentList parents;
    int i(0);
 
-   while (!m_molecule && i < m_objectList.size()) {
-      parents = m_objectList[i]->findLayers<Layer::Molecule>(Layer::Parents);
-      if (!parents.isEmpty()) m_molecule = parents.first();
+   while (!m_component && i < m_objectList.size()) {
+      parents = m_objectList[i]->findLayers<Layer::Component>(Layer::Parents);
+      if (!parents.isEmpty()) m_component = parents.first();
       ++i;
    }
 
-   if (!m_molecule) { QLOG_ERROR() << "MoveObjects constructor called with no molecule"; }
+   if (!m_component) { QLOG_ERROR() << "MoveObjects constructor called with no Component"; }
    saveFrames(m_initialFrames);
 }
 
 
 MoveObjects::~MoveObjects()
 {
-   if (m_molecule) m_molecule->popAnimators(m_animatorList); 
+   if (m_component) m_component->popAnimators(m_animatorList); 
    AnimatorList::iterator iter;
    for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
        delete (*iter);
@@ -194,22 +199,25 @@ void MoveObjects::redo()
       }
    }
 
-   if (m_animate && m_molecule) {
+   if (m_animate && m_component) {
       AnimatorList::iterator iter;
       for (iter = m_animatorList.begin(); iter != m_animatorList.end(); ++iter) {
           (*iter)->reset();
       }
-      m_molecule->pushAnimators(m_animatorList); 
-      m_molecule->setReferenceFrame(m_finalFrames.last());
+      m_component->pushAnimators(m_animatorList); 
+      m_component->setReferenceFrame(m_finalFrames.last());
    }else {
       loadFrames(m_finalFrames);
    }
 
-   if (m_molecule) {
-      if (m_invalidateSymmetry) m_molecule->invalidateSymmetry();
-      m_molecule->autoDetectSymmetry();
-      m_molecule->postMessage(m_msg);
-      m_molecule->updated();
+   if (m_component) {
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
+      m_component->postMessage(m_msg);
+      m_component->updated();
    }
 }
 
@@ -217,11 +225,14 @@ void MoveObjects::redo()
 void MoveObjects::undo() 
 {
    loadFrames(m_initialFrames);
-   if (m_molecule) {
-      m_molecule->postMessage("");
-      if (m_invalidateSymmetry) m_molecule->invalidateSymmetry();
-      m_molecule->autoDetectSymmetry();
-      m_molecule->updated();
+   if (m_component) {
+      m_component->postMessage("");
+      if (m_invalidateSymmetry) {
+         auto molecule = dynamic_cast<Layer::Molecule*>(m_component);
+         if (molecule) molecule->invalidateSymmetry();
+         molecule->autoDetectSymmetry();
+      }
+      m_component->updated();
    }
 }
 
@@ -232,7 +243,7 @@ void MoveObjects::saveFrames(QList<Frame>& frames)
    for (int i = 0; i < m_objectList.size(); ++i) {
        frames.append(m_objectList[i]->getFrame());
    }
-   if (m_molecule) frames.append(m_molecule->getReferenceFrame());
+   if (m_component) frames.append(m_component->getReferenceFrame());
 }
 
 
@@ -241,8 +252,9 @@ void MoveObjects::loadFrames(QList<Frame> const& frames)
    for (int i = 0; i < m_objectList.size(); ++i) {
        m_objectList[i]->setFrame(frames[i]);
    }
-   if (m_molecule) m_molecule->setReferenceFrame(frames.last());
+   if (m_component) m_component->setReferenceFrame(frames.last());
 }
+
 
 
 // --------------- AddConstraint ---------------
@@ -359,88 +371,101 @@ void ChangeBondOrder::undo()
 }
 
 
-
-// --------------- AddMolecule ---------------
-AddMolecule::AddMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
-   : m_molecule(molecule), m_parent(parent), m_deleteMolecule(false)
+// --------------- AddComponent ---------------
+AddComponent::AddComponent(Layer::Component* component, QStandardItem* parent) 
+   : m_component(component), m_parent(parent), m_deleteComponent(false)
 { 
-   QString s;
-   if (m_molecule->fileName().isEmpty()) {
-      s = "New molecule";
+   if (!m_parent) {
+      QLOG_WARN() << "No parent found for layer in AddComponent:" << component->text();
+   }
+
+   if (m_component->fileName().isEmpty()) {
+      Layer::Molecule* molecule;
+      if ( (molecule = qobject_cast<Layer::Molecule*>(component)) ) {
+         setText("New molecule");
+      }else {
+         setText("New system");
+      }
    }else {
-      s = "Load file " + m_molecule->fileName();
+      setText("Load file " + m_component->fileName());
    }
-   setText(s);
 }
 
 
-AddMolecule::~AddMolecule()
+AddComponent::~AddComponent()
 {
-   if (m_deleteMolecule) {
-      QLOG_DEBUG() << "Deleting molecule" << m_molecule->text() << m_molecule;
+   if (m_deleteComponent) {
+      QLOG_DEBUG() << "Deleting component" << m_component->text() << m_component;
       // The following causes a crash
-      //delete m_molecule;  
+      // delete m_component;  
    }
 }
 
 
-void AddMolecule::redo()
+void AddComponent::redo()
 {
-   m_deleteMolecule = false;
-   QLOG_INFO() << "Adding molecule" << m_molecule->text() << m_molecule;
-   m_parent->appendRow(m_molecule);
-   m_molecule->updated();
+   m_deleteComponent = false;
+   QLOG_INFO() << "Adding " << m_component->text() << m_component 
+               << "with parent" << m_parent;
+   m_parent->appendRow(m_component);
+   m_component->updated();
 }
 
 
-void AddMolecule::undo()
+void AddComponent::undo()
 {
-   m_deleteMolecule = true;
-   QLOG_INFO() << "Removing molecule" << m_molecule->text() << m_molecule;
-   m_parent->takeRow(m_molecule->row());
-   m_molecule->updated();
+   m_deleteComponent = true;
+   QLOG_INFO() << "Removing " << m_component->text() << m_component;
+   m_parent->takeRow(m_component->row());
+   m_component->updated();
 }
 
 
-// --------------- RemoveMolecule ---------------
-RemoveMolecule::RemoveMolecule(Layer::Molecule* molecule, QStandardItem* parent) 
-   : m_molecule(molecule), m_parent(parent), m_deleteMolecule(false)
+// --------------- RemoveComponent ---------------
+RemoveComponent::RemoveComponent(Layer::Component* component, QStandardItem* parent)
+   : m_component(component), m_parent(parent), m_deleteComponent(false)
 { 
-   QString s;
-   if (m_molecule->fileName().isEmpty()) {
-      s = "Remove molecule";
+   if (m_parent == 0) {
+      QLOG_WARN() << "No parent found for layer in RemoveComponent:" << component->text();
+   }
+
+   if (m_component->fileName().isEmpty()) {
+      Layer::Molecule* molecule;
+      if ( (molecule = qobject_cast<Layer::Molecule*>(component)) ) {
+         setText("Remove molecule");
+      }else {
+         setText("Remove system");
+      }
    }else {
-      s = "Remove " + m_molecule->fileName();
+      setText("Remove " + m_component->fileName());
    }
-   setText(s);
 }
 
 
-RemoveMolecule::~RemoveMolecule()
+RemoveComponent::~RemoveComponent()
 {
-   if (m_deleteMolecule) {
-      QLOG_DEBUG() << "Deleting Molecule" << m_molecule->text() << m_molecule;
+   if (m_deleteComponent) {
+      m_component->disconnect();
       // The following causes a crash
-      //delete m_molecule;  
+      //delete m_component;  
    }
 }
 
 
-void RemoveMolecule::redo()
+void RemoveComponent::redo()
 {
-   m_deleteMolecule = true;
-   QLOG_INFO() << "Removing molecule" << m_molecule->text() << m_molecule;
-   m_parent->takeRow(m_molecule->row());
-   m_molecule->updated();
+   m_deleteComponent = true;
+   m_parent->takeRow(m_component->row());
+   m_component->updated();
 }
 
 
-void RemoveMolecule::undo()
+void RemoveComponent::undo()
 {
-   m_deleteMolecule = false;
-   QLOG_INFO() << "Adding molecule" << m_molecule->text() << m_molecule;
-   m_parent->appendRow(m_molecule);
-   m_molecule->updated();
+   m_deleteComponent = false;
+   QLOG_INFO() << "Adding component" << m_component->text() << m_component;
+   m_parent->appendRow(m_component);
+   m_component->updated();
 }
 
 

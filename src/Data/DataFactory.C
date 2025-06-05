@@ -23,6 +23,7 @@
 #include "DataFactory.h"
 
 #include "Atom.h"
+#include "QmAtom.h"
 #include "AtomicProperty.h"
 #include "Bank.h"
 #include "ChargeMultiplicity.h"
@@ -85,6 +86,8 @@ Base* Factory::create(Type::ID const id)
    switch (id) {
       case Type::Atom:                    data = new Atom();                    break;
       case Type::AtomList:                data = new AtomList();                break;
+      case Type::QmAtom:                  data = new QmAtom();                  break;
+      case Type::QmAtomList:              data = new QmAtomList();              break;
       case Type::Bank:                    data = new Bank();                    break;
       case Type::PointCharge:             data = new PointCharge();             break;
       case Type::PointChargeList:         data = new PointChargeList();         break;
@@ -171,4 +174,4 @@ Base* Factory::create(Type::ID const id)
 
 } } // end namespace IQmol::Data
 
-BOOST_CLASS_EXPORT(IQmol::Data::Base)
+//BOOST_CLASS_EXPORT(IQmol::Data::Base)

@@ -28,7 +28,7 @@ set( SOURCES
    MeshDecimator.C
    MolecularGridEvaluator.C
    OrbitalEvaluator.C
-   SpatialProperty.C
+   Property.C             # Need to move somewhere else
    Spline.C
    SurfaceGenerator.C
 )
@@ -41,7 +41,7 @@ set( UI_FILES
 qt5_wrap_ui( UI_HEADERS ${UI_FILES} )
 qt5_wrap_cpp(SOURCES ${HEADERS} )
 
-add_library(${LIB} STATIC  ${SOURCES} ${UI_HEADERS})
+add_library(${LIB} STATIC ${SOURCES} ${UI_HEADERS})
 
 target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 

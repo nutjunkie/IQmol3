@@ -137,6 +137,7 @@ QString KeyValueSection::formatContents() const
 
 void KeyValueSection::read(QString const& data) 
 {
+   qDebug() << "Reading data";
    QStringList lines( data.trimmed().split("\n", IQmolSkipEmptyParts) );
    QStringList tokens;
    QString     line;

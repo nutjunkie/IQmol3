@@ -1,9 +1,8 @@
-#ifndef IQMOL_TEXTSTREAM_H
-#define IQMOL_TEXTSTREAM_H
+#pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
- 
+  Copyright (C) 2022-2025 Andrew Gilbert
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
 
@@ -23,11 +22,12 @@
 ********************************************************************************/
 
 #include "Util/QtVersionHacks.h"
+//#include "Util/QsLog.h"
 #include <QStringList>
 #include <QTextStream>
 #include <QIODevice>
 #include <QRegularExpression>
-#include <stdexcept>
+
 
 
 namespace IQmol {
@@ -38,7 +38,8 @@ namespace Parser {
    class TextStream : public QTextStream {
 
       public:
-         TextStream(QIODevice* device) : QTextStream(device), m_lineCount(0) {
+         TextStream(QIODevice* device) : QTextStream(device), m_lineCount(0) 
+         {
             if (!device->isOpen() || !device->isReadable()) {
                throw std::runtime_error("TextStream unable to read device");
             }
@@ -47,17 +48,41 @@ namespace Parser {
          TextStream(QString* string) : QTextStream(string, QIODevice::ReadOnly), 
             m_lineCount(0) { }
 
-         QString const& nextLine() {
+         QString const& nextLine() 
+         {
             ++m_lineCount;
             m_previousLine = readLine().trimmed();
             return m_previousLine;
          }
 
-         QString const& previousLine() {
+         QString const& nextLineNonTrimmed() 
+         {
+            ++m_lineCount;
+            m_previousLine = readLine();
             return m_previousLine;
          }
 
-         QString const& nextNonEmptyLine() {
+         QString const& previousLine() 
+         {
+            return m_previousLine;
+         }
+
+        void skipBack(int n = 1)
+         {
+            //QLOG_DEBUG() << " Linecount is " << m_lineCount;
+            int oldlinecount = m_lineCount - n;
+
+            QTextStream::seek(0);
+            //QLOG_DEBUG() << readLine();
+            m_lineCount = 0;
+            //QLOG_DEBUG() << " Linecount is " << m_lineCount;
+            while((m_lineCount < oldlinecount )){
+               nextLine();
+            }
+         }
+
+         QString const& nextNonEmptyLine() 
+         {
             nextLine();
             while (!atEnd() && m_previousLine.isEmpty()) {
                nextLine();
@@ -65,11 +90,13 @@ namespace Parser {
             return m_previousLine;
          }
 
-         QStringList nextLineAsTokens() {
+         QStringList nextLineAsTokens() 
+         {
             return tokenize(nextLine());
          }
 
-         QStringList nextNonEmptyLineAsTokens() {
+         QStringList nextNonEmptyLineAsTokens() 
+         {
             return tokenize(nextNonEmptyLine());
          }
 
@@ -117,15 +144,19 @@ namespace Parser {
             return tokenize(seek(regExp));
          }
 
-         void skipLine(int n = 1) { 
+         void skipLine(int n = 1) 
+         {
              for (int i = 0; i < n; ++i) { nextLine(); }
          }
+
          int  lineNumber() const { return m_lineCount; }
+
 		 /// This is useful if the TextStream is part of another TextStream and
 		 /// line numbers need to be referenced to the parent TextStream.
          void setOffset(int const offset) { m_lineCount = offset; }
 
-         static QStringList tokenize(QString const& str) {
+         static QStringList tokenize(QString const& str) 
+         {
             return str.split(QRegularExpression("\\s+"), IQmolSkipEmptyParts);
          }
 
@@ -155,12 +186,14 @@ namespace Parser {
              return m_previousLine;
          }
 
-
       private:
+         void rewind() { 
+            m_lineCount = 0;
+            seek(0); 
+         }
+
          int m_lineCount;
          QString m_previousLine;
    };
 
 } } // end namespace IQmol::Parser
-
-#endif

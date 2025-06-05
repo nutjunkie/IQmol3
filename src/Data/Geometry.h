@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_GEOMETRY_H
-#define IQMOL_DATA_GEOMETRY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,7 +21,7 @@
 
 ********************************************************************************/
 
-#include "Atom.h"
+#include "QmAtom.h"
 #include <QtDebug>
 #include <vector>
 
@@ -41,8 +40,11 @@ namespace Data {
          Geometry();
          Geometry(Geometry const&);
 
-         Geometry(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
-         Geometry(std::vector<unsigned> const& atomicNumbers, std::vector<double> const& coordinates);
+         Geometry(QList<unsigned> const& atomicNumbers, 
+            QList<double> const& coordinates);
+
+         Geometry(std::vector<unsigned> const& atomicNumbers, 
+           std::vector<double> const& coordinates);
 
          void set(QList<unsigned> const& atomicNumbers, QList<double> const& coordinates);
 
@@ -51,6 +53,7 @@ namespace Data {
          bool isValid() const;
          unsigned nAtoms() const { return (unsigned)m_atoms.size(); }
          QString atomicSymbol(unsigned const i) const;
+         QString atomicLabel(unsigned const i) const;
          unsigned atomicNumber(unsigned const i) const;
          qglviewer::Vec position(unsigned const i) const;
 
@@ -70,8 +73,10 @@ namespace Data {
          bool sameAtoms(QList<unsigned> const& symbols) const;
          bool sameAtoms(QStringList const& symbols) const;
 
-         void append(unsigned const z, qglviewer::Vec const& position);
-         void append(QString const& symbol, qglviewer::Vec const& position);
+         void append(unsigned const z, qglviewer::Vec const& position, 
+            QString const& label = QString());
+         void append(QString const& symbol, qglviewer::Vec const& position, 
+            QString const& label = QString());
          void append(QList<unsigned> const& z, QList<qglviewer::Vec> const& positions);
 
          void setCharge(int const charge);
@@ -86,7 +91,7 @@ namespace Data {
          bool setAtomicProperty(QList<double> values) 
          {
             if (values.size() != m_atoms.size()) return false; 
-            AtomList::iterator iter;
+            QmAtomList::iterator iter;
             unsigned i(0);
             for (iter = m_atoms.begin(); iter != m_atoms.end(); ++iter, ++i) {
                 P& p((*iter)->getProperty<P>());
@@ -105,7 +110,7 @@ namespace Data {
          QStringList getLabels() 
          {
             QStringList labels;
-            QList<Atom*>::iterator iter;
+            QList<QmAtom*>::iterator iter;
             for (iter = m_atoms.begin(); iter != m_atoms.end(); ++iter) {
                 labels.append((*iter)->getLabel<P>());
             }
@@ -162,6 +167,9 @@ namespace Data {
          unsigned getNAlpha() const { return m_nAlpha; }
          unsigned getNBeta()  const { return m_nBeta; }
 
+         QString const& name() const { return m_name; }
+         void name(QString const& name) { m_name = name; }
+
       private:
          template <class Archive>
          void privateSerialize(Archive& ar, unsigned const /* version */) {
@@ -176,15 +184,14 @@ namespace Data {
 
          unsigned totalNuclearCharge() const;
 
-         AtomList m_atoms;
+         QmAtomList m_atoms;
          QList<qglviewer::Vec> m_coordinates;
          int m_charge;
          unsigned m_multiplicity;
          unsigned m_nAlpha;
          unsigned m_nBeta;
          Bank m_properties;
+         QString m_name;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

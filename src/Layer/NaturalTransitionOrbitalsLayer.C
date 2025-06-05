@@ -60,9 +60,9 @@ QString NaturalTransitionOrbitals::description(Data::SurfaceInfo const& info,
       Data::SurfaceType::Kind kind(type.kind());
       double occupancy(0.0);
       if (kind == Data::SurfaceType::AlphaOrbital) {
-         occupancy = m_naturalTransitionOrbitals.alphaOccupancy(index-1);
+         occupancy = m_naturalTransitionOrbitals.alphaOccupancy(index);
       }else {
-         occupancy = m_naturalTransitionOrbitals.betaOccupancy(index-1);
+         occupancy = m_naturalTransitionOrbitals.betaOccupancy(index);
       }
 
       label += "\nOccupancy = " + QString::number(occupancy, 'f', 3);

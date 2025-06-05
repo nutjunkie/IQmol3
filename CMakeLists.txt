@@ -35,11 +35,11 @@ if(ZLIB_FOUND)
 endif()
 
 
+find_package(ZSTD    REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-  
 # No CMakeLists.txt for libQGLViewer
 include_directories(modules/libQGLViewer)
 add_subdirectory(modules  EXCLUDE_FROM_ALL)
@@ -104,8 +104,11 @@ endif ()
 
 set(ICON_PATH resources/IQmol.icns)
 
+# The following are required for libzstd
 if (EXISTS /opt/local/lib/)
    link_directories(/opt/local/lib/)
+elseif (EXISTS /opt/homebrew/lib/)
+   link_directories(/opt/homebrew/lib/)
 endif()
 
 

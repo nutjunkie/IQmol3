@@ -21,6 +21,7 @@
 ********************************************************************************/
 
 #include "MeshDecimator.h"
+#include <QElapsedTimer>
 #include "QsLog.h"
 
 #include <OpenMesh/Tools/Decimater/DecimaterT.hh>
@@ -78,6 +79,9 @@ QString MeshDecimator::toString(Algorithm const algorithm)
 
 bool MeshDecimator::decimate(double const edgeThreshold) 
 {
+   QElapsedTimer timer;
+   timer.start();
+   
    QList<Data::OMMesh*>::iterator iter;
 
    for (iter = m_meshes.begin(); iter != m_meshes.end(); ++iter) {
@@ -97,6 +101,9 @@ bool MeshDecimator::decimate(double const edgeThreshold)
        pc += "% removed";
        QLOG_INFO() << "Mesh decimation: " << pc;
    }
+
+   double time(timer.elapsed()/1000.0);
+   QLOG_INFO() << "Mesh decimation: " << time << "seconds";
 
    return true;
 }

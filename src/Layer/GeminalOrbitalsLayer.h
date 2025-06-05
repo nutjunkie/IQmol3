@@ -28,7 +28,7 @@
 #include "Configurator/GeminalOrbitalsConfigurator.h"
 #include "Data/GridData.h"
 #include "Math/Matrix.h"
-#include "Grid/SpatialProperty.h"
+#include "Grid/Property.h"
 #include <QPair>
 
 
@@ -40,10 +40,12 @@ namespace Data {
 
 namespace Layer {
 
+   class Molecule;
 
    class GeminalOrbitals : public Base {
-   typedef QList<QPair<Data::SurfaceType, Data::GridSize> > GridQueue;
-   typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
+
+      typedef QList<QPair<Data::SurfaceType, Data::GridSize> > GridQueue;
+      typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
 
       Q_OBJECT
 
@@ -105,6 +107,7 @@ namespace Layer {
          Vector m_shellPairValues;
          Vector m_shellValues;
 
+         Molecule* m_molecule;
          SurfaceInfoQueue   m_surfaceInfoQueue;
          Data::GridDataList m_availableGrids;
          qglviewer::Vec     m_bbMin, m_bbMax;   // bounding box
@@ -114,7 +117,7 @@ namespace Layer {
    // This class provides a SpatialProperty interface that can be used to plot the 
    // value of a geminal orbital on an arbitrary surface, but most likely a geminal
    // density.
-   class GeminalOrbitalProperty : public SpatialProperty {
+   class GeminalOrbitalProperty : public Property::Spatial{
       public:
          GeminalOrbitalProperty(Data::GeminalOrbitals const&,  unsigned const index);
 

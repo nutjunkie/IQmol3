@@ -95,8 +95,16 @@ void Atom::setVibrationVectorColor(QColor const& color)
 }
 
 
-Atom::Atom(int Z) : Primitive("Atom"), m_charge(0.0), m_spin(0.0), m_nmr(0.0),
-   m_smallerHydrogens(true), m_hideHydrogens(false), m_haveNmrShift(false), m_reorderIndex(0), 
+Atom::Atom(int Z, QString const& label) 
+ : Primitive(label.isEmpty() ? "Atom" : label), 
+   m_charge(0.0), 
+   m_spin(0.0),
+   m_nmr(0.0),
+   m_label(label),
+   m_smallerHydrogens(true), 
+   m_hideHydrogens(false), 
+   m_haveNmrShift(false), 
+   m_reorderIndex(0), 
    m_hybridization(0)
 {
    setAtomicNumber(Z);
@@ -163,7 +171,6 @@ void Atom::setAtomicNumber(unsigned int const Z)
    m_mass      = OpenBabel::OBElements::GetMass(Z);
    m_symbol    = QString(OpenBabel::OBElements::GetSymbol(Z));
    m_valency   = OpenBabel::OBElements::GetMaxBonds(Z);
-   setText(m_symbol);
 
    double r, g, b;
    OpenBabel::OBElements::GetRGB(Z, &r, &g, &b);
@@ -176,8 +183,12 @@ void Atom::setAtomicNumber(unsigned int const Z)
 
 void Atom::setIndex(int const index)
 { 
-   setText(m_symbol + QString::number(index));
    m_index = index; 
+   if (m_label.isEmpty()) {
+      setText(m_symbol + QString::number(index));
+   }else {
+      setText(m_label);
+   }
 }
 
 
@@ -193,24 +204,35 @@ void Atom::povray(PovRayGen& povray)
 
 void Atom::draw()
 {
-   drawPrivate(false);
+   glColor4fv(m_color);
+   drawPrivate(getRadius(false));
    if (s_vibrationDisplayVector) drawDisplacement();
 }
 
 
 void Atom::drawFast()
 {
-   drawPrivate(false);
+   glColor4fv(m_color);
+   drawPrivate(getRadius(false));
 }
+
+void Atom::drawFlat()
+{
+   glDisable(GL_LIGHTING);
+   drawPrivate(getRadius(false));
+   glEnable(GL_LIGHTING);
+}
+
 
 
 void Atom::drawSelected()
 {
-   drawPrivate(true);
+   glColor4fv(Primitive::s_selectColor);
+   drawPrivate(getRadius(true));
 }
 
 
-void Atom::drawPrivate(bool selected) 
+void Atom::drawPrivate(double const radius)
 {
    if (hideHydrogens()) return;
    glPushMatrix();
@@ -220,53 +242,18 @@ void Atom::drawPrivate(bool selected)
                 s_vibrationAmplitude * m_displacement.y, 
                 s_vibrationAmplitude * m_displacement.z);
 
-   if (selected) {
-      glColor4fv(Primitive::s_selectColor);
-   }else {
-      glColor4fv(m_color);
-   }
-
    if (m_drawMode == Primitive::WireFrame) {
       glDisable(GL_LIGHTING);
-      glPointSize(getRadius(selected));
+      glPointSize(radius);
       glBegin(GL_POINTS);
          glVertex3f(0.0, 0.0, 0.0);
       glEnd();
       glEnable(GL_LIGHTING);
    }else {
       GLUquadric* quad = gluNewQuadric();
-      gluSphere(quad, getRadius(selected), Primitive::s_resolution, Primitive::s_resolution);
+      gluSphere(quad, radius, Primitive::s_resolution, Primitive::s_resolution);
       gluDeleteQuadric(quad); 
    }
-
-
-/*
-if (true) {
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glEnable(GL_LINE_SMOOTH);
-   glDisable(GL_LIGHTING);
-
-   glPointSize(2.0);
-   glColor3f(0.4, 0.4, 0.4);
-   GLfloat r(1.001*getRadius(false));
-   GLShape::Circle(r, r/Primitive::s_resolution);
-
-   glPushMatrix();
-   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-   GLShape::Circle(r, r/Primitive::s_resolution);
-   glPopMatrix();
-
-   glPushMatrix();
-   glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-   GLShape::Circle(r, r/Primitive::s_resolution);
-   glPopMatrix();
-
-   glDisable(GL_BLEND);
-   glDisable(GL_LINE_SMOOTH);
-   glEnable(GL_LIGHTING);
-}
-*/
 
    glPopMatrix();
 }
@@ -307,42 +294,46 @@ void Atom::drawLabel(Viewer& viewer, LabelType const type, QFontMetrics& fontMet
 {
 bool print(false);
    Vec pos(getPosition());
-if (print) qDebug() << "Atom coordinates: " << pos[0] << pos[1] << pos[2];
    Vec cam(viewer.camera()->position());
    Vec shift = viewer.camera()->position() - pos;
-if (print) qDebug() << "Camera coords:    " << cam[0] << cam[1] << cam[2];
-if (print) qDebug() << "    Shift vector: " << shift[0] << shift[1] << shift[2];
+
+if (print) {
+   qDebug() << "Atom coordinates: " << pos[0] << pos[1] << pos[2];
+   qDebug() << "Camera coords:    " << cam[0] << cam[1] << cam[2];
+   qDebug() << "    Shift vector: " << shift[0] << shift[1] << shift[2];
+}
    shift.normalize();
    QString label(getLabel(type));
 
    pos = pos + 1.05 * shift * getRadius(true);
-if (print) qDebug() << "Shifted coords:   " << pos[0] << pos[1] << pos[2] << " r =" << getRadius(true);;
+if (print) {
+   qDebug() << "Shifted coords:   " << pos[0] << pos[1] << pos[2] << " r=" << getRadius(true);
+}
 
    pos = viewer.camera()->projectedCoordinatesOf(pos);
    pos.x -= fontMetrics.horizontalAdvance(label)/2.0;
    pos.y += fontMetrics.height()/4.0;
    pos = viewer.camera()->unprojectedCoordinatesOf(pos);
 
-        glPushMatrix();
-   glColor3f(0.1, 0.1, 0.1);
-   viewer.renderText(pos.x, pos.y, pos.z, label, viewer.labelFont());
-        glPopMatrix();
+   glPushMatrix();
+      glColor3f(0.1, 0.1, 0.1);
+      viewer.renderText(pos.x, pos.y, pos.z, label, viewer.labelFont());
+   glPopMatrix();
 
-if (print) qDebug() << "Rendering text:   " << pos[0] << pos[1] << pos[2] << label;
-if (print) qDebug() << "";
-
-   if (print) {
-         glDisable(GL_LIGHTING);
-         glPointSize(3);
-         glBegin(GL_POINTS);
-            glVertex3f(pos.x, pos.y, pos.z);
-         glEnd();
-         glEnable(GL_LIGHTING);
-   }
+if (print) {
+    qDebug() << "Rendering text:   " << pos[0] << pos[1] << pos[2] << label;
+    qDebug() << "";
+    glDisable(GL_LIGHTING);
+    glPointSize(3);
+    glBegin(GL_POINTS);
+       glVertex3f(pos.x, pos.y, pos.z);
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
 }
 
 
-QString Atom::getLabel(LabelType const type) 
+QString Atom::getLabel(LabelType const type) const
 {
    QString label;
    switch (type) {
@@ -356,11 +347,13 @@ QString Atom::getLabel(LabelType const type)
          break;
       case Mass:      label = QString::number(m_mass, 'f', 3);
          break;
-      case NmrShift:  label = QString::number(m_nmr, 'f', 2);
-         break;
       case Spin:      label = QString::number(m_spin, 'f', 2);
          break;
       case Reindex:   label = isSelected() ? QString::number(m_reorderIndex) : "";
+         break;
+      case NmrShift:  label = QString::number(m_nmr, 'f', 2);
+         break;
+      case Label:     label = text();
          break;
    }
    return label;

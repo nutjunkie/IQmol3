@@ -35,8 +35,8 @@ BasisEvaluator::BasisEvaluator(Data::GridDataList& grids, Data::ShellList& shell
    QList<int> indices) : m_grids(grids), m_shellList(shellList), m_indices(indices)
 {
    m_returnValues.resize(m_indices.size());
-   m_function = boost::bind(&BasisEvaluator::evaluate, this, 
-      boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3);
+   m_function = std::bind(&BasisEvaluator::evaluate, this, 
+      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
    double thresh(0.001);
    m_evaluator = new MultiGridEvaluator(m_grids, m_function, thresh);

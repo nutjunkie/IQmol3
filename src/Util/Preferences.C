@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2011-2015 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -841,6 +841,76 @@ void JobMonitorList(QVariantList const& jobList)
    SetList("JobMonitorList", jobList);
 }
 
+// ---------
+
+QString GromacsServerAddress()
+{
+   QVariant value(Get("GromacsServerAddress"));
+   return value.isNull() ? QString("https://localhost:5000") : value.value<QString>();
+}
+
+void GromacsServerAddress(QString const& address)
+{
+   Set("GromacsServerAddress", address);
+}
+
+QString GromacsTopologyFile()
+{
+   QVariant value(Get("GromacsTopologyFile"));
+   return value.isNull() ? QString("topol.top") : value.value<QString>();
+}
+
+void GromacsTopologyFile(QString const& topology){
+   Set("GromacsTopologyFile", topology);
+
+}
+
+QString GromacsPositionsFile(){
+   QVariant value(Get("GromacsPositionFile"));
+   return value.isNull() ? QString("posre.itp") : value.value<QString>();
+}
+
+void GromacsPositionsFile(QString const& position){
+   Set("GromacsPositionFile", position);
+}
+
+
+// ---------
+
+bool AmberEnabled()
+{
+   QVariant value(Get("AmberEnabled"));
+   return value.isNull() ? true : value.value<bool>();
+}
+
+void AmberEnabled(bool const tf)
+{
+   Set("AmberEnabled", QVariant::fromValue(tf));
+}
+
+// ---------
+
+QString AmberDirectory()
+{
+   QString directory;
+   QVariant value(Get("AmberDirectory"));
+
+   if (value.isNull() || value.toString().isEmpty()) {
+      if (!qgetenv("AMBERHOME").isEmpty()) {
+         directory = qgetenv("AMBERHOME");
+      } else {
+         directory = QString("");
+      }
+   } else {
+      directory = value.value<QString>();
+   }
+   return directory;
+}
+
+void AmberDirectory(QString const& directory)
+{
+   Set("AmberDirectory", directory);
+}
 
 // ---------
 

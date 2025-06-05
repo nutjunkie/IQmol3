@@ -1,12 +1,11 @@
-#ifndef IQMOL_COLORGRADIENT_H
-#define IQMOL_COLORGRADIENT_H
+#pragma once
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,10 +15,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-   
+
 ********************************************************************************/
 
 #include "Preferences.h"
@@ -45,7 +44,7 @@ namespace ColorGradient {
    class Function {
 
       public:
-         Function(ColorList const& colors = Preferences::DefaultGradientColors(), 
+         Function(ColorList const& colors = Preferences::CustomGradientColors(), 
             double const min = 0.0, double const max = 1.0);
          Function(Function const& that) { copy(that); }
          Function& operator=(Function const& that);
@@ -66,10 +65,8 @@ namespace ColorGradient {
 } 
 
 ColorGradient::ColorList GetGradient(ColorGradient::ColorList const&, QWidget* parent = 0);
+
 ColorGradient::ColorList GetGradient(ColorGradient::StandardGradient g = ColorGradient::Default,
    QWidget* parent = 0);
 
-
 } // end namespace IQmol::Gradient
-
-#endif

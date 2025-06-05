@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_GROUP_H
-#define IQMOL_LAYER_GROUP_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -27,53 +26,72 @@
 #include <QList>
 
 
+namespace OpenBabel {
+   class OBMol;
+   class OBAtom;
+   class OBBond;
+}
+
 namespace IQmol {
-namespace Layer {
 
-   class Group : public Primitive {
+   namespace Layer {
 
-      Q_OBJECT
+      typedef QMap<OpenBabel::OBAtom*, Atom*>  AtomMap;
+      typedef QMap<OpenBabel::OBBond*, Bond*>  BondMap;
 
-      public:
-         explicit Group(QString const& label = QString());
-         Group(PrimitiveList const&, QString const& label = QString());
-         ~Group();
+      class Group : public Primitive {
 
-         void loadFromFile(QString const& filePath);
-         void align(QList<qglviewer::Vec> const& current);
-         PrimitiveList ungroup();
+         Q_OBJECT
 
-         void draw();
-         void drawFast();
-         void drawSelected();
+         public:
+            Group(PrimitiveList const& = PrimitiveList(), QString const& label = QString());
 
-         void select();
-         void deselect();
+            ~Group();
 
-         void setAtomScale(double const scale);
-         void setBondScale(double const scale);
-         void setDrawMode(DrawMode const drawMode);
+            void loadFromFile(QString const& filePath);
+            void align(QList<qglviewer::Vec> const& current);
+            PrimitiveList ungroup();
+
+            void draw();
+            void drawFast();
+            void drawSelected();
+
+            void select();
+            void deselect();
+
+            void setAtomScale(double const scale);
+            void setBondScale(double const scale);
+            void setDrawMode(DrawMode const drawMode);
     
-         AtomList getAtoms() const { return m_atoms; }
-         BondList getBonds() const { return m_bonds; }
-         // returns the first atom on the list, if any
-         Atom* rootAtom() const;
-         void dump() const;
+            AtomList getAtoms() const { return m_atoms; }
+            BondList getBonds() const { return m_bonds; }
 
-      protected:
-         void addAtoms(AtomList const&);
-         void addBonds(BondList const&);
-         void addPrimitives(PrimitiveList const&);
+            // returns the first atom on the list, if any
+            Atom* rootAtom() const;
+            void dump() const;
 
-      private:
-         AtomList m_atoms;
-         BondList m_bonds;
-   };
+         protected:
+            void addAtoms(AtomList const&);
+            void addBonds(BondList const&);
+            void addPrimitives(PrimitiveList const&);
 
-} // end namespace Layer
+         private Q_SLOTS:
+            void addHydrogens();
+            void reperceiveBonds();
+
+         private:
+            OpenBabel::OBMol* toOBMol(AtomMap*, BondMap*);
+            PrimitiveList fromOBMol(OpenBabel::OBMol*, AtomMap&, BondMap&);
+
+            Bond* createBond(Atom* begin, Atom* end, int order);
+            Atom* createAtom(unsigned int const Z, qglviewer::Vec const& position);
+
+            AtomList m_atoms;
+            BondList m_bonds;
+      };
+
+   } // end namespace Layer
 
 typedef QList<Layer::Group*> GroupList;
 
 } // end namespace IQmol::Layer 
-
-#endif

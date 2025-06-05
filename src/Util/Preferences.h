@@ -154,15 +154,15 @@ namespace Preferences {
    int  DaysToRememberJobs();
    void DaysToRememberJobs(int const& numberOfDays);
    
-   QMap<QString,QString> PasswordVaultContents();
-   void PasswordVaultContents(QMap<QString,QString> const&);
-   void ClearPasswordVaultContents();
+   //QMap<QString,QString> PasswordVaultContents();
+   //void PasswordVaultContents(QMap<QString,QString> const&);
+   //void ClearPasswordVaultContents();
 
-   unsigned int PasswordVaultSeed();
-   void PasswordVaultSeed(unsigned int const);
+   //unsigned int PasswordVaultSeed();
+   //void PasswordVaultSeed(unsigned int const);
 
-   QString PasswordVaultKey();
-   void PasswordVaultKey(QString const&);
+   //QString PasswordVaultKey();
+   //void PasswordVaultKey(QString const&);
    
    QString SSHKnownHostsFile();
    void SSHKnownHostsFile(QString const&);
@@ -175,6 +175,21 @@ namespace Preferences {
 
    QList<QVariant> JobMonitorList();
    void JobMonitorList(QList<QVariant> const&);
+
+   QString GromacsServerAddress();
+   void GromacsServerAddress(QString const&);
+
+   QString GromacsTopologyFile();
+   void GromacsTopologyFile(QString const&);
+
+   QString GromacsPositionsFile();
+   void GromacsPositionsFile(QString const&);
+
+   QString AmberDirectory();
+   void AmberDirectory(QString const&);
+
+   bool    AmberEnabled();
+   void    AmberEnabled(bool const);
 
    // Deprecate
    QList<QVariant> CurrentProcessList();

@@ -9,6 +9,7 @@ echo "IQmol configured by `whoami`@`hostname`:" > configure.log
 date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
+echo "CXX set to $CXX" >> configure.log
 echo "" >> configure.log
 
 ARCH=$(uname)

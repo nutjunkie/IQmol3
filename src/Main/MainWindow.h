@@ -1,5 +1,4 @@
-#ifndef IQMOL_MAINWINDOW_H
-#define IQMOL_MAINWINDOW_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,6 +29,16 @@
 #include "ViewerModel.h"
 #include "ViewerModelView.h"
 #include "LogMessageDialog.h"
+#include "Util/StatusWidget.h"
+
+#include "Amber/ConfigDialog.h"
+#include "Amber/SystemBuilderDialog.h"
+
+#ifdef GROMACS
+#include "GromacsDialog.h"
+#include "GromacsServerDialog.h"
+#include "GromacsConfigDialog.h"
+#endif
 
 #include <QItemSelectionModel>
 #include <QSortFilterProxyModel>
@@ -38,7 +47,7 @@
 #include <QUndoView>
 #include <QTreeView>
 #include <QSplitter>
-#include <QProgressBar>
+#include <QStatusBar>
 #include <QList>
 #include <QAction>
 
@@ -53,7 +62,12 @@ class QUndoCommand;
 class QCloseEvent;
 class QMenu;
 
+
 namespace IQmol {
+
+namespace Gmx {
+   class GromacsDialog;
+}
 
    class ModelView;
 
@@ -86,9 +100,14 @@ namespace IQmol {
          void showPreferences() { m_preferencesBrowser.show(); }
          void showLogMessages();
          void showQChemUI();
+         void showGromacsDialog();
+         void showGromacsServerDialog();
+         void showGromacsConfigDialog();
+         void showAmberConfigDialog();
+         void showAmberSystemBuilderDialog();
          void showJobMonitor();
          void testInternetConnection();
-         void submitJob(IQmol::Process::QChemJobInfo&);
+         void submitJob(IQmol::Process::JobInfo&);
          void insertMoleculeDialog();
 
          void newViewer();
@@ -111,6 +130,7 @@ namespace IQmol {
          void generatePovRay() { m_viewer->generatePovRay(); }
 
       private:
+         void setStatus();
          void createMenus();
          void createLayout();
          void createConnections();
@@ -124,9 +144,9 @@ namespace IQmol {
          ViewerModelView m_viewerView;
          QUndoStack      m_undoStack;
          QUndoView       m_undoStackView;
-         QProgressBar    m_progressBar;
-         QLabel          m_status;
-         Viewer*         m_viewer;
+         Util::StatusWidget m_statusWidget;
+
+         Viewer*               m_viewer;
 
          QItemSelectionModel   m_viewerSelectionModel;
          LogMessageDialog      m_logMessageDialog;
@@ -140,9 +160,7 @@ namespace IQmol {
 
          QSplitter* m_sideSplitter;
          Qui::InputDialog* m_quiInputDialog;
+         Gmx::GromacsDialog*  m_gromacsDialog;
    };
 
 } // end namespace IQmol
-
-
-#endif

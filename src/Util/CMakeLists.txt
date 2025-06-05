@@ -2,7 +2,8 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Xml OpenGL REQUIRED)
 set(LIB Util)
 
 set(HEADERS
-   ColorGradientDialog.h
+   Color.h
+   ColorDialog.h
    QMsgBox.h
    LogMessageDialog.h
    ProgressDialog.h
@@ -12,6 +13,8 @@ set(HEADERS
 )
 
 set( SOURCES
+   Color.C
+   ColorDialog.C
    ColorGradient.C
    ColorGradientDialog.C
    FileDialog.C
@@ -27,14 +30,16 @@ set( SOURCES
    RemoveDirectory.C
    ScanDirectory.C
    SetButtonColor.C
+   StatusWidget.C
    Task.C
    Timer.C
+   WaitingSpinner.C
    WriteToTemporaryFile.C
    Zip.C
 )
 
 set( UI_FILES
-   ColorGradientDialog.ui
+   ColorDialog.ui
    LogMessageDialog.ui
    ProgressDialog.ui
 )
@@ -50,5 +55,7 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Widgets
    Qt5::Xml
    Qt5::OpenGL
+   #QGLViewer
+   #OpenGL::GL
    archive
 )

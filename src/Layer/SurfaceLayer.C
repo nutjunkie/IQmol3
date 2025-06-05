@@ -29,6 +29,7 @@
 #include "QGLViewer/vec.h"
 #include "Grid/MeshDecimator.h"
 #include "Util/QMsgBox.h"
+#include "Util/Color.h"
 #include <QColorDialog>
 #include <cmath>
 #include <QFile>
@@ -75,6 +76,7 @@ Surface::Surface(Data::Surface& surface) : m_surface(surface), m_configurator(*t
    setData(m_surface.description(), Qt::ToolTipRole);
 
    setAlpha(m_surface.opacity()); 
+   recompile();
    updated();
 }
 
@@ -86,11 +88,10 @@ Surface::~Surface()
 }
 
 
-void Surface::setMolecule(Molecule* molecule) 
+void Surface::setComponent(Component* component) 
 {
-   m_molecule = molecule;
-   connect(this, SIGNAL(updated()), molecule, SIGNAL(softUpdate()));
-
+   m_component = component;
+   connect(this, SIGNAL(updated()), component, SIGNAL(softUpdate()));
 }
 
 
@@ -129,8 +130,6 @@ void Surface::setAlpha(double const alpha)
 {
    m_alpha = alpha;
    m_surface.setOpacity(m_alpha);
-   m_colorPositive[3] = m_alpha;
-   m_colorNegative[3] = m_alpha;
    recompile(); // this is really only needed if there is a property
 }
 
@@ -147,10 +146,13 @@ QList<QColor> const& Surface::colors() const
 }
 
 
-void Surface::setColors(QList<QColor> const& colors)
+void Surface::setColors(QList<QColor> const& colors, bool const blend)
 {
    m_surface.setColors(colors);
+   m_surface.setBlend(blend);
 }
+
+
 
 
 void Surface::setColors(QColor const& negative, QColor const& positive)
@@ -158,12 +160,13 @@ void Surface::setColors(QColor const& negative, QColor const& positive)
    m_colorNegative[0] = negative.redF();
    m_colorNegative[1] = negative.greenF();
    m_colorNegative[2] = negative.blueF();
+   m_colorNegative[3] = negative.alphaF();
 
    m_colorPositive[0] = positive.redF();
    m_colorPositive[1] = positive.greenF();
    m_colorPositive[2] = positive.blueF();
+   m_colorPositive[3] = positive.alphaF();
 
-qDebug() << "Need to sync colors to Data::Surface";
 return;
    // For some bizarre reason, calling the Data::Surface::setColors causes the
    // negative and positive colors (which are supposed to be const!) to
@@ -411,7 +414,7 @@ void Surface::drawVertexNormals(Data::Mesh const& mesh)
    Data::OMMesh::Point  p;
    Data::OMMesh::Normal n;
 
-   float scale(0.08);
+   double scale(0.08);
 
    for (vertex = mesh.vbegin(); vertex != mesh.vend(); ++vertex) {
        p = mesh.vertex(vertex);
@@ -442,7 +445,7 @@ void Surface::drawFaceNormals(Data::Mesh const& mesh)
    Data::OMMesh::Point  p;
    Data::OMMesh::Normal n;
 
-   float scale(0.12);
+   double scale(0.12);
 
    for (face = mesh.fbegin(); face != mesh.fend(); ++face) {
        p = mesh.faceCentroid(*face);
@@ -486,7 +489,7 @@ GLuint Surface::compile(Data::Mesh const& mesh)
 
          double min, max, property;
          getPropertyRange(min, max);
-         ColorGradient::Function gradient(m_surface.colors(), min, max);
+         Color::Function gradient(m_surface.colors(), min, max, m_surface.blend());
          QColor color;
 
          glBegin(GL_TRIANGLES);
@@ -494,21 +497,21 @@ GLuint Surface::compile(Data::Mesh const& mesh)
                 vertex   = data.cfv_iter(*face);
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f( color.redF(), color.greenF(), color.blueF(), m_alpha );
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
                 //glArrayElement(vertex->idx());
                 glArrayElement(vertex.handle().idx());
 
                 ++vertex;
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f( color.redF(), color.greenF(), color.blueF(), m_alpha );
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
                 //glArrayElement( vertex->idx());
                 glArrayElement(vertex.handle().idx());
 
                 ++vertex;
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f( color.redF(), color.greenF(), color.blueF(), m_alpha );
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
                 //glArrayElement( vertex->idx());
                 glArrayElement(vertex.handle().idx());
             }
@@ -548,16 +551,18 @@ void Surface::clearPropertyData()
 }
 
 
-void Surface::computePropertyData(Function3D const& function) 
+void Surface::computePropertyData(Property::Base* property) 
 {
-   m_surface.computeSurfaceProperty(function);
+qDebug() << "Computing property data using Property::Base";
+   m_surface.computeSurfaceProperty(property);
    recompile(); 
 }
 
 
-void Surface::computeIndexField() 
+void Surface::computePropertyData(Function3D const& function) 
 {
-   m_surface.computeIndexProperty();
+qDebug() << "Computing property data using Function3D";
+   m_surface.computeSurfaceProperty(function);
    recompile(); 
 }
 
@@ -573,7 +578,6 @@ void Surface::decimate()
       m_surface.meshNegative().data());
 
    connect(m_decimator, SIGNAL(finished()), this, SLOT(decimateFinished()));
-   QLOG_INFO() << "Commencing mesh decimation";
    m_decimator->start();
 }
 

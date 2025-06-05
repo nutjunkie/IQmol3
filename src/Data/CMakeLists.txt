@@ -2,9 +2,12 @@ find_package(Qt5 COMPONENTS Core Xml OpenGL REQUIRED)
 set(LIB Data)
 
 set( HEADERS
+   Residue.h
+   Group.h
 )
 
 set( SOURCES
+   AminoAcid.C
    Atom.C
    AtomicProperty.C
    AtomicDensity.C
@@ -39,6 +42,7 @@ set( SOURCES
    Orbitals.C
    OrbitalFactory.C
    OrbitalsList.C
+   PdbData.C
    PointCharge.C
    PointGroup.C
    PovRay.C
@@ -66,10 +70,14 @@ target_include_directories(${LIB} PRIVATE
    "${OpenBabel3_INCLUDE_DIRS}"
 )
 target_link_libraries(${LIB} PRIVATE
-   Math
-   ${OpenBabel3_LIBRARIES}
-   OpenMeshCore
+#   Math
+#   ${OpenBabel3_LIBRARIES}
+#   ${OPENMESH_LIBRARIES}
+   Qt5::Gui
    Qt5::Core
    Qt5::Xml
-   Qt5::OpenGL
+   Qt5::OpenGL  # required for Vec, go figure
+#   yaml-cpp
+#   Util
+#   ${Boost_LIBRARIES}
 )

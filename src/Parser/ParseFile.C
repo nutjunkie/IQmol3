@@ -38,6 +38,8 @@
 #include "ExternalChargesParser.h"
 #include "FormattedCheckpointParser.h"
 #include "OpenBabelParser.h"
+#include "PdbParser.h"
+#include "GroParser.h"
 #include "VibronicParser.h"
 #include "YamlParser.h"
 
@@ -236,6 +238,15 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
 
    if (extension == "fchk" || extension == "fck" || extension == "fch") {
       parser = new FormattedCheckpoint;
+   }
+
+   if (extension == "pdb") {
+      parser = new Pdb;
+   }
+
+   if (extension == "gro"){
+      parser = new Gro;
+      QLOG_INFO() << "Using gro parser";
    }
 
    if (extension == "ply" || extension == "obj" || 

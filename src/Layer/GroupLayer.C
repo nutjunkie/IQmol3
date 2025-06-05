@@ -23,30 +23,42 @@
 #include "GroupLayer.h"
 #include "AtomLayer.h"
 #include "BondLayer.h"
+#include "SystemLayer.h"
 #include "Parser/ParseFile.h"
 #include "LayerFactory.h"
 #include "Math/Align.h"
 #include "Util/QMsgBox.h"
-#include <QFileInfo>
+#include "Util/QsLog.h"
+#include "Viewer/UndoCommands.h"
 
+#include "openbabel/mol.h"
+#include "openbabel/atom.h"
+#include "openbabel/bond.h"
+#include "openbabel/obiter.h"
+#include "openbabel/typer.h"
+
+#include <QFileInfo>
 #include <QtDebug>
 
 
+
 using namespace qglviewer;
+using namespace OpenBabel;
 
 namespace IQmol {
 namespace Layer {
 
 
-Group::Group(QString const& label) : Primitive(label)
-{
-   setFlags(Qt::ItemIsSelectable |  Qt::ItemIsEnabled | Qt::ItemIsEditable);
-}
-
 Group::Group(PrimitiveList const& primitives, QString const& label) : Primitive(label)
 {
    setFlags(Qt::ItemIsSelectable |  Qt::ItemIsEnabled | Qt::ItemIsEditable);
    addPrimitives(primitives);
+
+   connect(newAction("Add Hydrogens"), SIGNAL(triggered()),
+     this, SLOT(addHydrogens()));
+
+   connect(newAction("Reperceive Bonds"), SIGNAL(triggered()),
+     this, SLOT(reperceiveBonds()));
 }
 
 
@@ -124,8 +136,8 @@ void Group::addPrimitives(PrimitiveList const& primitives)
 
    addAtoms(atoms);
    addBonds(bonds);
+   reperceiveBonds();
 }
-
 
 
 void Group::addAtoms(AtomList const& atoms)
@@ -133,6 +145,7 @@ void Group::addAtoms(AtomList const& atoms)
    AtomList::const_iterator atom;
    for (atom = atoms.begin(); atom != atoms.end(); ++atom) {
        (*atom)->setReferenceFrame(&m_frame);
+       (*atom)->setDrawMode(Primitive::Tubes);
        m_atoms.append(*atom);
    }
 }
@@ -206,6 +219,9 @@ PrimitiveList Group::ungroup()
 
 void Group::draw()
 {
+   // Only draw if selected
+   if (!isSelected()) return;
+
    glPushMatrix();
    glMultMatrixd(m_frame.matrix());
 
@@ -225,6 +241,7 @@ void Group::draw()
 
 void Group::drawSelected()
 {
+   return;
    glPushMatrix();
    glMultMatrixd(m_frame.matrix());
 
@@ -330,6 +347,212 @@ Atom* Group::rootAtom() const
    Atom* atom(0);
    if (!m_atoms.isEmpty()) atom = m_atoms.first();
    return atom;
+}
+
+
+Atom* Group::createAtom(unsigned int const Z, qglviewer::Vec const& position)
+{
+   double atomScale(1.0);
+   Atom* atom(new Atom(Z));
+   atom->setDrawMode(Primitive::Tubes);
+   atom->setScale(atomScale);
+   atom->setSmallerHydrogens(false);
+   atom->setPosition(position);
+   return atom;
+}
+
+
+Bond* Group::createBond(Atom* begin, Atom* end, int const order)
+{
+   double bondScale(1.0);
+   Bond* bond(new Bond(begin, end));
+   bond->setOrder(order);
+   bond->setDrawMode(Primitive::Tubes);
+   bond->setScale(bondScale);
+   return bond;
+}
+
+
+void Group::reperceiveBonds()
+{
+   AtomMap atomMap;
+
+   OpenBabel::OBMol* obMol(new OpenBabel::OBMol());
+   obMol->BeginModify();
+
+   for (auto atomIter = m_atoms.begin(); atomIter != m_atoms.end(); ++atomIter) {
+       OpenBabel::OBAtom* obAtom = obMol->NewAtom();
+       atomMap.insert(obAtom, *atomIter);
+       qglviewer::Vec pos = (*atomIter)->getPosition();
+       int atomicNumber((*atomIter)->getAtomicNumber());
+       obAtom->SetAtomicNum(atomicNumber);
+       obAtom->SetVector(pos.x, pos.y, pos.z);
+   }
+
+   obMol->EndModify();
+   obMol->ConnectTheDots();
+   obMol->PerceiveBondOrders();
+
+   for (auto bond : m_bonds) delete bond;
+   m_bonds.clear();
+
+   FOR_BONDS_OF_MOL(obBond, obMol) {
+      Atom* begin = atomMap.value(obBond->GetBeginAtom());
+      Atom* end   = atomMap.value(obBond->GetEndAtom());
+      int   order = obBond->GetBondOrder();
+
+      if (!begin || !end) {
+         QString msg("Error encountered converting from OBMol object");
+         QMsgBox::critical(0, "IQmol", msg);
+         return;
+      }
+
+      Bond* bond(createBond(begin, end, order));
+      bond->setReferenceFrame(&m_frame);
+      bond->setDrawMode(Primitive::Tubes);
+      m_bonds.append(bond);
+   } 
+
+   delete obMol;
+}
+
+
+void Group::addHydrogens()
+{
+   QLOG_DEBUG() << "Adding hydrogens to group";
+   AtomMap atomMap;
+   BondMap bondMap;
+  
+   OBMol* obMol(toOBMol(&atomMap, &bondMap));
+   obMol->BeginModify();
+   obMol->EndModify();
+  
+     // We now type the atoms and overwrite the valency/hybridization info
+     // if it has been changed by the user.
+    OBAtomTyper atomTyper;
+  
+    atomTyper.AssignHyb(*obMol);
+    atomTyper.AssignTypes(*obMol);
+  
+    AtomMap::iterator iter;
+    for (iter = atomMap.begin(); iter != atomMap.end(); ++iter) {
+        int hybrid(iter.value()->getHybridization());
+        if (hybrid > 0) iter.key()->SetHyb(hybrid);
+     }
+  
+     obMol->AddHydrogens(false,false);
+     obMol->BeginModify();
+     obMol->EndModify();
+
+     PrimitiveList primitives(fromOBMol(obMol, atomMap, bondMap));
+     addPrimitives(primitives);
+  
+/*
+     Command::AddHydrogens* cmd  = 
+        new Command::AddHydrogens(this, fromOBMol(obMol, &atomMap, &bondMap));
+     postCommand(cmd);
+  
+     delete obMol;
+     m_modified = true;
+     postMessage("");
+*/
+}
+
+
+OBMol* Group::toOBMol(AtomMap* atomMap, BondMap* bondMap)
+{  
+   OBAtom* obAtom;
+   OBBond* obBond;
+   Vec     position;
+
+   OBMol* obMol(new OBMol());
+   atomMap->clear();
+   bondMap->clear();
+   AtomList atoms(findLayers<Atom>(Children));
+   AtomList::iterator atomIter;
+
+   obMol->BeginModify();
+   obMol->SetHybridizationPerceived();
+
+   for (atomIter = atoms.begin(); atomIter != atoms.end(); ++atomIter) {
+       obAtom = obMol->NewAtom();
+       atomMap->insert(obAtom, *atomIter);
+       position = (*atomIter)->getPosition();
+       obAtom->SetAtomicNum((*atomIter)->getAtomicNumber());
+       obAtom->SetVector(position.x, position.y, position.z);
+//       OBAtomAssignTypicalImplicitHydrogens(obAtom);
+   }
+    
+   BondList bonds(findLayers<Bond>(Children));
+   BondList::iterator bondIter;
+   
+   for (bondIter = bonds.begin(); bondIter != bonds.end(); ++bondIter) {
+       unsigned hcount;
+       unsigned order((*bondIter)->getOrder());
+     
+       obBond = obMol->NewBond();
+       bondMap->insert(obBond, *bondIter);
+       obBond->SetBondOrder(order);
+  
+       obAtom = atomMap->key((*bondIter)->beginAtom());
+       hcount = obAtom->GetImplicitHCount();
+       obAtom->SetImplicitHCount(order >= hcount ? 0 : hcount - order);
+       obBond->SetBegin(obAtom);
+       obAtom->AddBond(obBond);
+   
+       obAtom = atomMap->key((*bondIter)->endAtom());
+       hcount = obAtom->GetImplicitHCount();
+       obAtom->SetImplicitHCount(order >= hcount ? 0 : hcount - order);
+       obBond->SetEnd(obAtom);
+       obAtom->AddBond(obBond);
+   }
+
+   obMol->EndModify();
+
+   return obMol;
+}
+
+
+PrimitiveList Group::fromOBMol(OBMol* obMol, AtomMap& atomMap, BondMap& bondMap)
+{
+   PrimitiveList addedPrimitives;
+  
+   Bond *bond;
+   Atom *atom, *begin, *end;
+     
+   FOR_ATOMS_OF_MOL(obAtom, obMol) {
+      Vec pos(obAtom->x(), obAtom->y(), obAtom->z());
+      atom = atomMap.value(&*obAtom); 
+
+      if (!atom) {
+
+         atom = createAtom(obAtom->GetAtomicNum(), pos);
+         addedPrimitives.append(atom);
+         atomMap.insert(&*obAtom, atom);
+      }  
+
+      atom->setPosition(pos);
+   }
+  
+
+   FOR_BONDS_OF_MOL(obBond, obMol) {
+      bond  = bondMap.value(&*obBond);
+      begin = atomMap.value(obBond->GetBeginAtom());
+      end   = atomMap.value(obBond->GetEndAtom());
+  
+      if (!begin || !end) {
+         QString msg("Error encountered converting from OBMol object");
+         QMsgBox::critical(0, "IQmol", msg);
+         return PrimitiveList();
+      }  
+  
+      if (!bond) {
+         bond  = createBond(begin, end, obBond->GetBondOrder());
+         addedPrimitives.append(bond);
+      }  
+   }
+  
+   return addedPrimitives;
 }
 
 } } // end namespace IQmol::Layer

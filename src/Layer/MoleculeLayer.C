@@ -1,20 +1,18 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
   IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -27,12 +25,11 @@
 #include "Data/Energy.h"
 #include "Data/File.h"
 #include "Data/Frequencies.h"
+#include "Data/MultipoleExpansion.h"
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
-#include "Data/MultipoleExpansion.h"
-#include "Data/PointGroup.h"
 #include "Data/SurfaceInfo.h"
-
+#include "Data/ResidueName.h"
 
 // Layers
 #include "LayerFactory.h"
@@ -42,29 +39,35 @@
 #include "ConstraintLayer.h"
 #include "CubeDataLayer.h"
 #include "DipoleLayer.h"
+#include "FileLayer.h"
 #include "FrequenciesLayer.h"
 #include "EfpFragmentLayer.h"
+#include "FrequenciesLayer.h"
 #include "GeometryLayer.h"
 #include "GeometryListLayer.h"
 #include "GroupLayer.h"
 #include "IsotopesLayer.h"
 #include "MoleculeLayer.h"
+#include "NmrLayer.h"
 #include "OrbitalsLayer.h"
 #include "SurfaceLayer.h"
 #include "VibronicLayer.h"
+#include "TagLayer.h"
 
 
+#include "Configurator/SurfaceAnimatorDialog.h"
 #include "Configurator/GenerateConformersDialog.h"
-#include "Grid/SpatialProperty.h"
 #include "Viewer/UndoCommands.h"
 
 #include "Util/QsLog.h"
 #include "Util/QMsgBox.h"
 #include "Util/Constants.h"
-#include "Process/QChemJobInfo.h" 
 #include "Util/Preferences.h"
+#include "Process/JobInfo.h" 
 #include "Parser/IQmolParser.h"
 #include "FileDialog.h"
+
+#include "Amber/ParametrizeMoleculeDialog.h"
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"
@@ -88,9 +91,6 @@
 #include <QRegularExpression>
 #include <QActionGroup>
 
-#include "boost/bind/bind.hpp"
-
-using namespace boost::placeholders;
 
 
 extern "C" void symmol_(int*, double*, double*, int*, char*);
@@ -98,25 +98,27 @@ extern "C" void symmol_(int*, double*, double*, int*, char*);
 using namespace OpenBabel;
 using namespace qglviewer;
 
+
 namespace IQmol {
 namespace Layer {
 
+
 bool Molecule::s_autoDetectSymmetry = false;
 
-Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent), 
+Molecule::Molecule(QObject* parent) : Component(DefaultMoleculeName, parent),
    m_drawMode(Primitive::BallsAndSticks), 
    m_atomScale(1.0), m_bondScale(1.0), m_chargeScale(1.0), 
    m_smallerHydrogens(true), 
    m_modified(false),
    m_reperceiveBondsForAnimation(false),
    m_configurator(*this), 
-   m_surfaceAnimator(this), 
+   m_surfaceAnimator(0),
+   m_parametrizeMolecule(0),
    m_info(this),
    m_atomList(this, "Atoms"), 
    m_bondList(this, "Bonds"), 
    m_chargesList(this, "Charges"), 
    m_fileList(this, "Files"), 
-   m_surfaceList(this, "Surfaces"), 
    m_constraintList(this, "Constraints"), 
    m_isotopesList(this, "Isotopes"), 
    m_scanList(this, "Scan Coordinates"), 
@@ -142,16 +144,17 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
    OBConversion conv;
    conv.SetInFormat("xyz");
 
-
    // Add actions for the context menu
    connect(newAction("Configure"), SIGNAL(triggered()), 
       this, SLOT(configure()));
    connect(newAction("Select All"), SIGNAL(triggered()),
       this, SLOT(selectAll()));
    connect(newAction("Reperceive Bonds"), SIGNAL(triggered()), 
-      this, SLOT(reperceiveBonds()));
-   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
-      this, SLOT(generateConformersDialog()));
+      this, SLOT(reperceiveBondsSlot()));
+   connect(newAction("Add Hydrogens"), SIGNAL(triggered()), 
+      this, SLOT(addHydrogens()));
+//   connect(newAction("Generate Conformers"), SIGNAL(triggered()), 
+//      this, SLOT(generateConformersDialog()));
 
    m_addGeometryMenu = newAction("Duplicate Geometry");
 
@@ -162,31 +165,22 @@ Molecule::Molecule(QObject* parent) : Base(DefaultMoleculeName, parent),
 
    connect(newAction("Remove"), SIGNAL(triggered()), 
       this, SLOT(removeMolecule()));
-//#warning "################################";
-//#warning "# !!! TURN OFF FOR RELEASE !!! #";
-//#warning "################################";
-//   connect(newAction("Dump Data"), SIGNAL(triggered()), 
-//      this, SLOT(dumpData()));
 
-   initProperties();
+   connect(newAction("Save As"), SIGNAL(triggered()), 
+      this, SLOT(saveAs()));
 
    connect(&m_efpFragmentList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_groupList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
-   connect(&m_surfaceList, SIGNAL(updated()), this, SIGNAL(softUpdate()));
    connect(&m_molecularSurfaces, SIGNAL(updated()), this, SIGNAL(softUpdate()));
 }
 
 
 Molecule::~Molecule()
 {
+   if (!m_surfaceAnimator) {
+      delete m_surfaceAnimator;
+   }
    deleteProperties();
-}
-
-
-void Molecule::setFile(QString const& fileName)
-{
-   m_inputFile.setFile(fileName);
-   setText(m_inputFile.completeBaseName());
 }
 
 
@@ -214,6 +208,7 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
 
 void Molecule::appendData(Layer::List& list)
 {
+qDebug() << "Molecule::appendData(Layer::List)";
    // !!! This needs fixing !!!
    // This is a bit cheesy, we rely on the QStandardItem text 
    // to determine the type of Layer.  
@@ -227,13 +222,18 @@ void Molecule::appendData(Layer::List& list)
    }
 
    Layer::List::iterator iter;
+   Tag*          tag(0);
+   Nmr*          nmr(0);
    Files*        files(0);
    Atoms*        atoms(0);
    Bonds*        bonds(0);
    Charges*      charges(0);
    CubeData*     cubeData(0);
    Orbitals*     orbitals(0);
+
+   Frequencies*  frequencies(0);
    EfpFragments* efpFragments(0);
+   GeometryList* geometryList(0);
 
    QString text;
    PrimitiveList primitiveList;
@@ -259,7 +259,18 @@ void Molecule::appendData(Layer::List& list)
           //toSet.append(*iter);
           orbitals->setMolecule(this);
 
-       // This is currently preventing the addition of primivees to an exisiting molecule
+       }else if ((nmr = qobject_cast<Nmr*>(*iter))) {
+          nmr->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((frequencies = qobject_cast<Frequencies*>(*iter))) {
+          frequencies->setMolecule(this);
+          toSet.append(*iter);
+
+       }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
+          geometryList->setMolecule(this);
+
+       // This is currently preventing the addition of primitives to an exisiting molecule
        }else if (!labels.contains(text)) {
           labels << (*iter)->text();
 
@@ -291,7 +302,8 @@ void Molecule::appendData(Layer::List& list)
                  efpFragments->removeLayer(*efp);
                  primitiveList.append(*efp);
              }
-
+          }else if ((tag = qobject_cast<Tag*>(*iter))) {
+             m_residueName = tag->tag();
           }else {
 		     // The ordering of this is all wrong as the atoms have not been
 		     // appended yet and some Layers need this in their setMolecule
@@ -301,20 +313,25 @@ void Molecule::appendData(Layer::List& list)
        } 
 
        if ( (cubeData = qobject_cast<CubeData*>(*iter)) ) {
+          cubeData->setMolecule(this);
           m_properties << cubeData->createProperty(); 
        }
    }
 
    appendPrimitives(primitiveList);
    BondList bondList(findLayers<Bond>(Children));
-   if (bondList.isEmpty()) reperceiveBonds();
+   bool postCmd(true);
+   if (bondList.isEmpty()) reperceiveBonds(postCmd);
 
    Surface* surface(0);
+   Geometry* geometry(0);
 
    for (iter = toSet.begin(); iter != toSet.end(); ++iter) {
-       (*iter)->setMolecule(this);
        if ((surface = qobject_cast<Surface*>(*iter))) {
+          surface->setComponent(this);
           m_surfaceList.appendLayer(surface);
+       }else if ((geometry = qobject_cast<Geometry*>(*iter))) {
+          appendLayer(*iter);
        }else {
           appendLayer(*iter);
        }
@@ -372,9 +389,12 @@ bool Molecule::save(bool prompt)
    try {
 
       qDebug() << "Attempting to save" << m_inputFile.filePath();
+saveToCurrentGeometry();
+
       if (m_inputFile.suffix().endsWith("iqmol", Qt::CaseInsensitive)) {
          Parser::IQmol iqmol;
 
+/*
          if (!m_currentGeometry) {
             m_currentGeometry = new Data::Geometry();
             m_bank.prepend(m_currentGeometry);
@@ -384,6 +404,7 @@ bool Molecule::save(bool prompt)
                 m_currentGeometry->append(Z, atoms[i]->getPosition());
             }
          }
+*/
 
          iqmol.save(m_inputFile.filePath(), m_bank);
       }else {
@@ -467,7 +488,7 @@ PrimitiveList Molecule::fromOBMol(OBMol* obMol, AtomMap* atomMap, BondMap* bondM
    FOR_ATOMS_OF_MOL(obAtom, obMol) {
       Vec pos(obAtom->x(), obAtom->y(), obAtom->z());
       atom = atomMap->value(&*obAtom); 
-//qDebug() << "Valency ended up  " << obAtom->GetImplicitValence();
+      //qDebug() << "Valency ended up  " << obAtom->GetImplicitValence();
       if (!atom) {
          atom = createAtom(obAtom->GetAtomicNum(), pos);
          addedPrimitives.append(atom);
@@ -530,14 +551,23 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
    OBBond* obBond;
    Vec     position;
 
+
    OBMol* obMol(new OBMol());
    atomMap->clear();
    bondMap->clear();
    AtomList atoms(findLayers<Atom>(Children));
    AtomList::iterator atomIter;
 
+   OBResidue* residue(0);
+
    obMol->BeginModify();
    obMol->SetHybridizationPerceived();
+   obMol->SetChainsPerceived(true);
+
+   if (!m_residueName.isEmpty()) {
+      residue = obMol->NewResidue();
+      residue->SetName(m_residueName.toStdString());
+   }
 
    for (atomIter = atoms.begin(); atomIter != atoms.end(); ++atomIter) {
        obAtom = obMol->NewAtom();
@@ -546,6 +576,14 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        obAtom->SetAtomicNum((*atomIter)->getAtomicNumber());
        obAtom->SetVector(position.x, position.y, position.z);
        OBAtomAssignTypicalImplicitHydrogens(obAtom);
+
+       if (residue) {
+          residue->AddAtom(obAtom);
+          residue->SetAtomID(obAtom, (*atomIter)->getLabel().toStdString());
+          obAtom->SetResidue(residue);
+          //qDebug() << "Setting atom ID to:" << residue->GetAtomID(obAtom).c_str() 
+          //         << "  " << obAtom << "residue" << residue << " atom res" << obAtom->GetResidue();
+       }
    }
 
    BondList bonds(findLayers<Bond>(Children));
@@ -614,6 +652,7 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
    obMol->SetTotalCharge(totalCharge());
    obMol->SetTotalSpinMultiplicity(multiplicity());
    obMol->EndModify();
+   obMol->SetChainsPerceived(true);
 
    return obMol;
 }
@@ -719,9 +758,9 @@ QString Molecule::coordinatesAsStringFsm()
    if (geometryList.size() < 2) return coords;
    qDebug() << "Number of Geometries = " << geometryList.size();
 
-   coords  = geometryList[0]->data().coordinatesAsString();
+   coords  = geometryList[0]->geomData().coordinatesAsString();
    coords += "\n****\n";
-   coords += geometryList[1]->data().coordinatesAsString();
+   coords += geometryList[1]->geomData().coordinatesAsString();
 
    return coords.trimmed();
 }
@@ -730,12 +769,25 @@ QString Molecule::coordinatesAsStringFsm()
 QList<Vec> Molecule::coordinates()
 {
    QList<Vec> coordinates;
+
    AtomList atoms(findLayers<Atom>(Children));
-   for (int i = 0; i < atoms.size(); ++i) {
-       coordinates << atoms[i]->getPosition();
-   }
+   for (auto& atom : atoms)  coordinates << atom->getPosition();
+
    return coordinates;
 }
+
+
+QList<int> Molecule::atomicNumbers() 
+{
+   QList<int> atomicNumbers;
+
+   AtomList atoms(findLayers<Atom>(Children));
+   for (auto& atom : atoms)  atomicNumbers << atom->getAtomicNumber();
+
+   return atomicNumbers;
+}
+
+
 
 
 QString Molecule::efpFragmentsAsString()
@@ -851,6 +903,44 @@ QString Molecule::scanCoordinatesAsString()
 }
 
 
+// - - - - - Isotopes - - - - -
+
+bool Molecule::editIsotopes()
+{
+   bool added(false); 
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+
+   if (atoms.isEmpty()) {
+      QMsgBox::warning(0, "IQmol", "Atom selection required");
+      return added;
+   }
+
+   std::sort(atoms.begin(), atoms.end(), Atom::indexSort);
+
+   Layer::Isotopes* isotopes(new Layer::Isotopes(atoms));
+   isotopes->configure();
+
+   if (isotopes->accepted()) {
+      // selectNone();
+
+     if (isotopes->text().isEmpty()) {
+         QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
+         QString label("Substitution ");
+         label += QString::number(list.size() +1);
+         isotopes->setText(label);
+      }
+
+      m_isotopesList.appendLayer(isotopes);
+      isotopes->updateLabels();
+      added = true;
+   }else {
+      delete isotopes;
+   }
+
+   return added;
+}
+
+
 void Molecule::clearIsotopes()
 {
    QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
@@ -860,20 +950,6 @@ void Molecule::clearIsotopes()
    }
 }
 
-
-void Molecule::addIsotopes(Isotopes* isotopes)
-{
-   if (isotopes) {
-      if (isotopes->text().isEmpty()) {
-         QList<Isotopes*> list(m_isotopesList.findLayers<Isotopes>(Children));
-
-         QString label("Substitution ");
-         label += QString::number(list.size() +1);
-         isotopes->setText(label);
-      }
-      m_isotopesList.appendLayer(isotopes);
-   }
-}
 
 QString Molecule::isotopesAsString()
 {
@@ -888,12 +964,73 @@ QString Molecule::isotopesAsString()
        s += list[i]->formatQChem();
    }
    
-   qDebug() << "Formatted isotopes string";
-   qDebug() << s;
-
    return s;
 }
 
+
+
+// - - - - - Constraints - - - - -
+
+bool Molecule::editConstraint()
+{
+   bool added(false);
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+   BondList bonds(findLayers<Bond>(Children | Visible | SelectedOnly));
+
+   // Allow for bond constraint by selecting a bond
+   if (atoms.isEmpty() && bonds.size() == 1) {
+      Bond* bond(bonds.first());
+      Atom* A(bond->beginAtom());
+      Atom* B(bond->endAtom());
+      if (A && B) atoms << A << B;
+   }
+
+   if (atoms.isEmpty()) {
+      QMsgBox::warning(0, "IQmol", "Atom selection required");
+      return added;
+   }else if (atoms.size() > 4) {
+      return freezeAtomPositions();
+   }
+
+   Constraint* constraint(findMatchingConstraint(atoms));
+
+   if (constraint) {
+      constraint->configure();
+      if (constraint->accepted()) {
+         applyConstraint(constraint);
+         added = true;
+      }  
+   }else {
+      constraint = new Constraint(atoms);
+      constraint->configure();
+
+      if (constraint->accepted()) {
+         if (canAcceptConstraint(constraint)) {
+            addConstraint(constraint);
+            added = true;
+         }else {
+            QMsgBox::information(0, "IQmol", 
+               "A maximum of two scan coordinates are permitted");
+            delete constraint;
+         }   
+      }else {
+         delete constraint;
+      }  
+   }
+   return added;
+}
+
+
+bool Molecule::freezeAtomPositions()
+{
+   AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
+
+   for (auto atom : atoms) {
+       addConstraint(new Constraint({atom}));
+   }
+
+   return true;
+}
 
 
 Constraint* Molecule::findMatchingConstraint(AtomList const& atoms)
@@ -1176,8 +1313,6 @@ void Molecule::applyRingConstraint()
 
 
 
-
-
 // This is not active at the moment.  Data layers should be deleted
 void Molecule::clearData()
 {
@@ -1216,22 +1351,22 @@ void Molecule::appendPrimitives(PrimitiveList const& primitives)
    AtomList atoms(findLayers<Atom>(Children));
    int initialNumberOfAtoms(atoms.size());
 
-   PrimitiveList::const_iterator primitive;
-   for (primitive = primitives.begin(); primitive != primitives.end(); ++primitive) {
+   for (auto primitive : primitives) {
+       primitive->setDrawMode(m_drawMode);
 
-       if ( (atom = qobject_cast<Atom*>(*primitive)) ) {
+       if ( (atom = qobject_cast<Atom*>(primitive)) ) {
           m_atomList.appendLayer(atom);
 
-       }else if ( (bond = qobject_cast<Bond*>(*primitive)) ) {
+       }else if ( (bond = qobject_cast<Bond*>(primitive)) ) {
           m_bondList.appendLayer(bond);
 
-       }else if ( (charge = qobject_cast<Charge*>(*primitive)) ) {
+       }else if ( (charge = qobject_cast<Charge*>(primitive)) ) {
           m_chargesList.appendLayer(charge);
 
-       }else if ( (efp = qobject_cast<EfpFragment*>(*primitive)) ) {
+       }else if ( (efp = qobject_cast<EfpFragment*>(primitive)) ) {
           m_efpFragmentList.appendLayer(efp);
 
-       }else if ( (group = qobject_cast<Group*>(*primitive)) ) {
+       }else if ( (group = qobject_cast<Group*>(primitive)) ) {
           m_groupList.appendLayer(group);
           //appendPrimitives(group->ungroup());
 
@@ -1669,11 +1804,11 @@ void Molecule::saveToCurrentGeometry()
 
 void Molecule::reindexAtomsAndBonds()
 {
-   m_maxAtomicNumber = 0;
+//   m_maxAtomicNumber = 0;
    AtomList atoms(findLayers<Atom>(Children));
    for (int i = 0; i < atoms.size(); ++i) {
        atoms[i]->setIndex(i+1);
-       m_maxAtomicNumber = std::max((int)m_maxAtomicNumber, atoms[i]->getAtomicNumber());
+//       m_maxAtomicNumber = std::max((int)m_maxAtomicNumber, atoms[i]->getAtomicNumber());
    }
 
    BondList bonds(findLayers<Bond>(Children));
@@ -1684,7 +1819,7 @@ void Molecule::reindexAtomsAndBonds()
 }
 
 
-double Molecule::radius()
+double Molecule::radius() 
 {
    double radius(0);
    PrimitiveList primitives(findLayers<Primitive>(Children | Visible));
@@ -1697,6 +1832,7 @@ double Molecule::radius()
 }
 
 
+/*
 double Molecule::onsagerRadius()
 {
    double radius(0), r(0);
@@ -1710,6 +1846,7 @@ double Molecule::onsagerRadius()
 
    return radius;
 }
+*/
 
 
 
@@ -1756,52 +1893,64 @@ bool Molecule::sanityCheck()
        }
    }
 
-
    return valid;
    // check if the molecule has been drawn, that an optimization has beeen performed.
 }
 
 
-Process::QChemJobInfo Molecule::qchemJobInfo()
+Process::JobInfo Molecule::qchemJobInfo()
 {
-   Process::QChemJobInfo jobInfo;
+   Process::JobInfo jobInfo;
+   QString s;
 
-   jobInfo.set(Process::QChemJobInfo::Charge,          totalCharge());
-   jobInfo.set(Process::QChemJobInfo::Multiplicity,    multiplicity());
-   jobInfo.set(Process::QChemJobInfo::Coordinates,     coordinatesAsString());
-   jobInfo.set(Process::QChemJobInfo::CoordinatesFsm,  coordinatesAsStringFsm());
-   jobInfo.set(Process::QChemJobInfo::Constraints,     constraintsAsString());
-   jobInfo.set(Process::QChemJobInfo::ScanCoordinates, scanCoordinatesAsString());
-   jobInfo.set(Process::QChemJobInfo::EfpFragments,    efpFragmentsAsString());
-   jobInfo.set(Process::QChemJobInfo::EfpParameters,   efpParametersAsString());
-   jobInfo.set(Process::QChemJobInfo::ExternalCharges, externalChargesAsString());
-   jobInfo.set(Process::QChemJobInfo::OnsagerRadius,   QString::number(onsagerRadius(),'f',4));
-   jobInfo.set(Process::QChemJobInfo::Isotopes,        isotopesAsString());
-   jobInfo.set(Process::QChemJobInfo::NElectrons,      m_info.numberOfElectrons());
+   jobInfo.set("Charge",        totalCharge());
+   jobInfo.set("Multiplicity",  multiplicity());
+   jobInfo.set("Coordinates",   coordinatesAsString());
+   jobInfo.set("NumElectrons",  m_info.numberOfElectrons());
+   //jobInfo.set("OnsagerRadius", QString::number(onsagerRadius(),'f',4));
+
+   jobInfo.set("LocalFilesExist", false);
+   jobInfo.set("PromptOnOverwrite", true);
+
+   s = coordinatesAsStringFsm();
+   if (!s.isEmpty()) jobInfo.set("CoordinatesFsm", s);
+   s = constraintsAsString();
+   if (!s.isEmpty()) jobInfo.set("Constraints", s);
+
+   s = scanCoordinatesAsString();
+   if (!s.isEmpty()) jobInfo.set("ScanCoordinates", s);
+   s = efpFragmentsAsString();
+   if (!s.isEmpty()) jobInfo.set("EfpFragments", s);
+   s = efpParametersAsString();
+   if (!s.isEmpty()) jobInfo.set("EfpParameters", s);
+   s = externalChargesAsString();
+   if (!s.isEmpty()) jobInfo.set("ExternalCharges", s);
+   s = isotopesAsString();
+   if (!s.isEmpty()) jobInfo.set("Isotopes", s);
 
    AtomList atomList(findLayers<Atom>(Children | Visible));
-   if (atomList.isEmpty()) jobInfo.setEfpOnlyJob(true);
+   if (atomList.isEmpty()) jobInfo.set("EfpOnly", true);
 
    QString name;
 
    if (m_inputFile.filePath().isEmpty()) {
       QFileInfo fileInfo(Preferences::LastFileAccessed());
-      jobInfo.set(Process::QChemJobInfo::LocalWorkingDirectory, fileInfo.path());
-      jobInfo.setBaseName(text());
+      jobInfo.set("LocalWorkingDirectory", fileInfo.path());
+      jobInfo.set("BaseName",text());
    }else {
-      jobInfo.set(Process::QChemJobInfo::LocalWorkingDirectory, m_inputFile.path());
-      jobInfo.setBaseName(m_inputFile.completeBaseName());
+      jobInfo.set("LocalWorkingDirectory", m_inputFile.path());
+      jobInfo.set("BaseName", m_inputFile.completeBaseName());
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   jobInfo.setMoleculePointer(this);
+   jobInfo.set("MoleculePointer", (qint64)this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));
    FileList::iterator file;
    for (file = fileList.begin(); file != fileList.end(); ++file) {
        if ((*file)->fileName().endsWith(".inp")) {
-          jobInfo.set(Process::QChemJobInfo::InputFileTemplate, (*file)->contents());
+          jobInfo.set("InputFileTemplate", (*file)->contents());
           break;
        }
    }
@@ -1810,19 +1959,18 @@ Process::QChemJobInfo Molecule::qchemJobInfo()
 }
 
 
-void Molecule::qchemJobInfoChanged(Process::QChemJobInfo const& qchemJobInfo)
+void Molecule::jobInfoChanged(Process::JobInfo const& jobInfo)
 { 
    if (text() == DefaultMoleculeName) {
-      setText(qchemJobInfo.baseName());
-      m_info.setCharge(qchemJobInfo.getCharge());
-      m_info.setMultiplicity(qchemJobInfo.getMultiplicity());
+      setText(jobInfo.get<QString>("BaseName"));
+      m_info.setCharge(jobInfo.get<int>("Charge"));
+      m_info.setMultiplicity(jobInfo.get<int>("Multiplicity"));
    }
 }
 
 
 void Molecule::addHydrogens()
 {
-   QLOG_DEBUG() << "Adding hydrogens";
    AtomMap atomMap;
    BondMap bondMap;
 
@@ -1837,6 +1985,9 @@ void Molecule::addHydrogens()
    obMol->BeginModify();
    obMol->EndModify();
 
+   int numAtoms(obMol->NumAtoms());
+   QLOG_DEBUG() << "Adding hydrogens to molecule, initial number of atoms" 
+                << numAtoms;
    // We now type the atoms and overwrite the valency/hybridization info
    // if it has been changed by the user.
    OBAtomTyper atomTyper;
@@ -1847,6 +1998,7 @@ void Molecule::addHydrogens()
    AtomMap::iterator iter;
    for (iter = atomMap.begin(); iter != atomMap.end(); ++iter) {
        int hybrid(iter.value()->getHybridization());
+/*
        qDebug() << "hybrid = " << hybrid;
        qDebug() << "GetAtomicNum       = " << iter.key()->GetAtomicNum();
        qDebug() << "GetImplicitHCount  = " << iter.key()->GetImplicitHCount();
@@ -1856,15 +2008,17 @@ void Molecule::addHydrogens()
        qDebug() << "GetTotalValence    = " << iter.key()->GetTotalValence();
        qDebug() << "GetHyb             = " << iter.key()->GetHyb();         
        qDebug() << "ExplicitHydrogenCoun " << iter.key()->ExplicitHydrogenCount();
-       if (hybrid > 0) {
-          iter.key()->SetHyb(hybrid);
-       }
+*/
+
+       if (hybrid > 0) iter.key()->SetHyb(hybrid);
    }
 
    obMol->AddHydrogens(false,false);
    obMol->Translate(-displacement);
    obMol->BeginModify();
    obMol->EndModify();
+
+   QLOG_DEBUG() << "Number of hydrogens added:" << obMol->NumAtoms() - numAtoms;
 
    Command::AddHydrogens* cmd  = 
       new Command::AddHydrogens(this, fromOBMol(obMol, &atomMap, &bondMap));
@@ -2033,8 +2187,11 @@ void Molecule::minimizeEnergy(QString const& forceFieldName)
 
 void Molecule::openSurfaceAnimator()
 {
-   m_surfaceAnimator.update();
-   m_surfaceAnimator.show();
+   if (!m_surfaceAnimator) {
+      m_surfaceAnimator = new SurfaceAnimatorDialog(this);
+   }
+   m_surfaceAnimator->update();
+   m_surfaceAnimator->show();
 }
 
 
@@ -2074,9 +2231,7 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
 
    }else if (nAtoms == 1) {
       pointGroup = "Kh";
-      if (updateCoordinates) {
-         atomList.first()->setPosition(Vec(0.0, 0.0, 0.0));
-      }
+      if (updateCoordinates) atomList.first()->setPosition(Vec(0.0, 0.0, 0.0));
 
    }else if (nAtoms == 2) {
       Atom *A(atomList[0]), *B(atomList[1]);
@@ -2126,7 +2281,6 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
       delete[] atomicNumbers;
    }
 
-
    Data::PointGroup pg(pointGroup);
    pointGroupAvailable(pg);
 
@@ -2152,87 +2306,6 @@ void Molecule::symmetrize(double tolerance, bool updateCoordinates)
    QLOG_TRACE() << "Point group symmetry set to" << pg.toGLString() << " time:" << t << "s";
 }
 
-
-void Molecule::translateToCenter(GLObjectList const& selection)
-{
-   Command::MoveObjects* cmd(new Command::MoveObjects(this, "Translate to center", true));
-
-   // the ordering here is important!!
-   Atom* atom;
-   AtomList atomList;
-   GLObjectList::const_iterator iter;
-   for (iter = selection.begin(); iter != selection.end(); ++iter) {
-       if ( (atom = qobject_cast<Atom*>(*iter)) ) atomList.append(atom); 
-   }
-
-   switch (atomList.size()) {
-      case 1:
-         translate(-atomList[0]->getPosition());
-         break;
-      case 2:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         break;
-      case 3:
-         translate(-atomList[0]->getPosition());
-         alignToAxis(atomList[1]->getPosition());
-         rotateIntoPlane(atomList[2]->getPosition());
-         break;
-      default:
-         translate(-centerOfNuclearCharge());
-         break;
-   }
-
-   postCommand(cmd);
-
-   softUpdate();
-   centerOfNuclearChargeAvailable(centerOfNuclearCharge());
-   reindexAtomsAndBonds();
-   // remove this as I think it is unnecessary and can cause a premature
-   // setting of number of atom for the GeometryList.
-   // saveToCurrentGeometry();
-   m_modified = true;
-}
-
-
-void Molecule::translate(Vec const& displacement)
-{
-   GLObjectList objects(findLayers<GLObject>(Children));
-   GLObjectList::iterator iter;
-   for (iter = objects.begin(); iter != objects.end(); ++iter) {
-       (*iter)->setPosition((*iter)->getPosition()+displacement);
-   }
-   //m_frame.setPosition(m_frame.position()+displacement);
-}
-
-
-void Molecule::rotate(Quaternion const& rotation)
-{
-   GLObjectList objects(findLayers<GLObject>(Children));
-   GLObjectList::iterator iter;
-   for (iter = objects.begin(); iter != objects.end(); ++iter) {
-       (*iter)->setPosition(rotation.rotate((*iter)->getPosition()));
-       (*iter)->setOrientation(rotation * (*iter)->getOrientation());
-   }
-   m_frame.setPosition(rotation.rotate(m_frame.position()));
-   m_frame.setOrientation(rotation * m_frame.orientation());
-}
-
-
-// Aligns point along axis (default z-axis)
-void Molecule::alignToAxis(Vec const& point, Vec const axis)
-{
-   rotate(Quaternion(point, axis));
-}
-
-
-// Rotates point into the plane defined by the normal vector
-void Molecule::rotateIntoPlane(Vec const& pt, Vec const& axis, Vec const& normal)
-{
-   Vec pp(pt);
-   pp.projectOnPlane(axis);
-   rotate(Quaternion(pp, cross(normal, axis)));
-}
 
 
 // The following is essentially a wrapper around OBMol::FindChildren
@@ -2336,6 +2409,11 @@ void Molecule::reperceiveBonds(bool postCmd)
    delete obMol;
 }
 
+void Molecule::reperceiveBondsForAnimation()
+{
+   if (m_reperceiveBondsForAnimation) reperceiveBonds(false);
+}
+
 
 QList<QString> Molecule::atomicSymbols() 
 {
@@ -2429,7 +2507,7 @@ void Molecule::setAtomicCharges(Data::Type::ID type)
    m_chargeType = type;
    // The Gasteiger charges always give a neutral system, which messes up the
    // charge/multiplicity from a real calculation.
-   //m_info.setCharge(totalCharge);
+   if (type != Data::Type::GasteigerCharge) m_info.setCharge(totalCharge);
 }
 
 
@@ -2531,12 +2609,15 @@ Bond* Molecule::getBond(Atom* A, Atom* B)
 }
 
 
-Vec Molecule::centerOfNuclearCharge()
+/*
+Vec Molecule::centerOfNuclearCharge(bool selectedOnly)
 {
    Vec center;
    int Z;
-   double totalCharge(0.0);
-   AtomList atoms(findLayers<Atom>(Children));
+   double totalCharge(0.0); 
+   unsigned flags(Children);
+   if (selectedOnly) flags = flags | Selected;
+   AtomList atoms = findLayers<Atom>(flags);
 
    AtomList::iterator iter;
    for (iter = atoms.begin(); iter != atoms.end(); ++iter) {
@@ -2548,13 +2629,15 @@ Vec Molecule::centerOfNuclearCharge()
    if (atoms.size() > 0) center = center / totalCharge;
    return center;
 }
+*/
 
 
 
 // ---------- Update functions ----------
 
+
 template <class T>
-void Molecule::update(boost::function<void(T&)> updateFunction)
+void Molecule::update(std::function<void(T&)> updateFunction)
 {
    QList<T*> list(findLayers<T>(Children));
    typename QList<T*>::iterator iter;
@@ -2568,48 +2651,54 @@ void Molecule::update(boost::function<void(T&)> updateFunction)
 void Molecule::updateDrawMode(Primitive::DrawMode drawMode)
 {
    m_drawMode = drawMode;
-   update<Primitive>(boost::bind(&Primitive::setDrawMode, _1, m_drawMode));
+   update<Primitive>(std::bind(&Primitive::setDrawMode, std::placeholders::_1, m_drawMode));
 }
 
 
 void Molecule::updateAtomScale(double const scale)
 {
    m_atomScale = scale;
-   update<Atom>(boost::bind(&Atom::setScale, _1, m_atomScale));
+   update<Atom>(std::bind(&Atom::setScale, std::placeholders::_1, m_atomScale));
 }
 
 
 void Molecule::updateSmallerHydrogens(bool smallerHydrogens)
 {
    m_smallerHydrogens = smallerHydrogens;
-   update<Atom>(boost::bind(&Atom::setSmallerHydrogens, _1, m_smallerHydrogens));
+   update<Atom>(std::bind(&Atom::setSmallerHydrogens, std::placeholders::_1, m_smallerHydrogens));
 }
 
 
 void Molecule::updateHideHydrogens(bool hideHydrogens)
 {
    m_hideHydrogens = hideHydrogens;
-   update<Atom>(boost::bind(&Atom::setHideHydrogens, _1, m_hideHydrogens));
+   update<Atom>(std::bind(&Atom::setHideHydrogens, std::placeholders::_1, m_hideHydrogens));
 }
 
 
 void Molecule::updateBondScale(double const scale)
 {
    m_bondScale = scale;
-   update<Bond>(boost::bind(&Bond::setScale, _1, m_bondScale));
+   update<Bond>(std::bind(&Bond::setScale, std::placeholders::_1, m_bondScale));
 }
 
 
 void Molecule::updateChargeScale(double const scale)
 {
    m_chargeScale = scale;
-   update<Charge>(boost::bind(&Charge::setScale, _1, m_chargeScale));
+   update<Charge>(std::bind(&Charge::setScale, std::placeholders::_1, m_chargeScale));
 }
 
 
 int Molecule::totalCharge() const
 {
    return m_info.getCharge();
+}
+
+
+int Molecule::numberOfElectrons() const
+{
+   return m_info.numberOfElectrons();
 }
 
 
@@ -2621,10 +2710,7 @@ int Molecule::multiplicity() const
 
 void Molecule::deleteProperties()
 {
-   QList<SpatialProperty*>::iterator iter;
-   for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-       delete (*iter);
-   }
+   for (auto& property : m_properties) delete property;
    m_properties.clear();
 
    if (m_atomicChargesMenu) {
@@ -2638,9 +2724,7 @@ void Molecule::initProperties()
 {
    deleteProperties();
 
-   m_properties << new RadialDistance();
-
-   m_properties << new MeshIndex("Nuclei"); 
+   m_properties << new Property::MeshIndex("Nuclei"); 
 
    QList<CubeData*> cubeFiles(findLayers<CubeData>(Children));
    QList<CubeData*>::iterator iter;
@@ -2652,104 +2736,108 @@ void Molecule::initProperties()
    m_atomicChargesMenu->setMenu(menu);
    QActionGroup* chargeTypes(new QActionGroup(menu));
 
+   Data::Type::ID type;
+
    // Gasteiger
+   type = Data::Type::GasteigerCharge;
    QAction* action(menu->addAction("Gasteiger"));
    action->setCheckable(true);
    action->setChecked(true);
-   action->setData(Data::Type::GasteigerCharge);
+   action->setData(type);
    chargeTypes->addAction(action);
    connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-   m_properties.append( new PointChargePotential(Data::Type::GasteigerCharge, 
-       "ESP (Gasteiger)", this) );
+   m_properties.append( new Property::PointChargePotential(type, this) );
 
    if (!m_currentGeometry) return;
 
    // Mulliken
    if (m_currentGeometry->hasProperty<Data::MullikenCharge>()) {
+      type = Data::Type::MullikenCharge;
       action = menu->addAction("Mulliken");
       action->setCheckable(true);
-      action->setData(Data::Type::MullikenCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::MullikenCharge, "ESP (Mulliken)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Multipole Derived
    if (m_currentGeometry->hasProperty<Data::MultipoleDerivedCharge>()) {
+      type = Data::Type::MultipoleDerivedCharge;
       action = menu->addAction("Multipole Derived");
       action->setCheckable(true);
-      action->setData(Data::Type::MultipoleDerivedCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::MultipoleDerivedCharge, "ESP (MDC)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // ChelpG
    if (m_currentGeometry->hasProperty<Data::ChelpgCharge>()) {
+      type = Data::Type::ChelpgCharge;
       action = menu->addAction("CHELPG");
       action->setCheckable(true);
-      action->setData(Data::Type::ChelpgCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::ChelpgCharge, "ESP (CHELPG)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Hirshfeld
    if (m_currentGeometry->hasProperty<Data::HirshfeldCharge>()) {
+      type = Data::Type::HirshfeldCharge;
       action = menu->addAction("Hirshfeld");
       action->setCheckable(true);
-      action->setData(Data::Type::HirshfeldCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::HirshfeldCharge, "ESP (Hirshfeld)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Lowdin
    if (m_currentGeometry->hasProperty<Data::LowdinCharge>()) {
+      type = Data::Type::LowdinCharge;
       action = menu->addAction("Lowdin");
       action->setCheckable(true);
-      action->setData(Data::Type::LowdinCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "ESP (Lowdin)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Natural
    if (m_currentGeometry->hasProperty<Data::NaturalCharge>()) {
+      type = Data::Type::NaturalCharge;
+      action = menu->addAction("Lowdin");
       action = menu->addAction("Natural");
       action->setCheckable(true);
-      action->setData(Data::Type::NaturalCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "ESP (Natural)", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
+         
+   }
+
+   // Merz Kollman RESP
+   if (m_currentGeometry->hasProperty<Data::MerzKollmanEspCharge>()) {
+      type = Data::Type::MerzKollmanEspCharge;
+      action = menu->addAction("Merz-Kollman ESP");
+      action->setCheckable(true);
+      action->setData(type);
+      chargeTypes->addAction(action);
+      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    // Merz Kollman RESP
    if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
-      action = menu->addAction("Merz Kollman RESP");
+      type = Data::Type::MerzKollmanRespCharge;
+      action = menu->addAction("Merz-Kollman RESP");
       action->setCheckable(true);
-      action->setData(Data::Type::MerzKollmanRespCharge);
+      action->setData(type);
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
-   }
-
-   // Merz Kollman RESP
-   if (m_currentGeometry->hasProperty<Data::MerzKollmanRespCharge>()) {
-      action = menu->addAction("Merz Kollman RESP");
-      action->setCheckable(true);
-      action->setData(Data::Type::MerzKollmanRespCharge);
-      chargeTypes->addAction(action);
-      connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
-      m_properties 
-        << new PointChargePotential(Data::Type::LowdinCharge, "Merz Kollman RESP", this);
+      m_properties.append( new Property::PointChargePotential(type, this) );
    }
 
    if (m_currentGeometry->hasProperty<Data::MultipoleExpansionList>()) {
@@ -2757,21 +2845,21 @@ void Molecule::initProperties()
          m_currentGeometry->getProperty<Data::MultipoleExpansionList>());
       if (!dma.isEmpty()) {
          int maxOrder(dma.first()->order());
-         MultipolePotential* dmaEsp;
+         Property::MultipolePotential* dmaEsp;
          if (maxOrder >= 0) {
-            dmaEsp = new MultipolePotential("ESP (DMA, charges)", 0, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, charges)", 0, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 1) {
-            dmaEsp = new MultipolePotential("ESP (DMA, dipoles)", 1, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, dipoles)", 1, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 2) {
-            dmaEsp = new MultipolePotential("ESP (DMA, quadrupoles)", 2, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, quadrupoles)", 2, dma);
             m_properties << dmaEsp;
          }
          if (maxOrder >= 3) {
-            dmaEsp = new MultipolePotential("ESP (DMA, octopoles)", 3, dma);
+            dmaEsp = new Property::MultipolePotential("ESP (DMA, octopoles)", 3, dma);
             m_properties << dmaEsp;
          }
       }
@@ -2779,51 +2867,10 @@ void Molecule::initProperties()
 }
 
 
-QStringList Molecule::getAvailableProperties()
-{
-  QStringList properties;
-  QList<SpatialProperty*>::iterator iter;
-  for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-      properties << (*iter)->text();
-  }
-  return properties;
-}
-
-
-Function3D Molecule::getPropertyEvaluator(QString const& name)
-{
-   QList<SpatialProperty*>::iterator iter;
-   for (iter = m_properties.begin(); iter != m_properties.end(); ++iter) {
-       if ( (*iter)->text() == name) {
-          return (*iter)->evaluator();
-       }
-   }
-
-   QLOG_WARN() << "Evaluator for property" << name << "not found, returning null function";
-   return Function3D();
-}
-
-
-void Molecule::appendSurface(Data::Surface* surfaceData)
-{
-   m_bank.append(surfaceData);
-   Layer::Surface* surfaceLayer(new Layer::Surface(*surfaceData));
-
-qDebug() << "Need to check if surface needs to be oriented to the molecular frame";
-// surfaceLayer->setFrame(getReferenceFrame());
-   connect(surfaceLayer, SIGNAL(updated()), this, SIGNAL(softUpdate()));
-   surfaceLayer->setCheckState(Qt::Checked);
-   surfaceLayer->setCheckStatus(Qt::Checked);
-   m_surfaceList.appendLayer(surfaceLayer);
-   updated();
-}
-
-
 void Molecule::generateConformersDialog()
 {
-   
    qDebug() << "Opening generate conformers dialog";
-   GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, m_molecule));
+   GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, this));
 
    dialog->setWindowModality(Qt::WindowModal);
    dialog->show();
@@ -2876,8 +2923,6 @@ void Molecule::generateConformers()
    qDebug() << "Number of conformers: " << obMol->NumConformers();
 
 
-
-
    delete score;
    delete obConformerSearch;
  
@@ -2888,9 +2933,17 @@ void Molecule::generateConformers()
    }
 
    delete obMol;
-
 }
 
+void Molecule::parametrizeMoleculeDialog()
+{
+   qDebug() << "Opening parametrize molecule dialog";
+   if (!m_parametrizeMolecule) {
+      m_parametrizeMolecule = new Amber::ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
+   }
 
+   m_parametrizeMolecule->show();
+   m_parametrizeMolecule->raise();
+}
 
 } } // end namespace IQmol::Layer

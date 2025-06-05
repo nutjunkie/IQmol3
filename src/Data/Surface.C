@@ -24,6 +24,8 @@
 #include "Data/SurfaceInfo.h"
 #include "Util/Preferences.h"
 #include "Util/QsLog.h"
+#include "Grid/Property.h"
+
 #include <QDebug>
 #include <climits>
 
@@ -31,7 +33,7 @@
 namespace IQmol {
 namespace Data {
 
-Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
+Surface::Surface(SurfaceInfo const& info) : m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_opacity = info.opacity();
    m_description = info.toString();
@@ -43,14 +45,30 @@ Surface::Surface(SurfaceInfo const& info) : m_min(0.0), m_max(0.0)
 }
 
 
-Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_min(0.0), m_max(0.0)
+Surface::Surface(Mesh const& mesh) : m_opacity(0.999), m_blend(true), m_min(0.0), m_max(0.0)
 {
    m_description = "Mesh";
    m_meshPositive = mesh;
+
 // add isovalue info to description
    m_isSigned = false;
    m_colors << Preferences::NegativeSurfaceColor();
    m_colors << Preferences::PositiveSurfaceColor();
+}
+
+
+void Surface::computeSurfaceProperty(Property::Base* property)
+{
+   if (property == 0) return;
+
+   property->setMesh(&m_meshPositive);
+   m_meshPositive.computeScalarField(property->evaluator());
+
+   if (m_isSigned) {
+       property->setMesh(&m_meshNegative);
+       m_meshNegative.computeScalarField(property->evaluator());
+   }
+   computeSurfacePropertyRange();
 }
 
 
@@ -62,18 +80,10 @@ void Surface::computeSurfaceProperty(Function3D const& function)
 }
 
 
-void Surface::computeIndexProperty()
-{
-   m_meshPositive.computeIndexField();
-   if (m_isSigned) m_meshNegative.computeIndexField();
-   computeSurfacePropertyRange();
-}
-
 
 bool Surface::hasProperty() const 
 { 
-   return m_meshPositive.hasProperty(Mesh::ScalarField) || 
-          m_meshPositive.hasProperty(Mesh::ScalarField);
+   return m_meshPositive.hasProperty(Mesh::ScalarField);
 }
 
 
@@ -126,15 +136,19 @@ void Surface::setColors(QList<QColor> const& colors)
 
 double Surface::area() const
 {
-   return m_meshPositive.surfaceArea() + m_meshNegative.surfaceArea();
+   double area(m_meshPositive.surfaceArea());
+   if (m_isSigned) area += m_meshNegative.surfaceArea();
+   return area;
 }
 
 
 void Surface::dump() const
 {
    qDebug() << " --- Surface --- ";
+   qDebug() << "Data::Surface ptr" << this;
+   qDebug() << "Area:" << area();
    m_meshPositive.dump();   
-   m_meshNegative.dump();   
+   if (m_isSigned) m_meshNegative.dump();   
    qDebug() << "Color list has" << m_colors.size() << "colors:";
    qDebug() << m_colors;
    qDebug() << "Surface is visible?" << m_isVisible;

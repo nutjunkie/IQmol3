@@ -21,31 +21,25 @@
 ********************************************************************************/
 
 #include "Atom.h"
-#include "AtomicProperty.h"
 #include <openbabel/elements.h>
-#include <QDebug>
 
+#include <QDebug>
 
 namespace IQmol {
 namespace Data {
 
-unsigned Atom::atomicNumber(QString const& symbol) 
+unsigned Atom::atomicNumber(QString const& symbol)
 {
-   unsigned z(OpenBabel::OBElements::GetAtomicNum(symbol.toLatin1().data()));
+   QString sym = symbol.toLower();
+   sym[0] = sym[0].toUpper();
+   unsigned z(OpenBabel::OBElements::GetAtomicNum(sym.toLatin1().data()));
    return z;
 }
 
 
-Atom::Atom(QString const& symbol)
+Atom::Atom(QString const& symbol, QString const& label) : m_label(label)
 {
    m_atomicNumber = atomicNumber(symbol);
-}
-
-
-void Atom::dump() const
-{
-   qDebug() << "Atom dump for Z =" << m_atomicNumber;
-   m_properties.dump();
 }
 
 } } // end namespace IQmol::Data

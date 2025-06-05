@@ -1,5 +1,4 @@
-#ifndef IQMOL_DIPOLECONFIGURATOR_H
-#define IQMOL_DIPOLECONFIGURATOR_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -16,10 +15,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-      
+
 ********************************************************************************/
 
 #include "Configurator.h"
@@ -54,5 +53,3 @@ namespace Configurator {
    };
 
 } } // end namespace IQmol::Configurator
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_H
-#define IQMOL_DATA_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,22 +28,24 @@
 #include <boost/serialization/export.hpp>
 
 
-/// The Data namespace includes POD classes that can be serialized.  The
-/// Data::Base class herein takes care of this serialization and also
-/// implements a generic copy behavior.  New Data classes must have an
-/// identifier added to the ID enum below and be added to the DataFactory 
-/// ensure the serialization process can occur.
+// The Data namespace contains POD classes that are read in from files and
+// forms the interface between the Parsers and Layers.
 
 namespace IQmol {
+
 namespace Data {
 
    typedef boost::archive::text_iarchive InputArchive;
    typedef boost::archive::text_oarchive OutputArchive;
 
    namespace Type {
+
       enum ID { Undefined = 0, 
                /*---------------------  *---------------------  *--------------------- */
                 Atom,                   AtomList,               Bank, 
+                QmAtom,                 QmAtomList,             MacroMolecule,
+                MmAtom,                 MmAtomList,             Group,
+                Pdb,                    ProteinChain,           Solvent,
                 PointCharge,            PointChargeList,        EfpFragment, 
                 EfpFragmentList,        EfpFragmentLibrary,     GridData, 
                 GridDataList,           File,                   FileList, 
@@ -56,7 +57,7 @@ namespace Data {
                 PointGroup,             Frequencies,            
                 Orbitals,               OrbitalsList,           LocalizedOrbitals, 
                 CanonicalOrbitals,      NaturalBondOrbitals,    NaturalTransitionOrbitals,
-                DysonOrbitals,
+                DysonOrbitals,          ResidueName,
                 Density,                DensityList,
                 Shell,                  ShellList,              Mesh,
                 MeshList,               Surface,                SurfaceList,
@@ -66,7 +67,7 @@ namespace Data {
                 AngleConstraint,        TorsionConstraint,      FrozenAtomsConstraint,
                /*---------------------  *---------------------  *--------------------- */
                 AtomicProperty,         AtomicSymbol,           AtomColor, 
-                AtomicNumber,
+                AtomicNumber,           AtomicLabel,
                 NmrShielding,           NmrShift,               Mass, 
                 MultipoleExpansion,     MullikenCharge,         MultipoleDerivedCharge, 
                 AtomicCharge,           GasteigerCharge,        ChelpgCharge,
@@ -77,47 +78,34 @@ namespace Data {
                 ExcitedStates,          ElectronicTransition,   ElectronicTransitionList, 
                 OrbitalSymmetries,      Vibronic,               VibronicSpectrum,
                /*---------------------  *---------------------  *--------------------- */
-                YamlNode,               PovRay,                 GeminalOrbitals
+                YamlNode,               PovRay,                 GeminalOrbitals,
+               /*---------------------  *---------------------  *--------------------- */
+                AminoAcid,              AminoAcidList,          Residue
       };
 
       QString toString(ID const);
+
+      QString chargeToString(ID const);
    }
 
    /// Base class for all data classes that can be serialized.
-   class Base {
-
+   class Base 
+   {
       public:
-         Base() { }
-         Base(Base const& that) { copy(that); }
-         virtual ~Base() { destroy(); }
+         virtual ~Base() {  }
 
-         Base& operator=(Base const& that) {
-            if (this != &that) copy(that);  return *this;
-         }
+		 // Returns a portable type identification for the Data::Factory.  New
+		 // Data classes must have their TypeID added to the Factory::create()
+		 // method before they can be used by the Factory.
+		virtual Type::ID typeID() const { return Type::Undefined; }
 
-		 /// Returns a portable type identification for the Data::Factory.  New
-		 /// Data classes must have their TypeID added to the Factory::create()
-		 /// method before they can be used by the Factory.
-		 virtual Type::ID typeID() const { return Type::Undefined; }
-
-		 /// This can't be a template function as templates and virtual
-		 /// functions don't play nicely together.
-         virtual void serialize(InputArchive&,  unsigned int const version = 0) = 0;
-         virtual void serialize(OutputArchive&, unsigned int const version = 0) = 0;
+		 // These can't be template functions as templates and virtual
+		 // functions don't play nicely together.
+         virtual void serialize(InputArchive&,  unsigned int const version = 0) { };
+         virtual void serialize(OutputArchive&, unsigned int const version = 0) { };
 
          /// This is only meant for debugging;
-		 virtual void dump() const = 0;
-
-      protected:
-         /// This should delete any resources owned by the data object.
-         virtual void destroy() { }
-
-		 /// The Base implementation is very general, but inefficient as it
-		 /// relies on serialization for the copy.  Over-ride if efficiency 
-         /// matters.
-         virtual void copy(Base const& that);
+		 virtual void dump() const { };
    };
 
 } } // end namespace IQmol::Data
-
-#endif

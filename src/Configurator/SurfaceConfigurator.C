@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -24,6 +24,11 @@
 #include "SurfaceConfigurator.h"
 #include "Layer/SurfaceLayer.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ComponentLayer.h"
+
+#include "Util/ColorDialog.h"
+#include "Util/Color.h"
+
 #include <openbabel/elements.h> 
 #include <QColorDialog>
 
@@ -34,7 +39,7 @@ namespace IQmol {
 namespace Configurator {
 
 Surface::Surface(Layer::Surface& surface) : m_surface(surface), 
-   m_gradientColors(Preferences::DefaultGradientColors()), m_initialized(false)
+   m_gradientColors(Color::toList(Color::Gradient::Default)), m_initialized(false)
 {        
    m_ui.setupUi(this);
    m_ui.ambientOcclusionCheckBox->setVisible(false);
@@ -42,11 +47,15 @@ Surface::Surface(Layer::Surface& surface) : m_surface(surface),
 
    m_ui.minValue->setVisible(false);
    m_ui.maxValue->setVisible(false);
+
+   m_ui.swapColorsButton->setEnabled(m_surface.isSigned());
+   m_ui.negativeColorButton->setVisible(m_surface.isSigned());
+   m_ui.negativeLabel->setVisible(m_surface.isSigned());
 }
 
 
 // Should only be called when the surface is constructed
-void Surface::sync()
+void Surface::init()
 {
    if (m_initialized) return;
    m_initialized = true;
@@ -71,15 +80,12 @@ void Surface::sync()
          break;
    }  
 
-   MoleculeList parents(m_surface.findLayers<Layer::Molecule>(Layer::Parents));
+   ComponentList parents(m_surface.findLayers<Layer::Component>(Layer::Parents));
    if (parents.isEmpty()) {
-      QLOG_ERROR() << "Could not find Molecule parent for surface";
+      QLOG_ERROR() << "Could not find Component parent for surface";
    }else {
-      QStringList properties(parents.first()->getAvailableProperties());
-      // remove Nuclei for non-vdW surfaces 
-      if (!m_surface.isVdW()) {
-         properties.removeAll("Nuclei");
-      }
+      QStringList properties(parents.first()->getAvailableProperties2());
+      if (!m_surface.isVdW())  properties.removeAll("Nuclei");
       m_ui.propertyCombo->addItems(properties);
    }
 }  
@@ -104,11 +110,6 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
          this, SLOT(on_positiveColorButton_clicked(bool)));
 
-      if (m_surface.isSigned()) {
-         m_ui.negativeColorButton->setVisible(true);
-         m_ui.swapColorsButton->setEnabled(true);
-      }
- 
       m_surface.clearPropertyData();
 
    }else if (type == "Nuclei") {
@@ -123,14 +124,49 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
 
       setPositiveColor(m_surface.colorPositive());
 
-      QList<Layer::Molecule*> parents = m_surface.findLayers<Layer::Molecule>(Layer::Parents);
+      bool blend(false);
+      m_surface.setColors(Color::atomColors(),blend);
+
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
+
       if (parents.isEmpty()) {
-         QLOG_ERROR() << "No Molecule found";
+         QLOG_ERROR() << "No parent Component found";
       }else {
-         m_surface.setColors(atomColorGradient(parents.first()->maxAtomicNumber()));
-         m_surface.computeIndexField();
-         updateScale();
+         m_surface.setColors(Color::residueColors(), blend);
+         m_surface.computePropertyData(parents.first()->getProperty(type));
       }
+
+    //  m_surface.computeIndexField();
+      updateScale();
+
+   }else if (type == "Residue") {
+
+      m_ui.minValue->setVisible(false);
+      m_ui.maxValue->setVisible(false);
+      m_ui.centerButton->setEnabled(false);
+      m_ui.negativeColorButton->setVisible(false);
+      m_ui.swapColorsButton->setEnabled(false);
+      m_ui.negativeLabel->setVisible(false);
+      m_ui.positiveLabel->setVisible(true);
+
+      bool blend(false);
+      setPositiveColor(Color::residueColors(), blend);
+
+      connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
+         this, SLOT(editGradientColors(bool)));
+
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
+
+      if (parents.isEmpty()) {
+         QLOG_ERROR() << "No parent Component found";
+      }else {
+         m_surface.setColors(Color::residueColors(), blend);
+         m_surface.computePropertyData(parents.first()->getProperty(type));
+      }
+
+      updateScale();
 
    }else {
 
@@ -142,18 +178,20 @@ void Surface::on_propertyCombo_currentIndexChanged(int)
       m_ui.negativeLabel->setVisible(false);
       m_ui.positiveLabel->setVisible(false);
 
-      setPositiveColor(m_gradientColors);
+     bool blend(m_surface.blend());
+     setPositiveColor(m_gradientColors, blend);
 
       connect(m_ui.positiveColorButton, SIGNAL(clicked(bool)),
          this, SLOT(editGradientColors(bool)));
 
-      QList<Layer::Molecule*> parents(m_surface.findLayers<Layer::Molecule>(Layer::Parents));
+      QList<Layer::Component*> parents = 
+         m_surface.findLayers<Layer::Component>(Layer::Parents);
 
       if (parents.isEmpty()) {
-         QLOG_ERROR() << "No Molecule found";
+         QLOG_ERROR() << "No parent Component found";
       }else {
-         m_surface.setColors(m_gradientColors);
-         m_surface.computePropertyData(parents.first()->getPropertyEvaluator(type));
+         m_surface.setColors(m_gradientColors, blend);
+         m_surface.computePropertyData(parents.first()->getProperty(type));
       }
 
       m_ui.centerButton->setEnabled(m_surface.propertyIsSigned());
@@ -223,9 +261,10 @@ void Surface::on_swapColorsButton_clicked(bool)
 }
    
 
-ColorGradient::ColorList Surface::atomColorGradient(unsigned const maxAtomicNumber)
+/*
+Color::List Surface::atomColors(unsigned const maxAtomicNumber)
 {
-   ColorGradient::ColorList atomColors;
+   Color::List atomColors;
    QColor color;
    for (unsigned int Z = 1; Z <= maxAtomicNumber; ++Z) {
        double r, g, b;
@@ -234,32 +273,29 @@ ColorGradient::ColorList Surface::atomColorGradient(unsigned const maxAtomicNumb
        atomColors.append(color);
    }
 
-/*
-   setPositiveColor(atomColors);
-   m_surface.recompile();
-   m_surface.updated();
-*/
-
    return atomColors;
 }
+*/
 
  
 void Surface::editGradientColors(bool)
 {
    QList<QColor> colors(m_gradientColors);
-   setPositiveColor(GetGradient(colors, this)); 
+   bool blend(m_surface.blend());
+   m_gradientColors = Color::GetGradient(colors, blend, this); 
+   setPositiveColor(m_gradientColors, blend);
    m_surface.recompile();
    m_surface.updated();
 }
 
 
-void Surface::setPositiveColor(QList<QColor> const& colors)
+void Surface::setPositiveColor(QList<QColor> const& colors, bool blend)
 {
    m_ui.positiveColorButton->setProperty("gradient",true);
    QString bg("background-color: ");
-   bg += ColorGradient::ToString(colors);
+   bg += Color::toString(colors,blend);
    m_ui.positiveColorButton->setStyleSheet(bg);
-   m_surface.setColors(colors);
+   m_surface.setColors(colors, blend);
 }
 
 

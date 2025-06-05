@@ -11,6 +11,7 @@ set( HEADERS
    CanonicalOrbitalsLayer.h
    ChargeLayer.h
    ClippingPlaneLayer.h
+   ComponentLayer.h
    ConstraintLayer.h
    ContainerLayer.h
    CubeDataLayer.h
@@ -30,16 +31,22 @@ set( HEADERS
    InfoLayer.h
    IsotopesLayer.h
    Layer.h
+   MacroMoleculeLayer.h
    MolecularSurfacesLayer.h
    MoleculeLayer.h
    NaturalBondOrbitalsLayer.h
    NaturalTransitionOrbitalsLayer.h
    NmrLayer.h
+   OctreeLayer.h
    OrbitalsLayer.h
    PrimitiveLayer.h
+   ProteinChainLayer.h
    RemLayer.h
+   SolventLayer.h
    SurfaceLayer.h
    SymmetryLayer.h
+   SystemLayer.h
+   TagLayer.h
    VibronicLayer.h
 )
 
@@ -49,11 +56,12 @@ set( SOURCES
    AxesMeshLayer.C
    BackgroundLayer.C
    BondLayer.C
+   Cartoon.C
+   ComponentLayer.C
    CanonicalOrbitalsLayer.C
    ChargeLayer.C
    ClippingPlaneLayer.C
    ConstraintLayer.C
-   ContainerLayer.C
    CubeDataLayer.C
    DipoleLayer.C
    DysonOrbitalsLayer.C
@@ -70,16 +78,22 @@ set( SOURCES
    IsotopesLayer.C
    Layer.C
    LayerFactory.C
+   MacroMoleculeLayer.C
    MolecularSurfacesLayer.C
    MoleculeLayer.C
    NaturalBondOrbitalsLayer.C
    NaturalTransitionOrbitalsLayer.C
    NmrLayer.C
+   OctreeLayer.C
    OrbitalsLayer.C
    PrimitiveLayer.C
+   ProteinChainLayer.C
    RemLayer.C
+   SolventLayer.C
    SurfaceLayer.C
    SymmetryLayer.C
+   SystemLayer.C
+   TagLayer.C
    VibronicLayer.C
 )
 

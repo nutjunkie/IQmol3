@@ -45,8 +45,8 @@ namespace Layer {
          unsigned nAtoms() const;
          double energy() const;
          QString label() const;
-// temp hack until these layers are re-engineered to match the Nmr model
-         Data::Geometry& data() { return m_geometry; }
+         QString residueName() const;
+         Data::Geometry& geomData() { return m_geometry; }
 
          qglviewer::Vec atomicPosition(unsigned i) const;
          double atomicCharge(unsigned i) const;

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_GLOBJECT_H
-#define IQMOL_LAYER_GLOBJECT_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -33,7 +32,6 @@ namespace IQmol {
 
 class ManipulatedFrameSetConstraint;
 class PovRayGen;
-class ClippingPlane;
 
 namespace Layer {
 
@@ -62,7 +60,7 @@ namespace Layer {
             m_clip(false)
          { 
             setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-          }
+         }
 
          virtual ~GLObject() {  }
 
@@ -76,8 +74,8 @@ namespace Layer {
             glPopMatrix();
          }
 
-		 /// Reimplement this for complex objects that require simplified
-		 /// drawing when moving to maintain interactive frame rates.
+         /// Reimplement this for complex objects that require simplified
+         /// drawing when moving to maintain interactive frame rates.
          virtual void drawFast() 
          {
             glPushMatrix();
@@ -96,6 +94,8 @@ namespace Layer {
             glCallList(m_selectedCallList);
             glPopMatrix();
          }
+
+         virtual void drawFlat() { draw(); }
 
          virtual void select()   { setProperty(Selected);   }
          virtual void deselect() { unsetProperty(Selected); }
@@ -183,5 +183,3 @@ namespace Layer {
 typedef QList<Layer::GLObject*> GLObjectList;
 
 } // end namespace IQmol
-
-#endif

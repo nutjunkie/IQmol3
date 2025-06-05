@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -41,7 +41,7 @@ namespace Layer {
 
 
 GeometryList::GeometryList(Data::GeometryList& geometryList)
- : Base(geometryList.label()), m_configurator(0), m_geometryList(geometryList),
+ : Base(geometryList.label()), m_molecule(0), m_configurator(0), m_geometryList(geometryList),
    m_speed(0.125), m_reperceiveBonds(false), m_bounce(false), m_loop(false), 
    m_allowModifications(false)
 {
@@ -126,6 +126,7 @@ void GeometryList::cloneLastGeometry()
 }
 
 
+
 void GeometryList::removeGeometry()
 {
     if (m_molecule == 0) return;
@@ -139,7 +140,7 @@ void GeometryList::removeGeometry()
            QList<Geometry*> geometryLayers(findLayers<Geometry>(Children));
            QList<Geometry*>::iterator geom;
            for (geom = geometryLayers.begin(); geom != geometryLayers.end(); ++geom) {
-               if (&((*geom)->data()) == target) {
+               if (&((*geom)->geomData()) == target) {
                   //qDebug() << "Layer::Geometry Match found"<< target;
                   removeLayer(*geom);
                   m_geometryList.removeAll(target);
@@ -165,10 +166,10 @@ void GeometryList::setCurrentGeometry(unsigned const index)
    if (!geometry) return;
 
    if (m_allowModifications) m_molecule->saveToCurrentGeometry();
-   m_molecule->setGeometry(geometry->data());
+   m_molecule->setGeometry(geometry->geomData());
 
    if (m_reperceiveBonds) {
-      m_molecule->reperceiveBonds();
+      m_molecule->reperceiveBonds(true);
    }else {
       update(); 
    }

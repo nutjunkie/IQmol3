@@ -24,6 +24,7 @@ set( HEADERS
    MoleculeConfigurator.h
    MullikenDecompositionsDialog.h
    NmrConfigurator.h
+   OctreeConfigurator.h
    OrbitalsConfigurator.h
    SurfaceAnimatorDialog.h
    SurfaceConfigurator.h
@@ -52,6 +53,7 @@ set( SOURCES
    MoleculeConfigurator.C
    MullikenDecompositionsDialog.C
    NmrConfigurator.C
+   OctreeConfigurator.C
    OrbitalsConfigurator.C
    SurfaceAnimatorDialog.C
    SurfaceConfigurator.C
@@ -79,6 +81,7 @@ set( UI_FILES
    MoleculeConfigurator.ui
    MullikenDecompositionsDialog.ui
    NmrConfigurator.ui
+   OctreeConfigurator.ui
    OrbitalsConfigurator.ui
    ScalarConstraintConfigurator.ui
    SurfaceAnimatorDialog.ui

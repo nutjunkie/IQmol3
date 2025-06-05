@@ -414,7 +414,7 @@ void ViewerModel::connectMolecule(Layer::Molecule* molecule)
       this, SLOT(computeEnergy()));
 
    connect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateObjecctLists()));
+      this, SLOT(updateObjectLists()));
    connect(molecule, SIGNAL(softUpdate()), 
      this, SIGNAL(updated()));
    connect(molecule, SIGNAL(postMessage(QString const&)), 

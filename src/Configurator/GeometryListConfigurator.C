@@ -118,7 +118,7 @@ void GeometryList::load()
        energy = new QTableWidgetItem( (*iter)->text() );
        energy->setTextAlignment(Qt::AlignCenter|Qt::AlignVCenter);
        table->setItem(row, 0, energy);
-       Data::Geometry& geom((*iter)->data());
+       Data::Geometry& geom((*iter)->geomData());
 
        if (geom.hasProperty<Data::Constraint>()) {
           x = geom.getProperty<Data::Constraint>().value();

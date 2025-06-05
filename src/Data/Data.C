@@ -21,11 +21,34 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include <sstream>
+
 
 namespace IQmol {
 namespace Data {
+
 namespace Type {
+
+QString chargeToString(ID const id)
+{
+    QString s("Unspecified");
+
+    switch (id) {
+       case GasteigerCharge:         s = "ESP (Gasteiger)";         break;
+       case MullikenCharge:          s = "ESP (Mulliken)";          break;
+       case MultipoleDerivedCharge:  s = "ESP (MDC)";               break;
+       case ChelpgCharge:            s = "ESP (GHELPG)";            break;
+       case HirshfeldCharge:         s = "ESP (Hershfeld)";         break;
+       case LowdinCharge:            s = "ESP (Lowdin)";            break;
+       case NaturalCharge:           s = "ESP (Natural)";           break;
+       case MerzKollmanEspCharge:    s = "ESP (Merz-Kollma/ESP)";   break;
+       case MerzKollmanRespCharge:   s = "ESP (Merz-Kollma/RESP)";  break;
+       default:                                                     break;
+    } 
+
+    return s;
+}
+
+
 
 QString toString(ID const id)
 {
@@ -33,14 +56,25 @@ QString toString(ID const id)
 
    switch (id) {
       case Undefined:                  s = "Data::Undefined";                 break;
+
       case Atom:                       s = "Data::Atom";                      break;
       case AtomList:                   s = "Data::List<Atom>";                break;
+      case QmAtom:                     s = "Data::QmAtom";                    break;
+      case QmAtomList:                 s = "Data::List<QmAtom>";              break;
+      case MmAtom:                     s = "Data::MmAtom";                    break;
+      case MmAtomList:                 s = "Data::List<MmAtom>";              break;
+      case MacroMolecule:              s = "Data::MacroMolecule";             break;
+      case Group:                      s = "Data::Group";                     break;
+      case Pdb:                        s = "Data::Pdb";                       break;
+      case ProteinChain:               s = "Data::ProteinChain";              break;
+      case Solvent:                    s = "Data::Solvent";                   break;
+
       case Bank:                       s = "Data::Bank";                      break;
       case PointCharge:                s = "Data::PointCharge";               break;
       case PointChargeList:            s = "Data::List<PointCharge>";         break;
       case EfpFragment:                s = "Data::EfpFragment";               break;
-      case EfpFragmentList:            s = "Data::List<EfpFragment>";         break;
       case EfpFragmentLibrary:         s = "Data::EfpFragmentLibrary";        break;
+      case EfpFragmentList:            s = "Data::List<EfpFragment>";         break;
       case CubeData:                   s = "Data::CubeData";                  break;
       case GridData:                   s = "Data::GridData";                  break;
       case GridDataList:               s = "Data::GridDataList";              break;
@@ -99,6 +133,7 @@ QString toString(ID const id)
       case ScfEnergy:                  s = "Data::ScfEnergy";                 break;
       case ForceFieldEnergy:           s = "Data::ForceFieldEnergy";          break;
       case PointGroup:                 s = "Data::PointGroup";                break;
+      case ResidueName:                s = "Data::ResidueName";               break;
 
       case Constraint:                 s = "Data::Constraint:";               break;
       case PositionConstraint:         s = "Data::PositionConstraint:";       break;
@@ -130,38 +165,16 @@ QString toString(ID const id)
       case YamlNode:                   s = "Data::YamlNode";                  break;
       case PovRay:                     s = "Data::PovRay";                    break;
       case GeminalOrbitals:            s = "Data::GeminalOrbitals";           break;
+
+      case AminoAcid:                  s = "Data::AminoAcid";                 break;
+      case AminoAcidList:              s = "Data::AminoAcidList";             break;
+      case Residue:                    s = "Data::Residue";                   break;
    }
 
    return s;
 }
 
 } // end namespace Type
-
-
-void Base::copy(Base const& that)
-{
-   if (typeID() == Type::Undefined) {
-      // Base copy ctor, nothing to do.
-      return;
-   }else if (typeID() != that.typeID()) {
-       std::string msg("Invalid attempt to copy ");
-       msg += toString(that.typeID()).toStdString();
-       msg += " to ";
-       msg += toString(typeID()).toStdString();
-       throw  std::runtime_error(msg);
-    }
-
-    std::stringstream ss;
-    {
-       OutputArchive archive(ss);
-       const_cast<Base&>(that).serialize(archive);
-    }
-    destroy();
-    {
-       InputArchive archive(ss);
-       serialize(archive);
-    }
-}
 
 
 } } // end namespace IQmol::Data

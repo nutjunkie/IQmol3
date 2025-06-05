@@ -17,11 +17,12 @@
 
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-   
+
 ********************************************************************************/
 
 #include "Viewer/Animator.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/SurfaceLayer.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 

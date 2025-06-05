@@ -24,6 +24,7 @@
 
 #include "QGLViewer/vec.h"
 #include "Data.h"
+#include <vector>
 
 
 namespace IQmol {
@@ -106,7 +107,7 @@ namespace Data {
 		 /// Shell values are stored in this static array, the length of which
 		 /// is sufficient for up to h angular momentum.  This could cause 
          /// problems if Shells are ever used in parallel.
-         QList<double> m_values;
+         std::vector<double> m_values;
 
 		 /// Computes and saves the significant radius of the shell,
 		 /// as determined by thresh.  Note that this is set to

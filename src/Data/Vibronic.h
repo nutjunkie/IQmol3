@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_VIBRONIC_H
-#define IQMOL_DATA_VIBRONIC_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -81,10 +80,10 @@ namespace Data {
 
       private:
          Theory m_theory;
-         double m_max;
-         double m_min;
          int m_mode;
          QList<double> m_data;
+         double m_min;
+         double m_max;
    };
 
 
@@ -170,5 +169,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

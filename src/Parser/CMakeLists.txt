@@ -13,12 +13,14 @@ set( SOURCES
    ExternalChargesParser.C
    FormattedCheckpointParser.C
    GdmaParser.C
+   GroParser.C
    IQmolParser.C
    MeshParser.C
    OpenBabelParser.C
    ParseFile.C
    ParseJobFiles.C
    Parser.C
+   PdbParser.C
    PovRayParser.C
    QChemInputParser.C
    QChemOutputParser.C
@@ -42,11 +44,8 @@ target_include_directories(${LIB} PRIVATE
    "${OpenBabel3_INCLUDE_DIRS}"
 )
 target_link_libraries(${LIB} PRIVATE
-   ${OpenBabel3_LIBRARIES}
    Qt5::Core
    Qt5::Gui
-   Qt5::Widgets
-   Qt5::Network
    Qt5::Xml
    Qt5::OpenGL
 )

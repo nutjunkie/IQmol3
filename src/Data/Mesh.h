@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_MESH_H
-#define IQMOL_DATA_MESH_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,13 +28,9 @@
 #include <QPair>
 
 
+
 namespace IQmol {
 
-class MeshDecimator;
-
-namespace Parser {
-   class Mesh;
-}
 
 namespace Layer {
    class Surface;
@@ -54,22 +49,28 @@ namespace Data {
    /// Wrapper around the OpenMesh TriMesh class to provide serialization functionality.
    class Mesh : public Base {
 
-      using Base::copy;
       friend class boost::serialization::access;
-      friend class IQmol::Parser::Mesh;
-      friend class IQmol::MeshDecimator;
       friend class IQmol::Layer::Surface;
 
     public:
-         typedef OMMesh::VertexHandle Vertex;
-         typedef OMMesh::FaceHandle Face;
-         typedef OMMesh::Point Point;
-         typedef OMMesh::Normal Normal;
+         typedef OMMesh::VertexHandle  Vertex;
+         typedef OMMesh::FaceHandle    Face;
+         typedef OMMesh::Point         Point;
+         typedef OMMesh::Normal        Normal;
          typedef QPair<Vertex, Vertex> Edge;
-         typedef QMap<Edge, Vertex> NewVertexMap;
+         typedef QMap<Edge, Vertex>    NewVertexMap;
+         typedef std::function<double (Vertex const&)> VertexFunction;
 
       public:
-         enum Property { FaceNormals, VertexNormals, FaceCentroids, ScalarField, MeshIndex };
+         enum Property 
+         { 
+            FaceNormals, 
+            VertexNormals,
+            FaceCentroids, 
+            ScalarField, 
+            MeshIndex, 
+            IndexField 
+        };
 
          Mesh();
          Mesh(Mesh const& that);
@@ -110,9 +111,11 @@ namespace Data {
          /// FaceNormals/Centroids and VertexNormals as they are always required. 
          void deleteProperty(Property const property);
 
-         bool computeScalarField(Function3D const&);
-         bool computeIndexField();
+         bool setIndexField(Vertex const& vertex, int const);
+         int indexFieldValue(Vertex const& vertex) const;
 
+         bool computeScalarField(Function3D const&);
+         bool computeScalarField(VertexFunction const&);
          void getScalarFieldRange(double& min, double& max);
 
          double scalarFieldValue(OMMesh::VertexHandle const& vertex) const;
@@ -137,9 +140,14 @@ namespace Data {
 
          void dump() const;
 
-      protected:
-          OMMesh const& data() const { return m_omMesh; } 
-          OMMesh& data() { return m_omMesh; } 
+         /// Computes the face centroids and updates the face normals
+         bool computeFaceNormals();
+
+         bool computeVertexNormals();
+
+         OMMesh const& data() const { return m_omMesh; } 
+         OMMesh& data() { return m_omMesh; } 
+
 
       private:
 		 /// Specifies the format that the mesh is stored in the archive.
@@ -147,6 +155,7 @@ namespace Data {
 
 		 /// String identifiers for custom properties
          static std::string const s_scalarFieldString;
+         static std::string const s_indexFieldString;
          static std::string const s_meshIndexString;
          static std::string const s_faceCentroidsString;
 
@@ -154,11 +163,6 @@ namespace Data {
          static double const s_thresh;
 
          void copy(Mesh const& that);
-
-         /// Computes the face centroids and updates the face normals
-         bool computeFaceNormals();
-
-         bool computeVertexNormals();
 
          // This requests the properties that every mesh must have, all the time
          void requestDefaultProperties();
@@ -190,10 +194,15 @@ namespace Data {
          /// Property handle for a scalar quantitiy, such as the ESP.
          OpenMesh::VPropHandleT<double> m_scalarFieldHandle;
 
+         /// Property handle for an indexed quantitiy, such as the residue.
+         OpenMesh::VPropHandleT<int> m_indexFieldHandle;
+
 		 /// Property handle for atom indices.  This is used for coloring the
 		 /// mesh based on atomic properties such as element number or charge.
          OpenMesh::FPropHandleT<int>    m_meshIndexHandle;
    };
+
+   inline double NullFunction(Mesh::Vertex const&) { return 0.0; }
 
    class MeshList : public List<Mesh> { 
       public:
@@ -201,5 +210,3 @@ namespace Data {
    }; 
 
 } } // end namespace IQmol::Data
-
-#endif

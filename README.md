@@ -19,3 +19,14 @@ The source relies on submodules, so to checkout the code use the recursive flag:
 ```
 git clone --recursive https://github.com/nutjunkie/IQmol3.git
 ```
+
+To compile, make sure that you QT installation can be found by cmake.  This
+means that the CMAKE\_PREFIX\_PATH environment variable should include the
+directory containing the Qt5Config.cmake file
+```
+export CMAKE_PREFIX_PATH=/directory/containing_Qt5Config.cmake
+./configure
+cd build
+make
+```
+
