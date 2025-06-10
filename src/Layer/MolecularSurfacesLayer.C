@@ -160,7 +160,7 @@ template <class T>
 Data::Surface* MolecularSurfaces::calculateSuperposition(Data::SurfaceInfo const& surfaceInfo, 
    bool includeCharges)
 {
-   QMap<int, T*> uniqueAtoms;;
+   QMap<int, T*> uniqueAtoms;
    QList<AtomicDensity::Base*> atomList;
    QList<Vec> coordinates;
    int atomicNumber;
@@ -172,6 +172,11 @@ Data::Surface* MolecularSurfaces::calculateSuperposition(Data::SurfaceInfo const
 
    for (iter = atoms.begin(); iter != atoms.end(); ++iter) {
        atomicNumber = (*iter)->getAtomicNumber();
+
+       if (!T::isAvailable(atomicNumber)) {
+          QLOG_WARN() << "Atomic density not available for Z = " << atomicNumber;
+          continue;
+       }
 
        if (includeCharges) {
           atom = new T(atomicNumber);

@@ -53,6 +53,7 @@ void HttpReply::finishedSlot()
 
    QString status(headerValue("Qchemserv-Status"));
    QString cloud(headerValue("Qcloud-Server-Status"));
+   //add Gromacs-Server-Status
 
    if (status.contains("OK") || cloud.contains("OK")) {
       if (m_status != Error) m_status = m_interrupt ? Interrupted : Finished;
@@ -128,11 +129,17 @@ void HttpReply::setUrl(QString const& path)
    int port(m_connection->port());
 
    QString url(path);
+   //QLOG_DEBUG() << "URL now is " <<  url;
    url.prepend("/");
    if (port != 80) url.prepend(":" + QString::number(port));
+   //QLOG_DEBUG() << "URL now is " <<  url;
    url.prepend(m_connection->hostname());
+   //QLOG_DEBUG() << "URL now is " <<  url;
+
    url.replace("//", "/");
+   //QLOG_DEBUG() << "URL now is " <<  url;
    url.prepend(m_https ? "https://" : "http://");
+   //QLOG_DEBUG() << "URL now is " <<  url;
 
    m_url.setUrl(url);
    QLOG_DEBUG() << "Setting URL to" <<  m_url;
@@ -329,7 +336,6 @@ HttpPost::HttpPost(HttpConnection* connection, QString const& path,
    setUrl(path);
 }
 
-
 void HttpPost::run()
 {
    if (!m_connection->m_networkAccessManager) {
@@ -372,5 +378,55 @@ void HttpPost::run()
    m_timer.start();
 }
 
+
+// --------- HttpJsonPost ---------
+
+//create analogous called httppost json (put json code there)
+/// @param connection 
+/// @param path 
+/// @param postData 
+HttpJsonPost::HttpJsonPost(HttpConnection* connection, QString const& path,  
+   QHttpMultiPart* postData) : HttpReply(connection), m_postData(postData)
+{
+   setUrl(path);
+}
+
+
+void HttpJsonPost::run()
+{
+   if (!m_connection->m_networkAccessManager) {
+      m_message = "Invalid Network Access Manager";
+      m_status = Error;
+      finished();
+      return;
+   }
+
+   m_status = Running;
+   QNetworkRequest request;
+
+   request.setUrl(m_url);
+
+   /*QStringMap::iterator it;
+   for (it = m_headers.begin(); it != m_headers.end(); ++it) {
+       request.setRawHeader(it.key().toLatin1(), it.value().toLatin1());
+   }*/
+   //QByteArray data(m_posyoutData.toLatin1());
+   m_networkReply = m_connection->m_networkAccessManager->post(request, m_postData);
+
+   //QList<QByteArray> headers(m_networkReply->request().rawHeaderList());
+
+   /*QList<QByteArray>::iterator iter;
+   for (iter = headers.begin(); iter != headers.end(); ++iter) {
+       qDebug() << "JSONPOSTHEADER:" << *iter << m_networkReply->request().rawHeader(*iter);
+   }*/
+
+   connect(m_networkReply, SIGNAL(readyRead()), &m_timer, SLOT(start()));
+   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readToString()));
+   connect(m_networkReply, SIGNAL(finished()),  this, SLOT(finishedSlot()) );
+   connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(errorSlot(QNetworkReply::NetworkError)));
+
+   m_timer.start();
+}
 
 } } // end namespace IQmol::Network

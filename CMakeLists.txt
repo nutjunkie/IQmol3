@@ -10,7 +10,7 @@ project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #set(CMAKE_BUILD_TYPE Debug)
@@ -59,6 +59,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
 add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
 
 add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
+
+if (WITH_GROMACS)
+   add_compile_definitions(GROMACS)
+   add_subdirectory(src/Gromacs)
+endif()
 
 
 if(QARCHIVE)

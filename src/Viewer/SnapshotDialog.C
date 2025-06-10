@@ -85,6 +85,7 @@ void SnapshotVideoDialog::finished()
 {
    m_framerate = m_dialog.framerate->value();
    m_usePng    = m_dialog.png->isChecked();
+   m_size      = getSize(m_dialog.sizeCombo->currentIndex());
    m_continuousRecording = m_dialog.continuousRecording->isChecked();
    accept();
 }

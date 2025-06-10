@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_SURFACE_H
-#define IQMOL_DATA_SURFACE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -128,5 +127,3 @@ void computeSurfaceProperty(Data::Mesh::VertexFunction const&);
    };
 
 } } // end namespace IQmol::Data
-
-#endif

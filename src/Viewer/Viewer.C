@@ -27,6 +27,7 @@
 #include "ViewerModel.h"
 #include "QsLog.h"
 #include "Layer/MoleculeLayer.h"
+#include "Layer/ChargeLayer.h"
 #include "Layer/EfpFragmentLayer.h"
 #include "Preferences.h"
 #include "PovRayGen.h"
@@ -81,7 +82,8 @@ Viewer::Viewer(ViewerModel& model, QWidget* parent) :
    m_blockUpdate(false),
    m_shaderLibrary(0),
    m_shaderDialog(0),
-   m_cameraDialog(0)
+   m_cameraDialog(0),
+   m_selectionBuffer(0)
 { 
    // Disable the default keybindings, the menu handles those we want
    setShortcut(DRAW_AXIS, 0);
@@ -114,6 +116,7 @@ Viewer::~Viewer()
    if (m_shaderDialog) delete m_shaderDialog;
    if (m_shaderLibrary) delete m_shaderLibrary;
    if (m_cameraDialog) delete m_cameraDialog;
+   if (m_selectionBuffer) delete m_selectionBuffer;
 }
 
 
@@ -172,7 +175,6 @@ void Viewer::init()
    //glLightf( GL_LIGHT1, GL_CONSTANT_ATTENUATION,  0.1f);
    //glLightf( GL_LIGHT1, GL_LINEAR_ATTENUATION,    0.3f);
    //glLightf( GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.3f);
-
 }
 
 
@@ -216,7 +218,7 @@ void Viewer::editCamera()
 
       //connect(m_cameraDialog, SIGNAL(interpolated()), this, SLOT(updateGL()));
       connect(m_cameraDialog, SIGNAL(interpolated()), this, SLOT(animate()));
-   }
+  }
    m_cameraDialog->sync();
    m_cameraDialog->show();
    m_cameraDialog->raise();
@@ -230,6 +232,26 @@ void Viewer::setBackgroundColor(QColor const& color)
 }
 
 
+void Viewer::resizeSelectionBuffer(QSize const& size)
+{
+   if (m_selectionBuffer) delete m_selectionBuffer;
+
+   QOpenGLFramebufferObjectFormat format;
+   format.setAttachment(QOpenGLFramebufferObject::NoAttachment); // No depth/stencil buffer needed
+   format.setInternalTextureFormat(GL_RGB); 
+   //format.setSamples(1);
+   //format.setSamples(8);
+
+   m_selectionBuffer = new QOpenGLFramebufferObject(size, format);
+return;
+   if (!m_selectionBuffer->isValid() ) {
+      QLOG_WARN() << "Selection buffer initialization failed";
+   }else {
+      QLOG_INFO() << "Selection buffer initialized";
+   }
+}
+
+
 
 void Viewer::resizeGL(int width, int height)
 {
@@ -240,7 +262,10 @@ void Viewer::resizeGL(int width, int height)
 
    GLdouble m[16]; 
    camera()->getProjectionMatrix(m);
-   m_shaderLibrary->resizeScreenBuffers(QSize(width, height), m);
+
+   QSize size(width,height);
+   resizeSelectionBuffer(size);
+   m_shaderLibrary->resizeScreenBuffers(size, m);
 }
 
 
@@ -444,20 +469,14 @@ Vec Viewer::worldCoordinatesOf(QMouseEvent* e, qglviewer::Vec const& hint)
 void Viewer::setLabelType(int const type)
 {
    s_labelFont.setPointSize(Preferences::LabelFontSize());
-   switch (type) {
-      case Layer::Atom::None:      m_labelType = Layer::Atom::None;      break;
-      case Layer::Atom::Index:     m_labelType = Layer::Atom::Index;     break;
-      case Layer::Atom::Element:   m_labelType = Layer::Atom::Element;   break;
-      case Layer::Atom::Charge:    m_labelType = Layer::Atom::Charge;    break;
-      case Layer::Atom::Mass:      m_labelType = Layer::Atom::Mass;      break;
-      case Layer::Atom::Spin:      m_labelType = Layer::Atom::Spin;      break;
-      case Layer::Atom::Reindex:   m_labelType = Layer::Atom::Reindex;   break;
-      case Layer::Atom::NmrShift:  m_labelType = Layer::Atom::NmrShift;  break;
-      default:
-         QLOG_DEBUG() << "Unimplemented atom label type:" << type;
-         m_labelType = Layer::Atom::None;    
-         break;
+
+   try {
+      m_labelType = static_cast<Layer::Atom::LabelType>(type);
+   } catch (...) {
+      QLOG_DEBUG() << "Unimplemented atom label type:" << type;
+      m_labelType = Layer::Atom::None;    
    }
+
    update();
 }
 
@@ -851,7 +870,309 @@ void Viewer::blockUpdate(bool tf)
 }
 
 
+
+
+
+
+QColor objectToColor(int id) 
+{
+    int r = (id & 0xFF0000) >> 16;
+    int g = (id & 0x00FF00) >> 8;
+    int b = (id & 0x0000FF);
+    return QColor(r, g, b);
+}
+
+
+int colorToObjectID(unsigned char r, unsigned char g, unsigned char b) 
+{
+    return (r << 16) | (g << 8) | b;
+}
+
+
+void Viewer::testSelectionRender()
+{
+//makeCurrent();
+glPushAttrib(GL_VIEWPORT_BIT);
+glViewport(0, 0, width(), height());
+QOpenGLFramebufferObject fbo(width(), height(), QOpenGLFramebufferObject::CombinedDepthStencil);
+fbo.bind();
+glClearColor(1, 1, 1, 1);
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+// Render objects with unique colors
+int count(0);
+for (count = 0; count < m_opaqueObjects.size(); ++count) {
+        QColor idColor = objectToColor(count);
+        glColor3i(idColor.red(), idColor.green(), 50*idColor.blue());
+qDebug() << "   Drawing object" << count << "with color " << idColor;
+        m_opaqueObjects[count]->drawFlat(); 
+    }
+
+    GLObjectList buildObjects(m_currentBuildHandler->buildObjects());
+    for (int j = 0; j < int(buildObjects.size()); ++j,++count) {
+       buildObjects.at(j)->drawFlat();
+}
+
+
+QImage fboImage(fbo.toImage());
+fboImage.save("fbo_dump2.png");
+
+fbo.release();
+glClearColor(0, 0, 0, 0);
+glClear(GL_COLOR_BUFFER_BIT);
+glPopAttrib();
+}
+
+
 // ---------------- Selection functions ---------------
+void Viewer::renderSelectionBuffer()
+{
+return testSelectionRender();
+    if (!m_selectionBuffer) {
+       qDebug() << "Selection buffer uninitialized";
+       return;
+    }
+
+    GLenum error(GL_NO_ERROR);
+
+    //makeCurrent();
+
+    if (m_selectionBuffer->bind()) {
+       qDebug() << "Selection buffer bind true";
+    }else {
+       qDebug() << "Selection buffer bind false";
+    }
+    error = glGetError();
+
+if (QOpenGLContext::currentContext()->isValid()) {
+    qDebug() << "OpenGL context is valid.";
+}else {
+    qDebug() << "OpenGL context is INVALID.";
+}
+
+if (error == GL_INVALID_OPERATION) {
+    qDebug() << "OpenGL Invalid operation encountered" << error;
+}
+
+if (error != GL_NO_ERROR) {
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    qDebug() << "OpenGL Error (FBO):" << error;
+    qDebug() << "Buffer status" << status;
+    qDebug() << "Buffer complete status" << GL_FRAMEBUFFER_COMPLETE;
+
+   if (status != GL_FRAMEBUFFER_COMPLETE) {
+       switch (status) {
+           case GL_FRAMEBUFFER_UNDEFINED:
+               qDebug() << "Framebuffer undefined." << GL_FRAMEBUFFER_UNDEFINED;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+               qDebug() << "Framebuffer incomplete attachment." << GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+               qDebug() << "Framebuffer missing attachment." 
+                       << GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+               qDebug() << "Incomplete draw buffer." << GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+               qDebug() << "Incomplete read buffer." << GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER;
+               break;
+           case GL_FRAMEBUFFER_UNSUPPORTED:
+               qDebug() << "Framebuffer unsupported." << GL_FRAMEBUFFER_UNSUPPORTED;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+               qDebug() << "Incomplete multisample buffer." << GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE;
+               break;
+           case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+               qDebug() << "Incomplete layer targets." << GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS;
+               break;
+           default:
+               qDebug() << "Unknown framebuffer error.";
+       }
+   }
+}
+
+
+if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    qDebug() << "Framebuffer is not complete!";
+    // Handle FBO setup issues here
+}
+
+    // Clear the FBO with white
+    glClearColor(1, 0, 0, 1); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render objects with unique colors
+    int count(0);
+    for (count = 0; count < m_opaqueObjects.size(); ++count) {
+        QColor idColor = objectToColor(count);
+        glColor3i(idColor.red(), idColor.green(), idColor.blue());
+qDebug() << "   Drawing object" << count << "with color " << idColor;
+        m_opaqueObjects[count]->drawFlat(); 
+    }
+
+    GLObjectList buildObjects(m_currentBuildHandler->buildObjects());
+    for (int j = 0; j < int(buildObjects.size()); ++j,++count) {
+       buildObjects.at(j)->drawFlat();
+    }
+
+#if 0
+    GLubyte pixel[3];
+for (int x(0); x < m_selectionBuffer->width(); ++x) {
+   for (int y(0); y < m_selectionBuffer->height(); ++y) {
+      glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
+
+     // if (pixel[0] > 0 ||pixel[1] > 0 ||pixel[2] > 0) {
+     if (pixel[0] == 0 && pixel[1] == 0  && pixel[2] > 0) {
+    qDebug() << "I fucken found it" << pixel[2];
+     
+      }
+   }
+}
+
+#endif
+    QImage fboImage(m_selectionBuffer->toImage());
+    fboImage.save("fbo_dump.png");
+
+    m_selectionBuffer->release();
+glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+}
+
+
+
+void Viewer::makeSelection(QPoint const& p) 
+{
+   if (!m_selectionBuffer) return;
+   //glFlush();
+
+   // Convert mouse position to FBO coordinates (inverted Y-axis)
+   int fboX = p.x();
+   int fboY = m_selectionBuffer->height() - p.y() - 1;
+
+    m_selectionBuffer->bind();
+    GLubyte pixel[3];
+qDebug() << "  Reading offset: " << fboX << fboY;
+    glReadPixels(fboX, fboY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
+qDebug() << "  values " << +pixel[0] << +pixel[1] << +pixel[2];
+
+    // Decode the object ID from the color
+    int id = colorToObjectID(pixel[0], pixel[1], pixel[2]);
+    qDebug() << "Object with ID" << id << "selected";
+
+#if 0
+for (int x(0); x < m_selectionBuffer->width(); ++x) {
+   for (int y(0); y < m_selectionBuffer->height(); ++y) {
+      //glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel);
+
+      if (pixel[0] > 0 ||pixel[1] > 0 ||pixel[2] > 0) {
+    qDebug() << "I fucken found it";
+     
+      }
+   }
+}
+#endif
+
+
+    m_selectionBuffer->release();
+
+/*
+   // Get the number of objects that were seen through the pick matrix frustum.
+   m_selectionHits = glRenderMode(GL_RENDER);
+   setSelectRegionWidth(5);
+   setSelectRegionHeight(5);
+   //QLOG_TRACE() << "Viewer::endSelection with nhits:" << m_selectionHits;
+
+   if (m_selectionHits == -1) {
+      QLOG_WARN() << "Selection overflow";
+      setSelectedName(-1);
+      return;
+   } else if (m_selectionHits == 0) {
+      setSelectedName(-1);
+      return;
+   }
+
+   // If the user clicks, then we only select the front object
+   Handler::SelectionMode selectionMode(m_currentHandler->selectionMode());
+   if ( (selectionMode == Handler::AddClick) || 
+        (selectionMode == Handler::RemoveClick) ||
+        (selectionMode == Handler::ToggleClick) ) {
+
+      GLuint zMin = (selectBuffer())[1];
+      int iMin = 0;
+
+      for (int i = 1; i < m_selectionHits; ++i) {
+          if ((selectBuffer())[4*i+1] < zMin) {
+             iMin = i;
+             zMin = (selectBuffer())[4*i+1];
+          }
+      }
+
+      GLuint name = (selectBuffer())[4*iMin+3];
+
+
+#if 0
+      if (name < m_objects.size()) {
+         QLOG_TRACE() << "  Selection made:" << iMin << name << m_objects[name]->index();
+      }else {
+         QLOG_TRACE() << "  Selection made:" << iMin << name << "Out of range!";
+      }
+#endif
+
+
+      enableUpdate(false);
+      setSelectedName(4*iMin+3);
+
+      if (selectionMode == Handler::AddClick) {
+         addToSelection(name);
+      }else if (selectionMode == Handler::RemoveClick) {
+         removeFromSelection(name);
+      }else {
+         toggleSelection(name);
+      }
+
+      enableUpdate(true);
+      update();
+
+   }else {
+      // The selection rectangle is non-zero so we select all the objects
+      // behind it.
+   
+      // Interpret results : each object created 4 values in the selectBuffer().
+      // (selectBuffer())[4*i+3] is the id pushed on the stack.
+
+	  // Temporarily switch off GL updating so the selection routines don't
+	  // trigger an update which makes the slected item appear incrementally.
+      enableUpdate(false);
+      for (int i = 0; i < m_selectionHits; ++i) {
+          switch (m_currentHandler->selectionMode()) {
+             case Handler::Add: 
+                addToSelection((selectBuffer())[4*i+3]); 
+                break;
+             case Handler::Remove: 
+                removeFromSelection((selectBuffer())[4*i+3]);  
+                break;
+             case Handler::Toggle: 
+                toggleSelection((selectBuffer())[4*i+3]);  
+                break;
+             default: 
+                addToSelection((selectBuffer())[4*i+3]); 
+                break;
+          }
+      }
+      enableUpdate(true);
+      update();
+   }
+   m_selectedObjects = m_viewerModel.getSelectedObjects();
+   //QLOG_TRACE() << "              number of objects:" << m_objects.size();
+   //QLOG_TRACE() << "     number of selected objects:" << m_selectedObjects;
+*/
+}
+
+
+
+
 void Viewer::drawWithNames() 
 {
    int count(0);
@@ -874,12 +1195,13 @@ void Viewer::drawWithNames()
        object->draw();
        glPopName();
    }
+//renderSelectionBuffer();
 }
 
 
-void Viewer::endSelection(const QPoint&) 
+void Viewer::endSelection(const QPoint& p) 
 {
-   glFlush();
+//makeSelection(p);
 
    // Get the number of objects that were seen through the pick matrix frustum.
    m_selectionHits = glRenderMode(GL_RENDER);

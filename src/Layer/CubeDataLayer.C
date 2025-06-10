@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -26,7 +26,7 @@
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Data/SurfaceInfo.h"
-#include "Grid/SpatialProperty.h" 
+#include "Grid/Property.h" 
 #include "Data/CubeData.h"
 #include "Util/QsLog.h"
 
@@ -37,7 +37,7 @@ namespace IQmol {
 namespace Layer {
 
 CubeData::CubeData(Data::CubeData const& cube) : Base("Cube Data"), m_configurator(*this),
-   m_cube(cube)
+   m_cube(cube), m_molecule(0)
 {
    connect(&m_configurator, SIGNAL(calculateSurface(Data::SurfaceInfo const&)),
       this, SLOT(calculateSurface(Data::SurfaceInfo const&)));
@@ -62,9 +62,9 @@ void CubeData::setMolecule(Molecule* molecule)
 }
 
 
-GridBased* CubeData::createProperty() const
+Property::GridBased* CubeData::createProperty() const
 {
-   return new GridBased(text(), m_cube);
+   return new Property::GridBased(text(), m_cube);
 }
 
 

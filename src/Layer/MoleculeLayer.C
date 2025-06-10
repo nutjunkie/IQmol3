@@ -67,7 +67,9 @@
 #include "Parser/IQmolParser.h"
 #include "FileDialog.h"
 
+#ifdef WITH_AMBER
 #include "Amber/ParametrizeMoleculeDialog.h"
+#endif
 
 #include "openbabel/mol.h"
 #include "openbabel/bond.h"
@@ -2937,6 +2939,7 @@ void Molecule::generateConformers()
 
 void Molecule::parametrizeMoleculeDialog()
 {
+#ifdef WITH_AMBER
    qDebug() << "Opening parametrize molecule dialog";
    if (!m_parametrizeMolecule) {
       m_parametrizeMolecule = new Amber::ParametrizeMoleculeDialog(QApplication::activeWindow(), this);
@@ -2944,6 +2947,7 @@ void Molecule::parametrizeMoleculeDialog()
 
    m_parametrizeMolecule->show();
    m_parametrizeMolecule->raise();
+#endif
 }
 
 } } // end namespace IQmol::Layer

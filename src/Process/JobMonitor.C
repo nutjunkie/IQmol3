@@ -21,15 +21,11 @@
 ********************************************************************************/
 
 #include "JobMonitor.h"
-#include "Job.h"
-#include "QChemJobInfo.h"
-#include "QChemOutputParser.h"
 #include "QueueResourcesList.h"
 #include "QueueResourcesDialog.h"
-#include "Server.h"
 #include "ServerRegistry.h"
+#include "Server.h"
 #include "Preferences.h"
-#include "RemoveDirectory.h"
 #include "NetworkException.h"
 #include "QMsgBox.h"
 #include "QsLog.h"
@@ -40,18 +36,27 @@
 #include <QInputDialog>
 #include <QShowEvent>
 #include <QHeaderView>
-#include <QProgressBar>
+#include <QFileDialog>
 #include <QDir>
+#include <QSet>
 #include <QDate>
+
 #include <QDebug>
 
 
 namespace IQmol {
 namespace Process {
 
+// These need to be better handled
+void CleanUpQChem(Job*);
+void FilterQChemFields(Job*);
+void SetQChemFileNames(Job*);
+
 
 JobMonitor* JobMonitor::s_instance = 0;
+
 QMap<Job*, QTableWidgetItem*> JobMonitor::s_jobMap = QMap<Job*, QTableWidgetItem*>();
+
 JobList JobMonitor::s_deletedJobs = QList<Job*>();
    
 
@@ -59,7 +64,7 @@ JobMonitor& JobMonitor::instance()
 {
    if (s_instance == 0) {
       s_instance = new JobMonitor(0);
-      //atexit(JobMonitor::destroy);
+      atexit(JobMonitor::destroy);
    }
    return *s_instance;
 }
@@ -69,40 +74,29 @@ void JobMonitor::destroy()
 {
    s_instance->saveJobListToPreferences();
    JobList jobs(s_jobMap.keys());
-   JobList::iterator iter;
-   for (iter = jobs.begin(); iter != jobs.end(); ++iter) {
-       delete (*iter);
-   }
-   for (iter = s_deletedJobs.begin(); iter != s_deletedJobs.end(); ++iter) {
-       delete (*iter);
-   }
-   delete s_instance;
+
+   for (auto job : jobs) delete job;
+   for (auto job : s_deletedJobs) delete job;
 }
 
 
 JobMonitor::JobMonitor(QWidget* parent) : QMainWindow(parent)
 {
    m_ui.setupUi(this);
-   QTableWidget* table(m_ui.processTable);
 
-#if QT_VERSION >= 0x050000
-   table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-#else
-   table->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-#endif
-
-   table->horizontalHeader()->setStretchLastSection(true);
    setStatusBar(0);
+   initializeMenus();
 
-   // Alter table spacings
+   QTableWidget* table(m_ui.processTable);
+   table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+   table->horizontalHeader()->setStretchLastSection(true);
+   table->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 5);
+   table->setSortingEnabled(false);
    table->setColumnWidth(0,140);
    table->setColumnWidth(1, 80);
    table->setColumnWidth(2,100);
    table->setColumnWidth(3,100);
    table->setColumnWidth(4,120);
-
-   initializeMenus();
-   table->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 5);
       
    // Set up the context menu handler
    table->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -112,9 +106,6 @@ JobMonitor::JobMonitor(QWidget* parent) : QMainWindow(parent)
    // ...and the update timer;
    m_updateTimer.setInterval(1000);  // 1000 milliseconds
    connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTable()));
-
-   table->setSortingEnabled(false);
-   //loadJobListFromPreferences();
 }
 
 
@@ -140,7 +131,6 @@ void JobMonitor::initializeMenus()
 
 void JobMonitor::showEvent(QShowEvent* event)
 {
-   updateTable();
    m_updateTimer.start();
    event->accept();
 }
@@ -156,90 +146,71 @@ void JobMonitor::closeEvent(QCloseEvent* event)
 void JobMonitor::saveJobListToPreferences() const
 {
    JobList jobs(s_jobMap.keys());
-   JobList::iterator iter;
    QVariantList list;
 
-   for (iter = jobs.begin(); iter != jobs.end(); ++iter) {
-       list.append((*iter)->toQVariant());
-   }   
+   for (auto const job : jobs) list.append(job->toQVariant());
 
-   //qDebug() <<"Saving JobMonitorList" << list;
    Preferences::JobMonitorList(list);
 }
 
 
 void JobMonitor::loadJobListFromPreferences()
 {
-   QLOG_DEBUG() << "Loading jobs from preferences file";
    QVariantList list(Preferences::JobMonitorList());
+   QLOG_INFO() << "Loading" << list.size() << "jobs from preferences file";
    if (list.isEmpty()) return;
 
+   QDateTime cutoff = QDateTime::currentDateTime();
+   cutoff = cutoff.addDays(-Preferences::DaysToRememberJobs());
+
    bool remoteJobsActive(false);
-   Job* job(0);
+   JobList jobs;
 
-   try {
-      QVariantList::iterator iter;
-      qint64 currentJulianDay(QDate::currentDate().toJulianDay());
-      qint64 cutOffDay(currentJulianDay - Preferences::DaysToRememberJobs());
+   for (auto qvar : list) {
+       Job* job(new Job(qvar));
+       job->dump();
+       
+       QDateTime submit(QDateTime::fromSecsSinceEpoch(job->get<qint64>("SubmitTime")));
 
-      for (iter = list.begin(); iter != list.end(); ++iter) {
-          job = new Job();
-          if (job->fromQVariant(*iter) && job->julianDay() >= cutOffDay ) {
-             if (job->julianDay() != currentJulianDay) {
-                QDate date(QDate::fromJulianDay(job->julianDay()));
-                job->setSubmitTime(date.toString("d MMM"));
-             }
-             addToTable(job);
+       if (submit < cutoff) {
+          delete job; 
+          continue;
+       }
 
-             if (job->isActive()) {
-                Server* server = ServerRegistry::instance().find(job->serverName());
-                if (server) {
-                   server->watchJob(job);
-                   if (server->isLocal()) {
-                      server->open();
-                      server->query(job);
-                   }else {
-                      remoteJobsActive = true;
-                   }
-                }else {
-                   QLOG_WARN() << "Unable to find server for existing job";
-                }
-                job->setStatus(Job::Unknown);
+       jobs.append(job);
+
+       if (job->isActive()) {
+          job->setStatus(JobInfo::Unknown);
+          Server* server = ServerRegistry::instance().find(job->serverName());
+          if (server) {
+             server->watchJob(job);
+             if (server->isLocal()) {
+                server->open();
+                server->query(job);
+             }else {
+                remoteJobsActive = true;
              }
           }else {
-             delete job;
-             job = 0;
+             QLOG_WARN() << "Unable to locate server:" << job->serverName();
           }
-      }
-
-      updateTable();
-
-      if (remoteJobsActive) {
-         QString msg("IQmol found processes on remote servers that were still active "
-           "in the last session. \n\nWould you like to reconnect to the server(s)?");
-
-         if (QMsgBox::question(0, "IQmol", msg,
-            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) reconnectServers();
-      }
-
-   }catch (Exception& ex) {
-      if (job) s_deletedJobs.append(job);
-      postUpdateMessage("");
-      QMsgBox::warning(0, "IQmol", ex.what());
-
-   }catch (...) {
-      if (job) s_deletedJobs.append(job);
-      postUpdateMessage("");
-      QMsgBox::warning(0, "IQmol", "Error encountered");
+       }
    }
 
+   appendToTable(jobs);
+
+   if (remoteJobsActive) {
+      QString msg("IQmol found processes on remote servers that were still active "
+         "in the last session. \n\nWould you like to reconnect to the server(s)?");
+      if (QMsgBox::question(0, "IQmol", msg,
+         QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) reconnectServers();
+   }
 }
 
 
 Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
 {
    QTableWidget* table(m_ui.processTable);
-
+   
    if (item == 0) {
       QList<QTableWidgetItem*> items(table->selectedItems());
       if (items.isEmpty()) return 0;
@@ -255,28 +226,26 @@ Job* JobMonitor::getSelectedJob(QTableWidgetItem* item)
 
 void JobMonitor::reconnectServers()
 {
-   QStringList servers;
+   QSet<QString> servers;
+   for (auto job : s_jobMap.keys()) servers.insert(job->serverName());
 
-   JobList list(s_jobMap.keys());
-   JobList::iterator iter;
+   try {
+      ServerRegistry::instance().closeAllConnections();
+      ServerRegistry::instance().connectServers(servers.values());
 
-   for (iter = list.begin(); iter != list.end(); ++iter) {
-       QString name((*iter)->serverName());
-       if (!servers.contains(name)) servers.append(name);
+   }catch (Exception& ex) {
+      postUpdateMessage("");
+      QMsgBox::warning(this, "IQmol", ex.what());
    }
-
-   ServerRegistry::instance().closeAllConnections();
-   ServerRegistry::instance().connectServers(servers);
 }
 
 
 // ---------- Submit ----------
 
-void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
+void JobMonitor::submitJob(JobInfo* jobInfo)
 {
-   Job* job(0);
-
-   QString serverName(qchemJobInfo.serverName());
+   QString serverName(jobInfo->get<QString>("ServerName"));
+   qDebug() << "writing to server : " << serverName;
    Server* server(ServerRegistry::instance().find(serverName));
 
    if (!server) {
@@ -290,6 +259,7 @@ void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
       // stop the update timer while we are doing this
       BlockServerUpdates bs(server);
       postUpdateMessage("Connecting to server...");
+
       if (!server->open()) {
          QString msg("Failed to connnect to server ");
          msg += server->name();
@@ -299,55 +269,61 @@ void JobMonitor::submitJob(QChemJobInfo& qchemJobInfo)
          return;
       }
 
-      if (!getWorkingDirectory(server, qchemJobInfo)) {
+      if (!getWorkingDirectory(server, jobInfo)) {
          postUpdateMessage("");
          return;
       }
 
       if (server->needsResourceLimits()) {
          postUpdateMessage("Obtaining queue information...");
-         if (!getQueueResources(server, qchemJobInfo)) {
+         if (!getQueueResources(server, jobInfo)) {
             postUpdateMessage("");
             return;
          }
       }
 
-      postUpdateMessage("Submitting job");
+      // This should only really be done when the server is first opened.
+      connect(server, SIGNAL(jobSubmissionFailed(Job*)),
+         this, SLOT(jobSubmissionFailed(Job*)), Qt::UniqueConnection);
 
-      job = new Job(qchemJobInfo);
+      connect(server, SIGNAL(jobSubmissionSuccessful(Job*)),
+         this, SLOT(jobSubmissionSuccessful(Job*)), Qt::UniqueConnection);
+
+      postUpdateMessage("Submitting job");
+      qDebug() << "Submitting job";
+
+      Job* job(new Job(*jobInfo));
+      SetQChemFileNames(job);
       server->submit(job);
+      qDebug() << "Job submitted";
       jobAccepted();  // Closes the QUI window
 
    }catch (Network::AuthenticationCancelled& ex) {
-      if (job) s_deletedJobs.append(job);
       server->closeConnection();
+      qDebug() << "JobMonitor: authentication cancelled";
 
    }catch (Network::AuthenticationError& ex) {
-      if (job) s_deletedJobs.append(job);
       server->closeConnection();
       postUpdateMessage("");
       QMsgBox::warning(0, "IQmol", "Invalid username or password");
 
    }catch (Network::NetworkTimeout& ex) {
-      if (job) s_deletedJobs.append(job);
       server->closeConnection();
       postUpdateMessage("");
       QMsgBox::warning(0, "IQmol", "Network timeout");
 
    }catch (Exception& ex) {
-      if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
       QMsgBox::warning(0, "IQmol", ex.what());
 
    }catch (...) {
-      if (job) s_deletedJobs.append(job);
       postUpdateMessage("");
       QMsgBox::warning(0, "IQmol", "Error encountered");
    }
 }
 
 
-bool JobMonitor::getWorkingDirectory(Server* server, QChemJobInfo& qchemJobInfo)
+bool JobMonitor::getWorkingDirectory(Server* server, JobInfo* jobInfo)
 {
    QString dirPath;
 
@@ -358,21 +334,23 @@ bool JobMonitor::getWorkingDirectory(Server* server, QChemJobInfo& qchemJobInfo)
       QFileInfo info(dirPath);
       if (info.isFile()) dirPath = info.path();
 #ifndef Q_OS_WIN32
-      dirPath += "/" + qchemJobInfo.baseName();
+      dirPath += "/" + jobInfo->get<QString>("BaseName");
 #endif
       bool allowSpace(false);
       if (!getLocalWorkingDirectory(dirPath, allowSpace)) return false;
    }else {
-      dirPath = qchemJobInfo.baseName();
+      dirPath = jobInfo->get<QString>("BaseName");
       if (!getRemoteWorkingDirectory(server, dirPath)) return false;
    }
 
    QDir dir(dirPath);
 
-   qchemJobInfo.setBaseName(dir.dirName());
-   qchemJobInfo.set(QChemJobInfo::RemoteWorkingDirectory, dirPath);
+   QString basename(dir.dirName());
+   jobInfo->set("BaseName",basename);
+  
+   jobInfo->set("RemoteWorkingDirectory", dirPath);
    if (server->isLocal()) {
-      qchemJobInfo.set(QChemJobInfo::LocalWorkingDirectory, dirPath);
+      jobInfo->set("LocalWorkingDirectory", dirPath);
    }
 
    return true;
@@ -437,7 +415,7 @@ bool JobMonitor::getLocalWorkingDirectory(QString& dirName, bool allowSpace)
    QDir dir(dirName);
    dir.setFilter(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
 
-   while (1) {
+   while (true) {
       QString dirName(dir.dirName());
       dir.cdUp();
       QString dirPath(dir.path());
@@ -485,17 +463,10 @@ bool JobMonitor::getLocalWorkingDirectory(QString& dirName, bool allowSpace)
    dirName = dir.path();
    Preferences::LastFileAccessed(dirName);
    return true;
-
-/*
-   QString dirPath(dir.path());
-   while (dirPath.endsWith("/")) { 
-      dirPath.chop(1);
-   }   
-   m_jobInfo->set(JobInfo::LocalWorkingDirectory, dirPath);
-*/
 }
 
-bool JobMonitor::getQueueResources(Server* server, QChemJobInfo& qchemJobInfo)
+
+bool JobMonitor::getQueueResources(Server* server, JobInfo* jobInfo)
 {
    ServerConfiguration& configuration(server->configuration());
    QVariantList qvar(configuration.queueResourcesList());
@@ -534,11 +505,11 @@ bool JobMonitor::getQueueResources(Server* server, QChemJobInfo& qchemJobInfo)
    configuration.setValue(ServerConfiguration::QueueResources,list.toQVariantList());
    ServerRegistry::save();
 
-   qchemJobInfo.setQueueName(dialog.queue());
-   qchemJobInfo.setWallTime(dialog.walltime());
-   qchemJobInfo.setMemory(dialog.memory());
-   qchemJobInfo.setScratch(dialog.scratch());
-   qchemJobInfo.setNcpus(dialog.ncpus());
+   jobInfo->set("QueueName", dialog.queue());
+   jobInfo->set("WallTime",dialog.walltime());
+   jobInfo->set("Memory", dialog.memory());
+   jobInfo->set("Scratch", dialog.scratch());
+   jobInfo->set("Ncpus", dialog.ncpus());
 
    return true;
 }
@@ -546,7 +517,9 @@ bool JobMonitor::getQueueResources(Server* server, QChemJobInfo& qchemJobInfo)
 
 void JobMonitor::jobSubmissionSuccessful(Job* job)
 {
-   addToTable(job);
+   appendToTable(job);
+   FilterQChemFields(job);
+   saveJobListToPreferences();
 }
 
 
@@ -562,9 +535,23 @@ void JobMonitor::jobSubmissionFailed(Job* job)
 
 // ---------- Add/Remove Jobs ----------
 
-void JobMonitor::addToTable(Job* job) 
+bool timeOrder(Job const* a, Job const* b)
+{
+    return a->get<qint64>("SubmitTime") < b->get<qint64>("SubmitTime");
+}
+
+
+void JobMonitor::appendToTable(JobList& jobs)
+{
+   qSort(jobs.begin(), jobs.end(), timeOrder);
+   for (auto job : jobs) appendToTable(job);
+}
+
+
+void JobMonitor::appendToTable(Job* job) 
 {
    if (!job) return;
+
    QTableWidget* table(m_ui.processTable);
    int row(table->rowCount());
    table->setRowCount(row+1);
@@ -575,25 +562,32 @@ void JobMonitor::addToTable(Job* job)
        table->setItem(row, i, new QTableWidgetItem());
    }
 
-   table->item(row, 2)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-   table->item(row, 3)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+   unsigned runTime(job->runTime());
+   QString status(JobInfo::toString(job->jobStatus()));
+   qint64 epoch(job->get<qint64>("SubmitTime"));
+   QDateTime submit(QDateTime::fromSecsSinceEpoch(epoch));
+
+   QString submitField;
+   if (submit.date() == QDate::currentDate()) {
+      submitField = submit.time().toString("h:mm:ss");  
+   }else {
+      submitField = submit.date().toString("d MMM");
+   }
 
    table->item(row, 0)->setText(job->jobName());
    table->item(row, 1)->setText(job->serverName());
-   table->item(row, 2)->setText(job->submitTime());
-   unsigned time(job->runTime());
-   if (time) table->item(row, 3)->setText(Util::Timer::formatTime(time));
-
-   QString status(Job::toString(job->status()));
+   table->item(row, 2)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+   table->item(row, 2)->setText(submitField);
+   table->item(row, 3)->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+   if (runTime) table->item(row, 3)->setText(Util::Timer::formatTime(runTime));
    table->item(row, 4)->setText(status);
    table->item(row, 4)->setToolTip(job->message());
-   table->item(row, 4)->setText(job->message());
 
    s_jobMap.insert(job, table->item(row,0));
 
    connect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
-   connect(job, SIGNAL(error()),    this, SLOT(jobError()));
+   // Gromacs branch had this deleted - why?
    saveJobListToPreferences();
 }
 
@@ -617,7 +611,6 @@ void JobMonitor::removeJob(Job* job)
 
    disconnect(job, SIGNAL(updated()),  this, SLOT(jobUpdated()));
    disconnect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
-   disconnect(job, SIGNAL(error()),    this, SLOT(jobError()));
 
    Server* server = ServerRegistry::instance().find(job->serverName());
    if (server) server->unwatchJob(job);
@@ -663,17 +656,14 @@ void JobMonitor::clearJobTable(bool const finishedOnly)
 
 void JobMonitor::updateTable()
 {
-   JobList list(s_jobMap.keys());
-   JobList::iterator iter;
-   for (iter = list.begin(); iter != list.end(); ++iter) {
-       reloadJob(*iter);
-   }
+   for (auto job : s_jobMap.keys()) reloadJob(job);
 }
 
 
 void JobMonitor::reloadJob(Job* job)
 {
    if (!job) return;
+
    if (!s_jobMap.contains(job)) {
       QLOG_WARN() << "Update called on unknown Job";
       return;
@@ -682,19 +672,15 @@ void JobMonitor::reloadJob(Job* job)
    QTableWidgetItem* item(s_jobMap.value(job));
    QTableWidget* table(m_ui.processTable);
 
-   // Only update the runtime and status columns. 
-   // These come from the cached results in the Job
-   // object, the Server is responsible for updating
-   // these according to the updateInterval
+   // Only update the runtime and status columns.  These come from the cached
+   // results in the Job object, the Server is responsible for updating these
+   // according to the updateInterval
    unsigned time(job->runTime());
    if (time) table->item(item->row(), 3)->setText(Util::Timer::formatTime(time));
-   if (job->status() == Job::Copying) {
-      //QProgressBar* bar = new QProgressBar();
-      //bar->setValue(50);
-      //table->setCellWidget(item->row(), 4, bar);
+   if (job->jobStatus() == JobInfo::Copying) {
       table->item(item->row(), 4)->setText(job->copyProgressString());
    }else {
-      QString status(Job::toString(job->status()));
+      QString status(JobInfo::toString(job->jobStatus()));
       table->item(item->row(), 4)->setText(status);
    }
    table->item(item->row(), 4)->setToolTip(job->message());
@@ -709,32 +695,23 @@ void JobMonitor::jobUpdated()
 }
 
 
-void JobMonitor::jobError()
-{
-   Job* job = qobject_cast<Job*>(sender());
-   if (!job) return;
-   QString msg("Job ");
-   msg += job->jobName() + " failed:\n\n";
-   msg += job->message();
-   QMsgBox::warning(0, "IQmol", msg);
-}
-
-
 void JobMonitor::jobFinished()
 {
    Job* job = qobject_cast<Job*>(sender());
-   if (!job) return;
+   if (!job || job->isActive()) return;
 
-   if (job->localFilesExist()) {
-      cleanUp(job);
-      if (job->status() == Job::Error) {
+   if (job->get<bool>("LocalFilesExist")) {
+      CleanUpQChem(job);
+      reloadJob(job);
+
+      if (job->jobStatus() == JobInfo::Error) {
          QString msg(job->jobName() + " failed:\n");
          msg += job->message();
          QMsgBox::warning(0, "IQmol", msg);
       }else {
-         resultsAvailable(job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory),
-                          job->jobInfo().baseName(),
-                          job->jobInfo().moleculePointer());
+         resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
+                          job->get<QString>("BaseName"),
+                          job->get<qint64>("MoleculePointer"));
       }
      
    }else {
@@ -754,19 +731,18 @@ void JobMonitor::contextMenu(QPoint const& pos)
    QTableWidget* table(m_ui.processTable);
    QTableWidgetItem* item(table->itemAt(pos));
    if (!item) return;
-
    Job* job(getSelectedJob(item));
    if (!job) return;
 
    QMenu *menu = new QMenu(this);
    QAction* kill;
-   Job::Status status(job->status());
+   JobInfo::Status status(job->jobStatus());
 
    switch (status) {
-      case Job::Queued:   
+      case JobInfo::Queued:   
          kill = menu->addAction("Delete Job From Queue", this, SLOT(killJob()));
          break;
-      case Job::Copying:   
+      case JobInfo::Copying:   
          kill = menu->addAction("Cancel Copy", this, SLOT(cancelCopy()));
          break;
       default:
@@ -788,44 +764,44 @@ void JobMonitor::contextMenu(QPoint const& pos)
    copy->setEnabled(false);
 
    switch (status) {
-      case Job::NotRunning:
+      case JobInfo::NotRunning:
          break;
 
-      case Job::Queued:
+      case JobInfo::Queued:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Running:
+      case JobInfo::Running:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Suspended:
+      case JobInfo::Suspended:
          kill->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Unknown:
+      case JobInfo::Unknown:
          remove->setEnabled(true);
          query->setEnabled(true);
          break;
 
-      case Job::Killed:
+      case JobInfo::Killed:
          remove->setEnabled(true);
          break;
 
-      case Job::Error:
+      case JobInfo::Error:
          remove->setEnabled(true);
          copy->setEnabled(true);
          break;
 
-      case Job::Finished:
+      case JobInfo::Finished:
          remove->setEnabled(true);
          copy->setEnabled(true);
          break;
 
-      case Job::Copying:
+      case JobInfo::Copying:
          kill->setEnabled(true);
          break;
    }
@@ -835,26 +811,25 @@ void JobMonitor::contextMenu(QPoint const& pos)
       copy->setEnabled(false);
    }
 
-   if (job->localFilesExist()) {
+   if (job->get<bool>("LocalFilesExist")) {
       view->setEnabled(true);
-      if (status == Job::Finished) open->setEnabled(true);
+      if (status == JobInfo::Finished) open->setEnabled(true);
    }
 
    menu->exec(table->mapToGlobal(pos));
    delete menu;
 }
-      
+
 
 void JobMonitor::on_processTable_cellDoubleClicked(int, int)
 {
    Job* job(getSelectedJob());
    if (!job) return;
+   bool localFilesExist(job->get<bool>("LocalFilesExist"));
 
-   bool localFiles(job->jobInfo().localFilesExist());
-
-   switch (job->status()) {
-      case Job::Error:
-         if (localFiles) {
+   switch (job->jobStatus()) {
+      case JobInfo::Error:
+         if (localFilesExist) {
             viewOutput(job);
          }else {
             QString msg = "Job failed:\n";
@@ -863,8 +838,8 @@ void JobMonitor::on_processTable_cellDoubleClicked(int, int)
          }
          break;
 
-      case Job::Finished:
-         if (localFiles) {
+      case JobInfo::Finished:
+         if (localFilesExist) {
             openResults(job);
          }else {
             if (QMsgBox::question(0, "IQmol", "Copy results from server?",
@@ -886,8 +861,8 @@ void JobMonitor::cancelCopy()
    Job* job(getSelectedJob());
    if (!job) return;
 
-   Job::Status status(job->status());
-   if (status != Job::Copying) {
+   JobInfo::Status status(job->jobStatus());
+   if (status != JobInfo::Copying) {
       QLOG_DEBUG() << "Cancel copy called on non-copy job";
       return;
    }
@@ -906,10 +881,10 @@ void JobMonitor::killJob()
    Job* job(getSelectedJob());
    if (!job) return;
   
-   Job::Status status(job->status());
+   JobInfo::Status status(job->jobStatus());
 
    QString msg;
-   if (status == Job::Queued) {
+   if (status == JobInfo::Queued) {
       msg = "Are you sure you want to remove the job ";
       msg += job->jobName() + " from the queue?";
    }else {
@@ -937,9 +912,9 @@ void JobMonitor::openResults()
 void JobMonitor::openResults(Job* job)
 {
    if (!job) return;
-   resultsAvailable(job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory),
-                    job->jobInfo().baseName(),
-                    job->jobInfo().moleculePointer());
+   resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
+                    job->get<QString>("BaseName"),
+                    job->get<qint64>("MoleculePointer"));
 }
 
 
@@ -953,17 +928,17 @@ void JobMonitor::viewOutput(Job* job)
 {
    if (!job) return;
 
-   QFileInfo output(job->jobInfo().getLocalFilePath(QChemJobInfo::OutputFileName));
+   QFileInfo output(job->getLocalFilePath("OutputFileName"));
 
    if (!output.exists()) {
-      QMsgBox::warning(0,"IQmol", "Output file no longer exists");
-      job->jobInfo().localFilesExist(false);
+      QMsgBox::warning(this,"IQmol", "Output file no longer exists");
+      job->set("LocalFilesExist", false);
       return;
    }   
 
    Layer::File* file = new Layer::File(output.filePath());
 
-   if (job->status() == Job::Running) {
+   if (job->jobStatus() == JobInfo::Running) {
       file->tail();
    }else {
       file->configure();
@@ -973,7 +948,7 @@ void JobMonitor::viewOutput(Job* job)
 
 void JobMonitor::copyResults()
 {    
-  copyResults(getSelectedJob());
+   copyResults(getSelectedJob());
 }
 
 
@@ -982,16 +957,13 @@ void JobMonitor::copyResults(Job* job)
    if (!job) return;
 
    try {
-      QChemJobInfo& qchemJobInfo(job->jobInfo());
-
-      QString dirPath(qchemJobInfo.get(QChemJobInfo::LocalWorkingDirectory));
+      QString dirPath(job->get<QString>("LocalWorkingDirectory"));
       QFileInfo info(dirPath);
 
-      if (qchemJobInfo.localFilesExist() && info.exists()) {
+      if (job->get<bool>("LocalFilesExist") && info.exists()) {
          QString msg("Results are in the directory:\n\n");
-         msg += dirPath;
-         msg += "\n\nDownload results again?";
-         if (QMsgBox::question(0, "IQmol", msg) == QMessageBox::Cancel) return;
+         msg += dirPath + "\n\nDownload results again?";
+         if (QMsgBox::question(this, "IQmol", msg) == QMessageBox::Cancel) return;
       }
 
       // clean the path
@@ -1001,7 +973,7 @@ void JobMonitor::copyResults(Job* job)
       bool allowSpace(true);
       if (!getLocalWorkingDirectory(dirPath, allowSpace)) return;
 
-      qchemJobInfo.set(QChemJobInfo::LocalWorkingDirectory, dirPath);
+      job->set("LocalWorkingDirectory", dirPath);
 
       Server* server = ServerRegistry::instance().find(job->serverName());
       if (!server) throw Exception("Invalid server");
@@ -1013,86 +985,9 @@ void JobMonitor::copyResults(Job* job)
 }
 
 
-void JobMonitor::cleanUp(Job* job)
-{
-   if (!job) return;
-   if (job->isActive()) {
-      QLOG_WARN() << "Active Job passed to CleanUp" << job->jobName();
-      return;
-   }else if (!job->localFilesExist()) {
-      QLOG_WARN() << "Local files DNE in CleanUp" << job->jobName();
-      return;
-   }
-    
-   QDir dir (job->jobInfo().get(QChemJobInfo::LocalWorkingDirectory));
-   if (!dir.exists()) {
-      QMsgBox::warning(0, "IQmol", QString("Unable to find results for") + job->jobName());
-      return;
-   }
-
-   QChemJobInfo& qchemJobInfo(job->jobInfo());
-
-   // Rename Http files
-   QString oldName("input"); 
-   QString newName(qchemJobInfo.get(QChemJobInfo::InputFileName));
-   if (dir.exists(oldName)) {
-      if (dir.exists(newName)) dir.remove(newName);
-      dir.rename(oldName, newName);
-   }
-
-   oldName = "output";
-   newName = qchemJobInfo.get(QChemJobInfo::OutputFileName);
-   if (dir.exists(oldName)) {
-      if (dir.exists(newName)) dir.remove(newName);
-      dir.rename(oldName, newName);
-   }
-
-   oldName = "input.FChk";
-   newName = qchemJobInfo.get(QChemJobInfo::AuxFileName);
-   if (dir.exists(oldName) && oldName != newName) {
-      if (dir.exists(newName)) dir.remove(newName);
-      dir.rename(oldName, newName);
-   }
-
-   oldName = "input.fchk";
-   if (dir.exists(oldName) && oldName != newName) {
-      if (dir.exists(newName)) dir.remove(newName);
-      dir.rename(oldName, newName);
-   }
-
-   oldName = qchemJobInfo.get(QChemJobInfo::InputFileName) + ".fchk";
-   if (dir.exists(oldName) && oldName != newName) {
-      if (dir.exists(newName)) dir.remove(newName);
-      dir.rename(oldName, newName);
-   }
-
-   // Check for errors and update the run time
-   QString output(qchemJobInfo.getLocalFilePath(QChemJobInfo::OutputFileName));
-   QStringList errors(Parser::QChemOutput::parseForErrors(output));
-
-   if (!errors.isEmpty()) {
-      QString time(errors.takeLast());
-      time.remove("Time: ");
-      bool ok(false);
-      unsigned t(time.toUInt(&ok));
-      if (ok) {
-         job->resetTimer(t);
-         reloadJob(job);
-      }
-   }
-
-   QLOG_DEBUG() << "Errors in file:" << errors;
-
-   if (!errors.isEmpty()) {
-      job->setStatus(Job::Error, errors.join("\n")); 
-      reloadJob(job);
-   }
-}
-
-
 void JobMonitor::queryJob()
-{    
-  queryJob(getSelectedJob());
+{  
+   queryJob(getSelectedJob());
 }
 
 
@@ -1108,6 +1003,5 @@ void JobMonitor::queryJob(Job* job)
       QMsgBox::warning(0, "IQmol", ex.what());
    }
 }
-
 
 } } // end namespace IQmol::Process

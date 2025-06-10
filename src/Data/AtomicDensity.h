@@ -1,12 +1,11 @@
-#ifndef IQMOL_ATOMICDENSITY_H
-#define IQMOL_ATOMICDENSITY_H
+#pragma once
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -41,6 +40,8 @@ namespace IQmol {
             void setCharge(double const charge) { m_charge = charge; }
    
             virtual bool isAvailable() const = 0;
+
+            static bool isAvailable(unsigned Z) { return false; };
    
             virtual double density(qglviewer::Vec const& position) const = 0;
    
@@ -64,6 +65,8 @@ namespace IQmol {
             AtomShellApproximation(unsigned Z);
    
             bool isAvailable() const { return (m_atomicNumber <= s_maxAtomicNumber); }
+
+            static bool isAvailable(unsigned Z) { return (Z <= s_maxAtomicNumber); }
    
             double density(qglviewer::Vec const&) const;
    
@@ -102,6 +105,7 @@ namespace IQmol {
             SuperpositionIonicDensities(unsigned Z);
 
             bool isAvailable() const { return (m_atomicNumber <= s_maxAtomicNumber); }
+            static bool isAvailable(unsigned Z) { return (Z <= s_maxAtomicNumber); }
 
             double density(qglviewer::Vec const&) const;
    
@@ -145,6 +149,8 @@ namespace IQmol {
 
             bool isAvailable() const { return true; }
 
+            static bool isAvailable(unsigned Z)  { return true; }
+
             double density(qglviewer::Vec const&) const;
 
             double computeSignificantRadius(double const) const;
@@ -166,5 +172,3 @@ namespace IQmol {
    
    }  // end namespace AtomicDensity
 } // end namespace IQmol
-
-#endif

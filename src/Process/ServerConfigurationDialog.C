@@ -231,8 +231,7 @@ void ServerConfigurationDialog::updateQueueSystemsCombo(
 
 
 
-void ServerConfigurationDialog::updateAuthenticationCombo(
-   Network::ConnectionT const connection)
+void ServerConfigurationDialog::updateAuthenticationCombo(Network::ConnectionT const connection)
 {
    QComboBox* auth(m_dialog.authentication);
    QString currentText(auth->currentText());
@@ -244,11 +243,11 @@ void ServerConfigurationDialog::updateAuthenticationCombo(
       case Network::HTTP:
          auth->addItem(Network::ToString(Network::Anonymous)); 
          // This is insecure and only here for testing
-         auth->addItem(Network::ToString(Network::Password)); 
+         // auth->addItem(Network::ToString(Network::Password)); 
          break;
 
       case Network::HTTPS:
-         auth->addItem(Network::ToString(Network::Anonymous)); 
+         //auth->addItem(Network::ToString(Network::Anonymous)); 
          auth->addItem(Network::ToString(Network::Password)); 
          break;
 
@@ -451,15 +450,12 @@ void ServerConfigurationDialog::on_queueSystem_currentIndexChanged(QString const
 void ServerConfigurationDialog::on_authentication_currentIndexChanged(QString const& auth)
 {
    if (m_dialog.queueSystem->currentText() == 
-      ServerConfiguration::toString(ServerConfiguration::Web)) {
+      ServerConfiguration::toString(ServerConfiguration::Web) ) {
       bool pw(auth == Network::ToString(Network::Password));
       m_dialog.userName->setEnabled(pw);
       m_dialog.userNameLabel->setEnabled(pw);
    }
 }
-
-
-
 
 
 // This should be refactored to use the ServerRegistry::loadFromFile() code.

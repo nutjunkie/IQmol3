@@ -1,5 +1,4 @@
-#ifndef IQMOL_NETWORK_HTTPREPLY_H
-#define IQMOL_NETWORK_HTTPREPLY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,8 +28,8 @@
 #include <QTimer>
 
 
-class QNetworkReply;
 class QFile;
+class QHttpMultiPart;
 
 typedef QMap<QString, QString> QStringMap;
 
@@ -85,6 +84,7 @@ namespace Network {
       Q_OBJECT
 
       friend class HttpGetFiles;
+      friend class HttpConnection;
 
       public:
          HttpGet(HttpConnection*, QString const& sourcePath);
@@ -125,10 +125,11 @@ namespace Network {
    };
 
 
-
    class HttpPost : public HttpReply {
 
       Q_OBJECT
+
+      friend class HttpConnection;
 
       public:
          HttpPost(HttpConnection*, QString const& path, QString const& postData);
@@ -141,6 +142,21 @@ namespace Network {
          
    };
 
-} } // end namespace IQmol::Network
+   class HttpJsonPost : public HttpReply {
 
-#endif
+      Q_OBJECT
+
+      friend class HttpConnection;
+
+      public:
+         HttpJsonPost(HttpConnection*, QString const& path, QHttpMultiPart* postData);
+
+      protected Q_SLOTS:
+         void run();
+
+      private:
+         QHttpMultiPart* m_postData;
+         
+   };
+
+} } // end namespace IQmol::Network

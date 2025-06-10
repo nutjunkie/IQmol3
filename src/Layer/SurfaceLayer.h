@@ -71,8 +71,8 @@ namespace IQmol {
          protected:
             void setColors(QList<QColor> const& colors, bool const blend);
             void setColors(QColor const& negative, QColor const& positive);
-            QColor colorPositive() const;
             QColor colorNegative() const;
+            QColor colorPositive() const;
 
             QList<QColor> const& colors() const;
             bool blend() const { return m_surface.blend(); }
@@ -103,7 +103,7 @@ namespace IQmol {
             GLuint compile(Data::Mesh const&);
 
             // hack for ordering the surfaces
-            //bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
+            // bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
             bool isTransparent() const { return true; }
 
             void drawVertexNormals();

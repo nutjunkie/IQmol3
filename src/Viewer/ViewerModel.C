@@ -21,13 +21,12 @@
 ********************************************************************************/
 
 #include "ViewerModel.h"
-#include "Layer/AtomLayer.h"
-#include "Layer/ChargeLayer.h"
+
 #include "Layer/FrequenciesLayer.h"
-#include "Layer/ConstraintLayer.h"
 #include "Layer/GeometryListLayer.h"
 #include "Layer/GeometryLayer.h"
-#include "Layer/IsotopesLayer.h"
+#include "Layer/SurfaceLayer.h"
+#include "Data/MacroMolecule.h"
 #include "Preferences.h"
 #include "UndoCommands.h"
 #include "QMsgBox.h"
@@ -53,17 +52,19 @@
 
 #include <QtDebug>
 
-#include "boost/bind/bind.hpp"
 
 using namespace qglviewer;
-using namespace boost::placeholders;
+
 
 namespace IQmol {
 
-ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
-   m_parent(parent), m_global("Global", m_parent),
+ViewerModel::ViewerModel(QWidget* parent) : 
+   QStandardItemModel(0, 1, parent),
+   m_parent(parent), 
+   m_global("Global", parent),
    m_symmetryTolerance(Preferences::SymmetryTolerance()), 
-   m_forceField(Preferences::DefaultForceField()), m_updateEnabled(true)
+   m_forceField(Preferences::DefaultForceField()), 
+   m_updateEnabled(true)
 {
    QStringList labels;
    labels << "Model View";
@@ -77,15 +78,19 @@ ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
    m_global.appendRow(&m_mesh);
    m_global.appendRow(&m_clippingPlane);
 
-   connect(&m_background, SIGNAL(updated()), this, SIGNAL(updated()));
+   connect(&m_background, SIGNAL(updated()), 
+      this, SIGNAL(updated()));
    connect(&m_background, SIGNAL(foregroundColorChanged(QColor const&)), 
       this, SIGNAL(foregroundColorChanged(QColor const&))); 
    connect(&m_background, SIGNAL(backgroundColorChanged(QColor const&)), 
       this, SIGNAL(backgroundColorChanged(QColor const&))); 
 
-   connect(&m_axes, SIGNAL(updated()), this, SIGNAL(updated()));
-   connect(&m_mesh, SIGNAL(updated()), this, SIGNAL(updated()));
-   connect(&m_clippingPlane, SIGNAL(updated()), this, SIGNAL(updated()));
+   connect(&m_axes, SIGNAL(updated()), 
+      this, SIGNAL(updated()));
+   connect(&m_mesh, SIGNAL(updated()), 
+      this, SIGNAL(updated()));
+   connect(&m_clippingPlane, SIGNAL(updated()), 
+      this, SIGNAL(updated()));
 
    connect(this, SIGNAL(sceneRadiusChanged(double const)), 
       &m_axes, SLOT(setSceneRadius(double const)));
@@ -99,8 +104,11 @@ ViewerModel::ViewerModel(QWidget* parent) : QStandardItemModel(0, 1, parent),
    connect(this, SIGNAL(itemChanged(QStandardItem*)), 
       this, SLOT(checkItemChanged(QStandardItem*)));
 
+   // By default we create a new Molecule, Systems are more 
+   // conveniently loaded from file(s)
    Layer::Molecule* mol(newMolecule());
    appendRow(mol);
+
    changeActiveViewerMode(Viewer::BuildAtom);
    sceneRadiusChanged(Preferences::DefaultSceneRadius());
 }
@@ -143,25 +151,384 @@ bool ViewerModel::dropMimeData(QMimeData const* data, Qt::DropAction, int, int,
 
 
 
-void ViewerModel::open(QString const& filePath)
+// - - - - - Global Guff  - - - - -
+
+void ViewerModel::displayGlobals()
 {
-   QString path(filePath);
-   while (path.endsWith("/")) {
-       path.chop(1);
-   }
-#ifdef Q_OS_WIN32
-   // Not sure where this is getting added, but it causes problems on Windows, obviously
-   while (path.startsWith("/")) {
-       path.remove(0,1);
-   }
-#endif
-   ParseJobFiles* parser = new ParseJobFiles(path);
-   connect(parser, SIGNAL(finished()), this, SLOT(fileOpenFinished()));
-   parser->start();
+   m_background.draw();
+   m_axes.draw();
+   m_mesh.draw();
 }
 
 
-void ViewerModel::open(QString const& filePath, QString const& filter, void* moleculePointer)
+// This is needed for the Axes but not the Mesh as the axes 
+// can be controlled via the menu
+void ViewerModel::toggleAxes()
+{
+   if (m_axes.checkState() == Qt::Checked) {
+      m_axes.setCheckState(Qt::Unchecked);
+      axesOn(false);
+   }else {
+      m_axes.setCheckState(Qt::Checked);
+      axesOn(true);
+   }
+}
+
+
+void ViewerModel::adjustSymmetryTolerance() 
+{
+   SymmetryToleranceDialog dialog(m_parent, m_symmetryTolerance);
+   connect(&dialog, SIGNAL(symmetrizeRequest(double const)),
+      this, SLOT(symmetrize(double const)));
+   dialog.exec();
+
+   if (dialog.result() == QDialog::Accepted) m_symmetryTolerance = dialog.value();
+}
+
+
+double ViewerModel::sceneRadius(bool visibleOnly)
+{
+   double radius(Preferences::DefaultSceneRadius());
+
+   unsigned int findFlags(Layer::Children);
+   if (visibleOnly) findFlags = (findFlags | Layer::Visible);
+
+   ComponentList components = findLayers<Layer::Component>(findFlags);
+   for (auto iter = components.begin(); iter != components.end(); ++iter) {
+       radius = std::max(radius, (*iter)->radius());
+   }
+
+   return radius;
+}
+
+
+void ViewerModel::insertMoleculeById(QString identifier)
+{
+   Parser::OpenBabel parser;
+   QString ext;
+
+   qDebug() << "Identifier" << identifier;
+
+   if (identifier.indexOf("SMILES:") == 0) {
+      identifier.replace(0,7,"");
+      ext = "smi";
+
+   }else if (identifier.indexOf("INCHI:") == 0) {
+      identifier.replace(0,6,"");
+      if (!identifier.startsWith("InChI=")) identifier.prepend("InChI=");
+      ext = "inchi";
+
+   }else {
+      QLOG_WARN() << "Unknown molecule identifier type:" << identifier;
+      return;
+   }
+
+   bool ok(parser.parse(identifier, ext));
+   QStringList errors(parser.errors());
+   Data::Bank& bank(parser.data());
+
+   if (ok && errors.isEmpty() && !bank.isEmpty()) {
+      if (activeMolecule()) activeMolecule()->appendData(bank);
+   }else {
+      QMsgBox::warning(m_parent, "IQmol", "Invalid string");
+   }
+}
+
+
+void ViewerModel::mergeSelection(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+   Layer::Molecule* parent(0);
+
+   MoleculeList molecules;
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (parent == 0) {
+             parent = molecule;
+          } else {
+             atoms.append(molecule->findLayers<Layer::Atom>());
+             molecules.append(molecule);
+          }
+       }
+   }
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atoms) {
+       auto a(new Layer::Atom(atom->getAtomicNumber(), atom->getLabel()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   for (auto molecule : molecules) removeMolecule(molecule);
+
+   if (!parent) {
+      QLOG_WARN() << "No parent molecule found for mergeSelection";
+   }else {
+      parent->appendPrimitives(primitives);
+      parent->reperceiveBonds(false);
+   }
+}
+
+
+void ViewerModel::hideMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Unchecked);
+       }
+   }
+}
+
+
+void ViewerModel::showMolecules(QModelIndexList const& selection)
+{
+   Layer::Molecule* molecule;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+       if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          molecule->setCheckState(Qt::Checked);
+       }
+   }
+}
+
+void ViewerModel::deleteSelection(QModelIndexList const&)
+{
+   qDebug() << "ViewerModel::deleteSelection NYI !!!";
+}
+
+
+void ViewerModel::newMoleculeFromSelection(QModelIndexList const& selection)
+{
+   Layer::Atom*     atom;
+   Layer::Group*    group;
+   Layer::Molecule* molecule;
+
+   AtomList atoms;
+
+   for (auto item : selection) {
+       Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(item.data(Qt::UserRole+1));
+
+       if ( (group = qobject_cast<Layer::Group*>(base)) ) {
+          atoms.append(group->getAtoms());
+       }else if ( (atom = qobject_cast<Layer::Atom*>(base)) ) {
+           atoms.append(atom);
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+           atoms.append(molecule->findLayers<Layer::Atom>());
+       }
+   }
+
+   newMoleculeRequested(atoms);
+}
+
+
+void ViewerModel::newMoleculeRequested(AtomList const& atomList)
+{
+   if (atomList.isEmpty()) return;
+
+   // Attempt to find a system to attach the new molecule, otherwise it will 
+   // attach to the root item.
+   SystemList parents(
+      atomList.first()->findLayers<Layer::System>(Layer::Parents | Layer::Nested));
+
+   QStandardItem* root = parents.isEmpty() ? invisibleRootItem() : parents.first();
+
+   Layer::PrimitiveList primitives;
+   for (auto atom : atomList) {
+       auto a(new Layer::Atom(atom->getAtomicNumber(), atom->getLabel()));
+       a->setPosition(atom->getPosition());
+       primitives.append(a);
+   }
+
+   Layer::Molecule* molecule = newMolecule();
+   molecule->appendPrimitives(primitives);
+   molecule->reperceiveBonds(false);
+
+   Command::AddMolecule* cmd(new Command::AddMolecule(molecule, root));
+   postCommand(cmd);
+}
+
+
+// - - - - - Component - - - - -
+
+void ViewerModel::connectComponent(Layer::Component* component) 
+{
+   connect(component, SIGNAL(updated()), 
+      this, SLOT(updateObjectLists()));
+
+   connect(component, SIGNAL(softUpdate()), 
+      this, SIGNAL(updated()));
+
+   connect(component, SIGNAL(postMessage(QString const&)), 
+      this, SIGNAL(displayMessage(QString const&)));
+
+   connect(component, SIGNAL(postCommand(QUndoCommand*)), 
+      this, SIGNAL(postCommand(QUndoCommand*)));
+
+   connect(component, SIGNAL(pushAnimators(AnimatorList const&)), 
+      this, SIGNAL(pushAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(popAnimators(AnimatorList const&)), 
+      this, SIGNAL(popAnimators(AnimatorList const&)));
+
+   connect(component, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
+      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
+}
+
+
+// - - - - - Molecule - - - - -
+
+void ViewerModel::newMoleculeMenu()
+{
+   forAllSystems(
+      std::bind(&Layer::System::setCheckState, std::placeholders::_1, Qt::Unchecked)
+   );
+
+   forAllMolecules(
+      std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
+   );
+
+   QStandardItem* parent(invisibleRootItem());
+   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), parent));
+   changeActiveViewerMode(Viewer::BuildAtom);
+   postCommand(cmd);
+}
+
+
+Layer::Molecule* ViewerModel::newMolecule()
+{
+   Layer::Molecule* molecule = new Layer::Molecule(m_parent);
+   connectComponent(molecule);
+
+   connect(molecule, SIGNAL(updated()), 
+      this, SLOT(computeEnergy()));
+
+   connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
+      this, SLOT(removeMolecule(Layer::Molecule*)));
+
+   return molecule;
+}
+
+
+void ViewerModel::removeMolecule(Layer::Molecule* molecule)
+{
+qDebug() << "ViewerModel::removeMolecule called" << molecule;
+   QList<Layer::Base*> parents(molecule->findLayers<Layer::Base>(Layer::Parents));
+   
+   if (parents.isEmpty()) {
+      postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
+   }else {
+      postCommand(new Command::RemoveMolecule(molecule, parents.first()));
+   }
+}
+
+
+// This should probably be made smarter, for the time being we simply return
+// the last visible molecule.
+Layer::Molecule* ViewerModel::activeMolecule()
+{
+   MoleculeList molecules = moleculeList();
+   return molecules.isEmpty() ? 0 : molecules.last();
+}
+
+
+MoleculeList ViewerModel::moleculeList(bool visibleOnly)
+{
+   unsigned int findFlags(Layer::Children);
+   if (visibleOnly) findFlags = (findFlags | Layer::Visible);
+   return findLayers<Layer::Molecule>(findFlags);
+}
+
+
+void ViewerModel::forAllMolecules(std::function<void(Layer::Molecule&)> function)
+{
+   bool visibleOnly(true);
+   MoleculeList molecules(moleculeList(visibleOnly));
+   MoleculeList::iterator iter;
+   for (iter = molecules.begin(); iter != molecules.end(); ++iter) {
+       function(*(*iter));
+   }
+}
+
+
+// - - - - - System - - - - - 
+Layer::System* ViewerModel::newSystem()
+{
+   Layer::System* system = new Layer::System(DefaultMoleculeName, m_parent);
+   connectComponent(system);
+
+   connect(system, SIGNAL(removeSystem(Layer::System*)), 
+      this, SLOT(removeSystem(Layer::System*)));
+
+   connect(system, SIGNAL(removeMolecule(Layer::Molecule*)), 
+      this, SLOT(removeMolecule(Layer::Molecule*)));
+
+   connect(system, SIGNAL(connectComponent(Layer::Component*)),
+      this, SLOT(connectComponent(Layer::Component*)));
+
+   connect(system, SIGNAL(newMoleculeRequested(AtomList const&)), 
+      this, SLOT(newMoleculeRequested(AtomList const&)));
+
+   // Used to update the Octree selection volume
+   connect(this, SIGNAL(selectionChanged()), 
+      system, SIGNAL(selectionChanged()));
+
+   return system;
+}
+
+
+void ViewerModel::removeSystem(Layer::System* system)
+{
+   postCommand(new Command::RemoveSystem(system, invisibleRootItem()));
+}
+
+
+// This should probably be made smarter, for the time being we simply return
+// the last visible system.
+Layer::System* ViewerModel::activeSystem()
+{
+   SystemList systems = systemList();
+   return  systems.isEmpty() ? 0 : systems.last();
+}
+
+
+SystemList ViewerModel::systemList(bool visibleOnly)
+{
+   unsigned int findFlags(Layer::Children);
+   if (visibleOnly) findFlags = (findFlags | Layer::Visible);
+   return findLayers<Layer::System>(findFlags);
+}
+
+
+void ViewerModel::forAllSystems(std::function<void(Layer::System&)> function)
+{
+   bool visibleOnly(true);
+   SystemList systems(systemList(visibleOnly));
+   SystemList::iterator iter;
+   for (iter = systems.begin(); iter != systems.end(); ++iter) {
+       function(*(*iter));
+   }
+}
+
+
+Layer::Component* ViewerModel::activeComponent()
+{
+   Layer::Component* comp(activeSystem());
+   return (comp ? comp : activeMolecule());
+}
+
+
+
+// - - - - - I/O - - - - -
+
+void ViewerModel::open(QString const& filePath, QString const& filter, qint64 moleculePointer)
 {
    QString path(filePath);
    while (path.endsWith("/")) {
@@ -183,17 +550,14 @@ void ViewerModel::fileOpenFinished()
 {
    ParseJobFiles* parser = qobject_cast<ParseJobFiles*>(sender());
    if (!parser) return;
-
-   if (parser->status() == Task::SigTrap) {
-      throw SignalException();
-   }
+   if (parser->status() == Task::SigTrap) throw SignalException();
 
    Data::Bank& bank(parser->data());
    QFileInfo info(parser->filePath());
    QStringList errors(parser->errors());
 
    if (bank.isEmpty()) {
-      if (errors.isEmpty()) errors.append("No valid data found in " + info.filePath());
+      if (errors.isEmpty()) errors.append("No valid data found in bank " + info.filePath());
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
       parser->deleteLater();
       return;
@@ -203,158 +567,15 @@ void ViewerModel::fileOpenFinished()
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
    }
 
-   processConfigData(parser);
+   processConfigData(bank);
    processParsedData(parser);
    parser->deleteLater();
-
-/*
-qDebug() << "***************************************************";
-qDebug() << "Finished opening file/dir";
-qDebug() << "   file path" << info.filePath();
-qDebug() << "   path     " << info.path();
-qDebug() << "   dir name " << info.dir().dirName();
-qDebug() << "   base name" << info.completeBaseName();
-qDebug() << "   is dir?  " << info.isDir();
-qDebug() << "   is file? " << info.isFile();
-qDebug() << "***************************************************";
-*/
-}
-
-
-void ViewerModel::processConfigData(ParseJobFiles* parser)
-{
-   Data::Bank& bank(parser->data());
-   QList<Data::YamlNode*> yaml(bank.takeData<Data::YamlNode>());
-   for (int i = 0; i < yaml.size(); ++i) {
-       yaml[i]->dump();
-       Process::ServerConfiguration config(*(yaml[i]));
-       Process::ServerConfigurationDialog dialog(config); 
-       dialog.exec();
-   }
-}
-
-
-void ViewerModel::processParsedData(ParseJobFiles* parser)
-{
-   Data::Bank& bank(parser->data());
-   if (bank.isEmpty()) return;
-
-   QString name(parser->name());
-
-   // Determine if we need to replace an existing Molecule in the Model View.
-   bool overwrite(parser->flags()  & ParseJobFiles::Overwrite);
-   bool makeActive(parser->flags() & ParseJobFiles::MakeActive);
-   bool addStar(parser->flags()    & ParseJobFiles::AddStar);
-   bool found(false);
-
-   Layer::Molecule* molecule(newMolecule());
-   molecule->setCheckState(Qt::Unchecked);
-   molecule->setText(name);
-   molecule->appendData(bank);
-   if (addStar) molecule->setIcon(QIcon(":/icons/Favourites.png"));
-
-   QStandardItem* child;
-   QStandardItem* root(invisibleRootItem());
-
-   void* moleculePointer(parser->moleculePointer());
-
-   if (overwrite && moleculePointer) {
-      for (int row = 0; row < root->rowCount(); ++row) {
-          child = root->child(row);
-          if (child->text() == name) {
-             Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
-             Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
-
-             if (mol && mol == moleculePointer) {
-                QLOG_TRACE() << "Found existing molecule";
-                molecule->setCheckState(mol->checkState());
-                // makeActive = makeActive || (mol->checkState() == Qt::Checked);
-                // This may result in a memory leak, but we need the Molecule
-                // to remain lying around in case of an undo action.
-                disconnectMolecule(mol);
-                takeRow(row);
-                insertRow(row, molecule);
-                found = true;
-                break;
-             }
-          }
-      }
-   }
-
-   // If we didn't find an existing Molecule to overwrite, we check the last
-   // Molecule on the list and if that is still 'Untitled' and empty, use it.
-   if (!found) {
-      child = root->child(root->rowCount()-1);
-      if (child->text() == DefaultMoleculeName && !child->hasChildren()) {
-         Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
-         Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
-         makeActive = makeActive || (mol->checkState() == Qt::Checked);
-         // This may result in a memory leak, but we need the Molecule
-         // to remain lying around in case of an undo action.
-         disconnectMolecule(mol);
-         takeRow(child->row());
-      }
-
-      Command::AddMolecule* cmd = new Command::AddMolecule(molecule, root);
-      postCommand(cmd);
-   }
-
-   if (makeActive) {
-      forAllMolecules(boost::bind(&Layer::Molecule::setCheckState, _1, Qt::Unchecked));
-      molecule->setCheckState(Qt::Checked);
-      sceneRadiusChanged(sceneRadius());
-      changeActiveViewerMode(Viewer::Manipulate);
-   }
-
-   fileOpened(parser->filePath());
-}
-
-
-// Note that we can only paste a string containing a list of coordinates,
-// nothing else.  We also offset the coordinates so that if a copy and paste is
-// done, they pasted primitives do not obscure the existing ones.
-
-// There appears to be an OS X specific bug that prevents this from working properly.
-// The clipboard text gets mangled if the clipboard contents originates from another
-// application.
-// http://www.qtforum.org/article/28645/qclipboard-problem-mac-osx-tiger.html#post97862
-void ViewerModel::pasteSelectionFromClipboard()
-{
-   QString xyz(QApplication::clipboard()->text(QClipboard::Clipboard));
-   Parser::CartesianCoordinates parser;
-   Parser::TextStream textStream(&xyz);
-   Data::Geometry* geom(parser.parse(textStream));
-
-   if (geom && activeMolecule()) {
-      selectAll(); 
-      // This should be added as an Undo action
-      activeMolecule()->appendPrimitives(Layer::PrimitiveList(*geom));
-      invertSelection(); 
-      updateObjectLists();
-      delete geom;
-   }
-}
-
-
-void ViewerModel::copySelectionToClipboard()
-{
-   MoleculeList molecules(moleculeList());
-   MoleculeList::iterator mol;
-    
-   bool selectedOnly(true);
-   QString coordinates;
-   for (mol = molecules.begin(); mol != molecules.end(); ++mol) {
-       coordinates += (*mol)->coordinatesAsString(selectedOnly);
-   }
-
-   qDebug() << coordinates;
-   QApplication::clipboard()->setText(coordinates);
 }
 
 
 void ViewerModel::saveAll()
 {
-   forAllMolecules(boost::bind(&Layer::Molecule::save, _1, false));
+   forAllMolecules(std::bind(&Layer::Molecule::save, std::placeholders::_1, false));
 }
 
 
@@ -391,83 +612,252 @@ bool ViewerModel::saveRequired()
 }
 
 
-void ViewerModel::newMoleculeMenu()
+
+void ViewerModel::processConfigData(Data::Bank& bank)
 {
-   forAllMolecules(boost::bind(&Layer::Molecule::setCheckState, _1, Qt::Unchecked));
-   Command::AddMolecule* cmd(new Command::AddMolecule(newMolecule(), invisibleRootItem()));
-   changeActiveViewerMode(Viewer::BuildAtom);
-   postCommand(cmd);
-}
-
-
-Layer::Molecule* ViewerModel::newMolecule()
-{
-   Layer::Molecule* molecule = new Layer::Molecule(m_parent);
-   connectMolecule(molecule);
-   return molecule;
-}
-
-
-void ViewerModel::connectMolecule(Layer::Molecule* molecule)
-{
-   connect(molecule, SIGNAL(updated()), 
-      this, SLOT(computeEnergy()));
-
-   connect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateObjectLists()));
-   connect(molecule, SIGNAL(softUpdate()), 
-     this, SIGNAL(updated()));
-   connect(molecule, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   connect(molecule, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   connect(molecule, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   connect(molecule, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
-   connect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
-      this, SLOT(removeMolecule(Layer::Molecule*)));
-   connect(molecule, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)), 
-      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
-}
-
-
-void ViewerModel::disconnectMolecule(Layer::Molecule* molecule)
-{
-   disconnect(molecule, SIGNAL(updated()), 
-      this, SLOT(updateObjectLists()));
-   disconnect(molecule, SIGNAL(softUpdate()), 
-     this, SIGNAL(updated()));
-   disconnect(molecule, SIGNAL(postMessage(QString const&)), 
-      this, SIGNAL(displayMessage(QString const&)));
-   disconnect(molecule, SIGNAL(postCommand(QUndoCommand*)), 
-      this, SIGNAL(postCommand(QUndoCommand*)));
-   disconnect(molecule, SIGNAL(pushAnimators(AnimatorList const&)), 
-      this, SIGNAL(pushAnimators(AnimatorList const&)));
-   disconnect(molecule, SIGNAL(popAnimators(AnimatorList const&)), 
-      this, SIGNAL(popAnimators(AnimatorList const&)));
-   disconnect(molecule, SIGNAL(removeMolecule(Layer::Molecule*)), 
-      this, SLOT(removeMolecule(Layer::Molecule*)));
-   disconnect(molecule, SIGNAL(select(QModelIndex const&,QItemSelectionModel::SelectionFlags)), 
-      this, SIGNAL(select(QModelIndex const&, QItemSelectionModel::SelectionFlags)));
-}
-
-
-void ViewerModel::removeMolecule(Layer::Molecule* molecule)
-{
-   postCommand(new Command::RemoveMolecule(molecule, invisibleRootItem()));
-}
-
-
-void ViewerModel::toggleAxes()
-{
-   if (m_axes.checkState() == Qt::Checked) {
-      m_axes.setCheckState(Qt::Unchecked);
-      axesOn(false);
-   }else {
-      m_axes.setCheckState(Qt::Checked);
-      axesOn(true);
+   QList<Data::YamlNode*> yaml(bank.takeData<Data::YamlNode>());
+   for (int i = 0; i < yaml.size(); ++i) {
+       yaml[i]->dump();
+       Process::ServerConfiguration config(*(yaml[i]));
+       Process::ServerConfigurationDialog dialog(config); 
+       dialog.exec();
    }
+}
+
+
+void ViewerModel::processParsedData(ParseJobFiles* parser)
+{
+   Data::Bank& bank(parser->data());
+
+   auto mm(bank.findData<Data::MacroMolecule>());
+   if (mm.isEmpty()) {
+      processMoleculeData(parser);
+   }else {
+      processSystemData(parser);
+   }
+}
+
+
+void ViewerModel::processSystemData(ParseJobFiles* parser)
+{
+   QString name(parser->name());
+   Data::Bank& bank(parser->data());
+   if (bank.isEmpty()) return;
+
+   // Determine if we need to replace an existing System in the Model View.
+   bool overwrite(parser->flags()  & ParseJobFiles::Overwrite);
+   bool makeActive(parser->flags() & ParseJobFiles::MakeActive);
+   bool addStar(parser->flags()    & ParseJobFiles::AddStar);
+   bool found(false);
+
+   Layer::System* system(newSystem());
+   system->setFile(parser->filePath()); 
+   system->setCheckState(Qt::Unchecked);
+   system->setText(name);
+   system->appendData(bank);
+   if (addStar) system->setIcon(QIcon(":/icons/Favourites.png"));
+
+   QStandardItem* child;
+   QStandardItem* root(invisibleRootItem());
+
+   qint64 systemPointer(parser->moleculePointer());
+
+   if (overwrite && systemPointer) {
+      for (int row = 0; row < root->rowCount(); ++row) {
+          child = root->child(row);
+          if (child->text() == name) {
+             Layer::Base*  base = QVariantPtr<Layer::Base>::toPointer(child->data());
+             Layer::System* sys = qobject_cast<Layer::System*>(base);
+
+             if (system && (qint64)system == systemPointer) {
+                QLOG_TRACE() << "Found existing system";
+                system->setCheckState(sys->checkState());
+                // makeActive = makeActive || (mol->checkState() == Qt::Checked);
+                // This may result in a memory leak, but we need the System
+                // to remain lying around in case of an undo action.
+                sys->disconnect();
+                takeRow(row);
+                insertRow(row, system);
+                found = true;
+                break;
+             }
+          }
+      }
+   }
+
+   // If we didn't find an existing System to overwrite, we check the last
+   // System on the list and if that is still 'Untitled' and empty, use it.
+   if (!found) {
+      child = root->child(root->rowCount()-1);
+      if (child->text() == DefaultMoleculeName) {
+         Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
+         Layer::System* sys = qobject_cast<Layer::System*>(base);
+         makeActive = makeActive || (sys->checkState() == Qt::Checked);
+         // This may result in a memory leak, but we need the Molecule
+         // to remain lying around in case of an undo action.
+         sys->disconnect();
+         takeRow(child->row());
+      }
+
+      Command::AddSystem* cmd = new Command::AddSystem(system, root);
+      postCommand(cmd);
+   }
+
+   if (makeActive) {
+      forAllSystems(
+         std::bind(&Layer::System::setCheckState, std::placeholders::_1, Qt::Unchecked)
+      );
+      system->setCheckState(Qt::Checked);
+      sceneRadiusChanged(sceneRadius());
+      changeActiveViewerMode(Viewer::Manipulate);
+   }
+
+   fileOpened(parser->filePath());
+}
+
+
+void ViewerModel::processMoleculeData(ParseJobFiles* parser)
+{
+   Data::Bank& bank(parser->data());
+   QString name(parser->name());
+
+   // Determine if we need to replace an existing Molecule in the Model View.
+   bool overwrite(parser->flags()  & ParseJobFiles::Overwrite);
+   bool makeActive(parser->flags() & ParseJobFiles::MakeActive);
+   bool addStar(parser->flags()    & ParseJobFiles::AddStar);
+   bool found(false);
+
+   Layer::Molecule* molecule(newMolecule());
+   molecule->setCheckState(Qt::Unchecked);
+   molecule->setText(name);
+   molecule->appendData(bank);
+   if (addStar) molecule->setIcon(QIcon(":/icons/Favourites.png"));
+
+   QStandardItem* child;
+   QStandardItem* root(invisibleRootItem());
+
+   qint64 moleculePointer(parser->moleculePointer());
+
+   if (overwrite && moleculePointer) {
+      for (int row = 0; row < root->rowCount(); ++row) {
+          child = root->child(row);
+          if (child->text() == name) {
+             Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
+             Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
+
+             if (mol && (qint64)mol == moleculePointer) {
+                QLOG_TRACE() << "Found existing molecule";
+                molecule->setCheckState(mol->checkState());
+                // makeActive = makeActive || (mol->checkState() == Qt::Checked);
+                // This may result in a memory leak, but we need the Molecule
+                // to remain lying around in case of an undo action.
+                mol->disconnect();
+                takeRow(row);
+                insertRow(row, molecule);
+                found = true;
+                break;
+             }
+          }
+      }
+   }
+
+   // If we didn't find an existing Molecule to overwrite, we check the last
+   // Molecule on the list and if that is still 'Untitled' and empty, use it.
+   if (!found) {
+      child = root->child(root->rowCount()-1);
+      if (child->text() == DefaultMoleculeName && !child->hasChildren()) {
+         Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
+         Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
+         makeActive = makeActive || (mol->checkState() == Qt::Checked);
+         // This may result in a memory leak, but we need the Molecule
+         // to remain lying around in case of an undo action.
+         mol->disconnect();
+         takeRow(child->row());
+      }
+
+      Command::AddMolecule* cmd = new Command::AddMolecule(molecule, root);
+      postCommand(cmd);
+   }
+
+   if (makeActive) {
+      forAllMolecules(
+         std::bind(&Layer::Molecule::setCheckState, std::placeholders::_1, Qt::Unchecked)
+      );
+      forAllSystems(
+         std::bind(&Layer::System::setCheckState, std::placeholders::_1, Qt::Unchecked)
+      );
+
+      molecule->setCheckState(Qt::Checked);
+      sceneRadiusChanged(sceneRadius());
+      changeActiveViewerMode(Viewer::Manipulate);
+   }
+
+   fileOpened(parser->filePath());
+}
+
+
+
+// ---------- Clipboard ----------
+
+// Note that we can only paste a string containing a list of coordinates,
+// nothing else.  There appears to be an OS X specific bug that prevents this
+// from working properly.  The clipboard text gets mangled if the clipboard
+// contents originates from another application.
+// http://www.qtforum.org/article/28645/qclipboard-problem-mac-osx-tiger.html#post97862
+void ViewerModel::pasteSelectionFromClipboard()
+{
+   QString xyz(QApplication::clipboard()->text(QClipboard::Clipboard));
+   Parser::CartesianCoordinates parser;
+   Parser::TextStream textStream(&xyz);
+   Data::Geometry* geom(parser.parse(textStream));
+
+   if (geom && activeMolecule()) {
+      selectAll(); 
+      // This should be added as an Undo action
+      activeMolecule()->appendPrimitives(Layer::PrimitiveList(*geom));
+      invertSelection(); 
+      updateObjectLists();
+      delete geom;
+   }
+}
+
+
+void ViewerModel::copySelectionToClipboard()
+{
+   MoleculeList molecules(moleculeList());
+   MoleculeList::iterator mol;
+    
+   bool selectedOnly(true);
+   QString coordinates;
+   for (mol = molecules.begin(); mol != molecules.end(); ++mol) {
+       coordinates += (*mol)->coordinatesAsString(selectedOnly);
+   }
+
+   qDebug() << coordinates;
+   QApplication::clipboard()->setText(coordinates);
+}
+
+
+void ViewerModel::cutSelection()
+{
+   copySelectionToClipboard();
+   deleteSelection();
+}
+
+
+void ViewerModel::groupSelection()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::groupSelection, std::placeholders::_1)
+   );
+}
+
+
+void ViewerModel::ungroupSelection()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::ungroupSelection, std::placeholders::_1)
+   );
 }
 
 
@@ -514,6 +904,7 @@ void ViewerModel::updateObjectLists()
 }
 
 
+
 // --------------- Selection Routines ---------------
 
 // This is the main selection routine which should only receive selection
@@ -529,6 +920,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
    Layer::GeometryList* geometryList1(0);
    Layer::GeometryList* geometryList2(0);
    Layer::GLObject* glObject;
+   Layer::Molecule* molecule;
    bool setDefaultGeometry(false);
 
    list = deselected.indexes();
@@ -539,6 +931,15 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           glObject->deselect();
           m_selectedObjects.removeAll(glObject);
 
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->deselect();
+              m_selectedObjects.removeAll(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -546,6 +947,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
           if ( (frequencies = qobject_cast<Layer::Frequencies*>(base)) ) {
              frequencies->clearActiveMode();
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -563,12 +965,18 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        base = QVariantPtr<Layer::Base>::toPointer((*iter).data(Qt::UserRole+1));
        if ( (glObject = qobject_cast<Layer::GLObject*>(base)) ) {
 
-          MoleculeList 
-             parents(glObject->findLayers<Layer::Molecule>(Layer::Parents | Layer::Visible));
-//        if (parents.size() > 0) {
               glObject->select();
               m_selectedObjects.append(glObject);
-//          }
+
+       }else if ( (molecule = qobject_cast<Layer::Molecule*>(base)) ) {
+          if (molecule->checkState() == Qt::Checked) {
+          GLObjectList objects(molecule->findLayers<Layer::GLObject>());
+          for (auto object : objects) {
+              object->select();
+              m_selectedObjects.append(object);
+          }
+          }
+
        }else if ( (mode = qobject_cast<Layer::Mode*>(base)) ) {
           QStandardItem* parent(mode->QStandardItem::parent());
           Layer::Frequencies* frequencies;
@@ -577,6 +985,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
              frequencies->setActiveMode(*mode);
              Layer::Atom::setDisplayVibrationVector(true);
           }
+
        }else if ( (geometry = qobject_cast<Layer::Geometry*>(base)) ) {
           QStandardItem* parent(geometry->QStandardItem::parent());
           base = QVariantPtr<Layer::Base>::toPointer(parent->data());
@@ -589,6 +998,7 @@ void ViewerModel::selectionChanged(QItemSelection const& selected,
        }
    }
 
+   selectionChanged();
    if (setDefaultGeometry) geometryList1->resetGeometry();
    if (m_updateEnabled) updated();
 }
@@ -599,11 +1009,9 @@ void ViewerModel::invertSelection()
 {
    QItemSelection select;
    QItemSelection deselect;
-
-   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    
    GLObjectList::iterator iter;
-   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
+   for (iter = m_opaqueObjects.begin(); iter != m_opaqueObjects.end(); ++iter) {
        if ((*iter)->isSelected()) {
           deselect.select((*iter)->index(), (*iter)->index());
        }else {
@@ -618,10 +1026,9 @@ void ViewerModel::invertSelection()
 
 void ViewerModel::selectAll()
 {
-   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    QItemSelection select;
    GLObjectList::iterator iter;
-   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
+   for (iter = m_opaqueObjects.begin(); iter != m_opaqueObjects.end(); ++iter) {
        if ( ! (*iter)->isSelected()) {
           select.append(QItemSelectionRange((*iter)->index()));
        }
@@ -637,359 +1044,23 @@ void ViewerModel::selectNone()
    updateObjectLists();
    enableUpdate(true);
 
-   GLObjectList visibleObjects = m_opaqueObjects + m_transparentObjects;
    QItemSelection all;
-
    GLObjectList::iterator iter;
-   for (iter = visibleObjects.begin(); iter != visibleObjects.end(); ++iter) {
+   for (iter = m_opaqueObjects.begin(); iter != m_opaqueObjects.end(); ++iter) {
        all.append(QItemSelectionRange((*iter)->index()));
    }
    selectionChanged(all, QItemSelectionModel::Deselect);
 }
 
 
-void ViewerModel::setConstraint()
-{
-   int n(m_selectedObjects.size());
-   if (n < 1) return;
-
-   // Check all the selected atoms belong to the same Molecule.
-   unsigned int findFlags(Layer::Parents | Layer::Visible);
-   MoleculeList parents(m_selectedObjects[0]->findLayers<Layer::Molecule>(findFlags));
-   if (parents.isEmpty()) return;
-
-   for (int i = 1; i < n; ++i) {
-       if (m_selectedObjects[i]->findLayers<Layer::Molecule>(findFlags) != parents) {
-          QString msg("Cannot enforce constraints between atoms in different molecules");
-          QMsgBox::warning(m_parent, "IQmol", msg);
-          return;
-       }
-   }
-
-   AtomList atoms;
-   Layer::Bond* bond;
-
-   if ( (n == 1) && (bond = qobject_cast<Layer::Bond*>(m_selectedObjects[0])) ) {
-      Layer::Atom* A(bond->beginAtom()); 
-      Layer::Atom* B(bond->endAtom()); 
-      if (A && B) atoms << A << B;
-   }else {
-      Layer::Atom* A;
-      for (int i = 0; i < n; ++i) {
-          if ((A = qobject_cast<Layer::Atom*>(m_selectedObjects[i]))) atoms << A;
-      } 
-   }
-
-   n = atoms.size();
-
-   if (n < 1 || n > 4) {
-      displayMessage("Unable to set constraint");
-      return;
-   }
-
-   Layer::Molecule* molecule(parents.first());
-   Layer::Constraint* constraint(molecule->findMatchingConstraint(atoms));
-
-   if (constraint) {
-      constraint->configure();
-      if (constraint->accepted()) {
-         selectNone();
-         molecule->applyConstraint(constraint);
-      }
-   }else {
-      constraint = new Layer::Constraint(atoms);
-      constraint->configure();
-      if (constraint->accepted()) {
-         if (molecule->canAcceptConstraint(constraint)) {
-            selectNone();
-            molecule->addConstraint(constraint);
-         }else {
-            QMsgBox::information(0, "IQmol", 
-               "A maximum of two scan coordinates are permitted");
-            delete constraint;
-         }
-         
-      }else {
-         delete constraint;
-      }
-   }
-}
-
-
-void ViewerModel::freezeAtoms()
-{
-   int n(m_selectedObjects.size());
-
-   // Check all the selected atoms belong to the same Molecule.
-   unsigned int findFlags(Layer::Parents | Layer::Visible);
-   MoleculeList parents(m_selectedObjects[0]->findLayers<Layer::Molecule>(findFlags));
-   if (parents.isEmpty()) return;
-
-   for (int i = 1; i < n; ++i) {
-       if (m_selectedObjects[i]->findLayers<Layer::Molecule>(findFlags) != parents) {
-          QString msg("Cannot freeze atoms in different molecules");
-          QMsgBox::warning(m_parent, "IQmol", msg);
-          return;
-       }
-   }
-
-   AtomList atoms;
-
-   Layer::Atom* A;
-   for (int i = 0; i < n; ++i) {
-       if ((A = qobject_cast<Layer::Atom*>(m_selectedObjects[i]))) atoms << A;
-   } 
-
-   if (atoms.isEmpty()) return;
-
-   Layer::Molecule* molecule(parents.first());
-   Layer::Constraint* constraint(molecule->findMatchingConstraint(atoms));
-
-   if (constraint) {
-      constraint->configure();
-      if (constraint->accepted()) {
-         selectNone();
-         molecule->applyConstraint(constraint);
-      }
-   }else {
-      constraint = new Layer::Constraint(atoms);
-      constraint->configure();
-      if (constraint->accepted()) {
-         if (molecule->canAcceptConstraint(constraint)) {
-            selectNone();
-            molecule->addConstraint(constraint);
-         }else {
-            QMsgBox::information(0, "IQmol", 
-               "A maximum of two scan coordinates are permitted");
-            delete constraint;
-         }
-         
-      }else {
-         delete constraint;
-      }
-   }
-}
-
-
-void ViewerModel::setIsotopes()
-{
-   int n(m_selectedObjects.size());
-   AtomList atoms;
-   Layer::Atom* A;
-
-   for (int i = 0; i < n; ++i) {
-       if ((A = qobject_cast<Layer::Atom*>(m_selectedObjects[i]))) atoms << A;
-   } 
-
-   if (atoms.isEmpty()) {
-      displayMessage("Atom selection required");
-      return;
-   }
-
-   std::sort(atoms.begin(), atoms.end(), Layer::Atom::indexSort);
-
-   // Check all the selected atoms belong to the same Molecule.
-   unsigned int findFlags(Layer::Parents | Layer::Visible);
-   MoleculeList parents(m_selectedObjects[0]->findLayers<Layer::Molecule>(findFlags));
-   if (parents.isEmpty()) return;
-
-   for (int i = 1; i < n; ++i) {
-       if (m_selectedObjects[i]->findLayers<Layer::Molecule>(findFlags) != parents) {
-          QString msg("Cannot set isotopes in more than one molecule");
-          QMsgBox::warning(m_parent, "IQmol", msg);
-          return;
-       }
-   }
-
-   Layer::Molecule* molecule(parents.first());
-   Layer::Isotopes* isotopes(new Layer::Isotopes(atoms));
-   isotopes->configure();
-
-   if (isotopes->accepted()) {
-      selectNone();
-      molecule->addIsotopes(isotopes);
-      isotopes->updateLabels();
-   }else {
-      delete isotopes;
-   }
-
-}
-
-
-MoleculeList ViewerModel::moleculeList(bool visibleOnly)
-{
-   unsigned int findFlags(Layer::Children);
-   if (visibleOnly) findFlags = (findFlags | Layer::Visible);
-   return findLayers<Layer::Molecule>(findFlags);
-}
-
-
-// This should probably be made smarter, for the time being we simply return
-// the last visible molecule.
-Layer::Molecule* ViewerModel::activeMolecule()
-{
-   Layer::Molecule* mol(0);
-   if (!moleculeList().isEmpty()) mol = moleculeList().last();
-   return  mol;
-}
-
-
-void ViewerModel::addHydrogens()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::addHydrogens, _1));
-}
-
-
-void ViewerModel::reperceiveBonds()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::reperceiveBonds, _1));
-}
-
-
-void ViewerModel::reperceiveBondsForAnimation()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::reperceiveBondsForAnimation, _1));
-}
-
-
-void ViewerModel::computeEnergy()
-{
-   //qDebug() << "Compute energy turned off";
-   //return;
-   forAllMolecules(boost::bind(&Layer::Molecule::computeEnergy, _1, m_forceField));
-}
-
-
-void ViewerModel::minimizeEnergy()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::minimizeEnergy, _1, m_forceField));
-}
-
-
-void ViewerModel::translateToCenter()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::translateToCenter, _1, m_selectedObjects));
-}
-
-
-void ViewerModel::symmetrize(double const tolerance)
-{
-   bool updateCoordinates(true);
-   forAllMolecules(boost::bind(&Layer::Molecule::symmetrize, _1, tolerance, updateCoordinates));
-}
-
-
-void ViewerModel::toggleAutoDetectSymmetry()
-{
-   Layer::Molecule::toggleAutoDetectSymmetry();
-}
-
-
-void ViewerModel::saveToCurrentGeometry()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::saveToCurrentGeometry, _1));
-}
-
-
-void ViewerModel::determineSymmetry()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::autoDetectSymmetry, _1));
-}
-
-
 void ViewerModel::deleteSelection()
 {
    enableUpdate(false);
-   forAllMolecules(boost::bind(&Layer::Molecule::deleteSelection, _1));
+   forAllMolecules(
+      std::bind(&Layer::Molecule::deleteSelection, std::placeholders::_1)
+   );
    enableUpdate(true);
    updateObjectLists();
-}
-
-
-void ViewerModel::cutSelection()
-{
-   copySelectionToClipboard();
-   deleteSelection();
-}
-
-
-void ViewerModel::groupSelection()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::groupSelection, _1));
-}
-
-
-void ViewerModel::ungroupSelection()
-{
-   forAllMolecules(boost::bind(&Layer::Molecule::ungroupSelection, _1));
-}
-
-
-void ViewerModel::forAllMolecules(boost::function<void(Layer::Molecule&)> function)
-{
-   bool visibleOnly(true);
-   MoleculeList molecules(moleculeList(visibleOnly));
-   MoleculeList::iterator iter;
-   for (iter = molecules.begin(); iter != molecules.end(); ++iter) {
-       function(*(*iter));
-   }
-}
-
-
-void ViewerModel::adjustSymmetryTolerance() 
-{
-   SymmetryToleranceDialog dialog(m_parent, m_symmetryTolerance);
-   connect(&dialog, SIGNAL(symmetrizeRequest(double const)),
-      this, SLOT(symmetrize(double const)));
-   dialog.exec();
-   if (dialog.result() == QDialog::Accepted) {
-      m_symmetryTolerance = dialog.value();
-   }
-}
-
-
-void ViewerModel::insertMoleculeById(QString identifier)
-{
-   Parser::OpenBabel parser;
-   QString ext;
-
-   qDebug() << "Identifier" << identifier;
-
-   if (identifier.indexOf("SMILES:") == 0) {
-      identifier.replace(0,7,"");
-      ext = "smi";
-
-   }else if (identifier.indexOf("INCHI:") == 0) {
-      identifier.replace(0,6,"");
-      if (!identifier.startsWith("InChI=")) identifier.prepend("InChI=");
-      ext = "inchi";
-
-   }else {
-      QLOG_WARN() << "Unknown molecule identifier type:" << identifier;
-      return;
-   }
-
-   bool ok(parser.parse(identifier, ext));
-   QStringList errors(parser.errors());
-   Data::Bank& bank(parser.data());
-
-   if (ok && errors.isEmpty() && !bank.isEmpty()) {
-      if (activeMolecule()) activeMolecule()->appendData(bank);
-   }else {
-      QMsgBox::warning(m_parent, "IQmol", "Invalid string");
-   }
-}
-
-
-double ViewerModel::sceneRadius(bool visibleOnly)
-{
-   double radius(Preferences::DefaultSceneRadius());
-   MoleculeList molecules(moleculeList(visibleOnly));
-   MoleculeList::iterator iter;
-   for (iter = molecules.begin(); iter != molecules.end(); ++iter) {
-       radius = std::max(radius, (*iter)->radius());
-   }
-   return radius;
 }
 
 
@@ -1045,26 +1116,128 @@ void ViewerModel::itemDoubleClicked(QModelIndex const& index)
 {
    QStandardItem* item = itemFromIndex(index);
    Layer::Base* layer;
-   if ((layer = dynamic_cast<Layer::Base*>(item))) {
-      layer->configure();
-   }
+   if ((layer = dynamic_cast<Layer::Base*>(item))) layer->configure();
 }
 
 
 void ViewerModel::itemExpanded(QModelIndex const& index)
 {
-   // This is a bit of an overkill, we really only want to remove the star from
-   // molecules with new results.
+   // Remove the star if the molecule has new results
    QStandardItem* item = itemFromIndex(index);
    item->setIcon(QIcon()); 
 }
 
 
-void ViewerModel::displayGlobals()
+
+
+
+// - - - - - Menu Slots - - - - -
+
+void ViewerModel::setConstraint()
 {
-   m_background.draw();
-   m_axes.draw();
-   m_mesh.draw();
+   Layer::Molecule* mol(activeMolecule());
+   if (mol && mol->editConstraint()) selectNone();
+}
+
+
+void ViewerModel::freezeAtomPositions()
+{
+   Layer::Molecule* mol(activeMolecule());
+   if (mol && mol->freezeAtomPositions()) selectNone();
+}
+
+
+void ViewerModel::setIsotopes()
+{
+   Layer::Molecule* mol(activeMolecule());
+   if (mol && mol->editIsotopes()) selectNone();
+}
+
+
+void ViewerModel::addHydrogens()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::addHydrogens, std::placeholders::_1)
+   );
+}
+
+
+void ViewerModel::reperceiveBonds()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::reperceiveBonds, std::placeholders::_1, true)
+   );
+}
+
+
+void ViewerModel::reperceiveBondsForAnimation()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::reperceiveBondsForAnimation, std::placeholders::_1)
+   );
+}
+
+
+void ViewerModel::computeEnergy()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::computeEnergy, std::placeholders::_1, m_forceField)
+   );
+}
+
+
+void ViewerModel::minimizeEnergy()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::minimizeEnergy, std::placeholders::_1, m_forceField)
+   );
+}
+
+
+void ViewerModel::translateToCenter()
+{
+   // If we translate all Molecules and all Systems, the System Molecules 
+   // get translated twice, so just do the active Component.
+
+   Layer::System* system(activeSystem());
+   if (system) {
+      system->translateToCenter(m_selectedObjects);
+   }else {
+      Layer::Molecule* molecule(activeMolecule());
+      molecule->translateToCenter(m_selectedObjects);
+   }
+}
+
+
+void ViewerModel::symmetrize(double const tolerance)
+{
+   bool updateCoordinates(true);
+   forAllMolecules(
+      std::bind(&Layer::Molecule::symmetrize, std::placeholders::_1, tolerance, 
+        updateCoordinates)
+   );
+}
+
+
+void ViewerModel::toggleAutoDetectSymmetry()
+{
+   Layer::Molecule::toggleAutoDetectSymmetry();
+}
+
+
+void ViewerModel::saveToCurrentGeometry()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::saveToCurrentGeometry, std::placeholders::_1)
+   );
+}
+
+
+void ViewerModel::determineSymmetry()
+{
+   forAllMolecules(
+      std::bind(&Layer::Molecule::autoDetectSymmetry, std::placeholders::_1)
+   );
 }
 
 } // end namespace IQmol

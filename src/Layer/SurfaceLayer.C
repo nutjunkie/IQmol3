@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -121,7 +121,7 @@ void Surface::getPropertyRange(double& min, double& max) const
    m_surface.getPropertyRange(min, max);
    if (m_balanceScale && min < 0.0 && max > 0.0) {
       min = std::min(min, -max);
-      max = std::max(max, -min);
+     max = std::max(max, -min);
    }
 }
 
@@ -130,6 +130,8 @@ void Surface::setAlpha(double const alpha)
 {
    m_alpha = alpha;
    m_surface.setOpacity(m_alpha);
+   m_colorNegative[3] = m_alpha;
+   m_colorPositive[3] = m_alpha; 
    recompile(); // this is really only needed if there is a property
 }
 
@@ -143,38 +145,6 @@ void Surface::setClip(bool const tf)
 QList<QColor> const& Surface::colors() const
 {
    return m_surface.colors();
-}
-
-
-void Surface::setColors(QList<QColor> const& colors, bool const blend)
-{
-   m_surface.setColors(colors);
-   m_surface.setBlend(blend);
-}
-
-
-
-
-void Surface::setColors(QColor const& negative, QColor const& positive)
-{
-   m_colorNegative[0] = negative.redF();
-   m_colorNegative[1] = negative.greenF();
-   m_colorNegative[2] = negative.blueF();
-   m_colorNegative[3] = negative.alphaF();
-
-   m_colorPositive[0] = positive.redF();
-   m_colorPositive[1] = positive.greenF();
-   m_colorPositive[2] = positive.blueF();
-   m_colorPositive[3] = positive.alphaF();
-
-return;
-   // For some bizarre reason, calling the Data::Surface::setColors causes the
-   // negative and positive colors (which are supposed to be const!) to
-   // change.  Not only that, the call the setColors causes a crash when swapping
-   // colors on a surface from an obj file.
-   QList<QColor> colors;
-   colors << negative << positive;
-   //m_surface.setColors(colors);
 }
 
 
@@ -196,6 +166,35 @@ QColor Surface::colorNegative() const
 }
 
 
+void Surface::setColors(QList<QColor> const& colors, bool const blend)
+{
+   m_surface.setColors(colors);
+   m_surface.setBlend(blend);
+}
+
+
+void Surface::setColors(QColor const& negative, QColor const& positive)
+{
+   m_colorNegative[0] = negative.redF();
+   m_colorNegative[1] = negative.greenF();
+   m_colorNegative[2] = negative.blueF();
+   m_colorNegative[3] = m_alpha; // negative.alphaF();
+
+   m_colorPositive[0] = positive.redF();
+   m_colorPositive[1] = positive.greenF();
+   m_colorPositive[2] = positive.blueF();
+   m_colorPositive[3] = m_alpha; //positive.alphaF();
+
+return;
+   // For some bizarre reason, calling the Data::Surface::setColors causes the
+   // negative and positive colors (which are supposed to be const!) to
+   // change.  Not only that, the call the setColors causes a crash when swapping
+   // colors on a surface from an obj file.
+   QList<QColor> colors;
+   colors << negative << positive;
+   //m_surface.setColors(colors);
+}
+
 
 void Surface::drawFast()
 {
@@ -213,20 +212,25 @@ void Surface::povray(PovRayGen& povraygen)
 {
    if ( (checkState() != Qt::Checked) || m_alpha < 0.01) return;
 
-   // Lines take too long and the PovRay Mesh looks better
-/*
-   if (m_drawMode == Lines) {
-      povrayLines(povraygen, m_surface.meshPositive().data(), colorPositive());
-      if (isSigned()) {
-         povrayLines(povraygen, m_surface.meshNegative().data(), colorNegative());
-      }
-   }else {
-*/
-      povray(povraygen, m_surface.meshPositive().data(), colorPositive());
-      if (isSigned()) {
-         povray(povraygen, m_surface.meshNegative().data(), colorNegative());
-      }
-//   }
+   // Don't use OpenGL lines as they take too long and the PovRay Mesh looks
+   // better, so don't branch on only m_drawMode == Lines{
+
+   QColor color;
+   color.setRgbF(m_colorPositive[0], 
+                 m_colorPositive[1],
+                 m_colorPositive[2], 
+                 m_colorPositive[3]);
+
+   povray(povraygen, m_surface.meshPositive().data(), color);
+
+   if (isSigned()) {
+      color.setRgbF(m_colorNegative[0], 
+                    m_colorNegative[1],
+                    m_colorNegative[2], 
+                    m_colorNegative[3]);
+
+      povray(povraygen, m_surface.meshNegative().data(), color);
+   }
 }
 
 
@@ -290,9 +294,7 @@ void Surface::draw()
 {
    if ( (checkState() != Qt::Checked) || m_alpha < 0.01) return;
 
-   if (m_clip) {
-      glEnable(GL_CLIP_PLANE0);
-   }
+   if (m_clip) glEnable(GL_CLIP_PLANE0);
 
    GLboolean lighting;
    GLboolean blend;
@@ -301,11 +303,9 @@ void Surface::draw()
    glGetBooleanv(GL_BLEND, &blend);
 
    if (isTransparent()) {
-/*
       glEnable(GL_BLEND);
       glDepthMask(GL_TRUE);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-*/
       glEnable(GL_CULL_FACE);
    }
 
@@ -497,21 +497,21 @@ GLuint Surface::compile(Data::Mesh const& mesh)
                 vertex   = data.cfv_iter(*face);
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha);
                 //glArrayElement(vertex->idx());
                 glArrayElement(vertex.handle().idx());
 
                 ++vertex;
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha);
                 //glArrayElement( vertex->idx());
                 glArrayElement(vertex.handle().idx());
 
                 ++vertex;
                 property = mesh.scalarFieldValue(vertex);
                 color    = gradient.colorAt(property);
-                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha*color.alphaF());
+                glColor4f(color.redF(), color.greenF(), color.blueF(), m_alpha);
                 //glArrayElement( vertex->idx());
                 glArrayElement(vertex.handle().idx());
             }

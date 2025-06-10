@@ -750,6 +750,7 @@ void MainWindow::createMenus()
 
 #endif
 
+#ifdef AMBER
    // ----- Amber Menu -----
    if (Preferences::AmberEnabled()) {
       menu->addSeparator();
@@ -764,6 +765,7 @@ void MainWindow::createMenus()
          action->setEnabled(m_viewerModel.activeSystem() != 0);
       });
    }
+#endif
 
    // ----- Help Menu -----
    menu = menuBar()->addMenu("Help");
@@ -1102,17 +1104,22 @@ void MainWindow::showGromacsServerDialog()
 
 void MainWindow::showAmberConfigDialog()
 {
+#ifdef AMBER
    Amber::ConfigDialog dialog(this);
    dialog.exec();
    if (dialog.result() == QDialog::Accepted) {
       Preferences::AmberDirectory(dialog.getDirectory());
    }
+#endif
 }
+
 
 void MainWindow::showAmberSystemBuilderDialog()
 {
+#ifdef AMBER
    Amber::SystemBuilderDialog dialog(this, m_viewerModel.activeSystem());
    dialog.exec();
+#endif
 }
 
 void MainWindow::insertMoleculeDialog() 

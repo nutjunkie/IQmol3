@@ -113,8 +113,8 @@ namespace Layer {
          qglviewer::Vec getTranslation() { return m_frame.translation(); }
          qglviewer::Quaternion getRotation() { return m_frame.rotation(); }
 
-         //bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
-         bool isTransparent() const { return m_alpha < 0.99; }
+         bool isTransparent() const { return 0.01 <= m_alpha && m_alpha < 0.99; }
+         //bool isTransparent() const { return m_alpha < 0.99; }
 
 		 /// Basic implmentation of an alpha sort so transparent objects can be
 		 /// drawn last so that they are not eclipsed.

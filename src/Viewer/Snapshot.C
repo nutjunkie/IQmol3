@@ -88,8 +88,8 @@ bool Snapshot::requestFileName()
               << "MPEG4 Movie (*.mp4)"
               << "QuickTime Movie (*.mov)" ;
 #else
-      formats << "MPEG4 Movie (*.mp4)"
-              << "QuickTime Movie (*.mov)"
+      formats << "QuickTime Movie (*.mov)"
+              << "MPEG4 Movie (*.mp4)"
               << "Audio Video Interleave (*.avi)";
 #endif
    }else if (m_flags & Vector) {
@@ -205,12 +205,15 @@ void Snapshot::makeMovie()
    QFileInfo fileInfo(m_fileBaseName);
    QString files = fileInfo.fileName() + "%05d." + m_fileExtension;
 
-   QStringList args;
-   args << "-r" << QString::number(int(m_framerate)) << "-i" << files
-        << "-vcodec" << "libx264" << "-y" << "-an" 
-        << movie.fileName()
-        << "-vf" << "\"scale=trunc(iw/2)*2:trunc(ih/2)*2\"";
 
+   QStringList args;
+   args << "-r"   << QString::number(int(m_framerate)) 
+        << "-i"   << files
+        << "-vf"  << "scale=trunc(iw/2)*2:trunc(ih/2)*2"   // Ensure the pixel dimensions are even for libx264
+        << "-c:v" << "libx264" 
+        << "-y"   // overwrite without prompting
+        << "-an"  // no audio
+        << movie.fileName();
 
    m_movieProcess = new QProcess;
 
@@ -223,17 +226,20 @@ void Snapshot::makeMovie()
       this, SLOT(movieFinished(int, QProcess::ExitStatus)));
 
    qDebug() << "Start movie making";
-   qDebug() << ffmpeg.filePath() << "with args" ;
-   qDebug() << args;
+   qDebug() << ffmpeg.filePath() << "with args" << args ;
    m_movieProcess->start(ffmpeg.filePath(), args);
 
    return;
+
+
 }
 
 
 void Snapshot::movieFinished(int, QProcess::ExitStatus exitStatus)
 {
    QString fileName(m_fileBaseName + "." + m_videoExtension);
+
+   //qDebug() << "FFmpeg output: " << m_movieProcess->readAllStandardError();
    
    QString msg;
    switch (exitStatus) {
