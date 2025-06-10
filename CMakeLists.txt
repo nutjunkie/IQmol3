@@ -51,8 +51,6 @@ include_directories(modules/openmesh/src)
 add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
 set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
 
-include_directories(modules/yaml-cpp/include)
-add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
 include_directories(modules/openbabel/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
@@ -65,6 +63,8 @@ if (WITH_GROMACS)
    add_subdirectory(src/Gromacs)
 endif()
 
+include_directories(modules/yaml-cpp/include)
+add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
 if(QARCHIVE)
    #set(HDF5_USE_STATIC_LIBRARIES 1)
