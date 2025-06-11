@@ -2091,8 +2091,6 @@ void Molecule::computeEnergy(QString const& forceFieldName)
    // have done their work
    centerOfNuclearChargeAvailable(centerOfNuclearCharge());
    setAtomicCharges(Data::Type::GasteigerCharge);
-   bool estimated(true);
-   dipoleAvailable(dipoleFromPointCharges(), estimated);
 }
 
 

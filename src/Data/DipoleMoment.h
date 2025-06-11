@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_DIPOLEMOMENT_H
-#define IQMOL_DATA_DIPOLEMOMENT_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -58,7 +57,4 @@ namespace Data {
          qglviewer::Vec m_dipole;
    };
 
-
 } } // end namespace IQmol::Data
-
-#endif
