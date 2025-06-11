@@ -93,9 +93,6 @@ void GeometryList::setMolecule(Molecule* molecule)
       m_molecule, SIGNAL(popAnimators(AnimatorList const&)));
 
    connect(this, SIGNAL(update()), m_molecule, SIGNAL(softUpdate()));
-
-   makeAnimators();
-   resetGeometry();
 }
 
 
@@ -190,7 +187,7 @@ void GeometryList::deleteAnimators()
 
 void GeometryList::makeAnimators()
 {
-qDebug() << "GeometryList::makeAnimators()";
+   //qDebug() << "GeometryList::makeAnimators()";
    if (!m_animatorList.isEmpty()) {
       popAnimators(m_animatorList);
       deleteAnimators();

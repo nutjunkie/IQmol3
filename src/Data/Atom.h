@@ -37,6 +37,9 @@ namespace Data {
          Atom(unsigned const Z = 0, QString const& label = QString()) 
           : m_atomicNumber(Z), m_label(label) { }
 
+         Atom(Atom const& atom) 
+          : m_atomicNumber(atom.m_atomicNumber), m_label(atom.m_label) { }
+
          Atom(QString const& symbol, QString const& label = QString());
 
          unsigned atomicNumber() const { return m_atomicNumber; }

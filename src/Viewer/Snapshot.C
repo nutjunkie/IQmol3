@@ -209,10 +209,12 @@ void Snapshot::makeMovie()
    QStringList args;
    args << "-r"   << QString::number(int(m_framerate)) 
         << "-i"   << files
-        << "-vf"  << "scale=trunc(iw/2)*2:trunc(ih/2)*2"   // Ensure the pixel dimensions are even for libx264
+        << "-vf"  << "scale=trunc(iw/2)*2:trunc(ih/2)*2" // pixel dims must be even for libx264
         << "-c:v" << "libx264" 
-        << "-y"   // overwrite without prompting
-        << "-an"  // no audio
+        << "-y"                          // overwrite without prompting
+        << "-an"                         // no audio
+        << "-pix_fmt" << "yuv420p"       // removes flickering
+        << "-x264-params" << "keyint=1"  // removes flickering
         << movie.fileName();
 
    m_movieProcess = new QProcess;
@@ -225,13 +227,11 @@ void Snapshot::makeMovie()
    connect(m_movieProcess, SIGNAL(finished(int, QProcess::ExitStatus)), 
       this, SLOT(movieFinished(int, QProcess::ExitStatus)));
 
-   qDebug() << "Start movie making";
-   qDebug() << ffmpeg.filePath() << "with args" << args ;
+   QLOG_INFO() << "Start movie creation:";
+   QLOG_INFO() << ffmpeg.filePath() << "with args" << args ;
    m_movieProcess->start(ffmpeg.filePath(), args);
 
    return;
-
-
 }
 
 
@@ -239,7 +239,7 @@ void Snapshot::movieFinished(int, QProcess::ExitStatus exitStatus)
 {
    QString fileName(m_fileBaseName + "." + m_videoExtension);
 
-   //qDebug() << "FFmpeg output: " << m_movieProcess->readAllStandardError();
+   qDebug() << "FFmpeg output: " << m_movieProcess->readAllStandardError();
    
    QString msg;
    switch (exitStatus) {
@@ -262,7 +262,6 @@ void Snapshot::movieFinished(int, QProcess::ExitStatus exitStatus)
 
 void Snapshot::movieError(QProcess::ProcessError error)
 {
-   qDebug() << "movieError(QProcess::ProcessError error) called";
    QString msg("Failed to create movie:\n");
    switch (error) {
 

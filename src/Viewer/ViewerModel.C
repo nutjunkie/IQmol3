@@ -557,7 +557,7 @@ void ViewerModel::fileOpenFinished()
    QStringList errors(parser->errors());
 
    if (bank.isEmpty()) {
-      if (errors.isEmpty()) errors.append("No valid data found in bank " + info.filePath());
+      if (errors.isEmpty()) errors.append("No valid data found in file " + info.filePath());
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
       parser->deleteLater();
       return;
@@ -727,6 +727,12 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
    bool addStar(parser->flags()    & ParseJobFiles::AddStar);
    bool found(false);
 
+/*
+   qDebug() << "==============================================================";
+   qDebug() << "Dumping bank contents";
+   qDebug() << "==============================================================";
+   bank.dump();
+*/
    Layer::Molecule* molecule(newMolecule());
    molecule->setCheckState(Qt::Unchecked);
    molecule->setText(name);

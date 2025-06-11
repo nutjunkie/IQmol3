@@ -32,7 +32,8 @@ namespace Data {
 
    class AtomicProperty;
 
-   /// Data structure representing an atom.
+   /// Data structure representing an atom that can have properties such as charge,
+   /// chemical shift etc.
    class QmAtom : public Atom {
 
       friend class boost::serialization::access;
@@ -40,8 +41,11 @@ namespace Data {
       public:
          QmAtom(unsigned const Z = 0, QString const& label = QString()) 
           :  Atom(Z,label) { }
+
          QmAtom(QString const& symbol, QString const& label = QString()) 
           : Atom(symbol,label) { };
+
+         QmAtom(Atom const& atom) : Atom(atom) { }
 
          Type::ID typeID() const { return Type::QmAtom; }
 

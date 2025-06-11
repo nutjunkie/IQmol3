@@ -271,6 +271,7 @@ qDebug() << "Molecule::appendData(Layer::List)";
 
        }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
           geometryList->setMolecule(this);
+          toSet.append(*iter);
 
        // This is currently preventing the addition of primitives to an exisiting molecule
        }else if (!labels.contains(text)) {
@@ -307,6 +308,7 @@ qDebug() << "Molecule::appendData(Layer::List)";
           }else if ((tag = qobject_cast<Tag*>(*iter))) {
              m_residueName = tag->tag();
           }else {
+             
 		     // The ordering of this is all wrong as the atoms have not been
 		     // appended yet and some Layers need this in their setMolecule
 		     // function.
@@ -333,6 +335,10 @@ qDebug() << "Molecule::appendData(Layer::List)";
           surface->setComponent(this);
           m_surfaceList.appendLayer(surface);
        }else if ((geometry = qobject_cast<Geometry*>(*iter))) {
+          appendLayer(*iter);
+       }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
+          geometryList->makeAnimators();
+          geometryList->resetGeometry();
           appendLayer(*iter);
        }else {
           appendLayer(*iter);
