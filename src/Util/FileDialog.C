@@ -48,7 +48,7 @@ QString getSaveFileName(
     }
 #else
    fileName = QFileDialog::getSaveFileName(parent, caption, dir, filter, 
-      selectedfilter, options);
+      selectedFilter, options);
 #endif
    return fileName;
 }
@@ -103,7 +103,7 @@ QString getOpenFileName(
     }
 #else
    fileName = QFileDialog::getOpenFileName( parent, caption, dir, filter,
-      selectedFilter, options)
+      selectedFilter, options);
 #endif
 
     return fileName;
