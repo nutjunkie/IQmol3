@@ -1,5 +1,4 @@
-#ifndef IQMOL_PARSEJOBFILES_H
-#define IQMOL_PARSEJOBFILES_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -39,17 +38,15 @@ namespace IQmol {
          };
 
          ParseJobFiles(QString const& filePath, QString const& filter = QString(), 
-            qint64 moleculePointer = 0);
+            void* moleculePointer = 0);
 
          void setFlags(unsigned flags) { m_flags = flags; }
          unsigned flags() const { return m_flags; }
-         qint64 moleculePointer() const { return m_moleculePointer; }
+         void* moleculePointer() const { return m_moleculePointer; }
 
       private:
          unsigned m_flags;
-         qint64 m_moleculePointer;
+         void* m_moleculePointer;
    };
 
 } // end namespace IQmol
-
-#endif

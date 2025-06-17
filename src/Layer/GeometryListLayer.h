@@ -60,6 +60,7 @@ namespace Layer {
          void configure();
          void setCurrentGeometry(unsigned const index);
          void resetGeometry();
+         void makeAnimators();
          void cloneLastGeometry();
 
       protected:
@@ -73,7 +74,6 @@ namespace Layer {
          void removeGeometry();
 
       private:
-         void makeAnimators();
          void deleteAnimators();
 
          Molecule* m_molecule;

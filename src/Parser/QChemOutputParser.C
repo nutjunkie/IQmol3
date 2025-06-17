@@ -236,7 +236,9 @@ bool QChemOutput::parse(TextStream& textStream)
             m_errors << parser.errors();
          }
 
-      }else if (line.contains("Standard Nuclear Orientation")) {
+      }else if (line.contains("Standard Nuclear Orientation (Angstroms)") || 
+                line.contains("Standard Nuclear Orientation (Bohr)") ) {
+
          bool convertFromBohr(line.contains("Bohr"));
          textStream.skipLine(2);
          Data::Geometry* geometry(readStandardCoordinates(textStream));

@@ -426,7 +426,7 @@ Process::JobInfo System::qchemJobInfo()
    }
 
    //jobInfo.set("MoleculePointer", (qint64)this);
-   jobInfo.set("SystemPointer", (qint64)this);
+   jobInfo.set("SystemPointer", this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));

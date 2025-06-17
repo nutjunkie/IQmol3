@@ -192,7 +192,7 @@ bool save(bool prompt = false);
             void setGeometry(IQmol::Data::Geometry&);
 
             // There must be a better way of doing this, but this is used
-            // in Layer::GeometryList for de
+            // in Layer::GeometryList 
             bool isCurrentGeometry(Data::Geometry const* geometry) const 
             { 
                return m_currentGeometry == geometry;

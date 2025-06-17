@@ -10,6 +10,11 @@ export CXX=/opt/homebrew/bin/g++-13
 
 build_zlib()
 {
+   if [[ -f "$extlibs/lib/libz.a" ]]; then
+     echo "Found libz.a, skipping build"
+     return
+   fi
+
    echo "Building zlib"
    local cwd=$PWD
    git clone --depth 1 https://github.com/madler/zlib.git
@@ -23,6 +28,11 @@ build_zlib()
 
 build_x264()
 {
+   if [[ -f "$extlibs/lib/lib264.a" ]]; then
+     echo "Found lib264.a, skipping build"
+     return
+   fi
+
    echo "Building libx264"
    local cwd=$PWD
    git clone --depth 1 https://code.videolan.org/videolan/x264.git
@@ -61,7 +71,8 @@ build_ffmpeg()
                --disable-everything --disable-shared --enable-static --enable-protocol=file \
                --enable-gpl --enable-decoder=mjpeg --enable-demuxer=image2 --enable-muxer=mp4 \
                --enable-muxer=avi --enable-encoder=libx264 --enable-encoder=mpeg4 \
-               --enable-filter=scale --enable-libx264 --disable-xlib --disable-iconv 
+               --enable-filter=scale --enable-libx264 --disable-xlib --disable-iconv \
+               --enable-decoder=png --enable-demuxer=png
    make -j$(sysctl -n hw.ncpu) install
    cd $cdw
 }

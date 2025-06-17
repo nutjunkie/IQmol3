@@ -14,10 +14,10 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
-      
+
 ********************************************************************************/
 
 #include "DipoleLayer.h"
@@ -32,9 +32,10 @@ using namespace qglviewer;
 namespace IQmol {
 namespace Layer {
 
+const QColor softCyan(179,235,242);
 
 Dipole::Dipole(qglviewer::Vec const& dipoleMoment) : GLObject("Dipole"), 
-   m_color(Qt::cyan), m_scale(0.25), m_configurator(*this), m_dipoleMoment(dipoleMoment), 
+   m_color(softCyan), m_scale(0.25), m_configurator(*this), m_dipoleMoment(dipoleMoment), 
    m_sceneRadius(Preferences::DefaultSceneRadius())
 {
    setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);

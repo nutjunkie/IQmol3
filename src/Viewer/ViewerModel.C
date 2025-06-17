@@ -528,7 +528,7 @@ Layer::Component* ViewerModel::activeComponent()
 
 // - - - - - I/O - - - - -
 
-void ViewerModel::open(QString const& filePath, QString const& filter, qint64 moleculePointer)
+void ViewerModel::open(QString const& filePath, QString const& filter, void* moleculePointer)
 {
    QString path(filePath);
    while (path.endsWith("/")) {
@@ -557,7 +557,7 @@ void ViewerModel::fileOpenFinished()
    QStringList errors(parser->errors());
 
    if (bank.isEmpty()) {
-      if (errors.isEmpty()) errors.append("No valid data found in bank " + info.filePath());
+      if (errors.isEmpty()) errors.append("No valid data found in file " + info.filePath());
       QMsgBox::warning(m_parent, "IQmol", errors.join("\n"));
       parser->deleteLater();
       return;
@@ -660,7 +660,7 @@ void ViewerModel::processSystemData(ParseJobFiles* parser)
    QStandardItem* child;
    QStandardItem* root(invisibleRootItem());
 
-   qint64 systemPointer(parser->moleculePointer());
+   void* systemPointer(parser->moleculePointer());
 
    if (overwrite && systemPointer) {
       for (int row = 0; row < root->rowCount(); ++row) {
@@ -669,7 +669,7 @@ void ViewerModel::processSystemData(ParseJobFiles* parser)
              Layer::Base*  base = QVariantPtr<Layer::Base>::toPointer(child->data());
              Layer::System* sys = qobject_cast<Layer::System*>(base);
 
-             if (system && (qint64)system == systemPointer) {
+             if (system && system == systemPointer) {
                 QLOG_TRACE() << "Found existing system";
                 system->setCheckState(sys->checkState());
                 // makeActive = makeActive || (mol->checkState() == Qt::Checked);
@@ -727,6 +727,12 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
    bool addStar(parser->flags()    & ParseJobFiles::AddStar);
    bool found(false);
 
+/*
+   qDebug() << "==============================================================";
+   qDebug() << "Dumping bank contents";
+   qDebug() << "==============================================================";
+   bank.dump();
+*/
    Layer::Molecule* molecule(newMolecule());
    molecule->setCheckState(Qt::Unchecked);
    molecule->setText(name);
@@ -736,7 +742,7 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
    QStandardItem* child;
    QStandardItem* root(invisibleRootItem());
 
-   qint64 moleculePointer(parser->moleculePointer());
+   void* moleculePointer(parser->moleculePointer());
 
    if (overwrite && moleculePointer) {
       for (int row = 0; row < root->rowCount(); ++row) {
@@ -745,7 +751,7 @@ void ViewerModel::processMoleculeData(ParseJobFiles* parser)
              Layer::Base* base = QVariantPtr<Layer::Base>::toPointer(child->data());
              Layer::Molecule* mol = qobject_cast<Layer::Molecule*>(base);
 
-             if (mol && (qint64)mol == moleculePointer) {
+             if (mol && mol == moleculePointer) {
                 QLOG_TRACE() << "Found existing molecule";
                 molecule->setCheckState(mol->checkState());
                 // makeActive = makeActive || (mol->checkState() == Qt::Checked);

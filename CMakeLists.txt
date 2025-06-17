@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.14.4)
 
-if (UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
-
 set(targetName IQmol)
 project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 
@@ -18,6 +14,13 @@ set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
+if (APPLE)
+   # symbols not in the Qt libraries
+   #set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -arch x86_64 -arch arm64")
+elseif (UNIX)
+   set(LINUX TRUE)
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # We need this to be able to include e.g. "Data/Bank.h" in the sources
@@ -27,7 +30,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 
-find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL Sql REQUIRED)
 
 find_package(ZLIB REQUIRED)
 if(ZLIB_FOUND)
@@ -190,6 +193,7 @@ target_link_libraries (${targetName}
    Qt5::PrintSupport
    Qt5::Widgets
    Qt5::OpenGL
+   Qt5::Sql
    ${OPENMESH_LIBRARIES}
    ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}

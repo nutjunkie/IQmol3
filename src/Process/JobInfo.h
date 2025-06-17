@@ -71,7 +71,7 @@ namespace Process {
          void set(QString const key, T const& value) 
          {
             //qDebug() << "Inserting job info:" << key << "->" << value;
-            m_jobData.insert(key, QVariant(value));
+            m_jobData.insert(key, QVariant::fromValue(value));
          }
 
          template <typename T>

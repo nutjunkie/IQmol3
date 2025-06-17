@@ -161,6 +161,13 @@ int addServers(int argc, char* argv[])
     return 0;
 }
 
+namespace IQmol { 
+   namespace Layer {
+     class System;
+     class Molecule;
+   } 
+}
+
 
 int main(int argc, char *argv[]) 
 {
