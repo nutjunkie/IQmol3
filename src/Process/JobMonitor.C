@@ -711,7 +711,7 @@ void JobMonitor::jobFinished()
       }else {
          resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
                           job->get<QString>("BaseName"),
-                          job->get<qint64>("MoleculePointer"));
+                          job->get<void*>("MoleculePointer"));
       }
      
    }else {
@@ -914,7 +914,7 @@ void JobMonitor::openResults(Job* job)
    if (!job) return;
    resultsAvailable(job->get<QString>("LocalWorkingDirectory"),
                     job->get<QString>("BaseName"),
-                    job->get<qint64>("MoleculePointer"));
+                    job->get<void*>("MoleculePointer"));
 }
 
 

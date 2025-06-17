@@ -1951,7 +1951,7 @@ Process::JobInfo Molecule::qchemJobInfo()
       name =  + "/" + m_inputFile.completeBaseName() + ".inp";
    }
 
-   jobInfo.set("MoleculePointer", (qint64)this);
+   jobInfo.set("MoleculePointer", (void*)this);
 
    // input file format
    FileList fileList(findLayers<File>(Children));

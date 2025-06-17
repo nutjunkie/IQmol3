@@ -532,8 +532,7 @@ void InputDialog::addNewJob()
 
 void InputDialog::resetInput() 
 {
-   
-   m_qchemJobInfo.set("InputFileTemplate", "");
+   m_qchemJobInfo.set("InputFileTemplate", QString(""));
    qDebug() << "Setting JobInfo field done";
    resetControls();
    bool prompt(false);
