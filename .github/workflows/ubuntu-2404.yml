@@ -1,0 +1,52 @@
+name: Build on Ubuntu 24.04
+on: [ push, pull_request ]
+jobs:
+  build-project:
+    name: Build Project
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
+        type: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Checkout Project
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Fortran
+        uses: fortran-lang/setup-fortran@v1
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libarchive-dev -y
+          sudo apt-get install librust-bzip2-dev -y
+          sudo apt-get install liblzma-dev -y
+          sudo apt-get install libb2-dev -y
+          sudo apt-get install libssh2-1-dev -y
+          sudo apt-get install libqglviewer-dev-qt5 -y
+          sudo apt-get install libopenmesh-dev -y
+          sudo apt-get install libyaml-cpp-dev -y
+          sudo apt-get install libopenbabel-dev -y
+          sudo apt-get install libboost-iostreams-dev libboost-serialization-dev -y
+          sudo apt-get install qtbase5-dev -y
+          sudo ln -s /usr/include/openbabel3/openbabel /usr/include/
+
+      - name: Build Debug Project
+        if: ${{ matrix.type == 'Debug' }}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j4
+
+      - name: Build Release Project
+        if: ${{ matrix.type == 'Release' }}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j4
+
+      - name: Test Project
+        run: |
+          cd build
+          ctest
+
