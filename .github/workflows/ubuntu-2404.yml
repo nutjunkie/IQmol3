@@ -32,7 +32,8 @@ jobs:
           sudo apt-get install libboost-iostreams-dev libboost-serialization-dev -y
           sudo apt-get install qtbase5-dev -y
           sudo ln -s /usr/include/openbabel3/openbabel /usr/include/
-          sudo ln -s /usr/lib/x86_64-linux-gnu/libQGLViewer-qt5.so /usr/lib/x86_64-linux-gnu/libQGLViewer.so
+          ln -s /usr/lib/x86_64-linux-gnu/libQGLViewer-qt5.so libQGLViewer.so
+          sudo mv libQGLViewer.so /usr/lib/x86_64-linux-gnu/
 
       - name: Build Debug Project
         if: ${{ matrix.type == 'Debug' }}
