@@ -34,10 +34,12 @@ jobs:
           sudo ln -s /usr/include/openbabel3/openbabel /usr/include/
 
       - name: Link Dependencies on x86_64
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
         run: |
           sudo ln -s /usr/lib/x86_64-linux-gnu/libQGLViewer-qt5.so /usr/lib/x86_64-linux-gnu/libQGLViewer.so
 
       - name: Link Dependencies on aarch64
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
         run: |
           sudo ln -s /usr/lib/aarch64-linux-gnu/libQGLViewer-qt5.so /usr/lib/aarch64-linux-gnu/libQGLViewer.so
 
