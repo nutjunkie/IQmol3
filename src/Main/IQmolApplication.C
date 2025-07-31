@@ -130,7 +130,11 @@ void IQmolApplication::initOpenBabel()
    // version of OpenBabel
    QString env(qgetenv("BABEL_LIBDIR"));
    if (env.isEmpty()) {
+#if defined(Q_OS_LINUX)
+      env = "/usr/lib/openbabel/3.1.1";
+#else
       env = path + "/lib/openbabel";
+#endif
       qputenv("BABEL_LIBDIR", env.toLatin1());
       QLOG_INFO() << "Setting BABEL_LIBDIR = " << env;
    }else {
@@ -141,7 +145,7 @@ void IQmolApplication::initOpenBabel()
    if (env.isEmpty()) {
 #if defined(Q_OS_LINUX)
       // Overide the above for the deb package installation.
-      env ="/usr/share/iqmol/openbabel";
+      env ="/usr/share/openbabel";
 #else
       env = path + "/share/openbabel";
 #endif
