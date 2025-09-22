@@ -39,7 +39,7 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
    if (grids.isEmpty()) return;
 
    m_shellList.setDensityVectors(densities);
-   m_returnValues.resize(m_densities.size());
+   m_returnValues.resize({(size_t)m_densities.size()});
    m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, 
      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
      

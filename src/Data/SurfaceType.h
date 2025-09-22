@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_SURFACETYPE_H
-#define IQMOL_DATA_SURFACETYPE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,8 +28,6 @@ namespace IQmol {
 namespace Data {
 
    class SurfaceType : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          enum Kind { Custom = -1, AlphaOrbital, BetaOrbital, TotalDensity, 
@@ -89,18 +86,6 @@ namespace Data {
                                            : (m_kind  < that.m_kind); 
          }
 
-         void serialize(InputArchive& ar, unsigned const /* version  */)
-         {
-            ar & m_kind;
-            ar & m_index;
-         }
-
-         void serialize(OutputArchive& ar, unsigned const /* version */)
-         {
-            ar & m_kind;
-            ar & m_index;
-         }
-
          void dump() const;
 
       private:
@@ -110,5 +95,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

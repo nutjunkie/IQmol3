@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_DYSONORBITALS_H
-#define IQMOL_DATA_DYSONORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,8 +28,6 @@ namespace IQmol {
 namespace Data {
 
    class DysonOrbitals : public Orbitals {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::DysonOrbitals; }
@@ -62,31 +59,10 @@ namespace Data {
                                  m_excitationEnergies[index] : 0.0);
          }
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_excitationEnergies;
-            ar & m_labels;
-         }
 
          QList<double> m_excitationEnergies;
          QList<QString> m_labels;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

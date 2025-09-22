@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ORBITALSYMMETRIES_H
-#define IQMOL_DATA_ORBITALSYMMETRIES_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -32,8 +31,6 @@ namespace Data {
 
    class OrbitalSymmetries : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          OrbitalSymmetries() : m_nAlpha(0), m_nBeta(0) { }
 
@@ -49,27 +46,9 @@ namespace Data {
          double energy(Spin const, unsigned const n) const;
          QString symmetry(Spin const, unsigned const n) const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned int const) {
-            ar & m_nAlpha;
-            ar & m_nBeta;
-            ar & m_alphaEnergies;
-            ar & m_alphaSymmetries;
-            ar & m_betaEnergies;
-            ar & m_betaSymmetries;
-         }
-
          unsigned m_nAlpha;
          unsigned m_nBeta;
          QList<double>  m_alphaEnergies;
@@ -79,5 +58,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

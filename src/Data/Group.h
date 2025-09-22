@@ -23,6 +23,7 @@
 
 #include <QDebug>
 #include "Atom.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
@@ -50,9 +51,6 @@ namespace Data {
 
          int charge() const { return m_charge; }
          QString label() const { return m_label; }
-
-         void serialize(InputArchive& ar, unsigned const version = 0)  { }
-         void serialize(OutputArchive& ar, unsigned const version = 0)  { }
 
          void dump() const 
          {  

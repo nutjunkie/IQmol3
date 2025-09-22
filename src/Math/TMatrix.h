@@ -139,7 +139,7 @@ TMatrix<T>& TMatrix<T>::operator+=(const TMatrix<T>& rhs) {
   return *this;
 }
 
-// Subtraction of this matrix and another                                                                                                                                     
+// Subtraction of this matrix and another
 template<typename T>
 TMatrix<T> TMatrix<T>::operator-(const TMatrix<T>& rhs) {
   unsigned rows = rhs.get_rows();
@@ -155,7 +155,7 @@ TMatrix<T> TMatrix<T>::operator-(const TMatrix<T>& rhs) {
   return result;
 }
 
-// Cumulative subtraction of this matrix and another                                                                                                                          
+// Cumulative subtraction of this matrix and another
 template<typename T>
 TMatrix<T>& TMatrix<T>::operator-=(const TMatrix<T>& rhs) {
   unsigned rows = rhs.get_rows();
@@ -170,7 +170,7 @@ TMatrix<T>& TMatrix<T>::operator-=(const TMatrix<T>& rhs) {
   return *this;
 }
 
-// Left multiplication of this matrix and another                                                                                                                              
+// Left multiplication of this matrix and another
 template<typename T>
 TMatrix<T> TMatrix<T>::operator*(const TMatrix<T>& rhs) {
   unsigned rows = rhs.get_rows();
@@ -188,7 +188,7 @@ TMatrix<T> TMatrix<T>::operator*(const TMatrix<T>& rhs) {
   return result;
 }
 
-// Cumulative left multiplication of this matrix and another                                                                                                                  
+// Cumulative left multiplication of this matrix and another
 template<typename T>
 TMatrix<T>& TMatrix<T>::operator*=(const TMatrix<T>& rhs) {
   TMatrix result = (*this) * rhs;
@@ -196,7 +196,7 @@ TMatrix<T>& TMatrix<T>::operator*=(const TMatrix<T>& rhs) {
   return *this;
 }
 
-// Calculate a transpose of this matrix                                                                                                                                       
+// Calculate a transpose of this matrix
 template<typename T>
 TMatrix<T> TMatrix<T>::transpose() {
   TMatrix result(rows, cols, 0.0);
@@ -210,7 +210,7 @@ TMatrix<T> TMatrix<T>::transpose() {
   return result;
 }
 
-// Matrix/scalar addition                                                                                                                                                     
+// Matrix/scalar addition
 template<typename T>
 TMatrix<T> TMatrix<T>::operator+(const T& rhs) {
   TMatrix result(rows, cols, 0.0);
@@ -224,7 +224,7 @@ TMatrix<T> TMatrix<T>::operator+(const T& rhs) {
   return result;
 }
 
-// Matrix/scalar subtraction                                                                                                                                                  
+// Matrix/scalar subtraction
 template<typename T>
 TMatrix<T> TMatrix<T>::operator-(const T& rhs) {
   TMatrix result(rows, cols, 0.0);
@@ -238,7 +238,7 @@ TMatrix<T> TMatrix<T>::operator-(const T& rhs) {
   return result;
 }
 
-// Matrix/scalar multiplication                                                                                                                                               
+// Matrix/scalar multiplication
 template<typename T>
 TMatrix<T> TMatrix<T>::operator*(const T& rhs) {
   TMatrix result(rows, cols, 0.0);
@@ -252,7 +252,7 @@ TMatrix<T> TMatrix<T>::operator*(const T& rhs) {
   return result;
 }
 
-// Matrix/scalar division                                                                                                                                                     
+// Matrix/scalar division
 template<typename T>
 TMatrix<T> TMatrix<T>::operator/(const T& rhs) {
   TMatrix result(rows, cols, 0.0);
@@ -266,7 +266,7 @@ TMatrix<T> TMatrix<T>::operator/(const T& rhs) {
   return result;
 }
 
-// Multiply a matrix with a vector                                                                                                                                            
+// Multiply a matrix with a vector 
 template<typename T>
 std::vector<T> TMatrix<T>::operator*(const std::vector<T>& rhs) {
   std::vector<T> result(rhs.size(), 0.0);
@@ -280,7 +280,7 @@ std::vector<T> TMatrix<T>::operator*(const std::vector<T>& rhs) {
   return result;
 }
 
-// Obtain a vector of the diagonal elements                                                                                                                                   
+// Obtain a vector of the diagonal elements
 template<typename T>
 std::vector<T> TMatrix<T>::diag_vec() {
   std::vector<T> result(rows, 0.0);
@@ -292,25 +292,25 @@ std::vector<T> TMatrix<T>::diag_vec() {
   return result;
 }
 
-// Access the individual elements                                                                                                                                             
+// Access the individual elements
 template<typename T>
 T& TMatrix<T>::operator()(const unsigned& row, const unsigned& col) {
   return this->mat[row][col];
 }
 
-// Access the individual elements (const)                                                                                                                                     
+// Access the individual elements (const)
 template<typename T>
 const T& TMatrix<T>::operator()(const unsigned& row, const unsigned& col) const {
   return this->mat[row][col];
 }
 
-// Get the number of rows of the matrix                                                                                                                                       
+// Get the number of rows of the matrix
 template<typename T>
 unsigned TMatrix<T>::get_rows() const {
   return this->rows;
 }
 
-// Get the number of columns of the matrix                                                                                                                                    
+// Get the number of columns of the matrix
 template<typename T>
 unsigned TMatrix<T>::get_cols() const {
   return this->cols;

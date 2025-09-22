@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_POVRAY_H
-#define IQMOL_DATA_POVRAY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,6 +21,7 @@
 
 ********************************************************************************/
 
+#include <QMap>
 #include "Data.h"
 
 
@@ -29,8 +29,6 @@ namespace IQmol {
 namespace Data {
 
    class PovRay : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::PovRay; }
@@ -45,18 +43,8 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const /*version*/) {
-            ar & m_textures;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) {
-            ar & m_textures;
-         }
-
       private:
          QMap<QString, QString> m_textures;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

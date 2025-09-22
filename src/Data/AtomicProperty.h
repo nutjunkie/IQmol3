@@ -21,6 +21,7 @@
 
 ********************************************************************************/
 
+#include <QColor>
 #include "Data.h"
 
 
@@ -41,8 +42,6 @@ namespace Data {
    class AtomicNumber : public AtomicProperty 
    {
 
-      friend class boost::serialization::access;
-
       public:
          virtual Type::ID typeID() const { return Type::AtomicNumber; }
 
@@ -54,15 +53,6 @@ namespace Data {
          void setValue(int const Z) { m_atomicNumber = Z; }
          void dump() const { };
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_atomicNumber;
-         }
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_atomicNumber;
-         }
-
       private:
          int m_atomicNumber;
    };
@@ -70,24 +60,12 @@ namespace Data {
 
    class StringProperty : public AtomicProperty 
    {
-      friend class boost::serialization::access;
-
       public:
          StringProperty() : m_value("") { }
 
          QString label() const { return m_value; }
          QString value() const { return m_value; }
          void setValue(QString const& value) { m_value = value; }
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_value;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_value;
-         }
 
       protected:
          QString m_value;
@@ -113,8 +91,6 @@ namespace Data {
 
    class ScalarProperty : public AtomicProperty 
    {
-      friend class boost::serialization::access;
-
       public:
          ScalarProperty() : m_value(0.0) { }
 
@@ -122,16 +98,6 @@ namespace Data {
          double value() const { return m_value; }
          void setValue(double const value) { m_value = value; }
          void dump() const;
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_value;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_value;
-         }
 
       protected:
          double m_value;
@@ -254,8 +220,6 @@ namespace Data {
 
    class AtomColor : public AtomicProperty 
    {
-      friend class boost::serialization::access;
-
       public:
          virtual Type::ID typeID() const { return Type::AtomColor; }
 
@@ -265,16 +229,6 @@ namespace Data {
          QColor get() const;
          void set(double const red, double const green, double const blue);
          void dump() const;
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_color;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_color;
-         }
 
       protected:
          double m_color[4];

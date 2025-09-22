@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -34,7 +34,7 @@ namespace IQmol {
 BasisEvaluator::BasisEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
    QList<int> indices) : m_grids(grids), m_shellList(shellList), m_indices(indices)
 {
-   m_returnValues.resize(m_indices.size());
+   m_returnValues.resize({(size_t)m_indices.size()});
    m_function = std::bind(&BasisEvaluator::evaluate, this, 
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
@@ -77,7 +77,7 @@ Vector const& BasisEvaluator::evaluate(double const x, double const y, double co
    unsigned size(m_indices.size()); 
 
    for (unsigned i = 0; i < size; ++i) {
-       m_returnValues[i] = s1[m_indices[i]];
+       m_returnValues(i) = s1(m_indices[i]);
    }  
     
    return m_returnValues;

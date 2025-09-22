@@ -39,8 +39,6 @@ namespace Data {
 
    class Surface : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::Surface; }
 
@@ -79,33 +77,9 @@ void computeSurfaceProperty(Data::Mesh::VertexFunction const&);
 
          double area() const;
 
-         void serialize(InputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const)
-         {
-            ar & m_description;
-            ar & m_colors;
-            ar & m_opacity;
-            ar & m_isSigned;
-            ar & m_isVisible;
-            ar & m_meshPositive;
-            ar & m_meshNegative;
-
-            computeSurfacePropertyRange();
-         }
-
          void computeSurfacePropertyRange();
 
          QString m_description;

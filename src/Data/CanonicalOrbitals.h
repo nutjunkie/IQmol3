@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_CANONICALORBITALS_H
-#define IQMOL_DATA_CANONICALORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -32,8 +31,6 @@ namespace Data {
    /// Data class for molecular orbital information
    class CanonicalOrbitals : public Orbitals {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::CanonicalOrbitals; }
 
@@ -59,30 +56,9 @@ namespace Data {
          QString label(unsigned index, bool alpha = true) const;
          unsigned labelIndex(bool alpha = true) const;
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_nAlpha;
-            ar & m_nBeta;
-            ar & m_alphaEnergies;
-            ar & m_betaEnergies;
-         }
-
          unsigned m_nAlpha;
          unsigned m_nBeta;
          QList<double> m_alphaEnergies;
@@ -91,5 +67,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

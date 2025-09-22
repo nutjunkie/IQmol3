@@ -22,11 +22,13 @@
 
 #include "Spline.h"
 
+
 namespace IQmol {
 
-using namespace Math;
-
-void spline(Vec3*& result, Vec3 const& vec1, Vec3 const& vec2,Vec3 const& vec3, 
+void spline(Vec3*& result, 
+   Vec3 const& vec1, 
+   Vec3 const& vec2, 
+   Vec3 const& vec3, 
    Vec3 const& vec4, int n) 
 {
    float n1 = (float)(n);

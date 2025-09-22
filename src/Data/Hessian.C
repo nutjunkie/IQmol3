@@ -22,7 +22,7 @@
 
 #include "Data/Hessian.h"
 #include "Util/QsLog.h"
-#include <QDebug>
+#include <iostream>
 
 
 namespace IQmol {
@@ -41,14 +41,14 @@ void Hessian::setData(unsigned const nAtoms, QList<double> const& hessian)
    unsigned k(0);
 
    if (n == d*d) {                           // square matrix
-      m_hessian.resize(d,d);
+      m_hessian.resize({d,d});
       for (unsigned i = 0; i < d; ++i) {
           for (unsigned j = 0; j < d; ++j, ++k) {
               m_hessian(i,j) = hessian[k];
           }
       }
    }else if (n == d*(d+1)/2) {                 // triangular matrix
-      m_hessian.resize(d,d);
+      m_hessian.resize({d,d});
       for (unsigned i = 0; i < d; ++i) {
           for (unsigned j = i; j < d; ++j, ++k) {
               m_hessian(i,j) = hessian[k];
@@ -57,7 +57,7 @@ void Hessian::setData(unsigned const nAtoms, QList<double> const& hessian)
       }
    }else {
       QLOG_DEBUG() << "Invalid Hessian data";
-      m_hessian.resize(0,0);
+      m_hessian.resize({0,0});
    }
 }
 
@@ -69,14 +69,17 @@ void Hessian::setPartialData(unsigned const nAtoms, QList<unsigned> const& atomL
    unsigned d(3*nAtoms);  // dimension of the full hessian
    unsigned pd(3*pAtoms); // dimension of the reduced hessian
 
-   m_hessian.resize(d,d);
+   m_hessian.resize({d,d});
    for (unsigned i = 0; i < d; ++i) {
        for (unsigned j = 0; j < d; ++j) {
            m_hessian(i,j) = 0;
        }
    }
 
-   if (partialHessian.size1() != pd || partialHessian.size2() != pd) {
+   size_t nrows = partialHessian.shape()[0];
+   size_t ncols = partialHessian.shape()[0];
+
+   if (nrows != pd || ncols != pd) {
       QLOG_DEBUG() << "Invalid Partial Hessian data";
       return;
    }
@@ -112,12 +115,7 @@ void Hessian::setData(Matrix const& hessian)
 
 void Hessian::dump() const
 {
-   QStringList list(PrintMatrix(m_hessian));
-    
-   QStringList::iterator iter;
-   for (iter = list.begin(); iter != list.end(); ++iter) {
-       qDebug() << *iter;
-   }
+   std::cout << m_hessian;
 }
 
 } } // end namespace IQmol::Data

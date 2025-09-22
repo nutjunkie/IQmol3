@@ -1,12 +1,11 @@
-#ifndef IQMOL_DATA_SHELLLIST_H
-#define IQMOL_DATA_SHELLLIST_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -26,6 +25,7 @@
 #include "Data/DataList.h"
 #include "Data/Shell.h"
 #include "Math/Matrix.h"
+#include "Math/Vector.h"
 
 
 namespace IQmol {
@@ -48,8 +48,6 @@ namespace Data {
 
    class ShellList : public List<Shell> {
 
-      friend class boost::serialization::access;
-
       public:
          ShellList() { }
 
@@ -71,9 +69,9 @@ namespace Data {
 
          void setOverlapMatrix(QList<double> const& overlapMatrix) {
             unsigned nElements(overlapMatrix.size());
-            m_overlapMatrix.resize(nElements);
+            m_overlapMatrix.resize({nElements});
             for (unsigned i = 0; i < nElements; ++i) {
-                m_overlapMatrix[i] = overlapMatrix[i];
+                m_overlapMatrix(i) = overlapMatrix[i];
             }
          }
 
@@ -96,7 +94,7 @@ namespace Data {
          // Density vectors are upper triangular
          Vector const& densityValues(double const x, double const y, double const z);
 
-		 // Initializes the list of orbitlas to be evaluated a grid points
+		 // Initializes the list of orbitals to be evaluated a grid points
 		 // with subsequent orbitalValues calls.
          void setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices);
 
@@ -112,14 +110,6 @@ namespace Data {
          // Kludge to account for the ordering Q-Chem prints the shell functions,
          // for Dyson orbitals printed to the output file.
          void reorderFromQChem(Matrix& C);
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            serializeList(ar, version);
-         }  
-         
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            serializeList(ar, version);
-         }  
 
          void dump() const;
 
@@ -141,5 +131,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

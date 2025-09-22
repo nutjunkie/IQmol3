@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_NMRREFERENCE_H
-#define IQMOL_DATA_NMRREFERENCE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,6 +21,7 @@
 
 ********************************************************************************/
 
+#include <QMap>
 #include "DataList.h"
 
 
@@ -29,8 +29,6 @@ namespace IQmol {
 namespace Data {
 
    class NmrReference : public Base {
-
-      friend class boost::serialization::access;
 
       public:
 
@@ -52,20 +50,6 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_system;
-            ar & m_method;
-            ar & m_shifts;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_system;
-            ar & m_method;
-            ar & m_shifts;
-         }
-
       private:
          QString m_system;
          QString m_method;
@@ -76,5 +60,3 @@ namespace Data {
    typedef Data::List<Data::NmrReference> NmrReferenceList;
 
 } } // end namespace IQmol::Data
-
-#endif

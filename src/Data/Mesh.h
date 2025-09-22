@@ -26,11 +26,10 @@
 #include "OpenMesh/Core/IO/Options.hh"
 #include "OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh"
 #include <QPair>
-
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
-
 
 namespace Layer {
    class Surface;
@@ -49,7 +48,6 @@ namespace Data {
    /// Wrapper around the OpenMesh TriMesh class to provide serialization functionality.
    class Mesh : public Base {
 
-      friend class boost::serialization::access;
       friend class IQmol::Layer::Surface;
 
     public:
@@ -126,10 +124,6 @@ namespace Data {
          bool setMeshIndex(int const index);
 
          int meshIndex(Face const& face) const;
-
-         void serialize(InputArchive& ar, unsigned const version = 0);
-
-         void serialize(OutputArchive& ar, unsigned const version = 0);
 
          void writeToFile();
 

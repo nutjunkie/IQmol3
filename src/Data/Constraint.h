@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_CONSTRAINT_H
-#define IQMOL_DATA_CONSTRAINT_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,14 +22,13 @@
 ********************************************************************************/
 
 #include "Data.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
 namespace Data {
 
    class Constraint : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::Constraint; }
@@ -43,8 +41,6 @@ namespace Data {
          void setValue(double const value) { m_value = value; }
          double value() const;
 
-         virtual void serialize(OutputArchive& ar, unsigned const /* version = 0 */);
-         virtual void serialize(InputArchive& ar, unsigned const /* version = 0 */);
          virtual void dump() const;
 
       protected:
@@ -56,7 +52,6 @@ namespace Data {
 
    class PositionConstraint : public Constraint {
 
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::PositionConstraint; }
@@ -66,18 +61,6 @@ namespace Data {
          PositionConstraint(unsigned const atomIndex, qglviewer::Vec const& position);
 
          qglviewer::Vec const& position() const { return m_position; }
-
-         void serialize(InputArchive& ar, unsigned const /* version = 0 */) 
-         {
-            ar & m_atomIndex;
-            ar & m_position;
-         }
-
-         void serialize(OutputArchive& ar, unsigned const /* version = 0 */) 
-         {
-            ar & m_atomIndex;
-            ar & m_position;
-         }
 
          void dump() const;
 
@@ -89,8 +72,6 @@ namespace Data {
 
 
    class DistanceConstraint : public Constraint {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::DistanceConstraint; }
@@ -106,8 +87,6 @@ namespace Data {
 
    class AngleConstraint : public Constraint {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::AngleConstraint; }
 
@@ -121,8 +100,6 @@ namespace Data {
 
 
    class TorsionConstraint : public Constraint {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::TorsionConstraint; }
@@ -138,7 +115,6 @@ namespace Data {
 
    class FrozenAtomsConstraint : public Constraint {
 
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::FrozenAtomsConstraint; }
@@ -150,18 +126,6 @@ namespace Data {
 
          QList<qglviewer::Vec> const& positions() const { return m_positions; }
 
-         void serialize(InputArchive& ar, unsigned const /* version = 0 */) 
-         {
-            ar & m_atomIndices;
-            ar & m_positions;
-         }
-
-         void serialize(OutputArchive& ar, unsigned const /* version = 0 */) 
-         {
-            ar & m_atomIndices;
-            ar & m_positions;
-         }
-
          void dump() const;
 
       private:
@@ -171,5 +135,3 @@ namespace Data {
 
 
 } } // end namespace IQmol::Data
-
-#endif

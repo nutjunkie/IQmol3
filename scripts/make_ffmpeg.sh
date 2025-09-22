@@ -28,7 +28,7 @@ build_zlib()
 
 build_x264()
 {
-   if [[ -f "$extlibs/lib/lib264.a" ]]; then
+   if [[ -f "$extlibs/lib/libx264.a" ]]; then
      echo "Found lib264.a, skipping build"
      return
    fi

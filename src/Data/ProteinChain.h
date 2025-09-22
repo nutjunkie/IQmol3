@@ -23,7 +23,7 @@
 
 #include "MacroMolecule.h"
 #include "Residue.h"
-#include "Math/Vec.h"
+#include "Math/Vector.h"
 #include <QVector>
 
 
@@ -59,16 +59,16 @@ namespace Data {
             return list;
          }
 
-         QVector<Math::Vec3> const& alphaCarbons() const { return m_alphaCarbons; }
+         QVector<Vec3> const& alphaCarbons() const { return m_alphaCarbons; }
 
-         QVector<Math::Vec3> const& peptideOxygens() const { return m_peptideOxygens; }
+         QVector<Vec3> const& peptideOxygens() const { return m_peptideOxygens; }
 
          QVector<SecondaryStructure> const& 
             secondaryStructures() const { return m_secondaryStructure; }
     
-         void appendAlphaCarbon(Math::Vec3 const& v) { m_alphaCarbons.append(v); }
+         void appendAlphaCarbon(Vec3 const& v) { m_alphaCarbons.append(v); }
 
-         void appendPeptideOxygen(Math::Vec3 const& v) { m_peptideOxygens.append(v); }
+         void appendPeptideOxygen(Vec3 const& v) { m_peptideOxygens.append(v); }
 
          void appendSecondaryStructure(SecondaryStructure sstype)
          {
@@ -90,8 +90,8 @@ namespace Data {
       private:
          int m_chainIndex;
          QVector<SecondaryStructure> m_secondaryStructure;
-         QVector<Math::Vec3> m_alphaCarbons;
-         QVector<Math::Vec3> m_peptideOxygens;
+         QVector<Vec3> m_alphaCarbons;
+         QVector<Vec3> m_peptideOxygens;
    };
 
 } } // end namespace IQmol::Data

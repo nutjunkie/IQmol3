@@ -6,7 +6,7 @@ set( SOURCES
    Align.C
    EulerAngles.C
    Function.C
-   Matrix.C
+#   Matrix.C
    qcprot.C
    Spline.C
 )

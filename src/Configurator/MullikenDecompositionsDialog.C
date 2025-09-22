@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -53,18 +53,18 @@ void MullikenDecompositionsDialog::compute()
       return;
    }
 
-   Matrix P(nBasis, nBasis);
-   Matrix S(nBasis, nBasis);
+   Matrix P({nBasis, nBasis});
+   Matrix S({nBasis, nBasis});
 
    unsigned k(0);
    for (unsigned i = 0; i < nBasis; ++i) {
        for (unsigned j = 0; j <=i; ++j, ++k) {
-           P(i,j) = P(j,i) = (*density)[k];
-           S(i,j) = S(j,i) = overlap[k];
+           P(i,j) = P(j,i) = (*density)(k);
+           S(i,j) = S(j,i) = overlap(k);
        }
    }
 
-   Matrix M(nAtoms, nAtoms);
+   Matrix M({nAtoms, nAtoms});
    for (unsigned i = 0; i < nAtoms; ++i) {
        for (unsigned j = 0; j < nAtoms; ++j) {
            M(i,j) = 0.0;
@@ -112,7 +112,7 @@ void MullikenDecompositionsDialog::compute()
 void MullikenDecompositionsDialog::fillTable(Matrix const& M)
 {
     QTableWidget* table(m_dialog.decompositionTable); 
-    unsigned nAtoms(M.size1());
+    unsigned nAtoms(M.shape()[0]);
 
     table->setRowCount(nAtoms);
     table->setColumnCount(nAtoms);

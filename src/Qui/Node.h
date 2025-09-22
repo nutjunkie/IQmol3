@@ -62,18 +62,18 @@ class Node : public NodeBase {
 
       Action shouldBe(T value) 
       {
-         return boost::bind(&Node<T>::setValue, this, value); 
+         return std::bind(&Node<T>::setValue, this, value); 
       }
 
       Action shouldBeAtLeast(T value) 
       {
-         return boost::bind(&Node<T>::setAtLeast, this, value); 
+         return std::bind(&Node<T>::setAtLeast, this, value); 
       }
 
       // This does not appear to be working at the moment
       Action makeSameAs(Node<T>& node) 
       {
-         return boost::bind(&Node<T>::setValue2, this, &node); 
+         return std::bind(&Node<T>::setValue2, this, &node); 
       }
 
       virtual void setAtLeast(T const& value) 
@@ -98,13 +98,13 @@ class Node : public NodeBase {
       {
          m_rules.insert(
             std::make_pair( 
-               new Condition(rule.get<0>()),
-               new Action(rule.get<1>()) ));
+               new Condition(std::get<0>(rule)),
+               new Action(std::get<1>(rule)) ));
 
          m_rules.insert(
             std::make_pair( 
-               new Condition(!rule.get<0>()), 
-               new Action(rule.get<2>()) ));
+               new Condition(!std::get<0>(rule)), 
+               new Action(std::get<2>(rule)) ));
       }
 
       void applyRules() 

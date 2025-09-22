@@ -1,10 +1,10 @@
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -192,7 +192,7 @@ void ShellList::dump() const
 void ShellList::resize()
 {
    m_nBasis = nBasis();
-   m_basisValues.resize(m_nBasis);
+   m_basisValues.resize({m_nBasis});
 
    if (m_sigBasis) delete [] m_sigBasis;
    m_sigBasis = new unsigned[m_nBasis];
@@ -202,7 +202,7 @@ void ShellList::resize()
       QLOG_WARN() << "Round error in ShellList::resize()";
       ++size;
    }
-   m_basisPairValues.resize(size);
+   m_basisPairValues.resize({size});
 
    qDebug() << shellAtomOffsets();
    qDebug() << basisAtomOffsets();
@@ -262,11 +262,11 @@ Vector const& ShellList::shellValues(double const x, double const y, double cons
        values = (*shell)->evaluate(x, y, z);
        if (values) {
           for (unsigned s = 0; s < (*shell)->nBasis(); ++s, ++offset) {
-              m_basisValues[offset] = values[s];
+              m_basisValues(offset) = values[s];
           }
        }else{
           for (unsigned s = 0; s < (*shell)->nBasis(); ++s, ++offset) {
-              m_basisValues[offset] = 0;
+              m_basisValues(offset) = 0;
           }
        }
    }
@@ -283,12 +283,12 @@ Vector const& ShellList::shellPairValues(double const x, double const y, double 
    unsigned k(0);
    double xi, xj; 
    for (unsigned i = 0; i < m_nBasis; ++i) {
-       xi = m_basisValues[i];
+       xi = m_basisValues(i);
        for (unsigned j = 0; j < i; ++j, ++k) {
-           xj = m_basisValues[j];
-           m_basisPairValues[k] = 2.0*xi*xj;
+           xj = m_basisValues(j);
+           m_basisPairValues(k) = 2.0*xi*xj;
        }   
-       m_basisPairValues[k] = xi*xi;
+       m_basisPairValues(k) = xi*xi;
        ++k;
    }
 
@@ -301,7 +301,7 @@ Vector const& ShellList::shellPairValues(double const x, double const y, double 
 void ShellList::setDensityVectors(QList<Vector const*> const& densityVectors)
 {
    m_densityVectors = densityVectors;
-   m_densityValues.resize(m_densityVectors.size());
+   m_densityValues.resize({(size_t)m_densityVectors.length()});
 }
 
 
@@ -318,7 +318,7 @@ Vector const& ShellList::densityValues(double const x, double const y, double co
 
        if (values) { // only add the significant shells
           for (unsigned i = 0; i < numbas; ++i, ++nSigBas, ++basoff) {
-              m_basisValues[nSigBas] = values[i];
+              m_basisValues(nSigBas) = values[i];
               m_sigBasis[nSigBas]    = basoff;
           }
        }else {
@@ -331,26 +331,26 @@ Vector const& ShellList::densityValues(double const x, double const y, double co
    unsigned nden(m_densityVectors.size());
 
    for (unsigned k = 0; k < nden; ++k) {
-       m_densityValues[k] = 0.0;
+       m_densityValues(k) = 0.0;
    }
 
    // Now compute the basis function pair values on the grid
    for (unsigned i = 0; i < nSigBas; ++i) {
-       xi = m_basisValues[i];
+       xi = m_basisValues(i);
        ii = m_sigBasis[i];
        Ti = (ii*(ii+1))/2;
        for (unsigned j = 0; j < i; ++j) {
-           xij = 2.0*xi*m_basisValues[j];
+           xij = 2.0*xi*m_basisValues(j);
            jj  = m_sigBasis[j];
 
            for (unsigned k = 0; k < nden; ++k) {
-               m_densityValues[k] += 2.0*xij*(*m_densityVectors[k])[Ti+jj];
+               m_densityValues(k) += 2.0*xij*(*m_densityVectors[k])(Ti+jj);
            }
 
        }
        
        for (unsigned k = 0; k < nden; ++k) {
-           m_densityValues[k] += xi*xi*(*m_densityVectors[k])[Ti+ii];
+           m_densityValues(k) += xi*xi*(*m_densityVectors[k])(Ti+ii);
        }
    }
 
@@ -362,7 +362,7 @@ void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& 
 {
    m_orbitalIndices      = indices;
    m_orbitalCoefficients = &coefficients;
-   m_orbitalValues.resize(m_orbitalIndices.size());
+   m_orbitalValues.resize({(size_t)m_orbitalIndices.size()});
 }
 
 
@@ -373,9 +373,7 @@ Vector const& ShellList::orbitalValues(double const x, double const y, double co
    unsigned numbas;
    double const* values;
 
-   for (unsigned k = 0; k < norb; ++k) {
-       m_orbitalValues[k] = 0.0;
-   }
+   m_orbitalValues.zero();
 
    // Determine the significant shells, and corresponding basis function indices
    ShellList::const_iterator shell;
@@ -386,7 +384,7 @@ Vector const& ShellList::orbitalValues(double const x, double const y, double co
        if (values) { // only add the significant shells
           for (unsigned i = 0; i < numbas; ++i) {
               for (unsigned k = 0; k < norb; ++k) {
-                  m_orbitalValues[k] += 
+                  m_orbitalValues(k) += 
                       (*m_orbitalCoefficients)(m_orbitalIndices[k], basoff+i) * values[i];
               }
           }
@@ -401,7 +399,7 @@ Vector const& ShellList::orbitalValues(double const x, double const y, double co
 void ShellList::reorderFromQChem(Matrix& C)
 {
    unsigned offset(0);
-   unsigned nOrbitals(C.size1());
+   unsigned nOrbitals(C.shape()[0]);
    ShellList::iterator shell;
 
    for (shell = begin(); shell != end(); ++shell) {

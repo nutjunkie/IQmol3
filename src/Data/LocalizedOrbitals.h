@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_LOCALIZEDORBITALS_H
-#define IQMOL_DATA_LOCALIZEDORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -29,8 +28,6 @@ namespace IQmol {
 namespace Data {
 
    class LocalizedOrbitals : public Orbitals {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::LocalizedOrbitals; }
@@ -72,5 +69,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

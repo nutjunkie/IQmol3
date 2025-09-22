@@ -125,8 +125,8 @@ void GenerateCartoon::run()
 Data::Mesh* GenerateCartoon::fromCpdb(cpdb::Mesh const& cmesh)
 {
    Data::Mesh* mesh(new Data::Mesh);
-   std::vector<Math::Vec3> verts  = cmesh.vertices;
-   std::vector<Math::Vec3> colors = cmesh.colors;
+   std::vector<Vec3> verts  = cmesh.vertices;
+   std::vector<Vec3> colors = cmesh.colors;
    std::vector<int> vertexResidues = cmesh.vertexResidues;
    std::vector<Data::Mesh::Vertex> vertices;
 

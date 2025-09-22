@@ -32,19 +32,7 @@ namespace Data {
    template <class T>
    class List : public Base, public QList<T*> {
 
-      friend class boost::serialization::access;
-
       public:
-         virtual void serialize(InputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-         }
-
-         virtual void serialize(OutputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-         }
-
          virtual void dump() const 
          {
             for (int i = 0; i < this->size(); ++i) {
@@ -64,28 +52,6 @@ namespace Data {
             this->clear();
 */
          }
-
-         void serializeList(InputArchive& ar, unsigned int const version = 0) 
-         {
-            int n;
-            ar & n;
-            for (int i = 0; i < n; ++i) {
-                T* t(new T());
-                t->serialize(ar, version);
-                this->append(t);
-            }
-         }
-
-         void serializeList(OutputArchive& ar, unsigned int const version = 0) 
-         {
-            int n(this->size());
-            ar & n;
-            for (int i = 0; i < n; ++i) {
-                this->at(i)->serialize(ar, version);
-            }
-         }
-
-         BOOST_SERIALIZATION_SPLIT_MEMBER();
    };
 
 } } // end namepspace Data::IQmol

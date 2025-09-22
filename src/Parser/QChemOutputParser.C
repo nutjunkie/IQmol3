@@ -1351,7 +1351,7 @@ void QChemOutput::readPartialHessian(TextStream& textStream, Data::Geometry& geo
    textStream.seek("Hessian of the SCF Energy"); 
 
    unsigned nAtoms(partialHessianAtomList.size());
-   Matrix hessian(3*nAtoms, 3*nAtoms);
+   Matrix hessian({3*nAtoms, 3*nAtoms});
 
    if (readHessian(textStream, hessian) ) {
       Data::Hessian& h(geometry.getProperty<Data::Hessian>());
@@ -1363,7 +1363,7 @@ void QChemOutput::readPartialHessian(TextStream& textStream, Data::Geometry& geo
 void QChemOutput::readHessian(TextStream& textStream, Data::Geometry& geometry)
 {
    unsigned nAtoms(geometry.nAtoms());
-   Matrix hessian(3*nAtoms, 3*nAtoms);
+   Matrix hessian({3*nAtoms, 3*nAtoms});
 
    if (readHessian(textStream, hessian) ) {
       Data::Hessian& h(geometry.getProperty<Data::Hessian>());
@@ -1374,7 +1374,7 @@ void QChemOutput::readHessian(TextStream& textStream, Data::Geometry& geometry)
 
 bool QChemOutput::readHessian(TextStream& textStream, Matrix& hessian)
 {
-   unsigned dim(hessian.size1());  // 3*nAtoms
+   unsigned dim(hessian.shape()[0]);  // 3*nAtoms
    QStringList tokens;
    QList<double> values;
 
@@ -1556,7 +1556,7 @@ void QChemOutput::readNmrCouplings(TextStream& textStream, Data::Geometry& geome
    bool done(false), allOk(true);
    unsigned nAtoms(geometry.nAtoms());
 
-   Matrix* couplings = new Matrix(nAtoms, nAtoms);
+   Matrix* couplings = new Matrix({nAtoms, nAtoms});
    for (unsigned i = 0; i < nAtoms; ++i) {
        for (unsigned j = 0; j < nAtoms; ++j) {
            (*couplings)(i,j) = 0.0;

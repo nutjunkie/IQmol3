@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_REMSECTIONDATA_H
-#define IQMOL_DATA_REMSECTIONDATA_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,6 +21,8 @@
 
 ********************************************************************************/
 
+
+#include <QMap>
 #include "Data.h"
 
 
@@ -29,8 +30,6 @@ namespace IQmol {
 namespace Data {
 
    class RemSection: public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::RemSection; }
@@ -41,24 +40,9 @@ namespace Data {
          void dump() const;
          QString format() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned int const) {
-            ar & m_rem;
-         }
-
          QMap<QString, QString> m_rem;
    };
 
 
 } } // end namespace IQmol::Data
-
-#endif

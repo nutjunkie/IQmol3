@@ -1,6 +1,5 @@
 #include "Parser.h"
-#include "Math/Vec.h"
-//#include "Data/PdbData.h"
+#include "Data/ProteinChain.h"
 
 
 namespace IQmol {
@@ -33,9 +32,9 @@ namespace Parser {
          std::vector<QString> m_secStrucChain;
          std::vector<int>m_secStrucType,m_secStrucResStart,m_secStrucResStop;
          std::vector<float> m_chain_charges;
-         Math::Vec3 m_vCA;
-         Math::Vec3 m_vO;
-          std::vector<QString> m_topologies;
+         Vec3 m_vCA;
+         Vec3 m_vO;
+         std::vector<QString> m_topologies;
          Data::ProteinChain* m_chain;
          Data::Solvent* m_solvent;
          Data::Group* m_group;

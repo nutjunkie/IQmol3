@@ -33,6 +33,7 @@
 #include "Configurator/MoleculeConfigurator.h"
 
 #include "Viewer/Animator.h"
+#include "Math/Matrix.h"
 
 #include <QMap>
 #include <QFileInfo>

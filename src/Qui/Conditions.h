@@ -43,20 +43,20 @@ inline bool LessThan(Node<T> const* node, T const& value)
 template <class T>
 inline Condition const operator==(T const& value, Node<T> const& node) 
 {
-   return boost::bind(&Equals<T>, &node, value);
+   return std::bind(&Equals<T>, &node, value);
 }
 
 template <class T>
 inline Condition const operator==(Node<T> const& node, T const& value) 
 {
 //   qDebug() << "Operator==<NodeT> required" << node.getValue() << value;
-   return boost::bind(&Equals<T>, &node, value);
+   return std::bind(&Equals<T>, &node, value);
 } 
 
 inline Condition const operator==(QtNode const& node, const char* value) 
 {
 //   qDebug() << "Operator == required" << node.getValue() << QString(value);
-   return boost::bind(&Equals2, &node, QString(value));
+   return std::bind(&Equals2, &node, QString(value));
 } 
 
 
@@ -71,13 +71,13 @@ inline Condition const operator!=(QtNode const& node, const char* value)
 template <class T>
 inline Condition const operator<(T const& value, Node<T> const& node) 
 {
-   return boost::bind(&LessThan<T>, &node, value);
+   return std::bind(&LessThan<T>, &node, value);
 } 
 
 template <class T>
 inline Condition const operator<(Node<T> const& node, T const& value) 
 {
-   return boost::bind(&LessThan<T>, &node, value);
+   return std::bind(&LessThan<T>, &node, value);
 } 
 
 

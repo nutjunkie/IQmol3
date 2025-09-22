@@ -23,6 +23,7 @@
 #include "YamlNode.h"
 #include <QDebug>
 #include <QFile>
+#include <iostream>
 
 
 namespace IQmol {

@@ -119,7 +119,7 @@
 #include "Data/Solvent.h"
 #include "Data/ResidueName.h"
 #include "Util/QsLog.h"
-#include "Math/Vec.h"
+#include "Math/Vector.h"
 
 #include <QDebug>
 #include <QDir>
@@ -196,7 +196,7 @@ bool Pdb::parse(TextStream& textStream)
          double y = line.mid(38, 8).toFloat(&ok);  if (!ok) goto error;
          double z = line.mid(46, 8).toFloat(&ok);  if (!ok) goto error;
 
-         Math::Vec3 v {x,y,z};
+         Vec3 v {x,y,z};
          qglviewer::Vec qv {x,y,z};
 
          if (key == "ATOM") {

@@ -1,12 +1,11 @@
-#ifndef IQMOL_DATA_SHELL_H
-#define IQMOL_DATA_SHELL_H
+#pragma once
 /*******************************************************************************
-       
+
   Copyright (C) 2022 Andrew Gilbert
-           
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-       
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.  
    
@@ -38,8 +37,6 @@ namespace Data {
    //    https://www.theochem.ru.nl/molden/molden_format.html
 
    class Shell : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          enum AngularMomentum { 
@@ -91,15 +88,6 @@ namespace Data {
 
          unsigned atomIndex() const { return m_atomIndex; }
 
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }  
-         
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version); 
-         }  
-
          void dump() const;
 
 
@@ -117,16 +105,6 @@ namespace Data {
 
          void normalizeToAngstrom();
 
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) {
-            ar & m_angularMomentum;
-            ar & m_atomIndex;
-            ar & m_position;
-            ar & m_exponents;
-            ar & m_contractionCoefficients;
-            ar & m_significantRadiusSquared;
-         }
-
          AngularMomentum m_angularMomentum;
          unsigned        m_nFunctions;
          unsigned        m_atomIndex;
@@ -138,5 +116,3 @@ namespace Data {
 
 
 } } // end namespace IQmol::Data
-
-#endif

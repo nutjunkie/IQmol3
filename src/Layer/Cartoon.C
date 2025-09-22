@@ -3,9 +3,8 @@
 
 #include "Cartoon.h"
 #include "Math/Spline.h"
+#include "Data/AminoAcid.h"
 
-
-using namespace IQmol::Math;
 
 using namespace IQmol::Data;
 
@@ -350,17 +349,17 @@ void triangulateQuad(Mesh &mesh,
 
 
 inline void splineForPlanes(
-   Math::Vec3 *&result, 
+   Vec3 *&result, 
    PeptidePlane const& p1, 
    PeptidePlane const& p2, 
    PeptidePlane const& p3, 
    PeptidePlane const& p4, 
    int n, double u, double v) 
 {
-    Math::Vec3 g1 = p1.Position + p1.Side*u + p1.Normal * v;
-    Math::Vec3 g2 = p2.Position + p2.Side*u + p2.Normal * v;
-    Math::Vec3 g3 = p3.Position + p3.Side*u + p3.Normal * v;
-    Math::Vec3 g4 = p4.Position + p4.Side*u + p4.Normal * v;
+    Vec3 g1 = p1.Position + p1.Side*u + p1.Normal * v;
+    Vec3 g2 = p2.Position + p2.Side*u + p2.Normal * v;
+    Vec3 g3 = p3.Position + p3.Side*u + p3.Normal * v;
+    Vec3 g4 = p4.Position + p4.Side*u + p4.Normal * v;
 
     spline(result, g1, g2, g3, g4, n); 
 }
@@ -505,25 +504,25 @@ bool discontinuity(PeptidePlane pp1, PeptidePlane pp2, PeptidePlane pp3, Peptide
 
 
 PeptidePlane NewPeptidePlane(
-   Math::Vec3 const& ca1, 
-   Math::Vec3 const& o1,
-   Math::Vec3 const& ca2,
+   Vec3 const& ca1, 
+   Vec3 const& o1,
+   Vec3 const& ca2,
    SecondaryStructure ssr1, SecondaryStructure ssr2, SecondaryStructure ssr3, 
    int idr1, int idr2, int idr3)
 {
     PeptidePlane newPP;
 
-    Math::Vec3 a(ca2 - ca1);
-    a.normalize();
+    Vec3 a(ca2 - ca1);
+    if (a.norm2() > 1e-12) a.normalize();
 
-    Math::Vec3 b(o1 - ca1);
-    b.normalize();
+    Vec3 b(o1 - ca1);
+    if (b.norm2() > 1e-12) b.normalize();
 
-    Math::Vec3 c = a^b;
-    c.normalize();
+    Vec3 c = cross(a,b);
+    if (c.norm2() > 1e-12) c.normalize();
 
-    Math::Vec3 d = c^a;
-    d.normalize();
+    Vec3 d = cross(c,a);
+    if (d.norm2() > 1e-12) d.normalize();
 
     newPP.Residue1 = Residue({ idr1, idr1++, ssr1 });
     newPP.Residue2 = Residue({ idr2, idr2++, ssr2 });
@@ -591,7 +590,7 @@ Mesh createChainMesh(Data::ProteinChain const& data)
 
     for (int i = 0; i < nbPlanes; i++) {
         PeptidePlane &p = planes[i];
-        if (i > 0 && p.Side * previous < 0.0f ) {
+        if (i > 0 && dot(p.Side,previous) < 0.0f ) {
             Flip(p);
         }
         previous = p.Side;

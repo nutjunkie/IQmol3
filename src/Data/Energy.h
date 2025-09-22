@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ENERGY_H
-#define IQMOL_DATA_ENERGY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -28,8 +27,6 @@ namespace IQmol {
 namespace Data {
 
    class Energy : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          enum Units { Hartree, EV, KJMol, KCalMol, Wavenumber, MHz };
@@ -65,22 +62,7 @@ namespace Data {
          QString format(char const fmt = 'g', int const precision = 6) const;
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_value;
-            ar & m_units;
-            ar & m_label;
-         }
-
          // Returns the conversion factor from Hartree
          double conversion(Units const) const;
 
@@ -110,5 +92,3 @@ namespace Data {
 
 
 } } // end namespace IQmol::Data
-
-#endif

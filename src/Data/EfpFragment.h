@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_EFPFRAGMENT_H
-#define IQMOL_DATA_EFPFRAGMENT_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -38,8 +37,6 @@ namespace Data {
    //  Rather, they need to be obtained from the EfpFragmentLibrary
    class EfpFragment : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          EfpFragment(QString const& name = QString(), Vec const& position = Vec(),
             double const alpha = 0.0, double const beta = 0.0, double const gamma = 0.0);
@@ -57,22 +54,7 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned int const) {
-            ar & m_name;
-            ar & m_position;
-            ar & m_orientation;
-         }
-
          QString m_name;
          Vec m_position;
          Quaternion m_orientation;
@@ -84,5 +66,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

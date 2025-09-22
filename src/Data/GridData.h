@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_GRIDDATA_H
-#define IQMOL_DATA_GRIDDATA_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -27,6 +26,8 @@
 #include "Data/SurfaceType.h"
 #include "Data/Geometry.h"
 #include "Math/Matrix.h"
+#include "Math/Vector.h"
+#include "Math/Cube.h"
 #include <vector>
 
 
@@ -37,8 +38,6 @@ namespace Data {
 
    /// Basic Data class for holding real data on a 3D grid.
    class GridData : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::GridData; }
@@ -81,12 +80,14 @@ namespace Data {
 
          double const& operator()(unsigned const i, unsigned const j, unsigned const k) const
          {
-            return m_data[i][j][k];
+            //return m_data[i][j][k];
+            return m_data(i,j,k);
          }
 
          double& operator()(unsigned const i, unsigned const j, unsigned const k)
          {
-            return m_data[i][j][k];
+            //return m_data[i][j][k];
+            return m_data(i,j,k);
          }
 
 		 /// Performs a tri-linear interpolation of the grid data at each of 
@@ -102,35 +103,16 @@ namespace Data {
          // computes this = a*this + b*B
          void combine(double const a, double const b, GridData const& B);
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
          void copy(GridData const&);
          std::vector<double> sortData(bool const squareData);
 
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) 
-         {
-            ar & m_surfaceType;
-            ar & m_origin;
-            ar & m_delta;
-            ar & m_data;
-         }
-
          SurfaceType m_surfaceType;
          qglviewer::Vec m_origin;
          qglviewer::Vec m_delta;
-         Array3D m_data;
+         Cube m_data;
          Vector  m_percentToIsovaluePositive; 
          Vector  m_percentToIsovalueNegative; 
    };
@@ -142,5 +124,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

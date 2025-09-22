@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_POINTCHARGE_H
-#define IQMOL_DATA_POINTCHARGE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,6 +22,7 @@
 ********************************************************************************/
 
 #include "DataList.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
@@ -30,8 +30,6 @@ namespace Data {
 
    /// Data structure representing a charge. 
    class PointCharge : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          PointCharge(double const charge = 0.0, 
@@ -43,23 +41,9 @@ namespace Data {
          double value() const { return m_charge; }
          qglviewer::Vec const& position() const { return m_position; }
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned int const) {
-            ar & m_charge;
-            ar & m_position;
-         }
-
          double m_charge;
          qglviewer::Vec m_position;
    };
@@ -71,5 +55,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

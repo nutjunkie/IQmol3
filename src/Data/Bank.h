@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_BANK_H
-#define IQMOL_DATA_BANK_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -24,21 +23,19 @@
 
 #include "Data.h"
 #include "DataFactory.h"
-#include <boost/serialization/split_member.hpp>
 
 
 namespace IQmol {
 namespace Data {
 
-   /// Class representing and managing a list of Data objects.  It allows for
-   /// the serialization of several different objects (of the same or different
-   /// classes) to the one file.  The load functions makes use of the 
-   /// Data::Factory to create the required objects based on the saved TypeIDs.
-   /// Note that the Bank has ownership of the objects and deletes them in the
-   /// dtor.  
-   class Bank : public Base, public QList<Base*> {
+   // Class representing and managing a list of Data objects.   The load
+   // functions makes use of the Data::Factory to create the required objects
+   // based on the saved TypeIDs.
+   // 
+   // Note that the Bank has ownership of the objects and deletes them in the
+   // dtor.  
 
-	  friend class boost::serialization::access;
+   class Bank : public Base, public QList<Base*> {
 
 	  public: 
          Bank() : m_deleteContents(true) { }
@@ -92,33 +89,7 @@ namespace Data {
             }
          }
 
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            int n(size());
-            int id;
-            ar & n;
-            for (int i = 0; i < n; ++i) {
-                id = at(i)->typeID();
-                ar & id;
-                at(i)->serialize(ar, version);
-            }
-         }
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            IQmol::Data::Type::ID typeID;
-            Base* base;
-            int n;
-            ar & n;
-            for (int i = 0; i < n; ++i) {
-                ar & typeID;
-                Factory& factory = Factory::instance();
-                base = factory.create(typeID);
-                base->serialize(ar, version);
-                append(base);
-            }
-         }
-
          void dump() const;
-
 
       private:
          bool m_deleteContents;
@@ -132,10 +103,6 @@ namespace Data {
                 append(base);
             }
          }
-
-         BOOST_SERIALIZATION_SPLIT_MEMBER();
    };
 
 } } // end namespace IQmol::Data
-
-#endif

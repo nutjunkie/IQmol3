@@ -20,8 +20,8 @@
    
 ********************************************************************************/
 
-#include "Matrix.h"
 #include <cmath>
+#include "Matrix.h"
 
 
 namespace IQmol {
@@ -29,7 +29,7 @@ namespace IQmol {
 QString PrintVector(Vector const& vector)
 {
    QString output;
-   unsigned n(vector.size());
+   unsigned n(vector.length());
    for (unsigned i = 0; i < n; ++i) {
        output += QString::number(vector(i), 'f', 8);       
        output += " ";
@@ -80,8 +80,8 @@ QStringList PrintMatrix(Matrix const& matrix, unsigned const columns)
          break;
    }
 
-   unsigned nRows(matrix.size1()); 
-   unsigned nCols(matrix.size2()); 
+   unsigned nRows(matrix.nrows()); 
+   unsigned nCols(matrix.ncols()); 
 
    QString output;
    QStringList list;

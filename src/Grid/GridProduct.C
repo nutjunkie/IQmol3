@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -57,11 +57,10 @@ void GridProduct::run()
 
    unsigned nBins((m_grids[0])->maxR()/m_binSize+1);
 
-   m_values.resize(nBins);
-   std::fill(m_values.begin(),m_values.end(), 0.0f);
+   m_values.resize({nBins});
 
-   Vector f1(nGrids);
-   Vector f2(nGrids);
+   Vector f1({nGrids});
+   Vector f2({nGrids});
 
    double x1(origin.x);
    for (unsigned i1(0); i1 < nx; ++i1, x1 += delta.x) {
@@ -72,7 +71,7 @@ void GridProduct::run()
          double z1(origin.z);
          for (unsigned k1(0); k1 < nz; ++k1, z1 += delta.z, ++prog) {
 
-            for (unsigned g(0); g < nGrids; ++g) { f1[g] = (*(m_grids[g]))(i1, j1, k1); }
+            for (unsigned g(0); g < nGrids; ++g) { f1(g) = (*(m_grids[g]))(i1, j1, k1); }
 
             double x2(origin.x);
             for (unsigned i2(0); i2 < nx; ++i2, x2 += delta.x) {
@@ -91,10 +90,10 @@ void GridProduct::run()
 
                      if (b < nBins) {
                         for (unsigned g(0); g < nGrids; ++g) { 
-                            f2[g] = (*(m_grids[g]))(i2, j2, k2); 
+                            f2(g) = (*(m_grids[g]))(i2, j2, k2); 
                         }
-                        double p(boost::numeric::ublas::inner_prod(f1, f2));
-                        m_values[b] = std::max(std::abs(p), m_values[b]);
+                        double p(dot(f1, f2));
+                        m_values(b) = std::max(std::abs(p), m_values(b));
                      }
 
                   }

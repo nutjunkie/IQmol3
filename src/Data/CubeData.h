@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_CUBEDATA_H
-#define IQMOL_DATA_CUBEDATA_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -45,25 +44,9 @@ namespace Data {
 
          void setLabel(QString const& label) { m_label = label; }
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            GridData::serialize(ar, version);
-            ar & m_geometry;
-            ar & m_label;
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            GridData::serialize(ar, version);
-            ar & m_geometry;
-            ar & m_label;
-         }
-
       private:
          Geometry m_geometry;
          QString  m_label;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

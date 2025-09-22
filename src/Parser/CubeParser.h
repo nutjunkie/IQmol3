@@ -22,6 +22,7 @@
 ********************************************************************************/
 
 #include "Parser.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {

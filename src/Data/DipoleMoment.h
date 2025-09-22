@@ -23,14 +23,13 @@
 
 #include "Data.h"
 #include <QDebug>
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
 namespace Data {
 
    class DipoleMoment : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          DipoleMoment(qglviewer::Vec const& dipole = qglviewer::Vec()) : m_dipole(dipole) { }
@@ -40,13 +39,6 @@ namespace Data {
          } 
 
          qglviewer::Vec const& value() const { return m_dipole; }
-
-         void serialize(InputArchive& ar, unsigned int const /* version */) {
-            ar & m_dipole;
-         }
-         void serialize(OutputArchive& ar, unsigned int const /* version */) {
-            ar & m_dipole;
-         }
 
          void dump() const {
             qDebug() << "  mu = (" << m_dipole.x << "," << m_dipole.y << "," 

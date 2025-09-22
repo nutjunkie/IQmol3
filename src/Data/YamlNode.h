@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_YAMLNODE_H
-#define IQMOL_DATA_YAMLNODE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -31,8 +30,6 @@ namespace Data {
 
    class YamlNode : public YAML::Node, public Base {
 
-      friend class boost::serialization::access;
-
       public:
          YamlNode() { }
          YamlNode(YAML::Node const& node) : YAML::Node(node) { }
@@ -41,16 +38,6 @@ namespace Data {
          void dump() const;
 
          bool saveToFile(QString const& filePath);
-
-         void serialize(InputArchive& /*ar*/, unsigned int const version = 0) {
-            Q_UNUSED(version);
-         }
-
-         void serialize(OutputArchive& /*ar*/, unsigned int const version = 0) {
-            Q_UNUSED(version);
-         }
    };
 
 } } // end namespace IQmol::Data
-
-#endif

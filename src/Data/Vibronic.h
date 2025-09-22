@@ -31,8 +31,6 @@ namespace Data {
 
    class VibronicSpectrum: public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::VibronicSpectrum; }
 
@@ -62,22 +60,6 @@ namespace Data {
 
          void dump() const { }
 
-         void serialize(InputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_data;
-            ar & m_min;
-            ar & m_max;
-            ar & m_mode;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_data;
-            ar & m_min;
-            ar & m_max;
-            ar & m_mode;
-         }
-
       private:
          Theory m_theory;
          int m_mode;
@@ -88,8 +70,6 @@ namespace Data {
 
 
    class Vibronic: public Base {
-
-      friend class boost::serialization::access;
 
       public:
 
@@ -132,27 +112,6 @@ namespace Data {
          void dump() const;
 
          void finalize();
-
-         void serialize(InputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_temperature;
-            ar & m_electronicEnergy;
-            //ar & m_electronicDipole;
-            ar & m_fmin;
-            ar & m_fmax;
-            ar & m_fdelta;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_temperature;
-            ar & m_electronicEnergy;
-            //ar & m_electronicDipole;
-            ar & m_fmin;
-            ar & m_fmax;
-            ar & m_fdelta;
-         }
-
 
       private:
          double m_temperature;

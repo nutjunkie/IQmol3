@@ -6,11 +6,11 @@ project(${targetName} VERSION 3.1.1 LANGUAGES CXX C Fortran)
 include(FortranCInterface)
 #FortranCInterface_VERIFY(CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
@@ -92,8 +92,8 @@ endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
-set(Boost_USE_STATIC_LIBS TRUE)
-find_package(Boost COMPONENTS iostreams serialization REQUIRED)
+#set(Boost_USE_STATIC_LIBS TRUE)
+find_package(Boost REQUIRED COMPONENTS headers)
 include_directories(${Boost_INCLUDE_DIRS})
 
 
@@ -195,7 +195,7 @@ target_link_libraries (${targetName}
    Qt5::OpenGL
    Qt5::Sql
    ${OPENMESH_LIBRARIES}
-   ${Boost_LIBRARIES}
+#   ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}

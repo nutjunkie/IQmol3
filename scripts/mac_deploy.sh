@@ -9,6 +9,13 @@ FRAMEWORKS="QtCore QtGui QtNetwork QtOpenGL QtSql QtWidgets QtXml QtPrintSupport
 
 # retrieve bundle name from first parameter
 BUNDLE_DIRECTORY=$1
+if [[ "$BUNDLE_DIRECTORY" =~ ^-no_deployqt$ ]]; then
+   DEPLOYQT=0
+   BUNDLE_DIRECTORY=$2
+else
+   DEPLOYQT=1
+fi
+
 BUNDLE_NAME=IQmol.app
 DMG_NAME="${BUNDLE_DIRECTORY}.dmg"
 
@@ -40,6 +47,9 @@ fi
 #----------------------------------------------------------------------------------
 cd $BUNDLE_DIRECTORY
 #----------------------------------------------------------------------------------
+
+
+if [[ $DEPLOYQT ]]; then
 
 ${QT_BIN_PATH}/macdeployqt $BUNDLE_NAME
 
@@ -109,6 +119,8 @@ done
 
 echo "Copying libgcc to Framework directory"
 cp  /opt/local/lib/libgcc/libgcc_s.1.1.dylib $BUNDLE_NAME/Contents/Frameworks/
+
+fi # DEPLOYQT
 
 
 ######################################################################################################################

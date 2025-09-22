@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -107,7 +107,7 @@ void MultiGridEvaluator::run()
            for (unsigned k = 0; k < nz; ++k, z += delta.z) {
                Vector const& values(m_function(x, y, z));
                for (unsigned f = 0; f < nGrids; ++f) {
-                    (*m_grids[f])(i, j, k) = values[f];
+                    (*m_grids[f])(i, j, k) = values(f);
                }
            }
        }
@@ -140,9 +140,9 @@ void MultiGridEvaluator::runCoarseGrain()
    double x, y, z;
 
    // Just use the maximum function value at each grid point for screenting
-   Array3D screen;
-   Array3D::extent_gen extents;
-   screen.resize(extents[1+nx/2][1+ny/2][1+nz/2]);
+   Cube screen;
+   Cube::Shape extents{1+nx/2,1+ny/2,1+nz/2};
+   screen.resize(extents);
 
    // First Pass (sparse)
    x = origin.x;
@@ -154,10 +154,10 @@ void MultiGridEvaluator::runCoarseGrain()
                Vector const& values(m_function(x, y, z));
                double max(0.0);
                for (unsigned f = 0; f < nGrids; ++f) {
-                   (*m_grids[f])(i, j, k) = values[f];
-                   max = std::max(max, std::abs(values[f]));
+                   (*m_grids[f])(i, j, k) = values(f);
+                   max = std::max(max, std::abs(values(f)));
                }
-               screen[i/2][j/2][k/2] = max;
+               screen(i/2,j/2,k/2) = max;
            }
        }
        progress(prog++); 
@@ -175,28 +175,28 @@ void MultiGridEvaluator::runCoarseGrain()
            for (unsigned k = 1;  k < nz-1;  k += 2, z += 2.0*delta.z) {
 
                // Compute exact values
-               if (screen[(i-1)/2][(j-1)/2][(k-1)/2] > 0.125*m_thresh) {
+               if (screen((i-1)/2,(j-1)/2,(k-1)/2) > 0.125*m_thresh) {
 
                   Vector const& v0(m_function(x, y, z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j,  k  ) = v0[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j,  k  ) = v0(f);
 
                   Vector const& v1(m_function(x, y, z-delta.z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j,  k-1) = v1[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j,  k-1) = v1(f);
 
                   Vector const& v2(m_function(x, y-delta.y, z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j-1,k  ) = v2[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j-1,k  ) = v2(f);
 
                   Vector const& v3(m_function(x, y-delta.y, z-delta.z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j-1,k-1) = v3[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i,  j-1,k-1) = v3(f);
 
                   Vector const& v4(m_function(x-delta.x, y, z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j,  k  ) = v4[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j,  k  ) = v4(f);
 
                   Vector const& v5(m_function(x-delta.x, y, z-delta.z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j,  k-1) = v5[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j,  k-1) = v5(f);
 
                   Vector const& v6(m_function(x-delta.x, y-delta.y, z));
-                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j-1,k  ) = v6[f];
+                  for (unsigned f = 0; f < nGrids; ++f) (*m_grids[f])(i-1,j-1,k  ) = v6(f);
  
                }else {
                   // Use interpolation

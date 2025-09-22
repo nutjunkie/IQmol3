@@ -22,29 +22,26 @@ namespace Parser {
 
 
 
-std::vector<QString> getTopologyFiles(QString topolPath){
+std::vector<QString> getTopologyFiles(QString topolPath)
+{
   QFile file(topolPath);
+  std::vector<QString> output;
  
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-  TextStream topolTextStream(&file);
-  const QString fileString = topolTextStream.readAll();
-  QRegularExpression rx("\"(topol_Protein.*?)\"");
-  QRegularExpressionMatchIterator i = rx.globalMatch(fileString);
-  std::vector<QString> output;
-  while (i.hasNext()) {
-    QRegularExpressionMatch match = i.next();
-    QString subtopol = match.captured(1);
-    QLOG_DEBUG() << "newtopol";
-    QLOG_DEBUG() << subtopol;
-    output.push_back(subtopol);
-
-
+     TextStream topolTextStream(&file);
+     const QString fileString = topolTextStream.readAll();
+     QRegularExpression rx("\"(topol_Protein.*?)\"");
+     QRegularExpressionMatchIterator i = rx.globalMatch(fileString);
+     while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString subtopol = match.captured(1);
+        QLOG_DEBUG() << "newtopol";
+        QLOG_DEBUG() << subtopol;
+       output.push_back(subtopol);
+     }
   }
-
 
   return output;
-
-  }
 }
 
 
@@ -140,12 +137,12 @@ bool Gro::parseChain(TextStream& textStream){
 
     if (label == "CA"){
       m_CA = atom;
-      Math::Vec3 vtemp {x,y,z};
+      Vec3 vtemp {x,y,z};
       m_vCA = vtemp;
     }
    if (label == "O"){
       m_O = atom;
-      Math::Vec3 vtemp {x,y,z};
+      Vec3 vtemp {x,y,z};
       m_vO = vtemp;
       m_chain->appendAlphaCarbon(m_vCA);
       m_chain->appendPeptideOxygen(m_vO);

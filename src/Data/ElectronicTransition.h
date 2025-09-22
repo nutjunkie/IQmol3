@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ELECTRONICTRANSITION_H
-#define IQMOL_DATA_ELECTRONICTRANSITION_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -34,8 +33,6 @@ namespace Data {
 
    class ElectronicTransition : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::ElectronicTransition; }
 
@@ -61,24 +58,7 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_energy;
-            ar & m_strength;
-            ar & m_spinSquared;
-            ar & m_transitionMoment;
-            ar & m_amplitudes;
-         }
-
          double m_energy;
          double m_strength;
          double m_spinSquared;
@@ -92,21 +72,12 @@ namespace Data {
 
    class Amplitude : public Base {
 
-      friend class boost::serialization::access;
       friend class ExcitedStates;
 
       public: 
           Amplitude(Spin spin = Alpha, unsigned const i = 0, unsigned const a = 0, 
              double const amplitude = 0.0, double const ei = 0.0, double const ea = 0.0)
               : m_spin(spin), m_i(i), m_a(a), m_amplitude(amplitude), m_ei(ei), m_ea(ea) { } 
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
 
          void dump() const;
 
@@ -116,18 +87,6 @@ namespace Data {
          double   m_amplitude;
          double   m_ei;
          double   m_ea;
-      protected:
-
-      private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_spin;
-            ar & m_i;
-            ar & m_a;
-            ar & m_amplitude;
-            ar & m_ei;
-            ar & m_ea;
-         }
    };
 
 
@@ -137,5 +96,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

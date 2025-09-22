@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_GEMINALORBITALS_H
-#define IQMOL_DATA_GEMINALORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -33,8 +32,6 @@ namespace Data {
 
    /// Data class for geminal orbital information
    class GeminalOrbitals : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          GeminalOrbitals() { }
@@ -77,40 +74,9 @@ namespace Data {
 
          bool consistent() const;
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_nAlpha;
-            ar & m_nBeta;
-            ar & m_nBasis;
-            ar & m_nOrbitals;
-            ar & m_nGeminals;
-
-            ar & m_bbMin;
-            ar & m_bbMax;
-
-            ar & m_geminalEnergies;
-            ar & m_geminalCoefficients; 
-            ar & m_geminalMoMap; 
-            ar & m_shellList;
-            ar & m_alphaCoefficients;
-            ar & m_betaCoefficients; 
-            ar & m_surfaceList;
-         }
-
          void computeBoundingBox();
          void computeGeminalLimits();
 
@@ -136,5 +102,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

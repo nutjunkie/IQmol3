@@ -23,7 +23,7 @@
 
 #include "TMatrix.h"
 #include <cmath>
-#include "Vec.h"
+#include "Vector.h"
 
 
 namespace IQmol {
@@ -40,7 +40,7 @@ inline float RoundPlaces(float a, int p)
 }
 
 
-inline void RoundPlaces(Math::Vec3 &v, int p)
+inline void RoundPlaces(Vec3 &v, int p)
 {
     v[0] = RoundPlaces(v[0], p);
     v[1] = RoundPlaces(v[1], p);
@@ -78,7 +78,7 @@ inline float InCirc(float t)
 }
 
 
-void spline(Math::Vec3 *&result, Math::Vec3 const& vec1, Math::Vec3 const& vec2, 
-   Math::Vec3 const& vec3, Math::Vec3 const& vec4, int n);
+void spline(Vec3 *&result, Vec3 const& vec1, Vec3 const& vec2, 
+   Vec3 const& vec3, Vec3 const& vec4, int n);
 
 } // end namespace IQmol

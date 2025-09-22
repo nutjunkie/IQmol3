@@ -368,8 +368,8 @@ void InputDialog::initializeQuiLogic()
    );
 
    rule = If(Condition(isOptimizationJob) && (geom_opt_driver == "LIBOPT3"),
-      boost::bind(&InputDialog::printSection, this, "geom_opt", true),
-      boost::bind(&InputDialog::printSection, this, "geom_opt", false)
+      std::bind(&InputDialog::printSection, this, "geom_opt", true),
+      std::bind(&InputDialog::printSection, this, "geom_opt", false)
    );
 
    geom_opt_driver.addRule(rule);
@@ -1156,8 +1156,8 @@ void InputDialog::initializeQuiLogic()
    );
    node->addRule(
       If(*node == S("User-defined"),  
-         boost::bind(&InputDialog::printSection, this, "plots", true),
-         boost::bind(&InputDialog::printSection, this, "plots", false)
+         std::bind(&InputDialog::printSection, this, "plots", true),
+         std::bind(&InputDialog::printSection, this, "plots", false)
       )
    );
    node->addRule(
@@ -1391,8 +1391,8 @@ void InputDialog::initializeQuiLogic()
    // -- solvent
    node->addRule(
       If(*node == S("Onsager") || *node == S("PCM") || *node == S("COSMO"), 
-         boost::bind(&InputDialog::printSection, this, "solvent", true),
-         boost::bind(&InputDialog::printSection, this, "solvent", false)
+         std::bind(&InputDialog::printSection, this, "solvent", true),
+         std::bind(&InputDialog::printSection, this, "solvent", false)
       )
    );
 
@@ -1434,38 +1434,38 @@ void InputDialog::initializeQuiLogic()
 
    node->addRule(
       If(*node == S("PCM"), 
-         boost::bind(&InputDialog::printSection, this, "pcm", true) +
+         std::bind(&InputDialog::printSection, this, "pcm", true) +
          Enable(m_ui.qui_solvent_opticaldielectric),
-         boost::bind(&InputDialog::printSection, this, "pcm", false) +
+         std::bind(&InputDialog::printSection, this, "pcm", false) +
          Disable(m_ui.qui_solvent_opticaldielectric)
       )
    );
 
    node->addRule(
       If(*node == S("ISOSVP"), 
-         boost::bind(&InputDialog::printSection, this, "pcm_nonels", true),
-         boost::bind(&InputDialog::printSection, this, "pcm_nonels", false)
+         std::bind(&InputDialog::printSection, this, "pcm_nonels", true),
+         std::bind(&InputDialog::printSection, this, "pcm_nonels", false)
       )
    );
 
    node->addRule(
       If(*node == S("ISOSVP"), 
-         boost::bind(&InputDialog::printSection, this, "svp", true),
-         boost::bind(&InputDialog::printSection, this, "svp", false)
+         std::bind(&InputDialog::printSection, this, "svp", true),
+         std::bind(&InputDialog::printSection, this, "svp", false)
       )
    );
 
    node->addRule(
       If(*node == S("SM8") || *node == S("SM12") || *node == S("SMD"), 
-         boost::bind(&InputDialog::printSection, this, "smx", true),
-         boost::bind(&InputDialog::printSection, this, "smx", false)
+         std::bind(&InputDialog::printSection, this, "smx", true),
+         std::bind(&InputDialog::printSection, this, "smx", false)
       )
    );
 
    node->addRule(
       If(*node == S("ChemSol"),
-         boost::bind(&InputDialog::printSection, this, "chemsol", true),
-         boost::bind(&InputDialog::printSection, this, "chemsol", false)
+         std::bind(&InputDialog::printSection, this, "chemsol", true),
+         std::bind(&InputDialog::printSection, this, "chemsol", false)
       )
    );
 
@@ -1476,48 +1476,48 @@ void InputDialog::initializeQuiLogic()
    node = &reg.get("QUI_TITLE");
    node->addRule(
       If(*node == S(""), 
-         boost::bind(&InputDialog::printSection, this, "comment", false),
-         boost::bind(&InputDialog::printSection, this, "comment", true)
+         std::bind(&InputDialog::printSection, this, "comment", false),
+         std::bind(&InputDialog::printSection, this, "comment", true)
       )
    );
 
    node = &reg.get("EXCHANGE");
    node->addRule(
       If(*node == S("User-defined"), 
-         boost::bind(&InputDialog::printSection, this, "xc_functional", true),
-         boost::bind(&InputDialog::printSection, this, "xc_functional", false)
+         std::bind(&InputDialog::printSection, this, "xc_functional", true),
+         std::bind(&InputDialog::printSection, this, "xc_functional", false)
       )
    );
 
    node = &reg.get("CHEMSOL_READ_VDW");
    node->addRule(
       If(*node == S("User-defined"), 
-         boost::bind(&InputDialog::printSection, this, "van_der_waals", true),
-         boost::bind(&InputDialog::printSection, this, "van_der_waals", false)
+         std::bind(&InputDialog::printSection, this, "van_der_waals", true),
+         std::bind(&InputDialog::printSection, this, "van_der_waals", false)
       )
    );
 
    node = &reg.get("ECP");
    node->addRule( 
       If(*node == S("User-defined"), 
-         boost::bind(&InputDialog::printSection, this, "ecp", true),
-         boost::bind(&InputDialog::printSection, this, "ecp", false)
+         std::bind(&InputDialog::printSection, this, "ecp", true),
+         std::bind(&InputDialog::printSection, this, "ecp", false)
       ) 
    );
            
    node = &reg.get("BASIS");
    node->addRule(
       If(*node == S("User-defined") || *node == S("Mixed"),
-         boost::bind(&InputDialog::printSection, this, "basis", true),
-         boost::bind(&InputDialog::printSection, this, "basis", false)
+         std::bind(&InputDialog::printSection, this, "basis", true),
+         std::bind(&InputDialog::printSection, this, "basis", false)
       )
    );
 
    node = &reg.get("AIMD_INITIAL_VELOCITIES");
    node2 = &reg.get("JOB_TYPE");
    rule = If(*node2 == S("Ab Initio MD") && *node == S("Read"),
-             boost::bind(&InputDialog::printSection, this, "velocity", true),
-             boost::bind(&InputDialog::printSection, this, "velocity", false)
+             std::bind(&InputDialog::printSection, this, "velocity", true),
+             std::bind(&InputDialog::printSection, this, "velocity", false)
           );
    node->addRule(rule);
    node2->addRule(rule);
@@ -1525,24 +1525,24 @@ void InputDialog::initializeQuiLogic()
    node = &reg.get("CIS_RAS_TYPE");
    node->addRule(
       If(*node == S("User-defined"),
-         boost::bind(&InputDialog::printSection, this, "solute", true),
-         boost::bind(&InputDialog::printSection, this, "solute", false)
+         std::bind(&InputDialog::printSection, this, "solute", true),
+         std::bind(&InputDialog::printSection, this, "solute", false)
       )
    );
 
    node = &reg.get("ISOTOPES");
    node->addRule(
       If (*node == QtTrue,
-         boost::bind(&InputDialog::printSection, this, "isotopes", true),
-         boost::bind(&InputDialog::printSection, this, "isotopes", false)
+         std::bind(&InputDialog::printSection, this, "isotopes", true),
+         std::bind(&InputDialog::printSection, this, "isotopes", false)
       )
    );
 
    node = &reg.get("QUI_SECTION_SWAP_OCCUPIED_VIRTUAL");
    node->addRule(
       If (*node == QtTrue,
-         boost::bind(&InputDialog::printSection, this, "swap_occupied_virtual", true),
-         boost::bind(&InputDialog::printSection, this, "swap_occupied_virtual", false)
+         std::bind(&InputDialog::printSection, this, "swap_occupied_virtual", true),
+         std::bind(&InputDialog::printSection, this, "swap_occupied_virtual", false)
       )
    );
  
@@ -1550,16 +1550,16 @@ void InputDialog::initializeQuiLogic()
    job_type.addRule(
       If (job_type == "Geometry" || job_type == "Reaction Path" ||
           job_type == "Transition State" || job_type == "PES Scan",
-         boost::bind(&InputDialog::printSection, this, "opt", true),
-         boost::bind(&InputDialog::printSection, this, "opt", false)
+         std::bind(&InputDialog::printSection, this, "opt", true),
+         std::bind(&InputDialog::printSection, this, "opt", false)
       )
    );
 
 
    job_type.addRule(
       If (job_type == "PES Scan",
-         boost::bind(&InputDialog::printSection, this, "scan", true),
-         boost::bind(&InputDialog::printSection, this, "scan", false)
+         std::bind(&InputDialog::printSection, this, "scan", true),
+         std::bind(&InputDialog::printSection, this, "scan", false)
       )
    );
 
@@ -1569,9 +1569,9 @@ void InputDialog::initializeQuiLogic()
    node = &reg.get("QUI_SECTION_EXTERNAL_CHARGES");
    node->addRule(
       If (*node == QtTrue,
-         boost::bind(&InputDialog::updateLJParameters, this)
-         + boost::bind(&InputDialog::printSection, this, "lj_parameters", true),
-         boost::bind(&InputDialog::printSection, this, "lj_parameters", false)
+         std::bind(&InputDialog::updateLJParameters, this)
+         + std::bind(&InputDialog::printSection, this, "lj_parameters", true),
+         std::bind(&InputDialog::printSection, this, "lj_parameters", false)
       )
    );
 

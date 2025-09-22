@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_FILE_H
-#define IQMOL_DATA_FILE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,24 +29,12 @@ namespace Data {
 
    class File : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          File(QString const& filePath = QString()) : m_filePath(filePath) { }
 
          Type::ID typeID() const { return Type::File; }
          QString path() const { return m_filePath; }
          void dump() const;
-
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_filePath;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_filePath;
-         }
 
       private:
          QString m_filePath;
@@ -60,5 +47,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

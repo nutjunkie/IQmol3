@@ -102,7 +102,8 @@ void Vibronic::dump() const
 {
    qDebug() << "Freqency domain: " << m_fmin << m_fmax << m_fdelta;
    qDebug() << "Temperature:     " << m_temperature;
-   qDebug() << "Transition dipole" << m_electronicDipole.format();
+
+   qDebug() << "Transition dipole" << m_electronicDipole.format().c_str();
 }
 
 
@@ -129,7 +130,6 @@ void Vibronic::setFrequencyDomain(double const min, double const max, double con
 void Vibronic::setElectronicDipole(Vec3 const& mu) 
 {
    m_electronicDipole = mu;
-   m_electronicDipole.dump(); 
 }
 
 
