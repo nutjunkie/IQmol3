@@ -31,19 +31,64 @@ using namespace qglviewer;
 
 namespace IQmol {
 
-BasisEvaluator::BasisEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
-   QList<int> indices) : m_grids(grids), m_shellList(shellList), m_indices(indices)
+BasisEvaluator::BasisEvaluator(
+   Data::GridDataList& grids, 
+   Data::ShellList& shellList, 
+   QList<int> indices) 
+    : m_grids(grids), 
+      m_shellList(shellList), 
+      m_indices(indices),
+      m_evaluator(0)
 {
-   m_returnValues.resize({(size_t)m_indices.size()});
-   m_function = std::bind(&BasisEvaluator::evaluate, this, 
+   m_basisValues.resize({(size_t)m_indices.size()});
+
+   m_function = std::bind(&BasisEvaluator::functionValues, this, 
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
    double thresh(0.001);
    m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
-   connect(m_evaluator, SIGNAL(finished()), this, SLOT(evaluatorFinished()));
 
    m_totalProgress = m_evaluator->totalProgress();
+}
+
+
+BasisEvaluator::~BasisEvaluator()
+{
+   if (m_evaluator) delete m_evaluator;
+}
+
+
+Vector const& BasisEvaluator::functionValues(double const x, double const y, double const z)
+{
+// TODO make this more efficient by avoiding evaluation of all of the basis functions
+   unsigned nfun(m_indices.size());
+   unsigned offset(0);
+   unsigned nbfs;
+   double const* vals;
+
+   Vector f({m_shellList.nBasis()});
+
+   f.zero();
+   m_basisValues.zero();
+  
+   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
+       nbfs = (*shell)->nBasis();
+       vals = (*shell)->evaluate(x, y, z);
+
+       if (vals) {
+          for (unsigned s = 0; s < (*shell)->nBasis(); ++s) {
+              f(offset+s) = vals[s];
+          }
+       }
+       offset += nbfs; 
+   }
+
+   for (unsigned i = 0; i < nfun; ++i) {
+       m_basisValues(i) = f(m_indices[i]);
+   }
+  
+   return m_basisValues;
 }
 
 
@@ -58,29 +103,7 @@ void BasisEvaluator::run()
          m_evaluator->wait();
       }
    }
-}
-
-
-void BasisEvaluator::evaluatorFinished()
-{
-   qDebug() << "BasisEvaluator finished";
-//   m_evaluator->deleteLater();
-//   m_evaluator = 0;
    finished();
-}
-
-
-Vector const& BasisEvaluator::evaluate(double const x, double const y, double const z)
-{
-   // This is very wasteful, but isomorphic to the OrbitalEvaluator case.
-   Vector const& s1(m_shellList.shellValues(x,y,z));
-   unsigned size(m_indices.size()); 
-
-   for (unsigned i = 0; i < size; ++i) {
-       m_returnValues(i) = s1(m_indices[i]);
-   }  
-    
-   return m_returnValues;
 }
 
 } // end namespace IQmol

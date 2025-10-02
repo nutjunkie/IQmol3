@@ -38,20 +38,81 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
 {
    if (grids.isEmpty()) return;
 
-   m_shellList.setDensityVectors(densities);
    m_returnValues.resize({(size_t)m_densities.size()});
 
-   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, 
-     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-     
+   m_shellList.setDensityVectors(densities);
+   using namespace std::placeholders;
+//   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, _1, _2, _3);
+   m_function = std::bind(&DensityEvaluator::densityValues, this, _1, _2, _3);
 
    double thresh(0.001);
    m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
+   
+   size_t nBasis(m_shellList.nBasis());
+   m_sigBasis = new unsigned[nBasis];
+   m_basisValues.resize({nBasis});
 
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
    connect(m_evaluator, SIGNAL(finished()), this, SLOT(evaluatorFinished()));
 
    m_totalProgress = m_evaluator->totalProgress();
+}
+
+
+DensityEvaluator::~DensityEvaluator()
+{
+   if (m_sigBasis)  delete [] m_sigBasis;
+   if (m_evaluator) delete m_evaluator;
+}
+
+
+Vector const& DensityEvaluator::densityValues(double const x, double const y, double const z)
+{
+   unsigned numbas, nSigBas(0), basoff(0);
+   double const* values;
+   unsigned nBasis(m_shellList.nBasis());
+
+   // Determine the significant shells, and corresponding basis function indices
+   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
+       values = (*shell)->evaluate(x,y,z);
+       numbas = (*shell)->nBasis(); 
+      
+       if (values) { // only add the significant shells
+          for (unsigned i = 0; i < numbas; ++i, ++nSigBas, ++basoff) {
+              m_basisValues(nSigBas) = values[i];
+              m_sigBasis[nSigBas]    = basoff;
+          }
+       }else {
+          basoff += numbas;
+       }
+   }
+  
+   double   xi, xij;
+   unsigned ii, jj, Ti;
+   unsigned nden(m_densities.size());
+  
+   m_returnValues.zero();
+  
+   // Now compute the basis function pair values on the grid
+   for (unsigned i = 0; i < nSigBas; ++i) {
+       xi = m_basisValues(i);
+       ii = m_sigBasis[i];
+       Ti = (ii*(ii+1))/2;
+       for (unsigned j = 0; j < i; ++j) {
+           xij = 2.0*xi*m_basisValues(j);
+           jj  = m_sigBasis[j];
+  
+           for (unsigned k = 0; k < nden; ++k) {
+               m_returnValues(k) += 2.0*xij*(*m_densities[k])(Ti+jj);
+            }
+       }
+       
+       for (unsigned k = 0; k < nden; ++k) {
+           m_returnValues(k) += xi*xi*(*m_densities[k])(Ti+ii);
+       }
+   }
+
+   return m_returnValues;
 }
 
 

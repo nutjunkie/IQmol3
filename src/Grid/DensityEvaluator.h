@@ -21,10 +21,10 @@
    
 ********************************************************************************/
 
+#include "Util/Task.h"
 #include "Data/GridData.h"
 #include "Math/Function.h"
 #include "Math/Matrix.h"
-#include "Util/Task.h"
 
 
 namespace IQmol {
@@ -45,6 +45,8 @@ namespace IQmol {
          DensityEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
             QList<Vector const*> const& densities);
 
+         ~DensityEvaluator();
+
       Q_SIGNALS:
          void progress(int);
 
@@ -55,12 +57,17 @@ namespace IQmol {
          void evaluatorFinished();
 
       private:
+         Vector const& densityValues(double const x, double const y, double const z);
+
          MultiFunction3D      m_function;
          Data::GridDataList   m_grids;
          Data::ShellList&     m_shellList;
          QList<Vector const*> m_densities;
          Vector               m_returnValues;
-         GridEvaluator*  m_evaluator;
+         GridEvaluator*       m_evaluator;
+
+         unsigned*            m_sigBasis;
+         Vector               m_basisValues;
    };
 
 } // end namespace IQmol

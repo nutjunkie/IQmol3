@@ -249,6 +249,7 @@ QList<unsigned> ShellList::basisAtomOffsets() const
    return offsets;
 }
 
+#if 0
 void ShellList::shellValues(Vector& values, double const x, double const y, double const z)
 {
    assert(values.size() == m_nBasis && "Vector size mismatch in ShellList::shellValues function");
@@ -299,10 +300,12 @@ Vector const& ShellList::shellValues(double const x, double const y, double cons
 
    return m_basisValues;
 }
+#endif
 
 
 // -----------------------------------------------------------------------------
 
+#if 0
 void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices)
 {
    m_orbitalIndices      = indices;
@@ -339,6 +342,7 @@ Vector const& ShellList::orbitalValues(double const x, double const y, double co
 
    return m_orbitalValues;
 }
+#endif
 
 // -----------------------------------------------------------------------------
 

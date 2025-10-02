@@ -33,7 +33,7 @@ namespace IQmol {
 
 OrbitalEvaluator::OrbitalEvaluator(
    Data::GridDataList& grids, 
-   Data::ShellList& shellList, 
+   Data::ShellList const& shellList, 
    Matrix const& coefficients, 
    QList<int> indices) 
     : m_grids(grids), 
@@ -44,8 +44,8 @@ OrbitalEvaluator::OrbitalEvaluator(
 {
    m_orbitalValues.resize({(size_t)m_indices.size()});
 
-   m_function = std::bind(&OrbitalEvaluator::orbitalValues, this,
-      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+   using namespace std::placeholders;
+   m_function = std::bind(&OrbitalEvaluator::orbitalValues, this, _1, _2, _3);
 
    double thresh(0.001);
    m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
@@ -65,7 +65,7 @@ OrbitalEvaluator::~OrbitalEvaluator()
 Vector const& OrbitalEvaluator::orbitalValues(double const x, double const y, double const z)
 {
    unsigned norb(m_indices.size());
-   unsigned basoff(0);
+   unsigned offset(0);
    unsigned nbfs;
    double const* vals;
 
@@ -78,11 +78,11 @@ Vector const& OrbitalEvaluator::orbitalValues(double const x, double const y, do
        if (vals) { // only add the significant shells
           for (unsigned i = 0; i < nbfs; ++i) {
               for (unsigned k = 0; k < norb; ++k) {
-                  m_orbitalValues(k) += m_coefficients(m_indices[k], basoff+i) * vals[i];
+                  m_orbitalValues(k) += m_coefficients(m_indices[k], offset+i) * vals[i];
               } 
           } 
        }
-       basoff += nbfs;
+       offset += nbfs;
    }   
    return m_orbitalValues;
 }

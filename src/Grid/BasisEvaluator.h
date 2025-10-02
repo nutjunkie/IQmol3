@@ -41,8 +41,12 @@ namespace IQmol {
       Q_OBJECT
 
       public:
-         BasisEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
+         BasisEvaluator(
+            Data::GridDataList& grids, 
+            Data::ShellList& shellList, 
             QList<int> indices);
+
+         ~BasisEvaluator();
 
       Q_SIGNALS:
          void progress(int);
@@ -50,19 +54,16 @@ namespace IQmol {
       protected:
          void run();
 
-      private Q_SLOTS:
-         void evaluatorFinished();
-
       private:
 		 // Fills the m_returnValues vector with the value of each requested
 		 // orbital at the given point.
-         Vector const& evaluate(double const x, double const y, double const z);
+         Vector const& functionValues(double const x, double const y, double const z);
          
          MultiFunction3D    m_function;
          Data::GridDataList m_grids;
          Data::ShellList&   m_shellList;
          QList<int>         m_indices;
-         Vector             m_returnValues;
+         Vector             m_basisValues;
          GridEvaluator*     m_evaluator;
    };
 

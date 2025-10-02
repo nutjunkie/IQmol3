@@ -80,10 +80,6 @@ namespace Data {
          /// to the list and before shellValues is called.
          void resize();
 
-         // This is a modified version of the function below which avoids the internal 
-         // buffer for the values.  Should be thread safe.
-         void shellValues(Vector& values, double const x, double const y, double const z);
-
          // Basis offset for each atom
          QList<unsigned> basisAtomOffsets() const;
 
@@ -94,7 +90,21 @@ namespace Data {
          void dump() const;
 
 // TODO: Deprecate
+#if 0
+
+         // This is a modified version of the function below which avoids the internal 
+         // buffer for the values.  Should be thread safe.
+         void shellValues(Vector& values, double const x, double const y, double const z);
+
 Vector const& shellValues(double const x, double const y, double const z);
+
+// Initializes the list of orbitals to be evaluated a grid points
+// with subsequent orbitalValues calls.
+void setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices);
+
+// Returns a list of the orbitals evaulated at the given grid point
+Vector const& orbitalValues(double const x, double const y, double const z);
+#endif
 
 // Initializes the list of densities to be evaluated a grid points
 // with subsequent densityValues calls.
@@ -103,13 +113,6 @@ void setDensityVectors(QList<Vector const*> const& densities);
 // Returns a list of the densities evaulated at the given grid point
 // Density vectors are upper triangular
 Vector const& densityValues(double const x, double const y, double const z);
-
-// Initializes the list of orbitals to be evaluated a grid points
-// with subsequent orbitalValues calls.
-void setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices);
-
-// Returns a list of the orbitals evaulated at the given grid point
-Vector const& orbitalValues(double const x, double const y, double const z);
 
       private:
          unsigned m_nBasis;
