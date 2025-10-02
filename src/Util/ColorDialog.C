@@ -95,9 +95,11 @@ Dialog::Dialog(Gradient const gradient, bool blend, QWidget* parent)
 
 List Dialog::colors() const
 {
+#if 0
    for (auto& color : m_colors) {
        qDebug() << "Returning color" << color << color.name(QColor::HexArgb);
    }
+#endif
    return m_colors; 
 }
 

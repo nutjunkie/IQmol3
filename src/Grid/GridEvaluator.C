@@ -28,48 +28,10 @@
 
 namespace IQmol {
 
-GridEvaluator::GridEvaluator(Data::GridData& grid, Function3D const& function) 
-  : m_grid(grid), m_function(function)
+
+void GridEvaluator::checkGrids()
 {
-   unsigned nx, ny, nz;
-   m_grid.getNumberOfPoints(nx, ny, nz);
-   m_totalProgress = nx;
-}
-
-
-
-void GridEvaluator::run()
-{
-   unsigned nx, ny, nz;
-   m_grid.getNumberOfPoints(nx, ny, nz);
-
-   qglviewer::Vec origin(m_grid.origin());
-   qglviewer::Vec delta(m_grid.delta());
-
-   double x(origin.x);
-   for (unsigned i = 0; i < nx; ++i, x += delta.x) {
-       double y(origin.y);
-       for (unsigned j = 0; j < ny; ++j, y += delta.y) {
-           double z(origin.z);
-           for (unsigned k = 0; k < nz; ++k, z += delta.z) {
-               m_grid(i, j, k) = m_function(x, y, z);
-           }
-       }
-       progress(i);
-       if (m_terminate) break;
-   }
-}
-
-
-// ---------- MultiGridEvaluator ---------
-
-
-MultiGridEvaluator::MultiGridEvaluator(QList<Data::GridData*> grids, 
-  MultiFunction3D const& function, double const thresh, bool const coarseGrain) 
-  : m_grids(grids),  m_function(function), m_thresh(thresh), m_coarseGrain(coarseGrain)
- 
-{
-   if (grids.isEmpty()) return;
+   if (m_grids.isEmpty()) return;
 
    unsigned nx, ny, nz;
    Data::GridData* g0(m_grids.first());
@@ -79,14 +41,14 @@ MultiGridEvaluator::MultiGridEvaluator(QList<Data::GridData*> grids,
    Data::GridDataList::iterator iter;
    for (iter = m_grids.begin(); iter != m_grids.end(); ++iter) {
        if ( ((*iter)->size() != g0->size()) ) {
-          QLOG_ERROR() << "Different sized grids found in MultiGridEvaluator";
+          QLOG_ERROR() << "Different sized grids found in GridEvaluator";
        }
     }
+
 }
 
 
-
-void MultiGridEvaluator::run()
+void GridEvaluator::run()
 {
    if (m_coarseGrain) return runCoarseGrain();
 
@@ -120,7 +82,7 @@ void MultiGridEvaluator::run()
 
 
 
-void MultiGridEvaluator::runCoarseGrain()
+void GridEvaluator::runCoarseGrain()
 {
    unsigned nGrids(m_grids.size());
    unsigned nx, ny, nz;

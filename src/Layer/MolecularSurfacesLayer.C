@@ -205,7 +205,9 @@ Data::Surface* MolecularSurfaces::calculateSuperposition(Data::SurfaceInfo const
    Data::GridSize gridSize(min, max, surfaceInfo.quality());
    Data::GridData grid(gridSize, surfaceInfo.type());
 
-   GridEvaluator gridEvaluator(grid, rho.function3D());
+   MultiFunction3D mf = MultiFunctionAdaptor(rho.function3D());
+   GridEvaluator gridEvaluator(&grid, mf);
+
    gridEvaluator.start();
    gridEvaluator.wait();
 

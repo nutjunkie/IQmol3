@@ -29,7 +29,7 @@
 
 namespace IQmol {
 
-   class MultiGridEvaluator;
+   class GridEvaluator;
 
    namespace Data {
       class ShellList;
@@ -58,12 +58,12 @@ namespace IQmol {
 		 // orbital at the given point.
          Vector const& evaluate(double const x, double const y, double const z);
          
-         MultiFunction3D     m_function;
-         Data::GridDataList  m_grids;
-         Data::ShellList&    m_shellList;
-         QList<int>          m_indices;
-         Vector              m_returnValues;
-         MultiGridEvaluator* m_evaluator;
+         MultiFunction3D    m_function;
+         Data::GridDataList m_grids;
+         Data::ShellList&   m_shellList;
+         QList<int>         m_indices;
+         Vector             m_returnValues;
+         GridEvaluator*     m_evaluator;
    };
 
 } // end namespace IQmol

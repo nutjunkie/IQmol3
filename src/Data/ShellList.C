@@ -228,6 +228,7 @@ QList<unsigned> ShellList::shellAtomOffsets() const
    return offsets;
 }
 
+
 QList<unsigned> ShellList::basisAtomOffsets() const
 {
    QList<unsigned> offsets;
@@ -248,7 +249,32 @@ QList<unsigned> ShellList::basisAtomOffsets() const
    return offsets;
 }
 
+void ShellList::shellValues(Vector& values, double const x, double const y, double const z)
+{
+   assert(values.size() == m_nBasis && "Vector size mismatch in ShellList::shellValues function");
 
+   double const* vals;
+   unsigned offset(0);
+   unsigned nbfs(0);
+
+   values.zero();
+
+   for (auto shell = begin(); shell != end(); ++shell) {
+       vals = (*shell)->evaluate(x, y, z);
+       nbfs = (*shell)->nBasis();
+
+       if (vals) {
+          // Only update shells that are significant on this grid point
+          for (unsigned s = 0; s < nbfs; ++s) {
+              values(offset+s) = vals[s];
+          }
+       }
+       offset += nbfs;
+   }
+}
+
+
+// TODO: Deprecate
 // TODO: this could be batched over grid points so that matrix multiplications
 // can be used later on.  Also, auxilary data structures could be employed to 
 // make the computation more efficient.
@@ -272,6 +298,46 @@ Vector const& ShellList::shellValues(double const x, double const y, double cons
    }
 
    return m_basisValues;
+}
+
+
+// -----------------------------------------------------------------------------
+
+void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices)
+{
+   m_orbitalIndices      = indices;
+   m_orbitalCoefficients = &coefficients;
+   m_orbitalValues.resize({(size_t)m_orbitalIndices.size()});
+}
+
+
+Vector const& ShellList::orbitalValues(double const x, double const y, double const z)
+{
+   unsigned norb(m_orbitalIndices.size());
+   unsigned basoff(0);
+   unsigned numbas;
+   double const* values;
+
+   m_orbitalValues.zero();
+
+   // Determine the significant shells, and corresponding basis function indices
+   ShellList::const_iterator shell;
+   for (shell = begin(); shell != end(); ++shell) {
+       values = (*shell)->evaluate(x,y,z);
+       numbas = (*shell)->nBasis();
+
+       if (values) { // only add the significant shells
+          for (unsigned i = 0; i < numbas; ++i) {
+              for (unsigned k = 0; k < norb; ++k) {
+                  m_orbitalValues(k) += 
+                      (*m_orbitalCoefficients)(m_orbitalIndices[k], basoff+i) * values[i];
+              }
+          }
+       }
+       basoff += numbas;
+   }
+
+   return m_orbitalValues;
 }
 
 // -----------------------------------------------------------------------------
@@ -335,44 +401,6 @@ Vector const& ShellList::densityValues(double const x, double const y, double co
    return m_densityValues;
 }
 
-// -----------------------------------------------------------------------------
-
-void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices)
-{
-   m_orbitalIndices      = indices;
-   m_orbitalCoefficients = &coefficients;
-   m_orbitalValues.resize({(size_t)m_orbitalIndices.size()});
-}
-
-
-Vector const& ShellList::orbitalValues(double const x, double const y, double const z)
-{
-   unsigned norb(m_orbitalIndices.size());
-   unsigned basoff(0);
-   unsigned numbas;
-   double const* values;
-
-   m_orbitalValues.zero();
-
-   // Determine the significant shells, and corresponding basis function indices
-   ShellList::const_iterator shell;
-   for (shell = begin(); shell != end(); ++shell) {
-       values = (*shell)->evaluate(x,y,z);
-       numbas = (*shell)->nBasis();
-
-       if (values) { // only add the significant shells
-          for (unsigned i = 0; i < numbas; ++i) {
-              for (unsigned k = 0; k < norb; ++k) {
-                  m_orbitalValues(k) += 
-                      (*m_orbitalCoefficients)(m_orbitalIndices[k], basoff+i) * values[i];
-              }
-          }
-       }
-       basoff += numbas;
-   }
-
-   return m_orbitalValues;
-}
 
 
 void ShellList::reorderFromQChem(Matrix& C)

@@ -46,7 +46,7 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
      
 
    double thresh(0.001);
-   m_evaluator = new MultiGridEvaluator(m_grids, m_function, thresh);
+   m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
 
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
    connect(m_evaluator, SIGNAL(finished()), this, SLOT(evaluatorFinished()));

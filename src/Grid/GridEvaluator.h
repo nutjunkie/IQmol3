@@ -31,39 +31,37 @@ namespace IQmol {
       class GridData;
    }
 
-   class GridEvaluator : public Task {
-
-      Q_OBJECT
-
-      public:
-         GridEvaluator(Data::GridData& grid, Function3D const& function);
-
-      protected:
-         void run();
-
-      private:
-         Data::GridData&   m_grid;
-         Function3D const& m_function;
-   };
-
-
    /// GridEvaluator for cases where it is more efficient to generate multiple
    /// grid data at a time.  For example, several molecular orbitals requiring
    /// only one evaluation of the shell data at each point
-   class MultiGridEvaluator : public Task {
+   class GridEvaluator : public Task {
 
       Q_OBJECT
 
       public:
          // Note we don't check for size consistency between the number of 
          // grids and the return on the MultiFunction3D object.
-         MultiGridEvaluator(QList<Data::GridData*> grids, MultiFunction3D const& function,
-            double const thresh, bool const coarseGrain = true);
+         GridEvaluator(QList<Data::GridData*> grids, MultiFunction3D const& function,
+            double const thresh = 0.001, bool const coarseGrain = true)
+          : m_grids(grids),  m_function(function), m_thresh(thresh), m_coarseGrain(coarseGrain)
+         {
+            checkGrids();
+         }
+
+         // For when we have a only a single grid
+         GridEvaluator(Data::GridData* grid, MultiFunction3D const& function,
+            double const thresh = 0.001, bool const coarseGrain = true)
+          : m_function(function), m_thresh(thresh), m_coarseGrain(coarseGrain)
+         {
+            m_grids.append(grid);
+            checkGrids();
+         }
 
       protected:
          void run();
 
       private:
+         void checkGrids();
          void runCoarseGrain();
 
          QList<Data::GridData*> m_grids;

@@ -29,7 +29,7 @@
 
 namespace IQmol {
 
-   class MultiGridEvaluator;
+   class GridEvaluator;
 
    namespace Data {
       class ShellList;
@@ -60,7 +60,7 @@ namespace IQmol {
          Data::ShellList&     m_shellList;
          QList<Vector const*> m_densities;
          Vector               m_returnValues;
-         MultiGridEvaluator*  m_evaluator;
+         GridEvaluator*  m_evaluator;
    };
 
 } // end namespace IQmol
