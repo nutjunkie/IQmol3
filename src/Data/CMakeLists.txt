@@ -14,6 +14,7 @@ set( SOURCES
    Bank.C
    CanonicalOrbitals.C
    ChargeMultiplicity.C
+   ComplexOrbitals.C
    Constraint.C
    Data.C
    DataFactory.C

@@ -55,10 +55,15 @@ SurfaceType::SurfaceType(int const kind)
       case MullikenDiatomic:        m_kind = MullikenDiatomic;        break;
       case GenericOrbital:          m_kind = GenericOrbital;          break;
       case Ribbon:                  m_kind = Ribbon;                  break;
+
+      case AlphaRealOrbital:        m_kind = AlphaRealOrbital;        break;
+      case AlphaImaginaryOrbital:   m_kind = AlphaImaginaryOrbital;   break;
+      case BetaRealOrbital:         m_kind = BetaRealOrbital;         break;
+      case BetaImaginaryOrbital:    m_kind = BetaImaginaryOrbital;    break;
+
       default:
          qDebug() << "Unknown surface type" << kind;
          m_kind = Custom;
-         
    }
 }
 
@@ -79,7 +84,6 @@ SurfaceType::Units SurfaceType::units() const
 
    return units;
 }
-
 
 
 
@@ -111,6 +115,11 @@ QString SurfaceType::toString() const
       case MullikenDiatomic:       label = "Mulliken Diatomic";       break;
       case GenericOrbital:         label = "Orbital";                 break;
       case Ribbon:                 label = "Ribbon";                  break;
+
+      case AlphaRealOrbital:       label = "Alpha Real Orbital";      break;
+      case AlphaImaginaryOrbital:  label = "Alpha Imaginary Orbital"; break;
+      case BetaRealOrbital:        label = "Beta Real Orbital";       break;
+      case BetaImaginaryOrbital:   label = "Beta Imaginary Orbital";  break;
    }
 
    if (isIndexed()) label += " " + QString::number(m_index+1);
@@ -129,20 +138,26 @@ bool SurfaceType::operator==(SurfaceType const& that) const
 
 bool SurfaceType::isIndexed() const
 {
-   return m_kind == AlphaOrbital   ||  m_kind == BetaOrbital  || 
-          m_kind == DysonLeft      ||  m_kind == DysonRight   ||
-          m_kind == Geminal        ||  m_kind == Correlation  ||
-          m_kind == BasisFunction  ||  m_kind == GenericOrbital;
+   return m_kind == AlphaOrbital     ||  m_kind == BetaOrbital           || 
+          m_kind == DysonLeft        ||  m_kind == DysonRight            ||
+          m_kind == Geminal          ||  m_kind == Correlation           ||
+          m_kind == BasisFunction    ||  m_kind == GenericOrbital        ||
+          m_kind == AlphaRealOrbital ||  m_kind == AlphaImaginaryOrbital ||
+          m_kind == BetaRealOrbital  ||  m_kind == BetaImaginaryOrbital;
 }
 
 
 bool SurfaceType::isOrbital() const
 {
-   return m_kind == AlphaOrbital || 
-          m_kind == BetaOrbital  ||
-          m_kind == DysonLeft    || 
-          m_kind == DysonRight   ||
-          m_kind == GenericOrbital;
+   return m_kind == AlphaOrbital          || 
+          m_kind == BetaOrbital           ||
+          m_kind == DysonLeft             || 
+          m_kind == DysonRight            ||
+          m_kind == GenericOrbital        ||
+          m_kind == AlphaRealOrbital      ||
+          m_kind == AlphaImaginaryOrbital ||
+          m_kind == BetaRealOrbital       ||
+          m_kind == BetaImaginaryOrbital;
 }
 
 
@@ -170,12 +185,14 @@ bool SurfaceType::isRegularDensity() const
 
 bool SurfaceType::isSigned() const
 {
-   return (m_kind == AlphaOrbital)   || (m_kind == BetaOrbital)      ||
-          (m_kind == DysonLeft)      || (m_kind == DysonRight)       ||
-          (m_kind == SpinDensity)    || (m_kind == DensityCombo)     ||
-          (m_kind == MullikenAtomic) || (m_kind == MullikenDiatomic) ||
-          (m_kind == Geminal)        || (m_kind == Correlation)      ||
-          (m_kind == BasisFunction)  || (m_kind == GenericOrbital)   ||
+   return (m_kind == AlphaOrbital)     || (m_kind == BetaOrbital)           ||
+          (m_kind == DysonLeft)        || (m_kind == DysonRight)            ||
+          (m_kind == SpinDensity)      || (m_kind == DensityCombo)          ||
+          (m_kind == MullikenAtomic)   || (m_kind == MullikenDiatomic)      ||
+          (m_kind == Geminal)          || (m_kind == Correlation)           ||
+          (m_kind == BasisFunction)    || (m_kind == GenericOrbital)        ||
+          (m_kind == AlphaRealOrbital) || (m_kind == AlphaImaginaryOrbital) ||
+          (m_kind == BetaRealOrbital)  || (m_kind == BetaImaginaryOrbital)  ||
           (m_kind == CustomDensity) ;
 }
 

@@ -28,6 +28,7 @@
 #include "Grid/MarchingCubes.h"
 #include "Grid/MeshDecimator.h"
 #include "Grid/BoundingBoxDialog.h"
+#include "Data/ComplexOrbitals.h"
 #include "Data/SurfaceType.h"
 #include "Data/SurfaceInfo.h"
 #include "Util/QMsgBox.h"
@@ -103,6 +104,7 @@ void Orbitals::setMolecule(Layer::Molecule* molecule)
    m_molecule = molecule;
    connect(this, SIGNAL(updated()), m_molecule, SIGNAL(updated()));
    connect(this, SIGNAL(softUpdate()), m_molecule, SIGNAL(softUpdate()));
+   connect(this, SIGNAL(propertyAvailable(Property::Base*)), m_molecule, SLOT(addProperty(Property::Base*)));
 }
 
 
@@ -179,7 +181,7 @@ QList<Data::GridData const*> Orbitals::findGrids(Data::SurfaceType::Kind const& 
 {
    QList<Data::GridData const*> grids;
 
-   // We don't reall care about the grid size, but we 
+   // We don't really care about the grid size, but we 
    // should ensure all the grids have the same size
    Data::GridSize gridSize;
    bool sizeSet(false);
@@ -203,7 +205,6 @@ QList<Data::GridData const*> Orbitals::findGrids(Data::SurfaceType::Kind const& 
 }
 
 
-
 // The default description is appropriate for localized orbitals
 QString Orbitals::description(Data::SurfaceInfo const& info, bool const tooltip)
 {
@@ -212,7 +213,10 @@ QString Orbitals::description(Data::SurfaceInfo const& info, bool const tooltip)
 
    if (type.isOrbital()) {
       unsigned index(type.index());
-      bool     isAlpha(type.kind() == Data::SurfaceType::AlphaOrbital);
+      Data::SurfaceType kind(type.kind());
+      bool isAlpha(kind == Data::SurfaceType::AlphaOrbital || 
+                   kind == Data::SurfaceType::AlphaRealOrbital ||
+                   kind == Data::SurfaceType::AlphaImaginaryOrbital);
 
       label = m_orbitals.label(index, isAlpha);
    }
@@ -259,7 +263,6 @@ void Orbitals::processSurfaceQueue()
              gridQueue.append(qMakePair(type, size));
              type.setKind(Data::SurfaceType::SpinDensity);
              gridQueue.append(qMakePair(type, size));
-
           }else {
              gridQueue.append(qMakePair(type, size));
           }
@@ -277,10 +280,20 @@ void Orbitals::processSurfaceQueue()
 
    Data::ShellList& shellList(m_orbitals.shellList());
 
-   m_molecularGridEvaluator = new MolecularGridEvaluator(grids, shellList, 
-      m_orbitals.alphaCoefficients(),
-      m_orbitals.betaCoefficients(),
-      m_availableDensities);
+   if (m_orbitals.orbitalType() == Data::Orbitals::Complex) {
+      Data::ComplexOrbitals& orbitals = dynamic_cast<Data::ComplexOrbitals&>(m_orbitals);
+      m_molecularGridEvaluator = new MolecularGridEvaluator(grids, shellList, 
+         orbitals.alphaRealCoefficients(),
+         orbitals.betaRealCoefficients(),
+         m_availableDensities,
+         orbitals.alphaImaginaryCoefficients(),
+         orbitals.betaImaginaryCoefficients() );
+   }else {
+      m_molecularGridEvaluator = new MolecularGridEvaluator(grids, shellList, 
+         m_orbitals.alphaCoefficients(),
+         m_orbitals.betaCoefficients(),
+         m_availableDensities);
+   }
 
    m_progressDialog = new QProgressDialog();
    m_progressDialog->setWindowModality(Qt::NonModal);
@@ -317,7 +330,7 @@ void Orbitals::gridEvaluatorCanceled()
 
 void Orbitals::gridEvaluatorFinished()
 {
-   qDebug() << "GridEvaluatorFinished() called";
+   QLOG_INFO() << "Evaluation of Grid data complete";
 
    if (!m_molecularGridEvaluator) {
       QLOG_WARN() << "MolecularGridEvaluator not found!";
@@ -404,6 +417,22 @@ Data::Surface* Orbitals::generateSurface(Data::SurfaceInfo const& surfaceInfo)
    // If the grid data is not found, it is probably because the user quit the
    // calculation or edited the bounding box.
    if (!grid)  return 0;
+
+   // If the surface is imaginary, rather than generate it, we create a grid-based
+   // property instead.
+   if (type.kind() == Data::SurfaceType::AlphaImaginaryOrbital) {
+      QString label("Alpha phase ");
+      label += QString::number(type.index()+1);
+      Property::GridBased* phase(new Property::GridBased(label,*grid));
+      propertyAvailable(phase);
+      return 0;
+   } else if (type.kind() == Data::SurfaceType::BetaImaginaryOrbital) {
+      QString label("Beta phase ");
+      label += QString::number(type.index()+1);
+      Property::GridBased* phase(new Property::GridBased(label,*grid));
+      propertyAvailable(phase);
+      return 0;
+   }
 
    double delta(Data::GridSize::stepSize(surfaceInfo.quality()));
    bool isovalueIsPercent(surfaceInfo.isovalueIsPercent());

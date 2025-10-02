@@ -274,29 +274,7 @@ Vector const& ShellList::shellValues(double const x, double const y, double cons
    return m_basisValues;
 }
 
-
-// DEPRECATE
-Vector const& ShellList::shellPairValues(double const x, double const y, double const z)
-{
-   shellValues(x,y,z);
-
-   unsigned k(0);
-   double xi, xj; 
-   for (unsigned i = 0; i < m_nBasis; ++i) {
-       xi = m_basisValues(i);
-       for (unsigned j = 0; j < i; ++j, ++k) {
-           xj = m_basisValues(j);
-           m_basisPairValues(k) = 2.0*xi*xj;
-       }   
-       m_basisPairValues(k) = xi*xi;
-       ++k;
-   }
-
-   return m_basisPairValues;
-}
-// DEPRECATE
-
-
+// -----------------------------------------------------------------------------
 
 void ShellList::setDensityVectors(QList<Vector const*> const& densityVectors)
 {
@@ -357,6 +335,7 @@ Vector const& ShellList::densityValues(double const x, double const y, double co
    return m_densityValues;
 }
 
+// -----------------------------------------------------------------------------
 
 void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices)
 {
@@ -641,7 +620,5 @@ void ShellList::reorderFromQChem(Matrix& C)
        offset += Shell::nFunctions(L);
    }
 }
-
-
 
 } } // end namespace IQmol::Data

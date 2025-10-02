@@ -9,6 +9,7 @@ set( HEADERS
    BackgroundLayer.h
    BondLayer.h
    CanonicalOrbitalsLayer.h
+   ComplexOrbitalsLayer.h
    ChargeLayer.h
    ClippingPlaneLayer.h
    ComponentLayer.h
@@ -59,6 +60,7 @@ set( SOURCES
    Cartoon.C
    ComponentLayer.C
    CanonicalOrbitalsLayer.C
+   ComplexOrbitalsLayer.C
    ChargeLayer.C
    ClippingPlaneLayer.C
    ConstraintLayer.C

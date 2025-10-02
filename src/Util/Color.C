@@ -386,10 +386,12 @@ QString toString(Gradient gradient)
 {
    QString s;
    switch (gradient) {
-      case Gradient::Default:          s = "Default";  break;
-      case Gradient::Spectrum:         s = "Spectrum";  break;
-      case Gradient::PrimarySpectrum:  s = "Spectrum 2";  break;
-      case Gradient::Custom:           s = "Custom";  break;
+      case Gradient::Custom:             s = "Custom";               break;
+      case Gradient::Default:            s = "Default";              break;
+      case Gradient::Spectrum:           s = "Spectrum";             break;
+      case Gradient::PrimarySpectrum:    s = "Primary Spectrum";     break;
+      case Gradient::ReflectedDefault:   s = "Default Reflected";    break;
+      case Gradient::ReflectedSpectrum:  s = "Spectrum Refelected";  break;
    }
    return s;
 }
@@ -453,8 +455,8 @@ List toList(Gradient const gradient)
          break;
 
       case Gradient::Spectrum:
-         colors << Red << Orange << Yellow << Green
-                << Blue << Purple;
+         colors << red << orange << yellow << green
+                << blue << Purple;
          break;
 
       case Gradient::PrimarySpectrum:
@@ -462,6 +464,14 @@ List toList(Gradient const gradient)
                 << Qt::blue << Qt::magenta;
          break;
 
+      case Gradient::ReflectedDefault:
+         colors << red <<  Qt::white << blue << blue << Qt::white << red;
+         break;
+
+      case Gradient::ReflectedSpectrum:
+         colors << red  << orange << yellow << green << blue << Purple 
+                << Purple << blue << green << yellow << orange << red;
+         break;
    }
 
    return colors; 
@@ -672,7 +682,5 @@ List const& Function::resample(int nColors)
    m_colors = newColors;
    return m_colors;
 }
-
-
 
 } } // end namespace IQmol::Color

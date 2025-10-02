@@ -137,7 +137,6 @@ bool Orbitals::areOrthonormal() const
        } 
    }
 
-
    return pass;
 }
 

@@ -4,6 +4,7 @@ set(LIB Grid)
 set(HEADERS
    BasisEvaluator.h
    BoundingBoxDialog.h
+   ComplexOrbitalEvaluator.h
    DensityEvaluator.h
    GridEvaluator.h
    GridEvaluator.h
@@ -19,6 +20,7 @@ set(HEADERS
 set( SOURCES
    BasisEvaluator.C
    BoundingBoxDialog.C
+   ComplexOrbitalEvaluator.C
    DensityEvaluator.C
    GridEvaluator.C
    GridInfoDialog.C

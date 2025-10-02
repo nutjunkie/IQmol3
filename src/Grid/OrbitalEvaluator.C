@@ -35,6 +35,8 @@ OrbitalEvaluator::OrbitalEvaluator(Data::GridDataList& grids, Data::ShellList& s
    Matrix const& coefficients, QList<int> indices) : m_grids(grids), m_shellList(shellList),
    m_coefficients(coefficients), m_indices(indices)
 {
+   // TODO: This is a dubious way of using the coefficients, better to bind the evaluation
+   // with m_coefficients rather than setting them in the shell data
    m_shellList.setOrbitalVectors(coefficients, indices);
    m_returnValues.resize({(size_t)m_indices.size()});
    m_function = std::bind(&Data::ShellList::orbitalValues, &m_shellList, 

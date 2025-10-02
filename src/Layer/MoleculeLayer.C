@@ -2824,7 +2824,6 @@ void Molecule::initProperties()
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
       m_properties.append( new Property::PointChargePotential(type, this) );
-         
    }
 
    // Merz Kollman RESP

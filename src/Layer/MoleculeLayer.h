@@ -380,7 +380,6 @@ bool save(bool prompt = false);
    } // end namespace Layer
 
 
-
    typedef QList<Layer::Molecule*> MoleculeList;
 
 } // end namespace IQmol

@@ -21,62 +21,10 @@
 
 ********************************************************************************/
 
-#include "TMatrix.h"
-#include <cmath>
 #include "Vector.h"
-
+#include "Matrix.h"
 
 namespace IQmol {
-
-inline float RoundPlaces(float a, int p)
-{
-   const float powersOfTen[] = {
-      1e0f,  1e1f,  1e2f,  1e3f,  1e4f,  1e5f,  1e6f,  1e7f,  
-      1e8f,  1e9f, 1e10f, 1e11f, 1e12f, 1e13f, 1e14f, 1e15f, 1e16f 
-   };
- 
-   float s = powersOfTen[p];
-   return std::roundf(a*s) / s;
-}
-
-
-inline void RoundPlaces(Vec3 &v, int p)
-{
-    v[0] = RoundPlaces(v[0], p);
-    v[1] = RoundPlaces(v[1], p);
-    v[2] = RoundPlaces(v[2], p);
-}
-
-
-
-inline float Linear(float t) 
-{
-    return t;
-}
-
-
-inline float InOutQuad(float t) 
-{
-    if (t < 0.5f) {
-        return 2 * t * t;
-    }
-    t = 2*t - 1;
-    return -0.5f * (t*(t-2) - 1);
-}
-
-
-inline float OutCirc(float t) 
-{
-    t = t-1;
-    return sqrtf(1 - (t * t));
-}
-
-
-inline float InCirc(float t) 
-{
-    return -1 * (sqrtf(1-t*t) - 1);
-}
-
 
 void spline(Vec3 *&result, Vec3 const& vec1, Vec3 const& vec2, 
    Vec3 const& vec3, Vec3 const& vec4, int n);

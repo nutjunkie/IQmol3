@@ -73,7 +73,7 @@ struct Vec3 : public ArrayOps<Vec3>
     void normalize()
     {
        double n(norm());
-       if (n < 1e-8) return;
+       if (n < 1e-6) return;
        x /= n;
        y /= n;
        z /= n;

@@ -77,14 +77,10 @@ namespace Data {
 
          /// Allocates the memory for evaluating the shells/shell pairs on a grid
          /// point.  This should be called after the last Shell has been appended
-         /// to the list and before shellValues or shellPairValues is called.
+         /// to the list and before shellValues is called.
          void resize();
 
          Vector const& shellValues(double const x, double const y, double const z);
-
-         // Returns the vectorized upper triangular array of unique shell 
-         // values at the grid point pairs.
-         Vector const& shellPairValues(double const x, double const y, double const z);
 
 		 // Initializes the list of densities to be evaluated a grid points
 		 // with subsequent densityValues calls.

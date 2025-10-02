@@ -31,7 +31,13 @@ namespace Color {
 
    typedef QList<QColor> List;
 
-   enum class Gradient {Custom , Default, Spectrum, PrimarySpectrum };
+   enum class Gradient { Custom, 
+                         Default, 
+                         Spectrum, 
+                         PrimarySpectrum,
+                         ReflectedDefault,
+                         ReflectedSpectrum
+      };
 
    enum class Operation{ Brighten, Darken, Saturate, Desaturate, Rotate};
 

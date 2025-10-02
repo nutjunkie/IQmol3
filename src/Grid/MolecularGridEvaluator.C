@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -23,6 +23,7 @@
 #include "Grid/MolecularGridEvaluator.h"
 #include "Grid/DensityEvaluator.h"
 #include "Grid/OrbitalEvaluator.h"
+#include "Grid/ComplexOrbitalEvaluator.h"
 #include "Grid/BasisEvaluator.h"
 #include "Data/ShellList.h"
 #include "Data/Density.h"
@@ -41,12 +42,16 @@ MolecularGridEvaluator::MolecularGridEvaluator(
    Data::ShellList& shellList, 
    Matrix const& alphaCoefficients, 
    Matrix const& betaCoefficients, 
-   QList<Data::Density*> const& densities) :
-   m_grids(grids),
-   m_shellList(shellList),
-   m_alphaCoefficients(alphaCoefficients),
-   m_betaCoefficients(betaCoefficients),
-   m_densities(densities)
+   QList<Data::Density*> const& densities,
+   Matrix const& alphaImaginaryCoefficients, 
+   Matrix const& betaImaginaryCoefficients) 
+    : m_grids(grids),
+      m_shellList(shellList),
+      m_alphaCoefficients(alphaCoefficients),
+      m_betaCoefficients(betaCoefficients),
+      m_densities(densities),
+      m_alphaImaginaryCoefficients(alphaImaginaryCoefficients),
+      m_betaImaginaryCoefficients(betaImaginaryCoefficients)
 {
 }
 
@@ -75,23 +80,31 @@ void MolecularGridEvaluator::run()
    unsigned sizeCount(1);
 
    for (size = sizes.begin(); size != sizes.end(); ++size, ++sizeCount) {
-(*size).dump();
        Data::GridDataList densityGrids;
        Data::GridDataList alphaGrids;
        Data::GridDataList betaGrids;
        Data::GridDataList basisGrids;
+
+       Data::GridDataList alphaRealGrids;
+       Data::GridDataList betaRealGrids;
+       Data::GridDataList alphaImaginaryGrids;
+       Data::GridDataList betaImaginaryGrids;
+
 
        QList<Vector const*> densityVectors;
 
        QList<int>  alphaOrbitals;
        QList<int>  betaOrbitals;
        QList<int>  basisFunctions;
+       QList<int>  alphaComplexOrbitals;
+       QList<int>  betaComplexOrbitals;
 
        for (iter = m_grids.begin(); iter != m_grids.end(); ++iter) {
            if ((*iter)->size() == *size) {
 
               Data::SurfaceType type((*iter)->surfaceType());
               bool found(false);
+qDebug() << "Surface type requested:" << type.toString();
 
               if (type.isDensity()) {
                  // Find the corresponding density matrix
@@ -120,6 +133,26 @@ void MolecularGridEvaluator::run()
                  betaGrids.append(*iter);
                  betaOrbitals.append(type.index());
 
+              // Complex orbital handling
+              }else if (type.kind() == Data::SurfaceType::AlphaRealOrbital) {
+                 found = true;
+                 alphaRealGrids.append(*iter);
+                 alphaComplexOrbitals.append(type.index());
+
+              }else if (type.kind() == Data::SurfaceType::AlphaImaginaryOrbital) {
+                 found = true;
+                 alphaImaginaryGrids.append(*iter);
+
+              }else if (type.kind() == Data::SurfaceType::BetaRealOrbital) {
+                 found = true;
+                 betaRealGrids.append(*iter);
+                 betaComplexOrbitals.append(type.index());
+
+              }else if (type.kind() == Data::SurfaceType::BetaImaginaryOrbital) {
+                 found = true;
+                 betaImaginaryGrids.append(*iter);
+              // ------------------------
+
               }else if (type.kind() == Data::SurfaceType::DysonLeft) {
                  found = true;
                  alphaGrids.append(*iter);
@@ -133,7 +166,7 @@ void MolecularGridEvaluator::run()
               }else if (type.kind() == Data::SurfaceType::Custom) {
                  for (int i = 0; i < m_densities.size(); ++i) {
                      if (type.label() == m_densities[i]->label()) {
-qDebug() << "Pairing successful" << type.label() << m_densities[i]->label(); 
+                        QLOG_DEBUG() << "Pairing successful" << type.label() << m_densities[i]->label(); 
                         densityGrids.append(*iter);
                         densityVectors.append(m_densities[i]->vector());
                         found  = true;
@@ -152,6 +185,8 @@ qDebug() << "Pairing successful" << type.label() << m_densities[i]->label();
            }
        }
 
+       // Run Evaluators
+
        if (!basisFunctions.isEmpty() && !m_terminate) {
           QString s("Computing basis functions on grid ");
           s += QString::number(sizeCount);
@@ -160,22 +195,9 @@ qDebug() << "Pairing successful" << type.label() << m_densities[i]->label();
           QLOG_TRACE() << "MGE: Computing" << basisFunctions.size() << "basis function grids";
           BasisEvaluator evaluator(basisGrids, m_shellList, basisFunctions);
 
-          progressMaximum(evaluator.totalProgress());
-          progressValue(0);
-          connect(&evaluator, SIGNAL(progress(int)), this, SIGNAL(progressValue(int)));  
+          runTask(evaluator);
 
-          evaluator.start();
-          while (evaluator.isRunning()) {
-             msleep(100);
-             QApplication::processEvents();
-             if (m_terminate) {
-                evaluator.stopWhatYouAreDoing();
-                evaluator.wait();
-             }
-          }
-          
-          QLOG_TRACE() << "Time taken to compute basis function grids:" 
-                       << evaluator.timeTaken();
+          QLOG_TRACE() << "Time taken to compute basis function grids:" << evaluator.timeTaken();
        }
 
        if (!alphaOrbitals.isEmpty() && !m_terminate) {
@@ -187,20 +209,7 @@ qDebug() << "Pairing successful" << type.label() << m_densities[i]->label();
           OrbitalEvaluator evaluator(alphaGrids, m_shellList, m_alphaCoefficients, 
              alphaOrbitals);
 
-          progressMaximum(evaluator.totalProgress());
-          progressValue(0);
-          connect(&evaluator, SIGNAL(progress(int)), this, SIGNAL(progressValue(int)));  
-
-          evaluator.start();
-          while (evaluator.isRunning()) {
-             msleep(100);
-             QApplication::processEvents();
-             if (m_terminate) {
-                evaluator.stopWhatYouAreDoing();
-                evaluator.wait();
-             }
-          }
-          
+          runTask(evaluator);
           QLOG_TRACE() << "Time taken to compute orbital grids:" << evaluator.timeTaken();
        }
 
@@ -212,20 +221,7 @@ qDebug() << "Pairing successful" << type.label() << m_densities[i]->label();
           OrbitalEvaluator evaluator(betaGrids, m_shellList, m_betaCoefficients, 
              betaOrbitals);
 
-          progressMaximum(evaluator.totalProgress());
-          progressValue(0);
-          connect(&evaluator, SIGNAL(progress(int)), this, SIGNAL(progressValue(int)));  
-
-          evaluator.start();
-          while (evaluator.isRunning()) {
-             msleep(100);
-             QApplication::processEvents();
-             if (m_terminate) {
-                evaluator.stopWhatYouAreDoing();
-                evaluator.wait();
-             }
-          }
- 
+          runTask(evaluator);
           QLOG_TRACE() << "Time taken to compute orbital grids:" << evaluator.timeTaken();
        }
 
@@ -237,22 +233,54 @@ qDebug() << "Pairing successful" << type.label() << m_densities[i]->label();
           QLOG_TRACE() << "MGE: Computing" << densityVectors.size() << "density grids";
           DensityEvaluator evaluator(densityGrids, m_shellList, densityVectors);
 
-          progressMaximum(evaluator.totalProgress());
-          progressValue(0);
-          connect(&evaluator, SIGNAL(progress(int)), this, SIGNAL(progressValue(int)));  
-
-          evaluator.start();
-          while (evaluator.isRunning()) {
-             msleep(100);
-             QApplication::processEvents();
-             if (m_terminate) {
-                evaluator.stopWhatYouAreDoing();
-                evaluator.wait();
-             }
-          }
- 
+          runTask(evaluator);
           QLOG_TRACE() << "Time taken to compute density grids:" << evaluator.timeTaken();
        }
+
+
+       // This is wasteful as it is recomputing shell data. 
+       // TODO: re-engineer to allow imaginary coefficients in the above evaluators
+       if (!alphaComplexOrbitals.isEmpty() && !m_terminate) {
+          QString s("Computing imaginary alpha orbitals on grid ");
+          s += QString::number(sizeCount);
+          progressLabelText(s);
+
+          ComplexOrbitalEvaluator evaluator(alphaRealGrids, alphaImaginaryGrids, m_shellList, 
+             m_alphaCoefficients, m_alphaImaginaryCoefficients, alphaComplexOrbitals);
+
+          runTask(evaluator);
+          QLOG_TRACE() << "Time taken to compute imaginary orbital grids:" << evaluator.timeTaken();
+       }
+
+       if (!betaComplexOrbitals.isEmpty() && !m_terminate) {
+          QString s("Computing imaginary beta orbitals on grid ");
+          s += QString::number(sizeCount);
+          progressLabelText(s);
+
+          ComplexOrbitalEvaluator evaluator(betaRealGrids, betaImaginaryGrids, m_shellList, 
+             m_betaCoefficients, m_betaImaginaryCoefficients, betaComplexOrbitals);
+
+          runTask(evaluator);
+          QLOG_TRACE() << "Time taken to compute imaginary orbital grids:" << evaluator.timeTaken();
+       }
+   }
+}
+
+
+void MolecularGridEvaluator::runTask(Task& task)
+{
+   progressMaximum(task.totalProgress());
+   progressValue(0);
+   connect(&task, SIGNAL(progress(int)), this, SIGNAL(progressValue(int)));  
+
+   task.start();
+   while (task.isRunning()) {
+      msleep(100);
+      QApplication::processEvents();
+      if (m_terminate) {
+         task.stopWhatYouAreDoing();
+         task.wait();
+      }
    }
 }
 

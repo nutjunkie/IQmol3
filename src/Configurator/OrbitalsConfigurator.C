@@ -43,14 +43,12 @@ void Orbitals::on_densityMatrixButton_clicked(bool)
   orbitals.computeFirstOrderDensityMatrix();
 }
 
+
 Orbitals::Orbitals(Layer::Orbitals& orbitals)
   : m_orbitals(orbitals), m_nAlpha(0), m_nBeta(0), m_nOrbitals(0), m_customPlot(0)
 {
    m_configurator.setupUi(this);
-
-   // Why is this here, it seems annoying.
-   //connect(m_configurator.orbitalRangeMin, SIGNAL(currentIndexChanged(int)),
-   //   m_configurator.orbitalRangeMax, SLOT(setCurrentIndex(int)));
+qDebug() << "Orbital Type in configurator: " << Data::Orbitals::toString(m_orbitals.orbitalType());
 
    m_configurator.surfaceType->clear();
    // Watch the ordering of these affects the index selection below
@@ -68,6 +66,10 @@ Orbitals::Orbitals(Layer::Orbitals& orbitals)
       m_configurator.surfaceType->addItem("Dyson (Right)", Data::SurfaceType::DysonRight);
    }else if (m_orbitals.m_orbitals.orbitalType() == Data::Orbitals::Generic) {
       m_configurator.surfaceType->addItem("Orbital",  Data::SurfaceType::GenericOrbital);
+
+   }else if (m_orbitals.m_orbitals.orbitalType() == Data::Orbitals::Complex) {
+      m_configurator.surfaceType->addItem("Complex Alpha Orbital",  Data::SurfaceType::AlphaRealOrbital);
+      m_configurator.surfaceType->addItem("Complex Beta Orbital",   Data::SurfaceType::BetaRealOrbital);
    }else {
       m_configurator.surfaceType->addItem("Alpha Orbital",  Data::SurfaceType::AlphaOrbital);
       m_configurator.surfaceType->addItem("Beta Orbital",   Data::SurfaceType::BetaOrbital);
@@ -130,10 +132,8 @@ void Orbitals::init()
 
 
    Data::DensityList& densities(m_orbitals.m_availableDensities);
-   qDebug() << "Appending additional densities" << densities.size();
    Data::DensityList::iterator density;
    for (density = densities.begin(); density != densities.end(); ++density) {
-       (*density)->surfaceType().dump();
 /*
         if ((*density)->surfaceType().kind() == Data::SurfaceType::SpinDensity) {
            m_configurator.surfaceType->addItem((*density)->label(),  Data::SurfaceType::SpinDensity);
@@ -372,6 +372,8 @@ void Orbitals::on_surfaceType_currentIndexChanged(int index)
          break;
 
       case Data::SurfaceType::AlphaOrbital:
+      case Data::SurfaceType::AlphaRealOrbital:
+      case Data::SurfaceType::AlphaImaginaryOrbital:
       case Data::SurfaceType::DysonLeft:
       case Data::SurfaceType::GenericOrbital:
          enableOrbitalSelection(true);
@@ -381,6 +383,8 @@ void Orbitals::on_surfaceType_currentIndexChanged(int index)
          break;
 
       case Data::SurfaceType::BetaOrbital:
+      case Data::SurfaceType::BetaRealOrbital:
+      case Data::SurfaceType::BetaImaginaryOrbital:
       case Data::SurfaceType::DysonRight:
          enableOrbitalSelection(true);
          enableNegativeColor(true);
@@ -606,8 +610,8 @@ void Orbitals::on_addToQueueButton_clicked(bool)
          }
       } break;
 
-      case Data::SurfaceType::GenericOrbital: {
-         info.type().setKind(Data::SurfaceType::GenericOrbital);
+      case Data::SurfaceType::BetaOrbital: {
+         info.type().setKind(Data::SurfaceType::BetaOrbital);
          int orb1(m_configurator.orbitalRangeMin->currentIndex());
          int orb2(m_configurator.orbitalRangeMax->currentIndex());
 
@@ -617,8 +621,43 @@ void Orbitals::on_addToQueueButton_clicked(bool)
          }
       } break;
 
-      case Data::SurfaceType::BetaOrbital: {
-         info.type().setKind(Data::SurfaceType::BetaOrbital);
+      case Data::SurfaceType::AlphaRealOrbital: {
+         int orb1(m_configurator.orbitalRangeMin->currentIndex());
+         int orb2(m_configurator.orbitalRangeMax->currentIndex());
+
+         info.type().setKind(Data::SurfaceType::AlphaRealOrbital);
+         for (int i = std::min(orb1,orb2); i <= std::max(orb1, orb2); ++i) {
+             info.type().setIndex(i);
+             queueSurface(info);
+         }
+
+         info.type().setKind(Data::SurfaceType::AlphaImaginaryOrbital);
+         for (int i = std::min(orb1,orb2); i <= std::max(orb1, orb2); ++i) {
+             info.type().setIndex(i);
+             queueSurface(info);
+         }
+
+      } break;
+
+      case Data::SurfaceType::BetaRealOrbital: {
+         int orb1(m_configurator.orbitalRangeMin->currentIndex());
+         int orb2(m_configurator.orbitalRangeMax->currentIndex());
+
+         info.type().setKind(Data::SurfaceType::BetaRealOrbital);
+         for (int i = std::min(orb1,orb2); i <= std::max(orb1, orb2); ++i) {
+             info.type().setIndex(i);
+             queueSurface(info);
+         }
+
+         info.type().setKind(Data::SurfaceType::BetaImaginaryOrbital);
+         for (int i = std::min(orb1,orb2); i <= std::max(orb1, orb2); ++i) {
+             info.type().setIndex(i);
+             queueSurface(info);
+         }
+      } break;
+
+      case Data::SurfaceType::GenericOrbital: {
+         info.type().setKind(Data::SurfaceType::GenericOrbital);
          int orb1(m_configurator.orbitalRangeMin->currentIndex());
          int orb2(m_configurator.orbitalRangeMax->currentIndex());
 

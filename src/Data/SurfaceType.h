@@ -30,11 +30,14 @@ namespace Data {
    class SurfaceType : public Base {
 
       public:
-         enum Kind { Custom = -1, AlphaOrbital, BetaOrbital, TotalDensity, 
-            SpinDensity, AlphaDensity, BetaDensity, DensityCombo, CubeData, 
-            VanDerWaals, Promolecule, SolventExcluded, SID, ElectrostaticPotential,
-            Geminal, Correlation, CustomDensity, BasisFunction, DysonLeft, DysonRight,
-            MullikenAtomic, MullikenDiatomic, GenericOrbital, Ribbon
+         enum Kind { Custom = -1, 
+            AlphaOrbital, BetaOrbital, TotalDensity, SpinDensity,         //  3
+            AlphaDensity, BetaDensity, DensityCombo, CubeData,            //  7
+            VanDerWaals, Promolecule, SolventExcluded, SID,               // 11
+            ElectrostaticPotential, Geminal, Correlation, CustomDensity,  // 15
+            BasisFunction, DysonLeft, DysonRight, MullikenAtomic,         // 19
+            MullikenDiatomic, GenericOrbital, Ribbon, AlphaRealOrbital,   // 23
+            AlphaImaginaryOrbital, BetaRealOrbital, BetaImaginaryOrbital   // 26
 
 // TODO
 //            AlphaHole Density, BetaHole Density,

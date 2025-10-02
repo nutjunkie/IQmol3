@@ -10,6 +10,29 @@ using namespace IQmol::Data;
 
 namespace cpdb {
 
+
+inline float Linear(float t)  
+{
+   return t;
+}
+
+
+inline float InOutQuad(float t)  
+{
+   if (t < 0.5f) return 2 * t * t;
+   t = 2*t - 1;
+   return -0.5f * (t*(t-2) - 1);
+}
+
+
+inline float OutCirc(float t)  
+{
+   t = t-1;
+   return sqrtf(1 - (t * t));
+}
+
+
+
 inline Vec3 lerp(Vec3 v0, Vec3 v1, double t) 
 {
     return v0 * (1 - t) + v1 * t;

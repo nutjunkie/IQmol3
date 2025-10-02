@@ -48,8 +48,8 @@ namespace Data {
 
          void clearSurfaceProperty();
 
-void computeSurfaceProperty(Function3D const&);
-void computeSurfaceProperty(Data::Mesh::VertexFunction const&);
+         void computeSurfaceProperty(Function3D const&);
+         void computeSurfaceProperty(Data::Mesh::VertexFunction const&);
          void computeSurfaceProperty(Property::Base*);
 
          void getPropertyRange(double& min, double& max) const;
