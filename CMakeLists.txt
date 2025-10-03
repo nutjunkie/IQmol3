@@ -21,7 +21,9 @@ elseif (UNIX)
    set(LINUX TRUE)
 endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+if(NOT LINUX)
+   set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+endif()
 
 # We need this to be able to include e.g. "Data/Bank.h" in the sources
 include_directories(src)
@@ -38,30 +40,37 @@ if(ZLIB_FOUND)
 endif()
 
 
-find_package(ZSTD    REQUIRED)
+
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-# No CMakeLists.txt for libQGLViewer
-include_directories(modules/libQGLViewer)
-add_subdirectory(modules  EXCLUDE_FROM_ALL)
+if(NOT LINUX)
+   find_package(ZSTD    REQUIRED)
 
-include_directories(modules/libssh2/include)
-add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
+   # No CMakeLists.txt for libQGLViewer
+   include_directories(modules/libQGLViewer)
+   add_subdirectory(modules  EXCLUDE_FROM_ALL)
 
-include_directories(modules/openmesh/src)
-add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
+   include_directories(modules/libssh2/include)
+   add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 
-include_directories(modules/yaml-cpp/include)
-add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
+   include_directories(modules/openmesh/src)
+   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+   set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
 
-include_directories(modules/openbabel/include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
-add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
+   include_directories(modules/yaml-cpp/include)
+   add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
 
-add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
+   include_directories(modules/openbabel/include)
+   include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
+   add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
+
+   add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
+else()
+   find_package(OpenBabel3 REQUIRED)
+   find_package(OpenMesh REQUIRED)
+endif()
 
 if (WITH_GROMACS)
    add_compile_definitions(GROMACS)
@@ -164,10 +173,6 @@ if (WIN32)
 endif (WIN32)
 
 
-# This works on ubuntu, not sure about others
-unset(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES)
-set(FORTRAN_LIBRARIES libgfortran.a libquadmath.a)
-
 target_link_libraries (${targetName}
    Main
    Process
@@ -183,7 +188,6 @@ target_link_libraries (${targetName}
    Math
    Plot
    Fort
-   libssh2
    yaml-cpp
    openbabel
    QGLViewer
@@ -202,6 +206,12 @@ target_link_libraries (${targetName}
    ${FORTRAN_LIBRARIES}
    archive
 )
+
+if(NOT LINUX)
+   target_link_libraries(${targetName} libssh2 ${LIBSSH2_LIBRARY})
+else()
+   target_link_libraries(${targetName} Amber ssh2 OpenMeshTools zstd)
+endif()
 
 if(QARCHIVE)
    target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
