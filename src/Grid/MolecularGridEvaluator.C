@@ -90,7 +90,6 @@ void MolecularGridEvaluator::run()
        Data::GridDataList alphaImaginaryGrids;
        Data::GridDataList betaImaginaryGrids;
 
-
        QList<Vector const*> densityVectors;
 
        QList<int>  alphaOrbitals;
@@ -238,10 +237,8 @@ qDebug() << "Surface type requested:" << type.toString();
        }
 
 
-       // This is wasteful as it is recomputing shell data. 
-       // TODO: re-engineer to allow imaginary coefficients in the above evaluators
        if (!alphaComplexOrbitals.isEmpty() && !m_terminate) {
-          QString s("Computing imaginary alpha orbitals on grid ");
+          QString s("Computing complex alpha orbitals on grid ");
           s += QString::number(sizeCount);
           progressLabelText(s);
 
@@ -253,7 +250,7 @@ qDebug() << "Surface type requested:" << type.toString();
        }
 
        if (!betaComplexOrbitals.isEmpty() && !m_terminate) {
-          QString s("Computing imaginary beta orbitals on grid ");
+          QString s("Computing complex beta orbitals on grid ");
           s += QString::number(sizeCount);
           progressLabelText(s);
 

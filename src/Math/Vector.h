@@ -118,5 +118,6 @@ inline T dot(const Array<1, T>& a, const Array<1, T>& b)
 }
 
 typedef Array<1,double> Vector;
+typedef Array<1,const double> ConstVector;
 
 } // end namespace IQmol

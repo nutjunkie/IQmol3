@@ -418,20 +418,36 @@ Data::Surface* Orbitals::generateSurface(Data::SurfaceInfo const& surfaceInfo)
    // calculation or edited the bounding box.
    if (!grid)  return 0;
 
-   // If the surface is imaginary, rather than generate it, we create a grid-based
-   // property instead.
-   if (type.kind() == Data::SurfaceType::AlphaImaginaryOrbital) {
-      QString label("Alpha phase ");
-      label += QString::number(type.index()+1);
-      Property::GridBased* phase(new Property::GridBased(label,*grid));
-      propertyAvailable(phase);
+   // We don't bother computing the imaginary surfaces, rather we create a phase
+   // property for the real orbital.
+   if (type.kind() == Data::SurfaceType::AlphaImaginaryOrbital ||
+       type.kind() == Data::SurfaceType::BetaImaginaryOrbital) {
       return 0;
-   } else if (type.kind() == Data::SurfaceType::BetaImaginaryOrbital) {
-      QString label("Beta phase ");
-      label += QString::number(type.index()+1);
-      Property::GridBased* phase(new Property::GridBased(label,*grid));
+   }
+
+   if (type.kind() == Data::SurfaceType::AlphaRealOrbital) {
+      unsigned idx(type.index());
+      Data::ComplexOrbitals& orbitals = dynamic_cast<Data::ComplexOrbitals&>(m_orbitals);
+      Matrix const& reCoeffs(orbitals.alphaRealCoefficients());
+      Matrix const& imCoeffs(orbitals.alphaImaginaryCoefficients());
+
+      QString label = "Alpha phase ";
+      label += QString::number(idx+1);
+      Property::Base* phase = new Property::ComplexPhase(label, m_orbitals.shellList(),
+        reCoeffs.slice(idx), imCoeffs.slice(idx) );
       propertyAvailable(phase);
-      return 0;
+
+   } else if (type.kind() == Data::SurfaceType::BetaRealOrbital) {
+      unsigned idx(type.index());
+      Data::ComplexOrbitals& orbitals = dynamic_cast<Data::ComplexOrbitals&>(m_orbitals);
+      Matrix const& reCoeffs(orbitals.betaRealCoefficients());
+      Matrix const& imCoeffs(orbitals.betaImaginaryCoefficients());
+
+      QString label = "Beta phase ";
+      label += QString::number(idx+1);
+      Property::Base* phase = new Property::ComplexPhase(label, m_orbitals.shellList(),
+        reCoeffs.slice(idx), imCoeffs.slice(idx) );
+      propertyAvailable(phase);
    }
 
    double delta(Data::GridSize::stepSize(surfaceInfo.quality()));

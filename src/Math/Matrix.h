@@ -30,6 +30,7 @@
 namespace IQmol {
 
 typedef Array<2,double> Matrix;
+typedef Array<2,const double> ConstMatrix;
 
 template<typename T>
 Array<2,T> product(Array<2,T> const& A, Array<2,T> const& B, size_t blockSize = 64)
