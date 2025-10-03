@@ -20,8 +20,8 @@
    
 ********************************************************************************/
 
-#include "Data/ShellList.h"
-#include "Data/Geometry.h"
+#include "ShellList.h"
+#include "Geometry.h"
 #include "Util/Constants.h"
 #include "Util/QsLog.h"
 #include <QDebug>
@@ -31,8 +31,7 @@
 namespace IQmol {
 namespace Data {
 
-ShellList::ShellList(ShellData const& shellData, Geometry const& geometry) : m_sigBasis(0),
-   m_orbitalCoefficients(0)
+ShellList::ShellList(ShellData const& shellData, Geometry const& geometry)
 {
    static double const convExponents(std::pow(Constants::BohrToAngstrom, -2.0));
    unsigned nShells(shellData.shellTypes.size());
@@ -110,14 +109,9 @@ ShellList::ShellList(ShellData const& shellData, Geometry const& geometry) : m_s
       setOverlapMatrix(shellData.overlapMatrix);
    }   
 
-   resize();
+   //resize();
 }
 
-
-ShellList::~ShellList() 
-{
-   if (m_sigBasis) delete [] m_sigBasis;
-}
 
 unsigned ShellList::nBasis() const
 {
@@ -189,26 +183,6 @@ void ShellList::dump() const
 }
 
 
-void ShellList::resize()
-{
-   m_nBasis = nBasis();
-   m_basisValues.resize({m_nBasis});
-
-   if (m_sigBasis) delete [] m_sigBasis;
-   m_sigBasis = new unsigned[m_nBasis];
-
-   unsigned size(m_nBasis*(m_nBasis+1)/2);
-   if (2*size != m_nBasis*(m_nBasis+1)) {
-      QLOG_WARN() << "Round error in ShellList::resize()";
-      ++size;
-   }
-   m_basisPairValues.resize({size});
-
-   qDebug() << shellAtomOffsets();
-   qDebug() << basisAtomOffsets();
-}
-
-
 QList<unsigned> ShellList::shellAtomOffsets() const
 {
    QList<unsigned> offsets;
@@ -223,6 +197,20 @@ QList<unsigned> ShellList::shellAtomOffsets() const
           offsets.append(k);
           ++atomIndex;
        }
+   }
+
+   return offsets;
+}
+
+
+QList<unsigned> ShellList::shellOffsets() const
+{
+   QList<unsigned> offsets;
+   unsigned idx(0);
+
+   for (auto shell = begin(); shell != end(); ++shell) {
+       offsets.append(idx);
+       idx += (*shell)->nBasis();
    }
 
    return offsets;
@@ -249,161 +237,22 @@ QList<unsigned> ShellList::basisAtomOffsets() const
    return offsets;
 }
 
-#if 0
-void ShellList::shellValues(Vector& values, double const x, double const y, double const z)
+
+QList<unsigned> ShellList::basisToShellMap() const
 {
-   assert(values.size() == m_nBasis && "Vector size mismatch in ShellList::shellValues function");
+   QList<unsigned> map;
+   unsigned s(0);
 
-   double const* vals;
-   unsigned offset(0);
-   unsigned nbfs(0);
-
-   values.zero();
-
-   for (auto shell = begin(); shell != end(); ++shell) {
-       vals = (*shell)->evaluate(x, y, z);
-       nbfs = (*shell)->nBasis();
-
-       if (vals) {
-          // Only update shells that are significant on this grid point
-          for (unsigned s = 0; s < nbfs; ++s) {
-              values(offset+s) = vals[s];
-          }
-       }
-       offset += nbfs;
-   }
-}
-
-
-// TODO: Deprecate
-// TODO: this could be batched over grid points so that matrix multiplications
-// can be used later on.  Also, auxilary data structures could be employed to 
-// make the computation more efficient.
-Vector const& ShellList::shellValues(double const x, double const y, double const z)
-{
-   double const* values;
-   unsigned offset(0);
-
-   ShellList::const_iterator shell;
-   for (shell = begin(); shell != end(); ++shell) {
-       values = (*shell)->evaluate(x, y, z);
-       if (values) {
-          for (unsigned s = 0; s < (*shell)->nBasis(); ++s, ++offset) {
-              m_basisValues(offset) = values[s];
-          }
-       }else{
-          for (unsigned s = 0; s < (*shell)->nBasis(); ++s, ++offset) {
-              m_basisValues(offset) = 0;
-          }
+   for (auto shell = begin(); shell != end(); ++shell, ++s) {
+       unsigned n((*shell)->nBasis());
+       for (unsigned i = 0; i < n; ++i) {
+           map.append(s);
        }
    }
 
-   return m_basisValues;
-}
-#endif
-
-
-// -----------------------------------------------------------------------------
-
-#if 0
-void ShellList::setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices)
-{
-   m_orbitalIndices      = indices;
-   m_orbitalCoefficients = &coefficients;
-   m_orbitalValues.resize({(size_t)m_orbitalIndices.size()});
+   return map;
 }
 
-
-Vector const& ShellList::orbitalValues(double const x, double const y, double const z)
-{
-   unsigned norb(m_orbitalIndices.size());
-   unsigned basoff(0);
-   unsigned numbas;
-   double const* values;
-
-   m_orbitalValues.zero();
-
-   // Determine the significant shells, and corresponding basis function indices
-   ShellList::const_iterator shell;
-   for (shell = begin(); shell != end(); ++shell) {
-       values = (*shell)->evaluate(x,y,z);
-       numbas = (*shell)->nBasis();
-
-       if (values) { // only add the significant shells
-          for (unsigned i = 0; i < numbas; ++i) {
-              for (unsigned k = 0; k < norb; ++k) {
-                  m_orbitalValues(k) += 
-                      (*m_orbitalCoefficients)(m_orbitalIndices[k], basoff+i) * values[i];
-              }
-          }
-       }
-       basoff += numbas;
-   }
-
-   return m_orbitalValues;
-}
-#endif
-
-// -----------------------------------------------------------------------------
-
-void ShellList::setDensityVectors(QList<Vector const*> const& densityVectors)
-{
-   m_densityVectors = densityVectors;
-   m_densityValues.resize({(size_t)m_densityVectors.length()});
-}
-
-
-Vector const& ShellList::densityValues(double const x, double const y, double const z)
-{
-   unsigned numbas, nSigBas(0), basoff(0);
-   double const* values;
-
-   // Determine the significant shells, and corresponding basis function indices
-   ShellList::const_iterator shell;
-   for (shell = begin(); shell != end(); ++shell) {
-       values = (*shell)->evaluate(x,y,z);
-       numbas = (*shell)->nBasis();
-
-       if (values) { // only add the significant shells
-          for (unsigned i = 0; i < numbas; ++i, ++nSigBas, ++basoff) {
-              m_basisValues(nSigBas) = values[i];
-              m_sigBasis[nSigBas]    = basoff;
-          }
-       }else {
-          basoff += numbas;
-       }
-   }
-
-   double   xi, xij; 
-   unsigned ii, jj, Ti;
-   unsigned nden(m_densityVectors.size());
-
-   for (unsigned k = 0; k < nden; ++k) {
-       m_densityValues(k) = 0.0;
-   }
-
-   // Now compute the basis function pair values on the grid
-   for (unsigned i = 0; i < nSigBas; ++i) {
-       xi = m_basisValues(i);
-       ii = m_sigBasis[i];
-       Ti = (ii*(ii+1))/2;
-       for (unsigned j = 0; j < i; ++j) {
-           xij = 2.0*xi*m_basisValues(j);
-           jj  = m_sigBasis[j];
-
-           for (unsigned k = 0; k < nden; ++k) {
-               m_densityValues(k) += 2.0*xij*(*m_densityVectors[k])(Ti+jj);
-           }
-
-       }
-       
-       for (unsigned k = 0; k < nden; ++k) {
-           m_densityValues(k) += xi*xi*(*m_densityVectors[k])(Ti+ii);
-       }
-   }
-
-   return m_densityValues;
-}
 
 
 

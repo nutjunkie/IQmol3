@@ -63,11 +63,11 @@ namespace IQmol {
          Data::GridDataList   m_grids;
          Data::ShellList&     m_shellList;
          QList<Vector const*> m_densities;
-         Vector               m_returnValues;
          GridEvaluator*       m_evaluator;
 
-         unsigned*            m_sigBasis;
+         Vector               m_returnValues;
          Vector               m_basisValues;
+         unsigned*            m_sigBasis;
    };
 
 } // end namespace IQmol

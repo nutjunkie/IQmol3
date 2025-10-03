@@ -42,14 +42,25 @@ BasisEvaluator::BasisEvaluator(
 {
    m_basisValues.resize({(size_t)m_indices.size()});
 
-   m_function = std::bind(&BasisEvaluator::functionValues, this, 
-      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+   using namespace std::placeholders;
+   m_function = std::bind(&BasisEvaluator::functionValues, this, _1, _2, _3);
 
    double thresh(0.001);
    m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
 
    m_totalProgress = m_evaluator->totalProgress();
+
+   // Minimal list of required shells
+   QList<unsigned> map(m_shellList.basisToShellMap());
+   QSet<unsigned> set;
+   for (auto idx : m_indices) {
+       set.insert(map[idx]);
+   }
+   m_shellIndices = set.values();
+   std::sort(m_shellIndices.begin(), m_shellIndices.end());
+
+   m_shellOffsets = m_shellList.shellOffsets();
 }
 
 
@@ -61,33 +72,23 @@ BasisEvaluator::~BasisEvaluator()
 
 Vector const& BasisEvaluator::functionValues(double const x, double const y, double const z)
 {
-// TODO make this more efficient by avoiding evaluation of all of the basis functions
-   unsigned nfun(m_indices.size());
-   unsigned offset(0);
-   unsigned nbfs;
    double const* vals;
-
-   Vector f({m_shellList.nBasis()});
-
-   f.zero();
    m_basisValues.zero();
-  
-   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
-       nbfs = (*shell)->nBasis();
-       vals = (*shell)->evaluate(x, y, z);
 
-       if (vals) {
-          for (unsigned s = 0; s < (*shell)->nBasis(); ++s) {
-              f(offset+s) = vals[s];
+   for (auto idx : m_shellIndices) {
+       vals = m_shellList[idx]->evaluate(x,y,z);
+
+       if (vals) { // check if significant on this point
+          unsigned bmin(m_shellOffsets[idx]);
+          unsigned bmax = bmin +  m_shellList[idx]->nBasis();
+          for (size_t i = 0; i < m_indices.size(); ++i) {
+              if (bmin <= m_indices[i] && m_indices[i] < bmax) {
+                 m_basisValues(i) = vals[m_indices[i]-bmin];
+              }
           }
        }
-       offset += nbfs; 
    }
-
-   for (unsigned i = 0; i < nfun; ++i) {
-       m_basisValues(i) = f(m_indices[i]);
-   }
-  
+ 
    return m_basisValues;
 }
 

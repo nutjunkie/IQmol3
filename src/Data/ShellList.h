@@ -46,14 +46,13 @@ namespace Data {
       unsigned        nBasis;   // recomputed once the ShellList has been formed
    };
 
+
    class ShellList : public List<Shell> {
 
       public:
          ShellList() { }
 
          ShellList(ShellData const& shellData, Geometry const& geometry);
-
-         ~ShellList();
 
          Type::ID typeID() const { return Type::ShellList; }
 
@@ -75,13 +74,10 @@ namespace Data {
             }
          }
 
-         /// Allocates the memory for evaluating the shells/shell pairs on a grid
-         /// point.  This should be called after the last Shell has been appended
-         /// to the list and before shellValues is called.
-         void resize();
-
-         // Basis offset for each atom
-         QList<unsigned> basisAtomOffsets() const;
+         
+         QList<unsigned> basisAtomOffsets() const;  // Basis offset for each atom
+         QList<unsigned> basisToShellMap() const;
+         QList<unsigned> shellOffsets() const;      // Basis offset for each shell
 
          // Kludge to account for the ordering Q-Chem prints the shell functions,
          // for Dyson orbitals printed to the output file.
@@ -89,49 +85,9 @@ namespace Data {
 
          void dump() const;
 
-// TODO: Deprecate
-#if 0
-
-         // This is a modified version of the function below which avoids the internal 
-         // buffer for the values.  Should be thread safe.
-         void shellValues(Vector& values, double const x, double const y, double const z);
-
-Vector const& shellValues(double const x, double const y, double const z);
-
-// Initializes the list of orbitals to be evaluated a grid points
-// with subsequent orbitalValues calls.
-void setOrbitalVectors(Matrix const& coefficients, QList<int> const& indices);
-
-// Returns a list of the orbitals evaulated at the given grid point
-Vector const& orbitalValues(double const x, double const y, double const z);
-#endif
-
-// Initializes the list of densities to be evaluated a grid points
-// with subsequent densityValues calls.
-void setDensityVectors(QList<Vector const*> const& densities);
-
-// Returns a list of the densities evaulated at the given grid point
-// Density vectors are upper triangular
-Vector const& densityValues(double const x, double const y, double const z);
-
       private:
-         unsigned m_nBasis;
-         Vector   m_overlapMatrix;   // upper triangular
-
-         // These arrays are workspace buffers for gridpoint evaluations;
-         unsigned* m_sigBasis;
-         Vector    m_basisValues;
-         Vector    m_densityValues;
-         Vector    m_orbitalValues;
-
-         Matrix const*        m_orbitalCoefficients;
-         QList<int>           m_orbitalIndices;
-         QList<Vector const*> m_densityVectors;
-
-         Vector    m_basisPairValues;  // Deprecate
-
-         // Shell offset for each atom
-         QList<unsigned> shellAtomOffsets() const;
+         Vector m_overlapMatrix;   // upper triangular
+         QList<unsigned> shellAtomOffsets() const; // Shell offset for each atom
    };
 
 } } // end namespace IQmol::Data

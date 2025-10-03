@@ -58,13 +58,16 @@ namespace IQmol {
 		 // Fills the m_returnValues vector with the value of each requested
 		 // orbital at the given point.
          Vector const& functionValues(double const x, double const y, double const z);
-         
+
          MultiFunction3D    m_function;
          Data::GridDataList m_grids;
          Data::ShellList&   m_shellList;
          QList<int>         m_indices;
-         Vector             m_basisValues;
          GridEvaluator*     m_evaluator;
+
+         Vector             m_basisValues;
+         QList<unsigned>    m_shellIndices;
+         QList<unsigned>    m_shellOffsets;
    };
 
 } // end namespace IQmol

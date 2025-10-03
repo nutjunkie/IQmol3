@@ -62,8 +62,9 @@ namespace IQmol {
          Data::ShellList const&  m_shellList;
          Matrix const&           m_coefficients;
          QList<int>              m_indices;
-         Vector                  m_orbitalValues;
          GridEvaluator*          m_evaluator;
+
+         Vector                  m_orbitalValues;
    };
 
 } // end namespace IQmol
