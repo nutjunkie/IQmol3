@@ -96,6 +96,7 @@ QString toString(ID const id)
       case NaturalTransitionOrbitals:  s = "Data::NaturalTransitionOrbitals"; break;
       case NaturalBondOrbitals:        s = "Data::NaturalBondlOrbitals";      break;
       case DysonOrbitals:              s = "Data::DysonOrbitals";             break;
+      case ComplexOrbitals:            s = "Data::ComplexOrbitals";           break;
 
       case Density:                    s = "Data::Density";                   break;
       case DensityList:                s = "Data::DensityList";               break;

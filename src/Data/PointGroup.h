@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_POINTGROUP_H
-#define IQMOL_DATA_POINTGROUP_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,8 +29,6 @@ namespace Data {
 
    class PointGroup : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          enum Group { undef = 0,
             C1, C2,  C3,  C4,  C5,  C6,  C7,  C8, 
@@ -58,15 +55,6 @@ namespace Data {
          void setPointGroup(Group const group) { m_group = group; }
          void setPointGroup(QString const& pg);
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_group;
-         }
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            Q_UNUSED(version);
-            ar & m_group;
-         }
-
          void dump() const;
 
       private:
@@ -74,5 +62,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

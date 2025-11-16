@@ -22,7 +22,7 @@
 ********************************************************************************/
 
 #include "Data.h"
-#include "Math/Vec.h"
+#include "Math/Vector.h"
 
 
 namespace IQmol {
@@ -39,7 +39,7 @@ namespace Data {
             int idx;
             char type[5];
             char element[3];
-            Math::Vec3 coor;
+            Vec3 coor;
             double tfactor, occupancy;
             Atom *next, *prev;
             Residue *res;
@@ -71,8 +71,6 @@ namespace Data {
 
          typedef std::vector<Chain> ChainList;
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::Pdb; }
 
@@ -89,7 +87,7 @@ namespace Data {
 
          void dump() const;
 
-         void addResidue(Math::Vec3 const& posO, Math::Vec3 const& posCA, 
+         void addResidue(Vec3 const& posO, Vec3 const& posCA, 
             char const secondaryStructure);
 
          void addChain(int const size);
@@ -103,9 +101,6 @@ namespace Data {
          static Atom const* getAtom (Residue const& resA, char const* atomType);
 
          void fillSecondaryStructure(std::vector<SecondaryStructure> secStructs);
-
-         void serialize(InputArchive& ar, unsigned int const /*version*/) { }
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) { }
 
          void write(const char *filename) const;
          void writeFile(FILE *F) const;

@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_SERIALIZATION_H
-#define IQMOL_DATA_SERIALIZATION_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -343,5 +342,3 @@ inline void serialize( Archive& ar, qglviewer::Quaternion& q, const unsigned fil
 } } // end namespace boost::serialization
 
 BOOST_SERIALIZATION_COLLECTION_TRAITS(QList)
-
-#endif 

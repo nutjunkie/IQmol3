@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_EFPFRAGMENTLIBRARY_H
-#define IQMOL_DATA_EFPFRAGMENTLIBRARY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -58,14 +57,6 @@ namespace Data {
          // Returns true if the fragment is currently in the library.
          bool isLoaded(QString const& fragmentName) const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
@@ -77,17 +68,9 @@ namespace Data {
 		 // stored, so an empty parameter string indicates a library fragment
          static QMap<QString, QString> s_parameters;
 
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & s_geometries;
-            ar & s_parameters;
-         }
-
          EfpFragmentLibrary() { }
          explicit EfpFragmentLibrary(EfpFragmentLibrary const&) : Base() { }
          ~EfpFragmentLibrary() { }
    };
 
 } } // end namespace IQmol::Data
-
-#endif

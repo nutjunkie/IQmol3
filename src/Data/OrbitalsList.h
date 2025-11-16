@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ORBITALSLIST_H
-#define IQMOL_DATA_ORBITALSLIST_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -40,18 +39,6 @@ namespace Data {
          void setDefaultIndex(int index);
          unsigned defaultIndex() const { return m_defaultIndex; }
 
-         virtual void serialize(InputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-            ar & m_defaultIndex;
-         }
-
-         virtual void serialize(OutputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-            ar & m_defaultIndex;
-         }
-
          void dump() const;
 
       private:
@@ -59,5 +46,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

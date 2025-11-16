@@ -21,18 +21,41 @@
 
 ********************************************************************************/
 
-#include "Matrix.h"
+#include "Vector.h"
 #include <functional>
 
 
 namespace IQmol {
 
-typedef std::function<double (double const, double const, double const)> Function3D;
-
-typedef std::function<Vector const& (double const, double const, double const)> MultiFunction3D;
+using Function3D = std::function<double (double const, double const, double const)>;
+using MultiFunction3D = std::function<Vector const& (double const, double const, double const)>;
+using IndexMap = std::function<int (int const)>;
 
 static Function3D NullFunction3D;
 
-typedef std::function<int (int const)> IndexMap;
+
+// Adaptor to convert a Funtion3D into a MultiFunction3D
+inline MultiFunction3D MultiFunctionAdaptor(Function3D f)
+{
+    struct Holder {
+        Function3D f;
+        mutable Vector buf; 
+
+        explicit Holder(Function3D g) : f(std::move(g)) {
+            buf.resize({1});
+        }
+
+        // const: safe to call through a const lambda capture
+        Vector const& eval(double x, double y, double z) const {
+            buf[0] = f(x,y,z);
+            return buf;
+        }
+    };
+
+    // Capture the holder by value so the buffer lives with the callable
+    return [h = Holder{std::move(f)}](double x, double y, double z) -> Vector const& {
+        return h.eval(x,y,z);
+    };
+}
 
 } // end namespace IQmol

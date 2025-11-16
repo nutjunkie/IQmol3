@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_SURFACEINFO_H
-#define IQMOL_DATA_SURFACEINFO_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -22,6 +21,7 @@
 
 ********************************************************************************/
 
+#include <QColor>
 #include "DataList.h"
 #include "SurfaceType.h"
 
@@ -30,8 +30,6 @@ namespace IQmol {
 namespace Data {
 
    class SurfaceInfo : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::SurfaceInfo; }
@@ -67,33 +65,9 @@ namespace Data {
          QColor const& positiveColor() const { return m_positiveColor; }
          QColor const& negativeColor() const { return m_negativeColor; }
 
-         void serialize(InputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const)
-         {
-            ar & m_surfaceType;
-            ar & m_quality;
-            ar & m_isovalue;
-            ar & m_positiveColor;
-            ar & m_negativeColor;
-            ar & m_isSigned;
-            ar & m_simplifyMesh;
-            ar & m_opacity;
-            ar & m_isovalueIsPercent;
-         }
-
          SurfaceType m_surfaceType;
          unsigned    m_quality;
          double      m_isovalue;
@@ -111,5 +85,3 @@ namespace Data {
    }; 
 
 } } // end namespace IQmol::Data
-
-#endif

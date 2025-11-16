@@ -1,10 +1,10 @@
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -14,7 +14,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -38,19 +38,95 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
 {
    if (grids.isEmpty()) return;
 
-   m_shellList.setDensityVectors(densities);
-   m_returnValues.resize(m_densities.size());
-   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, 
-     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-     
+   m_returnValues.resize({(size_t)m_densities.size()});
+
+//   m_shellList.setDensityVectors(densities);
+   using namespace std::placeholders;
+//   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, _1, _2, _3);
+   m_function = std::bind(&DensityEvaluator::densityValues, this, _1, _2, _3);
 
    double thresh(0.001);
-   m_evaluator = new MultiGridEvaluator(m_grids, m_function, thresh);
+   m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
+   
+   size_t nBasis(m_shellList.nBasis());
+   m_sigBasis = new unsigned[nBasis];
+   m_basisValues.resize({nBasis});
 
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
    connect(m_evaluator, SIGNAL(finished()), this, SLOT(evaluatorFinished()));
 
    m_totalProgress = m_evaluator->totalProgress();
+}
+
+
+DensityEvaluator::~DensityEvaluator()
+{
+   if (m_sigBasis)  delete [] m_sigBasis;
+   if (m_evaluator) delete m_evaluator;
+}
+
+
+Vector const& DensityEvaluator::densityValues(double const x, double const y, double const z)
+{
+   unsigned nden(m_densities.size());
+   unsigned offset(0);
+   unsigned nSigBas(0);
+   unsigned nbfs;
+   double const* vals;
+
+   m_returnValues.zero();
+
+   // Determine the significant shells, and corresponding basis function indices
+   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
+       vals = (*shell)->evaluate(x,y,z);
+       nbfs = (*shell)->nBasis(); 
+      
+#if 1
+       if (vals) { // only add the significant shells
+          for (unsigned i = 0; i < nbfs; ++i, ++nSigBas, ++offset) {
+              m_basisValues(nSigBas) = vals[i];
+              m_sigBasis[nSigBas]    = offset;
+          }
+       }else {
+          offset += nbfs;
+       }
+#else
+       // This code does not give equivalent results, not sure why
+       if (vals) { // only add the significant shells
+          for (unsigned i = 0; i < nbfs; ++i, ++nSigBas) {
+              m_basisValues(nSigBas) = vals[i];
+              m_sigBasis[nSigBas]    = offset + i;
+          }
+       }
+       offset += nbfs;
+#endif
+   }
+  
+   double   xi, xij;
+   unsigned ii, jj, Ti;
+  
+  
+   // Now compute the basis function pair values on the grid
+   for (unsigned i = 0; i < nSigBas; ++i) {
+       xi = m_basisValues(i);
+       ii = m_sigBasis[i];
+       Ti = (ii*(ii+1))/2;
+
+       for (unsigned j = 0; j < i; ++j) {
+           xij = 2.0*xi*m_basisValues(j);
+           jj  = m_sigBasis[j];
+  
+           for (unsigned k = 0; k < nden; ++k) {
+               m_returnValues(k) += 2.0*xij*(*m_densities[k])(Ti+jj);
+            }
+       }
+       
+       for (unsigned k = 0; k < nden; ++k) {
+           m_returnValues(k) += xi*xi*(*m_densities[k])(Ti+ii);
+       }
+   }
+
+   return m_returnValues;
 }
 
 

@@ -34,7 +34,7 @@ void Pdb::addChain(int const size)
 }
 
 
-void Pdb::addResidue(Math::Vec3 const& posCA, Math::Vec3 const& posO, 
+void Pdb::addResidue(Vec3 const& posCA, Vec3 const& posO, 
    char const secondaryStructure)
 {
    m_caoPositions.push_back(posCA[0]);

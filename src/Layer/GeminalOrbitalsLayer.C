@@ -71,8 +71,8 @@ GeminalOrbitals::GeminalOrbitals(Data::GeminalOrbitals& molecularOrbitals)
    setConfigurator(&m_configurator);
 
    unsigned N(nBasis());
-   m_shellValues.resize(N);
-   m_shellPairValues.resize(N*(N+1)/2);
+   m_shellValues.resize({N});
+   m_shellPairValues.resize({N*(N+1)/2});
  
    m_geminalOrbitals.boundingBox(m_bbMin, m_bbMax);
    appendSurfaces(m_geminalOrbitals.surfaceList());
@@ -561,7 +561,6 @@ bool GeminalOrbitals::computeOrbitalGrids(Data::GridDataList& grids)
 void GeminalOrbitals::computeDensityVectors()
 {
    if (!m_densityVectors.isEmpty()) return;
-   using namespace boost::numeric::ublas;
 
    Matrix const& alphaCoefficients(m_geminalOrbitals.alphaCoefficients());
    Matrix const& betaCoefficients(m_geminalOrbitals.betaCoefficients());
@@ -600,7 +599,7 @@ void GeminalOrbitals::computeDensityVectors()
 
    for (n = 0; n < nGeminals; ++n) {
      
-       Vector density(N*(N+1)/2); 
+       Vector density({N*(N+1)/2}); 
        
        for (i = 0; i < NV; i++) { density(i) = 0.; }
 
@@ -627,12 +626,12 @@ void GeminalOrbitals::computeDensityVectors()
        //for(i=0;i<N;i++){for(j=0;j<i+1;j++){std::cout<<i<<","<<j<<" "<<density(i*(i+1)/2+ j)<<"\n";}}
 
        // copying from normal triangular to scanned-rows ordering, storing in list of densities
-       Vector* vector(new Vector(N*(N+1)/2));
+       Vector* vector(new Vector({N*(N+1)/2}));
        m_densityVectors.append(vector);
 
      for (i = 0, n1 = 0; i < N; ++i) {
          for (j = i; j < N; ++j, ++n1) {
-           (*vector)[n1] = density(j*(j+1)/2+i);
+           (*vector)(n1) = density(j*(j+1)/2+i);
          }
       }
    }
@@ -736,10 +735,8 @@ bool GeminalOrbitals::computeDensityGrids(Data::GridDataList& grids)
 
                for (unsigned den = 0; den < nDensities; ++den) {
                    (*grids.at(den))(i, j, k) = sqrt(fabs(
-                       inner_prod(*densityVectorPointers[den], m_shellPairValues)       //;
-						    ));
+                       dot(*densityVectorPointers[den], m_shellPairValues) ));
                }
-
            }
        }
 
@@ -765,11 +762,11 @@ void GeminalOrbitals::computeShellPairs(double const x, double const y, double c
    for (shell = shells.begin(); shell != shells.end(); ++shell) {
        if ( (values = (*shell)->evaluate(x,y,z)) ) {
           for (unsigned j = 0; j < (*shell)->nBasis(); ++j, ++k) {
-              m_shellValues[k] = values[j];
+              m_shellValues(k) = values[j];
           }
        }else {
           for (unsigned j = 0; j < (*shell)->nBasis(); ++j, ++k) {
-              m_shellValues[k] = 0.0;
+              m_shellValues(k) = 0.0;
           }
        }
    }
@@ -778,12 +775,12 @@ void GeminalOrbitals::computeShellPairs(double const x, double const y, double c
    double xi, xj;
    unsigned N(nBasis());
    for (unsigned i = 0; i < N; ++i) {
-       xi = m_shellValues[i];
-       m_shellPairValues[k] = xi*xi;
+       xi = m_shellValues(i);
+       m_shellPairValues(k) = xi*xi;
        ++k;
        for (unsigned j = i+1; j < N; ++j, ++k) {
-           xj = m_shellValues[j];
-           m_shellPairValues[k] = xi*xj;
+           xj = m_shellValues(j);
+           m_shellPairValues(k) = xi*xj;
        }
    }
 }

@@ -21,7 +21,6 @@
 ********************************************************************************/
 
 #include "Data/Density.h"
-#include "Math/Matrix.h"
 #include "Util/QsLog.h"
 #include <QDebug>
 
@@ -43,16 +42,16 @@ Density::Density(SurfaceType const& surfaceType, QList<double> const& elements,
          return;
       }
 
-      m_elements.resize((m_nBasis*(m_nBasis+1))/2);
+      m_elements.resize({(m_nBasis*(m_nBasis+1))/2});
       qDebug() << "m_nBasis set to      " << m_nBasis;
       qDebug() << "Resizing elements to " << m_elements.size();
 
       size_t k(0);
       for (size_t i(0); i < m_nBasis; ++i) {
-          m_elements[k] = elements[i*m_nBasis+i];
+          m_elements(k) = elements[i*m_nBasis+i];
           ++k;
           for (size_t j(i+1); j < m_nBasis; ++j, ++k) {
-              m_elements[k] = elements[i*m_nBasis+j];
+              m_elements(k) = elements[i*m_nBasis+j];
           }
       }
 
@@ -63,9 +62,9 @@ Density::Density(SurfaceType const& surfaceType, QList<double> const& elements,
          return;
       }
    
-      m_elements.resize(nElements);
+      m_elements.resize({nElements});
       for (unsigned i = 0; i < nElements; ++i) {
-          m_elements[i] = elements[i];
+          m_elements(i) = elements[i];
       }
    }
 }
@@ -74,18 +73,21 @@ Density::Density(SurfaceType const& surfaceType, QList<double> const& elements,
 Density::Density(SurfaceType const& surfaceType, Matrix const& matrix, 
    QString const& label) : m_surfaceType(surfaceType), m_label(label)
 {
+   size_t nrows = matrix.shape()[0];
+   size_t ncols = matrix.shape()[1];
+
    m_nBasis = 0;
-   if (matrix.size1() != matrix.size2()) {
+   if (nrows != ncols) {
       QLOG_ERROR() << "Non-square matrix passed to Density constructor";
    }
 
-   m_nBasis = matrix.size1();
-   m_elements.resize(m_nBasis*(m_nBasis+1)/2);
+   m_nBasis = nrows;
+   m_elements.resize({m_nBasis*(m_nBasis+1)/2});
 
    unsigned k(0);
    for (unsigned i = 0; i < m_nBasis; ++i) {
        for (unsigned j = 0; j <= i; ++j, ++k) {
-           m_elements[k] = matrix(i,j);
+           m_elements(k) = matrix(i,j);
        }
    }
 }

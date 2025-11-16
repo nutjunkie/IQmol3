@@ -14,6 +14,7 @@ set( SOURCES
    Bank.C
    CanonicalOrbitals.C
    ChargeMultiplicity.C
+   ComplexOrbitals.C
    Constraint.C
    Data.C
    DataFactory.C
@@ -60,23 +61,28 @@ set( SOURCES
 qt5_wrap_cpp( SOURCES ${HEADERS} )
 
 add_library(${LIB} STATIC ${SOURCES})
-target_include_directories(${LIB} PUBLIC
-   "${${LIB}_SOURCE_DIR}"
+
+target_include_directories(
+   ${LIB} PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
-target_include_directories(${LIB} PRIVATE
-   # This is only because the OpenMeshCore target doesn't properly set the
-   # interface headers
-   "${OPENMESH_INCLUDE_DIR}"
-   "${OpenBabel3_INCLUDE_DIRS}"
-)
+
+#target_include_directories(${LIB} PRIVATE
+#   # This is only because the OpenMeshCore target doesn't properly set the
+#   # interface headers
+#   "${OPENMESH_INCLUDE_DIR}"
+#   "${OpenBabel3_INCLUDE_DIRS}"
+#)
+
 target_link_libraries(${LIB} PRIVATE
-#   Math
+   Math
 #   ${OpenBabel3_LIBRARIES}
 #   ${OPENMESH_LIBRARIES}
-   Qt5::Gui
    Qt5::Core
+#  These are required for qgliviewer::Vec, go figure
    Qt5::Xml
    Qt5::OpenGL  # required for Vec, go figure
+   Qt5::Gui
 #   yaml-cpp
 #   Util
 #   ${Boost_LIBRARIES}

@@ -1,5 +1,4 @@
-#ifndef IQMOL_LAYER_ORBITALS_H
-#define IQMOL_LAYER_ORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -38,6 +37,10 @@ namespace IQmol {
 
 class MolecularGridEvaluator;
 
+namespace Property {
+   class Base;
+}
+
 namespace Data {
    class GridData;
    class GridSize;
@@ -65,6 +68,7 @@ namespace Layer {
       Q_SIGNALS:
          void progress(double);
          void softUpdate();
+         void propertyAvailable(Property::Base*);
 
       protected Q_SLOTS:
          void addToQueue(Data::SurfaceInfo const&);
@@ -125,4 +129,3 @@ namespace Layer {
    };
 
 } } // End namespace IQmol::Layer 
-#endif

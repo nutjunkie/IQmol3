@@ -28,7 +28,7 @@
 #include "XyzParser.h"
 #include "CubeParser.h"
 #include "GdmaParser.h"
-#include "IQmolParser.h"
+//#include "IQmolParser.h"
 #include "MeshParser.h"
 #include "PovRayParser.h"
 #include "QChemInputParser.h"
@@ -224,9 +224,9 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
       parser = new QChemOutput;
    }
 
-   if (extension == "iqmol" || extension == "iqm") {
-      parser = new IQmol;
-   }
+//   if (extension == "iqmol" || extension == "iqm") {
+//      parser = new IQmol;
+//   }
 
    if (extension == "cube" || extension == "cub") {
       parser = new Cube;

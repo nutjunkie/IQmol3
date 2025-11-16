@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_MULTIPOLEEXPANSION_H
-#define IQMOL_DATA_MULTIPOLEEXPANSION_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,6 +22,7 @@
 ********************************************************************************/
 
 #include "DataList.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
@@ -31,8 +31,6 @@ namespace Data {
    /// Data structure representing a set of mulitpoles at a location.
    /// Currently the multipoles are Buckingham traceless form.
    class MultipoleExpansion : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::MultipoleExpansion; }
@@ -73,23 +71,7 @@ namespace Data {
             return MultipoleExpansion(*this) += that;
          }
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned int const) {
-            ar & m_order;
-            ar & m_position;
-            ar & m_multipoles;
-         }
-
          void expandMultipoleVector(int const);
 
          int m_order;
@@ -104,5 +86,3 @@ namespace Data {
    }; 
 
 } } // end namespace IQmol::Data
-
-#endif

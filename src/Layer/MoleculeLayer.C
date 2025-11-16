@@ -371,7 +371,7 @@ bool Molecule::save(bool prompt)
                  << tr("PDB") + " (*.pdb)"
                  << tr("Sybyl Mol2") + " (*.mol2)"
                  << tr("SMILES") + " (*.smi)"
-                 << tr("IQmol Archive") + " (*.iqmol)";
+                 /*<< tr("IQmol Archive") + " (*.iqmol)"*/;
 
       QString fileName(FileDialog::getSaveFileName(0, tr("Save File"), 
          tmp.filePath(), extensions.join(";;"), &filter));
@@ -400,9 +400,9 @@ bool Molecule::save(bool prompt)
 saveToCurrentGeometry();
 
       if (m_inputFile.suffix().endsWith("iqmol", Qt::CaseInsensitive)) {
+/* tmp disable IQmol archive until implementation is fixed
          Parser::IQmol iqmol;
 
-/*
          if (!m_currentGeometry) {
             m_currentGeometry = new Data::Geometry();
             m_bank.prepend(m_currentGeometry);
@@ -412,9 +412,10 @@ saveToCurrentGeometry();
                 m_currentGeometry->append(Z, atoms[i]->getPosition());
             }
          }
-*/
 
          iqmol.save(m_inputFile.filePath(), m_bank);
+
+*/
       }else {
          writeToFile(m_inputFile.filePath());
       }
@@ -1783,20 +1784,22 @@ void Molecule::saveToGeometry(Data::Geometry& geometry)
 
 bool Molecule::hasMullikenDecompositions() const
 {
-  return m_mullikenDecompositions.size1() != 0;
+  return m_mullikenDecompositions.size() != 0;
 }
 
 void Molecule::setMullikenDecompositions(Matrix const& M) 
 {
   m_mullikenDecompositions = M;
-  qDebug() << PrintMatrix(M);
+  std::stringstream ss;
+  ss << M;
+  qDebug() << ss.str().c_str();
 }
 
 double Molecule::mullikenDecomposition(int const a, int const b) const
 {
    double md(0.0);
-   if ((int)m_mullikenDecompositions.size1() >= a &&
-       (int)m_mullikenDecompositions.size2() >= b) {
+   if ((int)m_mullikenDecompositions.shape()[0] >= a &&
+       (int)m_mullikenDecompositions.shape()[1] >= b) {
        md = m_mullikenDecompositions(a-1,b-1);
    }
    return md;
@@ -2821,7 +2824,6 @@ void Molecule::initProperties()
       chargeTypes->addAction(action);
       connect(action, SIGNAL(triggered()), this, SLOT(updateAtomicCharges()));
       m_properties.append( new Property::PointChargePotential(type, this) );
-         
    }
 
    // Merz Kollman RESP

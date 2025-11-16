@@ -25,16 +25,16 @@
  *  \date   August 2008
  */
 
-#include "boost/bind/bind.hpp"
-#include "boost/function.hpp"
-#include "boost/tuple/tuple.hpp"
+
+#include <tuple>
+#include <functional>
 
 
 namespace Qui {
 
-typedef boost::function<bool()> Condition;
-typedef boost::function<void()> Action;
-typedef boost::tuple<Condition, Action, Action> Rule;
+typedef std::function<bool()> Condition;
+typedef std::function<void()> Action;
+typedef std::tuple<Condition, Action, Action> Rule;
 
 
 inline void DoNothing() { }
@@ -44,7 +44,7 @@ inline void DoNothing() { }
 inline Rule If(Condition const& condition, Action const& trueAction, 
    Action const& falseAction = DoNothing) 
 {
-   return boost::make_tuple(condition, trueAction, falseAction);
+   return std::make_tuple(condition, trueAction, falseAction);
 }
 
 
@@ -81,22 +81,22 @@ inline void Plus(Action const& act1, Action const& act2)
 //! manner.  Note that they return new Conditions and not boolean values.
 inline Condition const operator!(Condition const& cond) 
 {
-   return boost::bind(&Not, cond);
+   return std::bind(&Not, cond);
 } 
 
 inline Condition const operator||(Condition const& cond1, Condition const& cond2) 
 {
-   return boost::bind(&Or, cond1, cond2);
+   return std::bind(&Or, cond1, cond2);
 } 
 
 inline Condition const operator&&(Condition const& cond1, Condition const& cond2) 
 {
-   return boost::bind(&And, cond1, cond2);
+   return std::bind(&And, cond1, cond2);
 }
 
 inline Action const operator+(Action const& act1, Action const& act2) 
 {
-   return boost::bind(&Plus, act1, act2);
+   return std::bind(&Plus, act1, act2);
 }
 
 

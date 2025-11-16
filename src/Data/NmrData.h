@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_NMR_H
-#define IQMOL_DATA_NMR_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -31,8 +30,6 @@ namespace IQmol {
 namespace Data {
 
    class Nmr: public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::Nmr; }
@@ -92,26 +89,6 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_atomLabels;
-            ar & m_shieldings;
-            ar & m_reference;
-            ar & m_couplings;
-            ar & m_shifts;
-            ar & m_method;
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const /*version*/) 
-         {
-            ar & m_atomLabels;
-            ar & m_shieldings;
-            ar & m_reference;
-            ar & m_couplings;
-            ar & m_shifts;
-            ar & m_method;
-         }
-
       private:
          QList<QString> m_atomLabels;
          QList<double>  m_shieldings;
@@ -122,5 +99,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

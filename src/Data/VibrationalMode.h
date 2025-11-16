@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_VIBRATIONALMODE_H
-#define IQMOL_DATA_VIBRATIONALMODE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -23,6 +22,7 @@
 ********************************************************************************/
 
 #include "DataList.h"
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
@@ -30,8 +30,6 @@ namespace Data {
 
    /// Data class representing molecule with a particular geometry.  
    class VibrationalMode : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          VibrationalMode(double const frequency = 0.0, double const intensity = 0.0,
@@ -62,25 +60,7 @@ namespace Data {
 
          void dump() const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_frequency;
-            ar & m_intensity;
-            ar & m_irActive;
-            ar & m_ramanActive;
-            ar & m_ramanIntensity;
-            ar & m_eigenvector;
-         }
-
          double m_frequency;
          double m_intensity;
          bool   m_irActive;
@@ -95,5 +75,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

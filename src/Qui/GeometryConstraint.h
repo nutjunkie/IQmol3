@@ -12,10 +12,10 @@
  */
 
 #include "ui_GeometryConstraintDialog.h"
-#include "boost/tuple/tuple.hpp"
 #include <vector>
 #include <set>
 #include <QList>
+#include <tuple>
 
 
 class QString;
@@ -39,7 +39,7 @@ class Constraint;
 
 typedef std::vector<Constraint*> List;
 // TableRow - [ Type, atom1, atom2, atom3, atom4, value ]
-typedef boost::tuple<Type::ID, int, int, int, int, QVariant> TableRow;
+typedef std::tuple<Type::ID, int, int, int, int, QVariant> TableRow;
 
 
 //! \class Dialog is used to display and edit a list of constraints.

@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_SURFACETYPE_H
-#define IQMOL_DATA_SURFACETYPE_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,14 +29,15 @@ namespace Data {
 
    class SurfaceType : public Base {
 
-      friend class boost::serialization::access;
-
       public:
-         enum Kind { Custom = -1, AlphaOrbital, BetaOrbital, TotalDensity, 
-            SpinDensity, AlphaDensity, BetaDensity, DensityCombo, CubeData, 
-            VanDerWaals, Promolecule, SolventExcluded, SID, ElectrostaticPotential,
-            Geminal, Correlation, CustomDensity, BasisFunction, DysonLeft, DysonRight,
-            MullikenAtomic, MullikenDiatomic, GenericOrbital, Ribbon
+         enum Kind { Custom = -1, 
+            AlphaOrbital, BetaOrbital, TotalDensity, SpinDensity,         //  3
+            AlphaDensity, BetaDensity, DensityCombo, CubeData,            //  7
+            VanDerWaals, Promolecule, SolventExcluded, SID,               // 11
+            ElectrostaticPotential, Geminal, Correlation, CustomDensity,  // 15
+            BasisFunction, DysonLeft, DysonRight, MullikenAtomic,         // 19
+            MullikenDiatomic, GenericOrbital, Ribbon, AlphaRealOrbital,   // 23
+            AlphaImaginaryOrbital, BetaRealOrbital, BetaImaginaryOrbital   // 26
 
 // TODO
 //            AlphaHole Density, BetaHole Density,
@@ -89,18 +89,6 @@ namespace Data {
                                            : (m_kind  < that.m_kind); 
          }
 
-         void serialize(InputArchive& ar, unsigned const /* version  */)
-         {
-            ar & m_kind;
-            ar & m_index;
-         }
-
-         void serialize(OutputArchive& ar, unsigned const /* version */)
-         {
-            ar & m_kind;
-            ar & m_index;
-         }
-
          void dump() const;
 
       private:
@@ -110,5 +98,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_FREQUENCIES_H
-#define IQMOL_DATA_FREQUENCIES_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,8 +29,6 @@ namespace Data {
 
    class Frequencies : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::Frequencies; }
 
@@ -57,26 +54,7 @@ namespace Data {
 
          VibrationalMode const& mode(unsigned i) const { return *m_modes[i]; }
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_zpve;
-            ar & m_entropy;
-            ar & m_enthalpy;
-            ar & m_temperature;
-            ar & m_pressure;
-            ar & m_haveRaman;
-            ar & m_modes;
-         }
-
          double m_zpve;
          double m_entropy;
          double m_enthalpy;
@@ -87,5 +65,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

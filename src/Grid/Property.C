@@ -22,6 +22,7 @@
 
 #include "Property.h"
 #include "Data/GridData.h"
+#include "Data/ShellList.h"
 #include "Data/AtomicDensity.h"
 #include "Data/MultipoleExpansion.h"
 #include "Util/Constants.h"
@@ -302,6 +303,42 @@ namespace IQmol {
          return esp;
       }
 
-   } // end namespace Property
 
-} // end namespace IQmol
+      // - - - - - - - - - - ComplexePhase - - - - - - - - - -
+      ComplexPhase::ComplexPhase(
+         QString const& type, 
+         Data::ShellList const& shells,
+         Vector const& realCoefficients, 
+         Vector const& imagCoefficients)
+          : Spatial(type), 
+            m_realCoefficients(realCoefficients), 
+            m_imagCoefficients(imagCoefficients), 
+            m_shellList(shells)
+      {
+         using namespace std::placeholders;
+         m_function = std::bind(&ComplexPhase::eval, this, _1, _2, _3);
+      }
+
+      double ComplexPhase::eval(double const x, double const y, double const z) const
+      {
+         unsigned offset(0);
+         unsigned nbfs(0);
+         double const* vals;
+         double re(0), im(0);
+
+         for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
+             nbfs = (*shell)->nBasis();
+             vals = (*shell)->evaluate(x,y,z);
+             if (vals) { // only add the significant shells
+                for (unsigned i = 0; i < nbfs; ++i) {
+                    re += m_realCoefficients(offset+i) * vals[i];
+                    im += m_imagCoefficients(offset+i) * vals[i];
+                }
+             } 
+             offset += nbfs;
+         }
+     
+         return std::atan2(im,re);
+      }
+
+} } // end namespace IQmol::Property

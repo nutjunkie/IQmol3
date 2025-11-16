@@ -95,9 +95,11 @@ Dialog::Dialog(Gradient const gradient, bool blend, QWidget* parent)
 
 List Dialog::colors() const
 {
+#if 0
    for (auto& color : m_colors) {
        qDebug() << "Returning color" << color << color.name(QColor::HexArgb);
    }
+#endif
    return m_colors; 
 }
 
@@ -141,8 +143,15 @@ void Dialog::init()
       index = toInt(Gradient::Default);
    }else if (m_colors == toList(Gradient::Spectrum)) {
       index = toInt(Gradient::Spectrum);
+
    }else if (m_colors == toList(Gradient::PrimarySpectrum)) {
       index = toInt(Gradient::PrimarySpectrum);
+
+   }else if (m_colors == toList(Gradient::ReflectedDefault)) {
+      index = toInt(Gradient::ReflectedDefault);
+
+   }else if (m_colors == toList(Gradient::ReflectedSpectrum)) {
+      index = toInt(Gradient::ReflectedSpectrum);
    }
 
    QComboBox* combo(m_dialog.gradientCombo);
@@ -152,6 +161,9 @@ void Dialog::init()
    combo->addItem("Default");
    combo->addItem("Spectrum");
    combo->addItem("Primary Spectrum");
+   combo->addItem("Reflected Default");
+   combo->addItem("Reflected Spectrum");
+
    m_dialog.gradientCombo->setCurrentIndex(index);
    m_dialog.gradientCombo->blockSignals(false);
 }
@@ -236,12 +248,12 @@ void Dialog::clearStops()
 
 void Dialog::on_gradientCombo_currentIndexChanged(int n)
 {
-   if (n < 4) {
+   if (n < 6) {
       Gradient grad = static_cast<Gradient>(n);
       m_colors = toList(grad);
    }else {
       int nstops(m_dialog.stopsSpin->value());
-      n -= 4;
+      n -= 6;
       Operation op = static_cast<Operation>(n);
        
       m_colors = generateGradient(m_colors.first(),nstops,op);

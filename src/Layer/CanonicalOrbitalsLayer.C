@@ -60,39 +60,37 @@ double CanonicalOrbitals::betaOrbitalEnergy(unsigned const i) const
 
 void CanonicalOrbitals::computeDensityVectors()
 {
-   using namespace boost::numeric::ublas;
-
-   unsigned N(nBasis());
-   unsigned Na(nAlpha());
-   unsigned Nb(nBeta());
+   size_t N(nBasis());
+   size_t Na(nAlpha());
+   size_t Nb(nBeta());
 
    Matrix const& alphaCoefficients(m_orbitals.alphaCoefficients());
    Matrix const& betaCoefficients(m_orbitals.betaCoefficients());
 
-   Matrix coeffs(Na, N);
-   Matrix Pa(N, N);
-   Matrix Pb(N, N);
+   Matrix coeffs({Na, N});
+   Matrix Pa({N, N});
+   Matrix Pb({N, N});
 
-   for (unsigned i = 0; i < Na; ++i) {
-       for (unsigned j = 0; j < N; ++j) {
+   for (size_t i = 0; i < Na; ++i) {
+       for (size_t j = 0; j < N; ++j) {
            coeffs(i,j) = alphaCoefficients(i,j);  
        }
    }
 
-   noalias(Pa) = prod(trans(coeffs), coeffs);
+   Pa = product(transpose(coeffs), coeffs);
 
    Data::SurfaceType alpha(Data::SurfaceType::AlphaDensity);
    m_availableDensities.append(new Data::Density(alpha, Pa, "Alpha Density"));
 
-   coeffs.resize(Nb, N);
+   coeffs.resize({Nb, N});
 
-   for (unsigned i = 0; i < Nb; ++i) {
-       for (unsigned j = 0; j < N; ++j) {
+   for (size_t i = 0; i < Nb; ++i) {
+       for (size_t j = 0; j < N; ++j) {
            coeffs(i,j) = betaCoefficients(i,j);
        }
    }
 
-   noalias(Pb) = prod(trans(coeffs), coeffs);
+   Pb = product(transpose(coeffs), coeffs);
 
    Data::SurfaceType beta(Data::SurfaceType::BetaDensity);
    m_availableDensities.append(new Data::Density(beta, Pb, "Beta Density"));
@@ -213,7 +211,7 @@ void CanonicalOrbitals::firstOrderDensityMatrixFinished()
     double const binSize(0.1);
 
     for (unsigned i(0); i < m_values.size(); ++i) {
-        qDebug() <<  i*binSize << "  " << m_values[i];
+        qDebug() <<  i*binSize << "  " << m_values(i);
     }
     
 }

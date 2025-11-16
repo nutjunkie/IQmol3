@@ -1,8 +1,7 @@
-#ifndef IQMOL_MATH_VECTOR_H
-#define IQMOL_MATH_VECTOR_H
+#pragma once
 /*******************************************************************************
 
-  Copyright (C) 2022 Andrew Gilbert
+  Copyright (C) 2025 Andrew Gilbert
 
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
@@ -23,68 +22,102 @@
 ********************************************************************************/
 
 #include <cmath>
-#include <QDebug>
+#include <sstream>
+#include <cassert>
+#include <ostream>
+
+#include "Array.h"
+
 
 namespace IQmol {
 
-class Vec3 {
+struct Vec3 : public ArrayOps<Vec3> 
+{
+    double x, y, z;
 
-   public:
-      union {
-         struct {
-            double x, y, z;
-         };
-         double v[3];
-      }; 
+    // Ctors
+    constexpr Vec3() noexcept : x(0), y(0), z(0) {}
+    constexpr Vec3(double X, double Y, double Z) noexcept : x(X), y(Y), z(Z) { }
 
-      Vec3() : x(0.0), y(0.0), z(0.0) { }
-   
-      Vec3(double const X, double const Y, double const Z) : x(X), y(Y), z(Z) { }
+    // Rule of zero: default copy/move is fine
+    Vec3(const Vec3&)            = default;
+    Vec3& operator=(const Vec3&) = default;
 
-      Vec3(Vec3 const& that) 
-      {
-         copy(that);
-      }
+    // Element access
+    double& operator[](std::size_t i) noexcept {
+        assert(i < 3);
+        return (i == 0 ? x : (i == 1 ? y : z));
+    }
 
-      Vec3& operator=(Vec3 const& that)
-      {
-         if (this != &that) copy (that);
-         return *this;
-      }
+    const double& operator[](std::size_t i) const noexcept {
+        assert(i < 3);
+        return (i == 0 ? x : (i == 1 ? y : z));
+    }
 
-      double operator[](unsigned i) const 
-      {
-         return v[i];
-      }
+    // Note: Standard doesn't *guarantee* no padding between members, but on
+    // all real-world ABIs for a POD of three doubles this is contiguous.
+    double const* data() const noexcept { return &x; }
+    double*       data()       noexcept { return &x; }
 
-      double norm() const 
-      {
-         return std::sqrt(x*x + y*y + z*z);
-      }
+    constexpr size_t size() const noexcept { return 3; }
 
-      QString format() const
-      {
-          QString str("(");
-          str += QString::number(x) + "," + QString::number(y) +"," + QString::number(z);
-          str += ")";
-          return str;
-      }
+    double norm2() const noexcept { return x*x + y*y + z*z; }
+    double norm()  const noexcept { return std::sqrt(norm2()); }
 
-      void dump() const
-      {
-         qDebug() << format();
-      }
+    std::string format() const {
+        std::ostringstream ss;
+        ss << '(' << x << ',' << y << ',' << z << ')';
+        return ss.str();
+    }
 
-   private:
-      void copy(Vec3 const& that)
-      {
-         this->x = that.x;
-         this->y = that.y;
-         this->z = that.z;
-      }
+    void normalize()
+    {
+       double n(norm());
+       if (n < 1e-6) return;
+       x /= n;
+       y /= n;
+       z /= n;
+    }
 };
 
 
-} // end namespace IQmol
+inline std::ostream& operator<<(std::ostream& os, const Vec3& v) 
+{
+   return os << v.format();
+}
 
-#endif
+
+inline constexpr double dot(const Vec3& a, const Vec3& b) noexcept 
+{
+   return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
+
+inline constexpr Vec3 cross(const Vec3& a, const Vec3& b) noexcept 
+{
+    return { a.y*b.z - a.z*b.y,
+             a.z*b.x - a.x*b.z,
+             a.x*b.y - a.y*b.x };
+}
+
+
+template<class T>
+inline T dot(const Array<1, T>& a, const Array<1, T>& b)
+{
+    assert(a.size() == b.size());
+
+    const std::size_t n = a.size();
+    const T* pa = a.data();
+    const T* pb = b.data();
+
+    T acc{};
+    for (std::size_t i = 0; i < n; ++i) {
+        acc += pa[i] * pb[i];
+    }
+    return acc;
+}
+
+typedef Array<1,double> Vector;
+typedef Array<1,const double> ConstVector;
+
+} // end namespace IQmol

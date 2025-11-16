@@ -42,6 +42,7 @@ namespace IQmol {
 
    namespace Data {
       class GridData;
+      class ShellList;
       class MultipoleExpansionList;
    }
 
@@ -234,6 +235,26 @@ namespace IQmol {
             Data::MultipoleExpansionList const& m_siteList;
             double potential(double const x, double const y, double const z) const;
       };
+
+      // - - - - - - - - - - ComplexPhase - - - - - - - - - -
+
+      class ComplexPhase : public Spatial
+      {
+         public:
+            ComplexPhase(
+               QString const& type, 
+               Data::ShellList const& shells,
+               Vector const& realCoefficients, 
+               Vector const& imagCoefficients);
+
+         private:
+            Vector m_realCoefficients;
+            Vector m_imagCoefficients;
+            Data::ShellList const& m_shellList;
+            double eval(double const x, double const y, double const z) const;
+      };
+
+
 
    } // end namespace Property
 

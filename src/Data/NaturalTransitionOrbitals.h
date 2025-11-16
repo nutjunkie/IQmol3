@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_NATURALTRANSITIONORBITALS_H
-#define IQMOL_DATA_NATURALTRANSITIONORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -32,8 +31,6 @@ namespace Data {
    /// Data class for molecular orbital information
    class NaturalTransitionOrbitals : public Orbitals {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::NaturalTransitionOrbitals; }
 
@@ -49,32 +46,11 @@ namespace Data {
          QString label(unsigned index, bool alpha = true) const;
          unsigned labelIndex(bool alpha = true) const;
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            Orbitals::serialize(ar, version);
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_alphaOccupancies;
-            ar & m_betaOccupancies;
-         }
-
          QList<double> m_alphaOccupancies;
          QList<double> m_betaOccupancies;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

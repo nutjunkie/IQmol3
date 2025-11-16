@@ -24,6 +24,7 @@
 #include "QmAtom.h"
 #include <QtDebug>
 #include <vector>
+#include "QGLViewer/vec.h"
 
 
 namespace IQmol {
@@ -31,8 +32,6 @@ namespace Data {
 
    /// Data class representing molecule with a particular geometry.  
    class Geometry : public Base {
-
-      friend class boost::serialization::access;
 
       public:
 		 // Copy constructor only copies the charge, multiplicity, atomic
@@ -149,14 +148,6 @@ namespace Data {
             m_properties.append(data);
          }
 
-         void serialize(InputArchive& ar, unsigned const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
          // These are currently only used in the Parser::Archive, but should be
@@ -171,17 +162,6 @@ namespace Data {
          void name(QString const& name) { m_name = name; }
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_atoms;
-            ar & m_coordinates;
-            ar & m_charge;
-            ar & m_multiplicity;
-            ar & m_nAlpha;
-            ar & m_nBeta;
-            m_properties.serialize(ar);
-         }
-
          unsigned totalNuclearCharge() const;
 
          QmAtomList m_atoms;

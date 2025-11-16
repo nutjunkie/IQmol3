@@ -36,8 +36,6 @@ namespace Data {
    /// chemical shift etc.
    class QmAtom : public Atom {
 
-      friend class boost::serialization::access;
-
       public:
          QmAtom(unsigned const Z = 0, QString const& label = QString()) 
           :  Atom(Z,label) { }
@@ -82,16 +80,6 @@ namespace Data {
          template <class P>
          QString getLabel() { return getProperty<P>().label(); }
  
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const
          {
             qDebug() << "Atom dump for Z =" << m_atomicNumber;
@@ -99,12 +87,6 @@ namespace Data {
          }
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) 
-         {
-            ar & m_atomicNumber;
-            m_properties.serialize(ar);
-         }
          Bank m_properties;
    };
 

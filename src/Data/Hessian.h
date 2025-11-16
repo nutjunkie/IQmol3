@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_HESSIAN_H
-#define IQMOL_DATA_HESSIAN_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -31,8 +30,6 @@ namespace Data {
 
    class Hessian : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::Hessian; }
 
@@ -43,26 +40,11 @@ namespace Data {
          void setPartialData(unsigned const nAtoms, QList<unsigned> const& atomList, 
             Matrix const& partialHhessian);
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_hessian;
-         }
-
          Matrix m_hessian;
    };
 
 
 } } // end namespace IQmol::Data
-
-#endif

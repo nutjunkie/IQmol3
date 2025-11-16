@@ -74,7 +74,7 @@ Orbitals::Orbitals(
       return;
    }
 
-   m_alphaCoefficients.resize(m_nOrbitals, m_nBasis);
+   m_alphaCoefficients.resize({m_nOrbitals, m_nBasis});
 
    unsigned ka(0);
    for (unsigned i = 0; i < m_nOrbitals; ++i) {
@@ -91,7 +91,7 @@ Orbitals::Orbitals(
       return;
    }
 
-   m_betaCoefficients.resize(m_nOrbitals, m_nBasis);
+   m_betaCoefficients.resize({m_nOrbitals, m_nBasis});
    unsigned kb(0);
    for (unsigned i = 0; i < m_nOrbitals; ++i) {
        for (unsigned j = 0; j < m_nBasis; ++j, ++kb) {
@@ -106,7 +106,7 @@ bool Orbitals::areOrthonormal() const
    Vector const&  overlap(m_shellList.overlapMatrix());
    if (overlap.size() == 0) return true;
 
-   Matrix S(m_nBasis, m_nBasis);
+   Matrix S({m_nBasis, m_nBasis});
    Matrix T;
 
    unsigned k(0);
@@ -116,8 +116,8 @@ bool Orbitals::areOrthonormal() const
        }   
    }   
 
-   T = prod(S, trans(m_alphaCoefficients));
-   T = prod(m_alphaCoefficients, T);
+   T = product(S, transpose(m_alphaCoefficients));
+   T = product(m_alphaCoefficients, T);
    
    bool pass(true);
    double thresh(1e-8);
@@ -137,13 +137,6 @@ bool Orbitals::areOrthonormal() const
        } 
    }
 
-#if 0
-   QStringList matT(PrintMatrix(T,5));
-   for (int i = 0; i < matT.size(); ++i) {
-       qDebug() << matT[i];
-   }
-#endif
- 
    return pass;
 }
 
@@ -156,8 +149,8 @@ QString Orbitals::label(unsigned index, bool) const
 
 QStringList Orbitals::labels(bool alpha) const
 {
-   unsigned n(m_alphaCoefficients.size1());
-   if (!alpha && !m_restricted) n = m_betaCoefficients.size1();
+   unsigned n(m_alphaCoefficients.shape()[0]);
+   if (!alpha && !m_restricted) n = m_betaCoefficients.shape()[0];
 
    QStringList list;
  

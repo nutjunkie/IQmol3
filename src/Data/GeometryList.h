@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_GEOMETRYLIST_H
-#define IQMOL_DATA_GEOMETRYLIST_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -45,18 +44,6 @@ namespace Data {
          void setLabel(QString const& label) { m_label = label; } 
          QString label() const { return m_label;}
 
-         virtual void serialize(InputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-            ar & m_defaultIndex;
-         }
-
-         virtual void serialize(OutputArchive& ar, unsigned int const version = 0) 
-         {
-            serializeList(ar, version);
-            ar & m_defaultIndex;
-         }
-
          void dump() const;
 
       private:
@@ -65,5 +52,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

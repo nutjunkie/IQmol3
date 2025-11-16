@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_EXCITEDSTATES_H
-#define IQMOL_DATA_EXCITEDSTATES_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -33,8 +32,6 @@ namespace Data {
 
    class ExcitedStates : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::ExcitedStates; }
 
@@ -61,22 +58,7 @@ namespace Data {
 
          QList<Amplitude> amplitudes(unsigned const transition) const;
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) {
-            ar & m_transitions;
-            ar & m_orbitalSymmetries;
-            ar & m_type;
-         }
-
          ElectronicTransitionList m_transitions;
          OrbitalSymmetries m_orbitalSymmetries;
          ExcitedStatesT m_type;
@@ -84,5 +66,3 @@ namespace Data {
 
 
 } } // end namespace IQmol::Data
-
-#endif

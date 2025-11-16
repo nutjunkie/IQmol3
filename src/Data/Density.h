@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_DENSITY_H
-#define IQMOL_DATA_DENSITY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -24,6 +23,8 @@
 
 #include "DataList.h"
 #include "SurfaceType.h"
+#include "Math/Matrix.h"
+#include "Math/Vector.h"
 
 
 namespace IQmol {
@@ -32,8 +33,6 @@ namespace Data {
    /// Data class for density matrices.  Note these are read in as upper
    /// triangular and stored in a vectorized form.
    class Density : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          Type::ID typeID() const { return Type::Density; }
@@ -53,28 +52,9 @@ namespace Data {
 
          Vector* vector() { return &m_elements; }
 
-         void serialize(InputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
-         void serialize(OutputArchive& ar, unsigned const version = 0) 
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_surfaceType;
-            ar & m_label;
-            ar & m_nBasis;
-            ar & m_elements;
-         }
-
          SurfaceType m_surfaceType;
          QString     m_label;
          unsigned    m_nBasis;
@@ -88,5 +68,3 @@ namespace Data {
    };
 
 } } // end namespace IQmol::Data
-
-#endif

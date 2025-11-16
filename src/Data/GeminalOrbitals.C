@@ -60,7 +60,7 @@ GeminalOrbitals::GeminalOrbitals(unsigned const nAlpha, unsigned const nBeta,
        return;
    }
 
-   m_alphaCoefficients.resize(m_nOrbitals, m_nBasis);
+   m_alphaCoefficients.resize({m_nOrbitals, m_nBasis});
    unsigned ka(0);
    for (unsigned i = 0; i < m_nOrbitals; ++i) {
        for (unsigned j = 0; j < m_nBasis; ++j, ++ka) {
@@ -68,7 +68,7 @@ GeminalOrbitals::GeminalOrbitals(unsigned const nAlpha, unsigned const nBeta,
        }
    }
  
-   m_betaCoefficients.resize(m_nOrbitals, m_nBasis);
+   m_betaCoefficients.resize({m_nOrbitals, m_nBasis});
    unsigned kb(0);
    for (unsigned i = 0; i < m_nOrbitals; ++i) {
        for (unsigned j = 0; j < m_nBasis; ++j, ++kb) {

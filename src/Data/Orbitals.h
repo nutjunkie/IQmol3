@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_ORBITALS_H
-#define IQMOL_DATA_ORBITALS_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -26,12 +25,11 @@
 #include "Data/ShellList.h"
 #include "Math/Matrix.h"
 
+
 namespace IQmol {
 namespace Data {
 
    class Orbitals : public Base {
-
-      friend class boost::serialization::access;
 
       public:
          enum OrbitalType { Undefined = 0, 
@@ -92,44 +90,13 @@ namespace Data {
              if (!m_restricted) reorderFromQChem(m_betaCoefficients);
          }
 
-         void serialize(InputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
- 
-         void serialize(OutputArchive& ar, unsigned const version = 0)
-         {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
-
-		 // TODO: This is here to enable  archiving of the surfaces associated
-		 // with the orbitals, needs testing.
-         //SurfaceList& surfaceList() { return m_surfaceList; }
-         //void appendSurface(Data::Surface* surfaceData) {
-         //   m_surfaceList.append(surfaceData);
-         //}
 
       protected:
          // Reorders the coefficients from QChem to FChk order.  
          void reorderFromQChem(Matrix&);
          bool areOrthonormal() const;
-
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const /* version */) 
-         {
-            ar & m_orbitalType;
-            ar & m_title;
-            ar & m_nBasis;
-            ar & m_nOrbitals;
-            ar & m_restricted;
-            ar & m_alphaCoefficients;
-            ar & m_betaCoefficients;
-            ar & m_shellList;
-            //ar & m_surfaceList;
-         }
 
          OrbitalType m_orbitalType;
          QString     m_title;
@@ -139,10 +106,6 @@ namespace Data {
          ShellList   m_shellList;
          Matrix      m_alphaCoefficients;
          Matrix      m_betaCoefficients;
-         //SurfaceList   m_surfaceList;
    };
 
-
 } } // end namespace IQmol::Data
-
-#endif

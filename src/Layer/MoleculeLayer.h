@@ -33,6 +33,7 @@
 #include "Configurator/MoleculeConfigurator.h"
 
 #include "Viewer/Animator.h"
+#include "Math/Matrix.h"
 
 #include <QMap>
 #include <QFileInfo>
@@ -377,7 +378,6 @@ bool save(bool prompt = false);
       };
    
    } // end namespace Layer
-
 
 
    typedef QList<Layer::Molecule*> MoleculeList;

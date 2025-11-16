@@ -1,9 +1,7 @@
 #include <map>
-#include "Math/Vec.h"
-#include "Math/Spline.h"
+#include "Math/Vector.h"
 #include "Data/CMesh.h"
 #include "Data/Residue.h"
-#include "Data/AminoAcid.h"
 #include "Data/ProteinChain.h"
 
 
@@ -40,10 +38,10 @@ struct PeptidePlane
    Residue Residue2;
    Residue Residue3;
 
-   Math::Vec3 Position;
-   Math::Vec3 Normal;
-   Math::Vec3 Forward;
-   Math::Vec3 Side;
+   Vec3 Position;
+   Vec3 Normal;
+   Vec3 Forward;
+   Vec3 Side;
 
    bool Flipped;
 };

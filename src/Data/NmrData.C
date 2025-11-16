@@ -20,8 +20,9 @@
 
 ********************************************************************************/
 
+#include <sstream>
 #include "NmrData.h"
-#include <QDebug>
+#include "Util/QsLog.h"
 
 
 namespace IQmol {
@@ -29,15 +30,14 @@ namespace Data {
 
 void Nmr::dump() const 
 {
-   qDebug() << "NMR method:     " << m_method;
-   qDebug() << "NMR shieldings: " << m_shieldings;
-   qDebug() << "NMR shifts:     " << m_shifts;
-   QStringList list(PrintMatrix(m_couplings)); 
+   
+   QLOG_DEBUG() << "NMR method:     " << m_method;
+   QLOG_DEBUG() << "NMR shieldings: " << m_shieldings;
+   QLOG_DEBUG() << "NMR shifts:     " << m_shifts;
 
-   QStringList::iterator iter;
-   for (iter = list.begin(); iter != list.end(); ++iter) {
-       qDebug() << *iter;
-   }
+   std::stringstream oss;
+   oss << m_couplings;
+   QLOG_DEBUG() << QString::fromUtf8(oss.str().c_str());
 
    m_reference.dump();
 }
@@ -45,8 +45,8 @@ void Nmr::dump() const
 
 bool Nmr::haveCouplings()
 {
-   return (int)m_couplings.size1() == m_shieldings.size() &&
-          (int)m_couplings.size2() == m_shieldings.size();
+   return (int)m_couplings.shape()[0] == m_shieldings.size() &&
+          (int)m_couplings.shape()[1] == m_shieldings.size();
 }
 
 

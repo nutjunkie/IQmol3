@@ -1,5 +1,4 @@
-#ifndef IQMOL_DATA_CHARGEMULTIPLICITY_H
-#define IQMOL_DATA_CHARGEMULTIPLICITY_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2022 Andrew Gilbert
@@ -30,8 +29,6 @@ namespace Data {
 
    class ChargeMultiplicity : public Base {
 
-      friend class boost::serialization::access;
-
       public:
          Type::ID typeID() const { return Type::ChargeMultiplicity; }
 
@@ -48,28 +45,12 @@ namespace Data {
          void setElectrons(unsigned const);
          void setMultiplicity(unsigned const);
 
-         void serialize(InputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-         void serialize(OutputArchive& ar, unsigned int const version = 0) {
-            privateSerialize(ar, version);
-         }
-
          void dump() const;
 
       private:
-         template <class Archive>
-         void privateSerialize(Archive& ar, unsigned const) {
-            ar & m_charge;
-            ar & m_electrons;
-            ar & m_multiplicity;
-         }
-
          int m_charge;
          unsigned m_electrons;
          unsigned m_multiplicity;
    };
 
 } } // end namespace IQmol::Data
-
-#endif

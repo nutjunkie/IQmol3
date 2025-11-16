@@ -220,7 +220,7 @@ void InputDialog::setJobInfo(IQmol::Process::JobInfo const& qchemJobInfo)
    // Add an update for the current solvent radius
    double r(m_qchemJobInfo.get<double>("OnsagerRadius"));
    Action* action = new Action(
-      boost::bind(&QDoubleSpinBox::setValue, m_ui.qui_solvent_cavityradius, r) );
+      std::bind(&QDoubleSpinBox::setValue, m_ui.qui_solvent_cavityradius, r) );
    m_resetActions.push_back(action);
 
    QString isotopes(m_qchemJobInfo.get<QString>("Isotopes"));
@@ -1314,12 +1314,12 @@ void InputDialog::initializeControl(Option const& opt, QComboBox* combo)
    combo->setToolTip(prependRemName(name, opt.getDescription()));
 
    Action* action = new Action(
-      boost::bind(&QComboBox::setCurrentIndex, combo, opt.getDefaultIndex()) );
+      std::bind(&QComboBox::setCurrentIndex, combo, opt.getDefaultIndex()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QComboBox*, QString const&)>(SetControl), combo, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QComboBox*, QString const&)>(SetControl), combo, std::placeholders::_1));
    m_setUpdates[name] = update;
 }
 
@@ -1330,12 +1330,12 @@ void InputDialog::initializeControl(Option const& opt, QCheckBox* check)
    check->setToolTip(prependRemName(opt.getName(), opt.getDescription()));
 
    Action* action = new Action(
-      boost::bind(&QCheckBox::setChecked, check, opt.getDefaultIndex()) );
+      std::bind(&QCheckBox::setChecked, check, opt.getDefaultIndex()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QCheckBox*, QString const&)>(SetControl), check, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QCheckBox*, QString const&)>(SetControl), check, std::placeholders::_1));
    QString name = opt.getName();
    m_setUpdates[name] = update;
 }
@@ -1349,12 +1349,12 @@ void InputDialog::initializeControl(Option const& opt, QSpinBox* spin)
    spin->setSingleStep(opt.intStep());  
 
    Action* action = new Action(
-      boost::bind(&QSpinBox::setValue, spin, opt.intDefault()) );
+      std::bind(&QSpinBox::setValue, spin, opt.intDefault()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QSpinBox*, QString const&)>(SetControl), spin, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QSpinBox*, QString const&)>(SetControl), spin, std::placeholders::_1));
    QString name = opt.getName();
    m_setUpdates[name] = update;
 }
@@ -1368,12 +1368,12 @@ void InputDialog::initializeControl(Option const& opt, QDoubleSpinBox* dspin)
    dspin->setSingleStep(opt.doubleStep());  
 
    Action* action = new Action(
-      boost::bind(&QDoubleSpinBox::setValue, dspin, opt.doubleDefault()) );
+      std::bind(&QDoubleSpinBox::setValue, dspin, opt.doubleDefault()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QDoubleSpinBox*, QString const&)>(SetControl), dspin, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QDoubleSpinBox*, QString const&)>(SetControl), dspin, std::placeholders::_1));
    QString name = opt.getName();
    m_setUpdates[name] = update;
 }
@@ -1385,12 +1385,12 @@ void InputDialog::initializeControl(Option const& opt, QRadioButton* radio)
    radio->setToolTip(prependRemName(opt.getName(), opt.getDescription()));
 
    Action* action = new Action(
-      boost::bind(&QRadioButton::setChecked, radio, opt.getDefaultIndex()) );
+      std::bind(&QRadioButton::setChecked, radio, opt.getDefaultIndex()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QRadioButton*, QString const&)>(SetControl), radio, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QRadioButton*, QString const&)>(SetControl), radio, std::placeholders::_1));
    QString name = opt.getName();
    m_setUpdates[name] = update;
 }
@@ -1402,12 +1402,12 @@ void InputDialog::initializeControl(Option const& opt, QLineEdit* edit)
    edit->setToolTip(prependRemName(opt.getName(), opt.getDescription()));
 
    Action* action = new Action(
-      boost::bind(&QLineEdit::setText, edit, opt.getOptionString()) );
+      std::bind(&QLineEdit::setText, edit, opt.getOptionString()) );
    m_resetActions.push_back(action);
 
    Update* update = new Update(
-      boost::bind( 
-         static_cast<void(*)(QLineEdit*, QString const&)>(SetControl), edit, boost::placeholders::_1));
+      std::bind( 
+         static_cast<void(*)(QLineEdit*, QString const&)>(SetControl), edit, std::placeholders::_1));
    QString name = opt.getName();
    m_setUpdates[name] = update;
 

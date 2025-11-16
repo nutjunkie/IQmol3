@@ -23,35 +23,35 @@ namespace Qui {
 
 inline Action Disable(QWidget* widget) 
 {
-   return boost::bind(&QWidget::setEnabled, widget, false);
+   return std::bind(&QWidget::setEnabled, widget, false);
 }
 
 inline Action Enable(QWidget* widget) 
 {
-   return boost::bind(&QWidget::setEnabled, widget, true);
+   return std::bind(&QWidget::setEnabled, widget, true);
 }
 
 
 inline Action Hide(QWidget* widget) 
 {
-   return boost::bind(&QWidget::hide, widget);
+   return std::bind(&QWidget::hide, widget);
 }
 
 inline Action Show(QWidget* widget) 
 {
-   return boost::bind(&QWidget::show, widget);
+   return std::bind(&QWidget::show, widget);
 }
 
 
 inline Action SetValue(QSpinBox* widget, int value ) 
 {
-   return boost::bind(&QSpinBox::setValue, widget, value);
+   return std::bind(&QSpinBox::setValue, widget, value);
 }
 
 
 inline Action SetLabel(QLabel* label, QString const& text) 
 {
-   return boost::bind(&QLabel::setText, label, text);
+   return std::bind(&QLabel::setText, label, text);
 }
 
 
@@ -65,19 +65,19 @@ inline Action RemovePage(QToolBox* toolBox, QString const& pageName)
 {
    QStringList pageNames;
    pageNames << pageName;
-   return boost::bind(&RemoveToolBoxPages, toolBox, pageNames);
+   return std::bind(&RemoveToolBoxPages, toolBox, pageNames);
 }
 
 
 inline Action RemovePages(QToolBox* toolBox, QStringList const& pageNames)
 {
-   return boost::bind(&RemoveToolBoxPages, toolBox, pageNames);
+   return std::bind(&RemoveToolBoxPages, toolBox, pageNames);
 }
 
 
 inline Action AddPage(QToolBox* toolBox, QWidget* page, QString const& pageName)
 {
-   return boost::bind(&AddToolBoxPage, toolBox, page, pageName);
+   return std::bind(&AddToolBoxPage, toolBox, page, pageName);
 }
 
 } // end namespace Qui

@@ -27,6 +27,7 @@
 #include "Data/NaturalBondOrbitals.h"
 #include "Data/CanonicalOrbitals.h"
 #include "Data/LocalizedOrbitals.h"
+#include "Data/ComplexOrbitals.h"
 #include "Data/GeminalOrbitals.h"
 #include "Data/DysonOrbitals.h"
 #include "Data/ExcitedStates.h"
@@ -105,6 +106,10 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
    OrbitalData genericData;
    genericData.orbitalType = Data::Orbitals::Generic;
    genericData.label = "Generic Orbitals";
+
+   ComplexOrbitalData complexData;
+   complexData.orbitalType = Data::Orbitals::Complex;
+   complexData.label = "Complex orbitals";
 
 
    unsigned nAlpha(0);
@@ -247,7 +252,6 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          hessian.setData(geometry->nAtoms(), data);
 
       // Canonical Orbitals
-
       }else if (key == "Alpha MO coefficients") {
          if (!toInt(n, list, 2)) goto error;
          hfData.alphaCoefficients = readDoubleArray(textStream, n);
@@ -259,13 +263,14 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
       }else if (key == "Alpha Orbital Energies") {
          if (!toInt(n, list, 2)) goto error;
          hfData.alphaEnergies = readDoubleArray(textStream, n);
+         complexData.alphaEnergies = hfData.alphaEnergies;
 
       }else if (key == "Beta Orbital Energies") {
          if (!toInt(n, list, 2)) goto error;
          hfData.betaEnergies = readDoubleArray(textStream, n);
+         complexData.alphaEnergies = hfData.betaEnergies;
 
       // Natural Transition Orbitals
-
 	  }else if (key == "Alpha NTO coefficients") {
          if (!toInt(n, list, 2)) goto error;
          ntoData.alphaCoefficients = readDoubleArray(textStream, n);
@@ -283,7 +288,6 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          ntoData.betaEnergies = readDoubleArray(textStream, n);
 
       // Natural Bond Orbitals
-
 	  }else if (key == "Alpha NBO coefficients") {
          if (!toInt(n, list, 2)) goto error;
          nboData.alphaCoefficients = readDoubleArray(textStream, n);
@@ -301,7 +305,6 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          nboData.betaEnergies = readDoubleArray(textStream, n);
 
       // Localized Orbitals
-
       }else if (key == "Localized Alpha MO Coefficients (ER)") {
          if (!toInt(n, list, 2)) goto error;
          erData.alphaCoefficients = readDoubleArray(textStream, n);
@@ -334,9 +337,7 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          if (!toInt(n, list, 2)) goto error;
          virtLocData.betaCoefficients = readDoubleArray(textStream, n);
 
-
       // Dyson Orbitals
-
       }else if (key.contains("EOM-IP") || 
                 key.contains("EOM-EA") ||
                 key.contains("EOM-SF") ) {
@@ -367,6 +368,19 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          key.replace("MO Coefficients", "");
          genericData.label = key.trimmed();
 
+      // Complex Orbitals
+      }else if (key.contains("Alpha MO real coefficients")) {
+         if (!toInt(n, list, 2)) goto error;
+         complexData.alphaRealCoefficients = readDoubleArray(textStream, n);
+      }else if (key.contains("Alpha MO imaginary coefficients")) {
+         if (!toInt(n, list, 2)) goto error;
+         complexData.alphaImaginaryCoefficients = readDoubleArray(textStream, n);
+      }else if (key.contains("Beta MO real coefficients")) {
+         if (!toInt(n, list, 2)) goto error;
+         complexData.betaRealCoefficients = readDoubleArray(textStream, n);
+      }else if (key.contains("Beta MO imaginary coefficients")) {
+         if (!toInt(n, list, 2)) goto error;
+         complexData.betaImaginaryCoefficients = readDoubleArray(textStream, n);
 
       // Geminals
       }else if (key == "Alpha GMO coefficients") {
@@ -400,7 +414,7 @@ bool FormattedCheckpoint::parse(TextStream& textStream)
          type.setLabel(key);
          // check if the density matrix is square
          bool square(n == shellData.nBasis*shellData.nBasis);
-qDebug() << "Density matrix is square?" << square;
+         qDebug() << "Density matrix is square?" << square;
          Data::Density* density(new Data::Density(type, data, key, square));
          density->dump();
          densityList.append(density);
@@ -522,6 +536,9 @@ qDebug() << "Density matrix is square?" << square;
       Data::GeminalOrbitals* gmos(makeGeminalOrbitals(nAlpha, nBeta, gmoData, 
          shellData, *geometry)); 
       if (gmos) m_dataBank.append(gmos);
+
+      orbitals = makeComplexOrbitals(nAlpha, nBeta, complexData, shellData, *geometry);
+      if (orbitals) orbitalsList->append(orbitals);
    }
 
    if (geometryList->isEmpty()) {
@@ -696,6 +713,44 @@ Data::Orbitals* FormattedCheckpoint::makeOrbitals(unsigned const nAlpha,
 
    return orbitals;
 }
+
+
+Data::Orbitals* FormattedCheckpoint::makeComplexOrbitals(unsigned const nAlpha, 
+   unsigned const nBeta, ComplexOrbitalData const& orbitalData, Data::ShellData const& shellData, 
+   Data::Geometry const& geometry, Data::DensityList densityList)
+{
+   if (orbitalData.alphaRealCoefficients.isEmpty())      return 0;
+   if (orbitalData.alphaImaginaryCoefficients.isEmpty()) return 0;
+   if (orbitalData.betaRealCoefficients.isEmpty())       return 0;
+   if (orbitalData.betaImaginaryCoefficients.isEmpty())  return 0;
+
+   Data::ShellList* shellList = new Data::ShellList(shellData, geometry);
+   if (!shellList) return 0;
+
+   QString surfaceTag;
+
+   Data::ComplexOrbitals* zorbs = 
+      new Data::ComplexOrbitals(nAlpha, nBeta, *shellList,
+            orbitalData.alphaRealCoefficients,
+            orbitalData.alphaImaginaryCoefficients,
+            orbitalData.alphaEnergies,
+            orbitalData.betaRealCoefficients,
+            orbitalData.betaImaginaryCoefficients,
+            orbitalData.betaEnergies, orbitalData.label);
+         zorbs->appendDensities(densityList); 
+
+   if (zorbs && !zorbs->consistent()) {
+      QString msg(Data::Orbitals::toString(orbitalData.orbitalType));
+      msg += " complex data are inconsistent. Check shell types.";
+      m_errors.append(msg);
+      delete zorbs;
+      zorbs = 0;
+   }
+
+   return zorbs; 
+}
+
+
 
 
 Data::GeminalOrbitals* FormattedCheckpoint::makeGeminalOrbitals(unsigned const nAlpha,

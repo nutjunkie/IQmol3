@@ -87,7 +87,6 @@ namespace IQmol {
                   Layer::Visible | Layer::Nested);
             }
 
-            void addProperty(Property::Base* property) { m_properties.append(property); }
             QStringList getAvailableProperties2();
             Property::Base* getProperty(QString const& name);
             Data::Mesh::VertexFunction getPropertyEvaluator2(QString const& name);
@@ -148,6 +147,9 @@ namespace IQmol {
             void removeSystem(Layer::System*);
             
             void select(QModelIndex const&, QItemSelectionModel::SelectionFlags);
+
+         public Q_SLOTS:
+            void addProperty(Property::Base* property) { m_properties.append(property); }
 
          protected:
             QList<Property::Base*> m_properties;

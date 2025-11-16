@@ -21,11 +21,8 @@
 
 ********************************************************************************/
 
-#include "Serialization.h"
-#include <boost/serialization/version.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
+#include <QString>
+#include <QList>
 
 
 // The Data namespace contains POD classes that are read in from files and
@@ -34,9 +31,6 @@
 namespace IQmol {
 
 namespace Data {
-
-   typedef boost::archive::text_iarchive InputArchive;
-   typedef boost::archive::text_oarchive OutputArchive;
 
    namespace Type {
 
@@ -57,7 +51,7 @@ namespace Data {
                 PointGroup,             Frequencies,            
                 Orbitals,               OrbitalsList,           LocalizedOrbitals, 
                 CanonicalOrbitals,      NaturalBondOrbitals,    NaturalTransitionOrbitals,
-                DysonOrbitals,          ResidueName,
+                DysonOrbitals,          ComplexOrbitals,        ResidueName,
                 Density,                DensityList,
                 Shell,                  ShellList,              Mesh,
                 MeshList,               Surface,                SurfaceList,
@@ -98,11 +92,6 @@ namespace Data {
 		 // Data classes must have their TypeID added to the Factory::create()
 		 // method before they can be used by the Factory.
 		virtual Type::ID typeID() const { return Type::Undefined; }
-
-		 // These can't be template functions as templates and virtual
-		 // functions don't play nicely together.
-         virtual void serialize(InputArchive&,  unsigned int const version = 0) { };
-         virtual void serialize(OutputArchive&, unsigned int const version = 0) { };
 
          /// This is only meant for debugging;
 		 virtual void dump() const { };

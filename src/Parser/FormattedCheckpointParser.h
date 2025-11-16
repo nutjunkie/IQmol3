@@ -1,12 +1,11 @@
-#ifndef IQMOL_PARSER_FORMATTEDCHECKPOINT_H
-#define IQMOL_PARSER_FORMATTEDCHECKPOINT_H
+#pragma once
 /*******************************************************************************
-         
+
   Copyright (C) 2022 Andrew Gilbert
-      
+
   This file is part of IQmol, a free molecular visualization program. See
   <http://iqmol.org> for more details.
-         
+
   IQmol is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software  
   Foundation, either version 3 of the License, or (at your option) any later  
@@ -16,7 +15,7 @@
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
   details.
-      
+
   You should have received a copy of the GNU General Public License along
   with IQmol.  If not, see <http://www.gnu.org/licenses/>.
    
@@ -74,10 +73,28 @@ namespace Parser {
             QList<double> betaEnergies;
          };
 
+         struct ComplexOrbitalData {
+            Data::Orbitals::OrbitalType orbitalType;
+            int stateIndex;
+            QString label;
+
+            QList<double> alphaRealCoefficients;
+            QList<double> betaRealCoefficients;
+            QList<double> alphaImaginaryCoefficients;
+            QList<double> betaImaginaryCoefficients;
+
+            QList<double> alphaEnergies;
+            QList<double> betaEnergies;
+         };
+
          void clear(OrbitalData&);
          Data::Orbitals* makeOrbitals(unsigned const nAlpha, unsigned const nBeta,
             OrbitalData const&, Data::ShellData const&, Data::Geometry const&,
             Data::DensityList densities = Data::DensityList()); 
+
+         Data::Orbitals* makeComplexOrbitals(unsigned const nAlpha, unsigned const nBeta,
+            ComplexOrbitalData const&, Data::ShellData const&, Data::Geometry const&,
+            Data::DensityList densities = Data::DensityList());
 
          struct GmoData {
             QList<double> alphaCoefficients;
@@ -112,5 +129,3 @@ namespace Parser {
    };
 
 } } // end namespace IQmol::Parser
-
-#endif
