@@ -1141,8 +1141,14 @@ void ViewerModel::itemExpanded(QModelIndex const& index)
 
 void ViewerModel::setConstraint()
 {
+   AtomList atoms;
+   for (auto atom = m_selectedObjects.begin(); atom != m_selectedObjects.end(); ++atom) {
+       Layer::Atom* a = qobject_cast<Layer::Atom*>(*atom);
+        if (a) atoms.append(a);
+   }
+
    Layer::Molecule* mol(activeMolecule());
-   if (mol && mol->editConstraint()) selectNone();
+   if (mol && mol->editConstraint(atoms)) selectNone();
 }
 
 

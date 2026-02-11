@@ -979,19 +979,30 @@ QString Molecule::isotopesAsString()
 
 
 // - - - - - Constraints - - - - -
-
+/*
 bool Molecule::editConstraint()
 {
-   bool added(false);
+   // This 
    AtomList atoms(findLayers<Atom>(Children | Visible | SelectedOnly));
-   BondList bonds(findLayers<Bond>(Children | Visible | SelectedOnly));
+   editConstraint(atoms)
+}
+*/
+
+bool Molecule::editConstraint(AtomList const& atomsIn)
+{
+   bool added(false);
+   AtomList atoms = atomsIn;
 
    // Allow for bond constraint by selecting a bond
-   if (atoms.isEmpty() && bonds.size() == 1) {
-      Bond* bond(bonds.first());
-      Atom* A(bond->beginAtom());
-      Atom* B(bond->endAtom());
-      if (A && B) atoms << A << B;
+   if (atoms.isEmpty()) {
+      BondList bonds(findLayers<Bond>(Children | Visible | SelectedOnly));
+       
+      if (bonds.size() == 1) {
+         Bond* bond(bonds.first());
+         Atom* A(bond->beginAtom());
+         Atom* B(bond->endAtom());
+         if (A && B) atoms << A << B;
+      }
    }
 
    if (atoms.isEmpty()) {
@@ -2877,6 +2888,7 @@ void Molecule::initProperties()
 
 void Molecule::generateConformersDialog()
 {
+/*
    qDebug() << "Opening generate conformers dialog";
    GenerateConformersDialog*  dialog(new GenerateConformersDialog(0, this));
 
@@ -2885,11 +2897,13 @@ void Molecule::generateConformersDialog()
    dialog->raise();
 
    connect(dialog, SIGNAL(accepted()), this, SLOT(generateConformers()));
+*/
 }
 
 
 void Molecule::generateConformers()
 {
+/*
    GenerateConformersDialog* dialog(qobject_cast<GenerateConformersDialog*>(sender()));
 
    bool sortEnergy(dialog->sortEnergy);
@@ -2941,6 +2955,7 @@ void Molecule::generateConformers()
    }
 
    delete obMol;
+*/
 }
 
 void Molecule::parametrizeMoleculeDialog()

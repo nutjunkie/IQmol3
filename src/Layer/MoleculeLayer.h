@@ -153,7 +153,7 @@ bool save(bool prompt = false);
    
             Constraint* findMatchingConstraint(AtomList const&);
 
-            bool editConstraint();
+            bool editConstraint(AtomList const& atom);
             bool freezeAtomPositions();
             bool canAcceptConstraint(Constraint*);
             void addConstraint(Constraint*);
