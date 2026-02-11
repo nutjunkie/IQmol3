@@ -11,7 +11,7 @@ set( SOURCES
    Spline.C
 )
 
-add_library(${LIB} ${SOURCES})
+add_library(${LIB} STATIC ${SOURCES})
 target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}")
 target_link_libraries(${LIB} PRIVATE
    QGLViewer

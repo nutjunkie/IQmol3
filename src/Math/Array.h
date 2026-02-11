@@ -224,28 +224,7 @@ class Array : public ArrayOps<Array<D,T>>
       T*  data() { return m_data; }
       T const* data() const { return m_data; }
 
-/*
-      // Creates a read-only view of an array slice
-      Array<D-1, const T> slice(size_t i) const&
-      {
-         static_assert(D >= 2, "slice() requires D >= 2");
-         assert(i < m_shape[0]);
-
-         using Child = Array<D-1, const T>;
-         typename Child::Shape cshape{}, cstrides{};
-
-         // Keep axes 1..D-1 (same order), copy shapes/strides.
-         for (size_t k = 1, o = 0; k < D; ++k, ++o) {
-             cshape[o]   = m_shape[k];
-             cstrides[o] = m_strides[k];
-         }
-
-         const T* ptr = m_data + i * m_strides[0];
-         return Child::make_view(cshape, ptr, cstrides);
-      }
-*/
-
-      // Read/Write version
+      // Read-only version
       Array<D-1, T> const slice(size_t i) const& 
       {
          static_assert(D >= 2, "slice() requires D >= 2");
