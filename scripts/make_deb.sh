@@ -1,6 +1,11 @@
 #! /bin/bash
 
 #  Ref: https://www.internalpointers.com/post/build-binary-deb-package-practical-guide
+#
+#  Run from the build directory: ../scripts/make_deb.sh
+#  Any messages like the following must be resolved by linking statically
+#  or installing the correct pacakge versions:
+#     dpkg-query: no path found for mathcing pattern *libMath.so*
 
 EXE=bin/IQmol
 
