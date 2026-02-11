@@ -28,6 +28,7 @@ elif [ $ARCH == 'Linux' ]; then
    CMAKE_GENERATOR="Unix Makefiles"
    QT=/scratch/software_test/Qt5/5.12.12/gcc_64
    QT=/usr/lib/x86_64-linux-gnu/qt5/
+   DEFINES+=" -DYAML_BUILD_SHARED_LIBS=OFF"
 
 else 
    ARCH='Windoze'
@@ -67,10 +68,12 @@ fi
 cmake -G "$CMAKE_GENERATOR" $DEFINES $TOPDIR 2>&1 | tee -a ../configure.log
 
 if [ $ARCH == 'Windoze' ]; then
+   echo "-- Ensure release build is activated and static openbabl"
    echo "-- Run $MINGW_ROOT/bin/mingw32-make.exe inside the build directory"
 fi
 
 if [ $ARCH == 'Linux' ]; then
+   echo "-- Ensure release build is activated and static openbabl"
    echo "-- May have to manually edit build/CMakeFiles/IQmol.dir/link.txt to fix linking:"
    echo "   Replace /path/to/libm.a with -lm"
 fi
