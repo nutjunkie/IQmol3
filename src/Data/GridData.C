@@ -171,45 +171,55 @@ double GridData::percentToIsovalue(int percent)
 
       m_percentToIsovaluePositive.zero();
       m_percentToIsovalueNegative.zero();
-  
-      std::vector<double> data(sortData(m_surfaceType.isOrbital()));
+
+      std::vector<std::pair<double,double>> data = sortData(m_surfaceType.isOrbital());
       double dr(m_delta.x*m_delta.y*m_delta.z);
 
       if (m_surfaceType.isSigned() && !m_surfaceType.isOrbital() ) {
          // need both positive and negative maps
-         std::vector<double>::iterator zero = 
-            std::find_if(data.begin(), data.end(), isNegative);
-
-         double sumPos(std::accumulate(data.begin(), zero-1, 0.0));
+      auto zero = std::find_if(
+          data.begin(), data.end(),
+          [](const std::pair<double,double>& p){ return p.second < 0.0; }
+      );
+         double sumPos = std::accumulate(
+             data.begin(), zero, 0.0,
+             [](double s, const std::pair<double,double>& p){ return s + p.first; }
+         );
          QLOG_TRACE() << "Grid quadrature yielded a value of (+ve)" << dr*sumPos;
 
          double sum(0);
          unsigned k(0);
          for (unsigned pc = 0; pc < 100; ++pc) {
-             while (sum < 0.01*pc*sumPos) { sum += data[k++]; }
-             m_percentToIsovaluePositive(pc) = data[k];
+             while (sum < 0.01*pc*sumPos) { sum += data[k++].first; }
+             m_percentToIsovaluePositive(pc) = data[k].second;
          }
 
-         double sumNeg(std::accumulate(zero, data.end(), 0.0));
+         double sumNeg = std::accumulate(
+             zero, data.end(), 0.0,
+             [](double s, const std::pair<double,double>& p){ return s + p.first; }
+         );
          QLOG_TRACE() << "Grid quadrature yielded a value of (-ve)" << dr*sumNeg;
 
          sum = 0.0;
          k = data.size()-1;
          for (unsigned pc = 0; pc < 100; ++pc) {
-             while (sum > 0.01*pc*sumNeg) { sum += data[k--]; }
-             m_percentToIsovalueNegative(pc) = data[k];
+             while (sum > 0.01*pc*sumNeg) { sum += data[k--].first; }
+             m_percentToIsovalueNegative(pc) = data[k].second;
          }
         
       }else {
-         double sumPos(std::accumulate(data.begin(),data.end(), 0.0));
+         double sumPos = std::accumulate(
+             data.begin(), data.end(), 0.0,
+             [](double s, const std::pair<double,double>& p){ return s + p.first; }
+         );
          QLOG_TRACE() << "Grid quadrature yielded a value of" << dr*sumPos;
 
          double sum(0);
          unsigned k(0);
          for (unsigned pc = 0; pc < 100; ++pc) {
-             while (sum < 0.01*pc*sumPos) { sum += data[k++]; }
-             m_percentToIsovaluePositive(pc) =  data[k];
-             m_percentToIsovalueNegative(pc) = -data[k];
+             while (sum < 0.01*pc*sumPos) { sum += data[k++].first; }
+             m_percentToIsovaluePositive(pc) =  data[k].second;
+             m_percentToIsovalueNegative(pc) = -data[k].second;
          }
       }
    }
@@ -226,34 +236,32 @@ double GridData::percentToIsovalue(int percent)
 }
 
 
-std::vector<double> GridData::sortData(bool const squareData)
+std::vector<std::pair<double,double>>
+GridData::sortData(bool const squareData)
 {
-   std::vector<double> data;
+   std::vector<std::pair<double,double>> table;
 
    unsigned nx, ny, nz;
    getNumberOfPoints(nx, ny, nz);
-   data.reserve(nx*ny*nz);
+   table.reserve(nx*ny*nz);
 
-   if (squareData) {
-      for (unsigned i = 0; i < nx; ++i) {
-          for (unsigned j = 0; j < ny; ++j) {
-              for (unsigned k = 0; k < nz; ++k) {
-                  data.push_back(m_data(i,j,k)*m_data(i,j,k));
-              }
-          }
-      }
-   }else {
-      for (unsigned i = 0; i < nx; ++i) {
-          for (unsigned j = 0; j < ny; ++j) {
-              for (unsigned k = 0; k < nz; ++k) {
-                  data.push_back(m_data(i,j,k));
-              }
-          }
-      }
-   }
+   for (unsigned i = 0; i < nx; ++i)
+     for (unsigned j = 0; j < ny; ++j)
+       for (unsigned k = 0; k < nz; ++k) {
+         double raw    = m_data(i,j,k);
+         double weight = squareData ? raw*raw : raw;
+         table.emplace_back(weight, raw);
+       }
 
-   std::sort(data.rbegin(), data.rend());
-   return data;
+   // Sort the table by weight, descending
+   std::sort(table.begin(), table.end(),
+          [](const std::pair<double,double> &A,
+             const std::pair<double,double> &B)
+          {
+              return A.first > B.first;
+          });
+   return table;
+
 }
 
 

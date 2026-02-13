@@ -107,7 +107,7 @@ namespace Data {
 
       private:
          void copy(GridData const&);
-         std::vector<double> sortData(bool const squareData);
+         std::vector<std::pair<double,double>> sortData(bool const squareData);
 
          SurfaceType m_surfaceType;
          qglviewer::Vec m_origin;
