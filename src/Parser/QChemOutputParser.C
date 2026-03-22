@@ -171,6 +171,7 @@ bool QChemOutput::parse(TextStream& textStream)
    Data::Geometry*     currentGeometry(0);
    Data::GeometryList* geometryList(0);
    Data::GeometryList* scanGeometries(0);
+   Data::GeometryList* rpathGeometries(0);
    Data::ShellList*    shellList(0);
    Data::Nmr* nmr(0);
 
@@ -316,6 +317,46 @@ bool QChemOutput::parse(TextStream& textStream)
             }
          }
 
+      }else if (line.contains("FORWARD RXN PATH")) {
+         
+         rpathGeometries = new Data::GeometryList("Reaction Path");
+
+         {  QString forwardPath;
+
+            textStream.skipLine(1);
+            while (!line.contains("===========")) {
+               line = textStream.nextLine();
+               forwardPath += line + "\n";
+            }
+
+            Xyz parser("RPath Geometries");
+            TextStream rpathStream(&forwardPath);
+            if (parser.parse(rpathStream)) {
+               Data::GeometryList* 
+                  list(dynamic_cast<Data::GeometryList*>(parser.data().first()));
+               std::reverse(list->begin(), list->end());
+               rpathGeometries->append(*list);
+            }
+         }
+
+         {  QString backPath;
+
+            textStream.skipLine(2);
+            line = textStream.nextLine();
+            while (!line.contains("===========")) {
+               line = textStream.nextLine();
+               backPath += line + "\n";
+            }
+
+            Xyz parser("RPath Geometries");
+            TextStream rpathStream(&backPath);
+            if (parser.parse(rpathStream)) {
+               Data::GeometryList* 
+                  list(dynamic_cast<Data::GeometryList*>(parser.data().first()));
+               rpathGeometries->append(*list);
+            }
+         }
+       
       }else if (line == "STRING") {
          textStream.skipLine(1);
          QString nodes;
@@ -557,6 +598,15 @@ bool QChemOutput::parse(TextStream& textStream)
          m_dataBank.append(geometryList);
       }
    }
+
+   if (rpathGeometries) {
+      if (rpathGeometries->isEmpty()) {
+         delete rpathGeometries;
+      }else {
+         m_dataBank.append(rpathGeometries);
+      }
+   }
+
 
    if (scanGeometries) {
       if (scanGeometries->isEmpty()) {

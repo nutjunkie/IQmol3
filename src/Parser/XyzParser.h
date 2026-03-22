@@ -1,5 +1,4 @@
-#ifndef IQMOL_PARSER_XYZ_H
-#define IQMOL_PARSER_XYZ_H
+#pragma once
 /*******************************************************************************
        
   Copyright (C) 2022 Andrew Gilbert
@@ -43,5 +42,3 @@ namespace Parser {
    };
 
 } } // end namespace IQmol::Parser
-
-#endif
