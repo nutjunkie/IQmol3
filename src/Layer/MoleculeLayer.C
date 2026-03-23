@@ -342,6 +342,8 @@ qDebug() << "Molecule::appendData(Layer::List)";
    Surface* surface(0);
    Geometry* geometry(0);
 
+   bool geometryListSet(false);
+
    for (iter = toSet.begin(); iter != toSet.end(); ++iter) {
        if ((surface = qobject_cast<Surface*>(*iter))) {
           surface->setComponent(this);
@@ -349,9 +351,12 @@ qDebug() << "Molecule::appendData(Layer::List)";
        }else if ((geometry = qobject_cast<Geometry*>(*iter))) {
           appendLayer(*iter);
        }else if ((geometryList = qobject_cast<GeometryList*>(*iter))) {
-          geometryList->makeAnimators();
-          geometryList->resetGeometry();
-          appendLayer(*iter);
+          if (!geometryListSet) {
+             geometryList->makeAnimators();
+             geometryList->resetGeometry();
+             appendLayer(*iter);
+             geometryListSet = true;
+          }
        }else {
           appendLayer(*iter);
        }
