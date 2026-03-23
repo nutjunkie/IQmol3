@@ -29,6 +29,7 @@
 #include "Grid/MeshDecimator.h"
 #include "Grid/BoundingBoxDialog.h"
 #include "Data/ComplexOrbitals.h"
+#include "Data/OrbitalSymmetries.h"
 #include "Data/SurfaceType.h"
 #include "Data/SurfaceInfo.h"
 #include "Util/QMsgBox.h"
@@ -60,7 +61,8 @@ Orbitals::Orbitals(Data::Orbitals& orbitals)
    m_orbitals(orbitals),
    m_configurator(*this), 
    m_molecularGridEvaluator(0),
-   m_progressDialog(0)
+   m_progressDialog(0),
+   m_orbitalSymmetries(0)
 {
    connect(&m_configurator, SIGNAL(queueSurface(Data::SurfaceInfo const&)),
       this, SLOT(addToQueue(Data::SurfaceInfo const&)));
@@ -107,6 +109,12 @@ void Orbitals::setMolecule(Layer::Molecule* molecule)
    connect(this, SIGNAL(propertyAvailable(Property::Base*)), m_molecule, SLOT(addProperty(Property::Base*)));
 }
 
+void Orbitals::setSymmetries(Data::OrbitalSymmetries const* orbitalSymmetries)
+{
+   m_orbitalSymmetries = orbitalSymmetries;
+}
+
+
 
 unsigned Orbitals::nBasis() const 
 { 
@@ -118,6 +126,13 @@ unsigned Orbitals::nOrbitals() const
 { 
    return m_orbitals.nOrbitals(); 
 }
+
+
+QString Orbitals::orbitalSymmetry(Data::Spin const spin, unsigned const i) const
+{
+   return  m_orbitalSymmetries ? m_orbitalSymmetries->symmetry(spin, i) : QString("A");
+}
+
 
 
 bool Orbitals::hasMullikenDecompositions() const 

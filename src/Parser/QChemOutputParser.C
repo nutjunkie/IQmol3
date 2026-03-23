@@ -511,15 +511,19 @@ bool QChemOutput::parse(TextStream& textStream)
          if (currentGeometry) 
             readNBO(textStream, *currentGeometry, Data::Type::NaturalCharge);
 
-      }else if (line.contains("Orbital Energies (a.u.) and Symmetries")) {
-         textStream.skipLine(2);
-         bool readSymmetries(true);
-         readOrbitalSymmetries(textStream, readSymmetries);
-
       }else if (line.contains("Orbital Energies (a.u.)")) {
+         bool readSymmetries = line.contains("Symmetries");
          textStream.skipLine(2);
-         bool readSymmetries(false);
-         readOrbitalSymmetries(textStream, readSymmetries);
+         // Add symmetries to the excited statges section, if it exists
+         QList<Data::ExcitedStates*> es(m_dataBank.findData<Data::ExcitedStates>());
+         if (!es.isEmpty()) {
+           Data::OrbitalSymmetries& data(es.last()->orbitalSymmetries());
+           readOrbitalSymmetries(textStream, readSymmetries, data);
+         } else {
+           Data::OrbitalSymmetries* data = new Data::OrbitalSymmetries;
+           readOrbitalSymmetries(textStream, readSymmetries, *data);
+           m_dataBank.append(data);
+         }
 
       }else if (line.contains("TDDFT Excitation Energies")) {
          textStream.skipLine(2);
@@ -983,14 +987,10 @@ void QChemOutput::readCisdStates(TextStream& textStream)
 }
 
 
-void QChemOutput::readOrbitalSymmetries(TextStream& textStream, bool const readSymmetries)
+void QChemOutput::readOrbitalSymmetries(TextStream& textStream, bool const readSymmetries,
+   Data::OrbitalSymmetries& data)
 {
-//   qDebug() << "Reading orbital energies";
-   // We only parse the orbital symmetries section if we have excited states
-   QList<Data::ExcitedStates*> es(m_dataBank.findData<Data::ExcitedStates>());
-   if (es.isEmpty()) return;
-
-   Data::OrbitalSymmetries& data(es.last()->orbitalSymmetries());
+   //qDebug() << "Reading orbital energies";
    Data::Spin spin(Data::Alpha);
 
    unsigned nOrb(0);

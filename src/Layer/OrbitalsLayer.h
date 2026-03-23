@@ -28,6 +28,7 @@
 
 #include "Configurator/OrbitalsConfigurator.h"
 #include "Layer.h"
+#include "Spin.h"
 #include <QPair>
 
 
@@ -44,6 +45,7 @@ namespace Property {
 namespace Data {
    class GridData;
    class GridSize;
+   class OrbitalSymmetries;
    class Surface;
    class SurfaceList;
 }
@@ -64,6 +66,7 @@ namespace Layer {
          ~Orbitals() { }
 
          void setMolecule(Molecule* molecule);
+         void setSymmetries(Data::OrbitalSymmetries const*);
 
       Q_SIGNALS:
          void progress(double);
@@ -86,6 +89,8 @@ namespace Layer {
 
          virtual double alphaOrbitalAmplitude(unsigned) const { return 1.0; }
          virtual double betaOrbitalAmplitude(unsigned)  const { return 1.0; }
+
+         QString orbitalSymmetry(Data::Spin const, unsigned const) const;
 
          bool hasMullikenDecompositions() const;
 
@@ -120,12 +125,14 @@ namespace Layer {
 
          typedef QList<Data::SurfaceInfo> SurfaceInfoQueue;
 
-         Molecule*               m_molecule;
-         SurfaceInfoQueue        m_surfaceInfoQueue;
-         Data::GridDataList      m_availableGrids;
-         qglviewer::Vec          m_bbMin, m_bbMax;   // bounding box
-         MolecularGridEvaluator* m_molecularGridEvaluator;
-         QProgressDialog*        m_progressDialog;
+         Molecule*                m_molecule;
+         SurfaceInfoQueue         m_surfaceInfoQueue;
+         Data::GridDataList       m_availableGrids;
+         qglviewer::Vec           m_bbMin, m_bbMax;   // bounding box
+         MolecularGridEvaluator*  m_molecularGridEvaluator;
+         QProgressDialog*         m_progressDialog;
+
+         Data::OrbitalSymmetries const* m_orbitalSymmetries;
    };
 
 } } // End namespace IQmol::Layer 

@@ -29,6 +29,7 @@
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
 #include "Data/SurfaceInfo.h"
+#include "Data/OrbitalSymmetries.h"
 #include "Data/ResidueName.h"
 
 // Layers
@@ -204,6 +205,17 @@ void Molecule::appendData(IQmol::Data::Bank& bank)
    QList<Frequencies*> frequencies(findLayers<Frequencies>(Children));
    if (vibronic.size() > 0 && frequencies.size() > 0) {
       vibronic.last()->setFrequencyLayers(frequencies);
+   }
+
+   QList<Data::OrbitalSymmetries*> sym(m_bank.findData<Data::OrbitalSymmetries>());
+   if (!sym.isEmpty()) {
+      QList<Orbitals*> orbitals(findLayers<Orbitals>(Children));
+      for (auto orb : orbitals) {
+          if (orb->text() == "Canonical Orbitals") {
+             orb->setSymmetries(sym.first());
+             continue;
+          }
+      }
    }
 }
 

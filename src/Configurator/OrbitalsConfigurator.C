@@ -317,6 +317,7 @@ void Orbitals::plotSelectionChanged(bool tf)
    double energy(0.0);
    double amplitude(0.0);
    QString label;
+   Data::Spin spin(Data::Alpha);
 
    if (orb < nOrbs) {  //alpha
       energy    = m_orbitals.alphaOrbitalEnergy(orb);
@@ -329,6 +330,7 @@ void Orbitals::plotSelectionChanged(bool tf)
       energy    = m_orbitals.betaOrbitalEnergy(orb);
       amplitude = m_orbitals.betaOrbitalAmplitude(orb);
       label     = "Beta ";
+      spin = Data::Beta;
       m_configurator.surfaceType->setCurrentIndex(2);
       updateOrbitalRange(false);
    }
@@ -339,6 +341,7 @@ void Orbitals::plotSelectionChanged(bool tf)
    label += QString::number(orb+1);
    if (m_orbitals.orbitalType() == Data::Orbitals::Canonical) {
       label += " orbital energy: " + QString::number(energy, 'f', 3) + " Eh";
+      label += " (" + m_orbitals.orbitalSymmetry(spin,orb) + ")";
    }else if (m_orbitals.orbitalType() == Data::Orbitals::NaturalTransition) {
       label += " NTO occupancy: " + QString::number(amplitude, 'f', 3);
    }else if (m_orbitals.orbitalType() == Data::Orbitals::NaturalBond) {
