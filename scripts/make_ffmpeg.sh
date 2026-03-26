@@ -4,8 +4,18 @@
 #  Complete process for building a statically linked ffmpeg binary
 #
 
-export CC=/opt/homebrew/bin/gcc-13
-export CXX=/opt/homebrew/bin/g++-13
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+   # Linux
+   export CC=gcc
+   export CXX=g++
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+   export CC=/opt/homebrew/bin/gcc-13
+   export CXX=/opt/homebrew/bin/g++-13
+elif [[ "$OSTYPE" == "msys" ]]; then
+   # Windows, this script meeds to be run in a MSYS2 MINGW64 shell
+   export CC=gcc
+   export CXX=g++
+fi
 
 
 build_zlib()
