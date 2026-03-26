@@ -83,6 +83,7 @@
 #include "openbabel/forcefield.h"
 #include "openbabel/plugin.h"
 #include "openbabel/obfunctions.h"
+#include "openbabel/residue.h"
 
 #include <QDropEvent>
 #include <QProcess>
@@ -604,6 +605,8 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        OBAtomAssignTypicalImplicitHydrogens(obAtom);
 
        if (residue) {
+          // Windows already defines AddAtom outside OpenBabel
+          //residue->InsertAtom(obAtom)
           residue->AddAtom(obAtom);
           residue->SetAtomID(obAtom, (*atomIter)->getLabel().toStdString());
           obAtom->SetResidue(residue);

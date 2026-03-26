@@ -83,7 +83,7 @@ bool Snapshot::requestFileName()
    if (m_flags & Movie) {
       title = "Save movie as";
       fileInfo.setFile(fileInfo.dir(), "movie.mp4");
-#if Q_OS_WIN
+#ifdef Q_OS_WIN
       formats << "Audio Video Interleave (*.avi)"
               << "MPEG4 Movie (*.mp4)"
               << "QuickTime Movie (*.mov)" ;

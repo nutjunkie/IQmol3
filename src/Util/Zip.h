@@ -1,5 +1,4 @@
-#ifndef IQMOL_UTIL_ZIP_H
-#define IQMOL_UTIL_ZIP_H
+#pragma once
 /*******************************************************************************
 
   Copyright (C) 2011-2015 Andrew Gilbert
@@ -28,5 +27,3 @@ namespace Util {
 int extract_tgz(const char* filename, const char* destPath);
 
 } } // end namespace IQmol::Util
-
-#endif

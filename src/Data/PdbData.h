@@ -23,6 +23,7 @@
 
 #include "Data.h"
 #include "Math/Vector.h"
+#include <vector>
 
 
 namespace IQmol {

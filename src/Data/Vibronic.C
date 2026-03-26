@@ -29,7 +29,7 @@ namespace IQmol {
 namespace Data {
 
 
-const VibronicSpectrum::Theory constexpr VibronicSpectrum::AllTheories[3] = { FC, HT, FCHT };
+const VibronicSpectrum::Theory VibronicSpectrum::AllTheories[3] = { FC, HT, FCHT };
 
 
 VibronicSpectrum::VibronicSpectrum(Theory theory, int mode, QList<double> const& data) 

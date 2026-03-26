@@ -48,6 +48,7 @@
 #endif
 
 #include <QDir>
+#include <QElapsedTimer>
 
 
 namespace IQmol {

@@ -9,19 +9,16 @@ include(FortranCInterface)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
-if (APPLE)
-   # symbols not in the Qt libraries
-   #set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -arch x86_64 -arch arm64")
-elseif (UNIX)
+if (UNIX AND NOT APPLE)
    set(LINUX TRUE)
 endif()
 
-if(NOT LINUX)
+if (APPLE OR WIN32)
    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 endif()
 
@@ -32,72 +29,86 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 
-find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL Sql REQUIRED)
-
 find_package(ZLIB REQUIRED)
 if(ZLIB_FOUND)
    include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
 
-
-
+find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL Sql REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-if(NOT LINUX)
-   find_package(ZSTD    REQUIRED)
 
-   # No CMakeLists.txt for libQGLViewer
-   include_directories(modules/libQGLViewer)
-   add_subdirectory(modules  EXCLUDE_FROM_ALL)
+include_directories(modules/libQGLViewer)
+add_subdirectory(modules  EXCLUDE_FROM_ALL)
 
+
+include_directories(modules/yaml-cpp/include)
+add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
+
+
+if (LINUX)
+   find_package(libssh2 REQUIRED)
+else()
    include_directories(modules/libssh2/include)
    add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
+   set(LIBSSH2_LIBRARY libssh2)
+endif()
 
-   include_directories(modules/openmesh/src)
-   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-   set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
 
-   include_directories(modules/yaml-cpp/include)
-   add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
-
+if (LINUX)
+   find_package(OpenBabel3 REQUIRED)
+else()
    include_directories(modules/openbabel/include)
    include_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/openbabel/include)
    add_subdirectory(modules/openbabel  EXCLUDE_FROM_ALL)
-
-   add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
-else()
-   find_package(OpenBabel3 REQUIRED)
-   find_package(OpenMesh REQUIRED)
 endif()
+
+
+if (LINUX)
+   find_package(OpenMesh REQUIRED)
+elseif(APPLE)
+   include_directories(modules/openmesh/src)
+   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+   set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
+elseif(WIN32)
+   include_directories(modules/openmesh/src)
+   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+   set(OPENMESH_LIBRARIES OpenMeshCore OpenMeshTools)
+endif()
+
+
+if (LINUX)
+   find_package(ZSTD REQUIRED)
+   include_directories(modules/libarchive)
+   add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
+   set(ARCHIVE_LIBRARY archive)
+elseif (APPLE)
+   find_package(ZSTD REQUIRED)
+   include_directories(modules/libarchive)
+   add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
+   set(ARCHIVE_LIBRARY archive)
+elseif (WIN32)
+   include_directories(modules/zstd/lib)
+   include_directories(modules/libarchive)
+   add_subdirectory(modules/zstd/build/cmake EXCLUDE_FROM_ALL)
+   set(ARCHIVE_LIBRARY ${CMAKE_BINARY_DIR}/modules/libarchive/libarchive/libarchive.a bcrypt)
+endif()
+
+# The following are required for libzstd
+if (EXISTS /opt/local/lib/)
+   link_directories(/opt/local/lib/)
+elseif (EXISTS /opt/homebrew/lib/)
+   link_directories(/opt/homebrew/lib/)
+endif()
+
 
 if (WITH_GROMACS)
    add_compile_definitions(GROMACS)
    add_subdirectory(src/Gromacs)
 endif()
 
-
-if(QARCHIVE)
-   #set(HDF5_USE_STATIC_LIBRARIES 1)
-   #include_directories(modules/hdf5/src)
-   #add_subdirectory(modules/hdf5  EXCLUDE_FROM_ALL)
-   #include_directories(/opt/homebrew/Cellar/hdf5/1.12.2/include)
-   #include_directories(modules/HighFive/include)
-   #add_subdirectory(modules/HighFive  EXCLUDE_FROM_ALL)
-
-   set(ARMADILLO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/qarchive/armadillo/include)
-   find_package(HDF5 REQUIRED)
-#  find_package(Armadillo REQUIRED)
-
-   add_compile_definitions(WITH_AVIEW QARCHIVE)
-   include_directories(qarchive/libctx)
-   include_directories(qarchive/libaview)
-   include_directories(qarchive/libstore)
-   include_directories(qarchive/libarchive)
-   include_directories(${CMAKE_CURRENT_BINARY_DIR}/qarchive/libarchive/autogen_impl)
-   add_subdirectory(qarchive)
-endif(QARCHIVE)
 
 # The following must come after the modules as it picks up the include 
 # for the system libssh2.h.
@@ -121,12 +132,14 @@ endif ()
 
 set(ICON_PATH resources/IQmol.icns)
 
-# The following are required for libzstd
-if (EXISTS /opt/local/lib/)
-   link_directories(/opt/local/lib/)
-elseif (EXISTS /opt/homebrew/lib/)
-   link_directories(/opt/homebrew/lib/)
-endif()
+
+if (LINUX)
+   add_executable(${targetName} 
+      src/main.C
+      ${IQmol_RESOURCES_RCC}
+   )
+   target_link_libraries(${targetName} -static-libgcc -static-libstdc++)
+endif (LINUX)
 
 
 if (APPLE)
@@ -148,16 +161,6 @@ if (APPLE)
 #   add_custom_command(TARGET ${targetName} POST_BUILD 
 #      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
-
-
-if (LINUX)
-   add_executable(${targetName} 
-      src/main.C
-      ${IQmol_RESOURCES_RCC}
-   )
-
-   target_link_libraries(${targetName} -static-libgcc -static-libstdc++)
-endif (LINUX)
 
 
 if (WIN32)
@@ -188,6 +191,7 @@ target_link_libraries (${targetName}
    Math
    Plot
    Fort
+   Amber 
    yaml-cpp
    openbabel
    QGLViewer
@@ -198,23 +202,20 @@ target_link_libraries (${targetName}
    Qt5::Widgets
    Qt5::OpenGL
    Qt5::Sql
-   ${OPENMESH_LIBRARIES}
-#   ${Boost_LIBRARIES}
    ${LIBSSH2_LIBRARY}
+   ${OPENMESH_LIBRARIES}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
    ${FORTRAN_LIBRARIES}
-   archive
+   ${ARCHIVE_LIBRARY}
 )
 
-if(NOT LINUX)
-   target_link_libraries(${targetName} libssh2 ${LIBSSH2_LIBRARY})
-else()
-   target_link_libraries(${targetName} Amber ssh2 OpenMeshTools zstd)
-endif()
 
-if(QARCHIVE)
-   target_link_libraries (${targetName} archive_impl ${ARMADILLO_LIBRARY})
-else(QARCHIVE)
-#   target_link_libraries (${targetName} hdf5-static)
-endif(QARCHIVE)
+if(LINUX)
+   target_link_libraries(${targetName} 
+     # ssh2 
+      #OpenMeshTools 
+     # archive
+     # zstd
+   )
+endif()
