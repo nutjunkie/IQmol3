@@ -85,6 +85,8 @@ Description: A molecular builder and visualisation package.
 Depends: $deps
 EOF
 
+   chmod 775 $pkgdir/DEBIAN
+   chmod 644 $pkgdir/DEBIAN/control
    echo $pkgdir
 }
 
