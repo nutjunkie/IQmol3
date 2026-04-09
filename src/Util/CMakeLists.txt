@@ -55,7 +55,4 @@ target_link_libraries(${LIB} PRIVATE
    Qt5::Widgets
    Qt5::Xml
    Qt5::OpenGL
-   #QGLViewer
-   #OpenGL::GL
-   archive
 )
