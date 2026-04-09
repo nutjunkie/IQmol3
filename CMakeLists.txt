@@ -38,8 +38,14 @@ find_package(ZLIB REQUIRED)
    include_directories(${ZLIB_INCLUDE_DIRS})
 
 
-include_directories(modules/libQGLViewer)
-add_subdirectory(modules  EXCLUDE_FROM_ALL)
+if (LINUX)
+   #find_package(QGLViewer REQUIRED)
+   set(QGLVIEWER_LIBRARY QGLViewer-qt5 )
+else()
+   include_directories(modules/libQGLViewer)
+   add_subdirectory(modules  EXCLUDE_FROM_ALL)
+   set(QGLVIEWER_LIBRARY QGLViewer)
+endif()
 
 
 if (LINUX)
@@ -61,8 +67,7 @@ else()
 endif()
 
 
-if (LINUX)
-else()
+if (NOT LINUX)
    include_directories(modules/libssh2/include)
    add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 endif()
@@ -188,7 +193,6 @@ target_link_libraries (${targetName}
    Amber 
    yaml-cpp
    openbabel
-   QGLViewer
    Qt5::Core
    Qt5::Gui
    Qt5::Xml
@@ -197,6 +201,7 @@ target_link_libraries (${targetName}
    Qt5::OpenGL
    Qt5::Sql
    ssh2
+   ${QGLVIEWER_LIBRARY}
    ${OPENMESH_LIBRARIES}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
