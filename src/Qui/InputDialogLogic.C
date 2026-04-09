@@ -93,6 +93,7 @@ bool isOptimizationJob()
    return (value == "GEOMETRY") ||  
           (value == "TRANSITION STATE") ||  
           (value == "REACTION PATH") ||  
+          (value == "PES SCAN") ||  
           (value == "AB INITIO MD");
 }
 

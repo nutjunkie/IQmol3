@@ -446,7 +446,7 @@ QToolButton:checked {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>612</width>
+             <width>615</width>
              <height>382</height>
             </rect>
            </property>
@@ -467,7 +467,7 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>588</width>
+                 <width>591</width>
                  <height>288</height>
                 </rect>
                </property>
@@ -668,8 +668,8 @@ QToolButton:checked {
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>588</width>
-                 <height>301</height>
+                 <width>334</width>
+                 <height>77</height>
                 </rect>
                </property>
                <attribute name="label">
@@ -868,16 +868,6 @@ QToolButton:checked {
           </item>
           <item>
            <property name="text">
-            <string>Geometry Optimization</string>
-           </property>
-           <item>
-            <property name="text">
-             <string>Opt Thresholds</string>
-            </property>
-           </item>
-          </item>
-          <item>
-           <property name="text">
             <string>Reaction Pathway</string>
            </property>
           </item>
@@ -944,7 +934,7 @@ QToolButton:checked {
            <enum>QFrame::Sunken</enum>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>23</number>
           </property>
           <widget class="QWidget" name="AdvancedSCFControl">
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -5403,6 +5393,7 @@ Eventually this should go.</string>
             <font>
              <family>Courier New</family>
              <pointsize>12</pointsize>
+             <weight>50</weight>
              <italic>false</italic>
              <bold>false</bold>
              <underline>false</underline>
