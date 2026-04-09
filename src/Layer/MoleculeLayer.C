@@ -605,9 +605,12 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        OBAtomAssignTypicalImplicitHydrogens(obAtom);
 
        if (residue) {
+#ifdef Q_OS_WIN
           // Windows already defines AddAtom outside OpenBabel
-          //residue->InsertAtom(obAtom)
+          residue->InsertAtom(obAtom)
+#else
           residue->AddAtom(obAtom);
+#endif
           residue->SetAtomID(obAtom, (*atomIter)->getLabel().toStdString());
           obAtom->SetResidue(residue);
           //qDebug() << "Setting atom ID to:" << residue->GetAtomID(obAtom).c_str() 
