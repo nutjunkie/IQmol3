@@ -62,9 +62,15 @@ endif()
 
 
 if (LINUX)
+   set(LIBSSH2_LIBRARY ssh2)
+elseif (APPLE)
+   include_directories(modules/libssh2/include)
+   add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
+   set(LIBSSH2_LIBRARY ssh2)
 else()
    include_directories(modules/libssh2/include)
    add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
+   set(LIBSSH2_LIBRARY ${CMAKE_BINARY_DIR}/modules/libssh2/src/libssh2.a)
 endif()
 
 
@@ -196,10 +202,14 @@ target_link_libraries (${targetName}
    Qt5::Widgets
    Qt5::OpenGL
    Qt5::Sql
-   ssh2
+   ${LIBSSH2_LIBRARY}
    ${OPENMESH_LIBRARIES}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
    ${FORTRAN_LIBRARIES}
    ${ARCHIVE_LIBRARY}
 )
+
+if (WIN32)
+   target_link_libraries (${targetName} ws2_32)
+endif ()
