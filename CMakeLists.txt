@@ -95,6 +95,7 @@ endif()
 
 if (LINUX)
    find_package(LibArchive REQUIRED)
+   set(ARCHIVE_LIBRARY ${LibArchive_LIBRARIES})
 elseif (APPLE)
    find_package(ZSTD REQUIRED)
    include_directories(modules/libarchive/libarchive)
