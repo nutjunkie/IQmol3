@@ -29,28 +29,30 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 
 
-find_package(ZLIB REQUIRED)
-if(ZLIB_FOUND)
-   include_directories(${ZLIB_INCLUDE_DIRS})
-endif()
-
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL Sql REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
 find_package(OpenSSL REQUIRED)
+
+find_package(ZLIB REQUIRED)
+   include_directories(${ZLIB_INCLUDE_DIRS})
 
 
 include_directories(modules/libQGLViewer)
 add_subdirectory(modules  EXCLUDE_FROM_ALL)
 
 
-include_directories(modules/yaml-cpp/include)
-add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
+if (LINUX)
+   find_package(yaml-cpp REQUIRED)
+   include_directories(${YAML_INCLUDE_DIRS})
+else()
+   include_directories(modules/yaml-cpp/include)
+   add_subdirectory(modules/yaml-cpp  EXCLUDE_FROM_ALL)
+endif()
 
 
 if (LINUX)
    find_package(OpenBabel3 REQUIRED)
-   #include_directories(${OpenBabel3_INCLUDE_DIRS})
    include_directories(/usr/include/openbabel3)
 else()
    include_directories(modules/openbabel/include)
@@ -59,37 +61,32 @@ else()
 endif()
 
 
-include_directories(modules/libssh2/include)
-add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 if (LINUX)
-   #find_package(libssh2 REQUIRED)
-   set(LIBSSH2_LIBRARY libssh2)
 else()
-   set(LIBSSH2_LIBRARY ssh2)
+   include_directories(modules/libssh2/include)
+   add_subdirectory(modules/libssh2  EXCLUDE_FROM_ALL)
 endif()
 
 
-include_directories(modules/openmesh/src)
-add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
-if(WIN32)
+if (LINUX)
+   find_package(OpenMesh REQUIRED) 
    set(OPENMESH_LIBRARIES OpenMeshCore OpenMeshTools)
-else()
+elseif (APPLE)
+   include_directories(modules/openmesh/src)
+   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
    set(OPENMESH_LIBRARIES OpenMeshCoreStatic OpenMeshToolsStatic)
+else (WIN32)
+   include_directories(modules/openmesh/src)
+   add_subdirectory(modules/openmesh  EXCLUDE_FROM_ALL)
+   set(OPENMESH_LIBRARIES OpenMeshCore OpenMeshTools)
 endif()
 
 
 if (LINUX)
-   include_directories(modules/zstd/lib)
-   add_subdirectory(modules/zstd EXCLUDE_FROM_ALL)
-   include_directories(modules/libarchive)
-   add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
-   set(ARCHIVE_LIBRARY archive)
-   if (EXISTS /opt/local/lib/)
-	#   link_directories(/opt/local/lib/)
-   endif()
+   find_package(LibArchive REQUIRED)
 elseif (APPLE)
    find_package(ZSTD REQUIRED)
-   include_directories(modules/libarchive)
+   include_directories(modules/libarchive/libarchive)
    add_subdirectory(modules/libarchive EXCLUDE_FROM_ALL)
    set(ARCHIVE_LIBRARY archive)
    if (EXISTS /opt/homebrew/lib/)
@@ -157,8 +154,6 @@ if (APPLE)
       copy_directory ${CMAKE_SOURCE_DIR}/modules/openbabel/data 
                      ${CMAKE_BINARY_DIR}/bin/${targetName}.app/Contents/share/openbabel
    )
-#   add_custom_command(TARGET ${targetName} POST_BUILD 
-#      COMMAND macdeployqt ${CMAKE_BINARY_DIR}/bin/${targetName}.app)
 endif(APPLE)
 
 
@@ -201,20 +196,10 @@ target_link_libraries (${targetName}
    Qt5::Widgets
    Qt5::OpenGL
    Qt5::Sql
-   ${LIBSSH2_LIBRARY}
+   ssh2
    ${OPENMESH_LIBRARIES}
    ${OPENGL_LIBRARIES}
    ${ZLIB_LIBRARIES}
    ${FORTRAN_LIBRARIES}
    ${ARCHIVE_LIBRARY}
 )
-
-
-if(LINUX)
-   target_link_libraries(${targetName} 
-     # ssh2 
-      #OpenMeshTools 
-     # archive
-     # zstd
-   )
-endif()
