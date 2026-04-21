@@ -282,7 +282,8 @@ List Factory::convert(Data::Geometry& geometry)
    OpenBabel::OBMol obMol;
    obMol.BeginModify();
    AtomMap atomMap;
-   
+   QList<OpenBabel::OBAtom*> obAtomList;
+
    for (unsigned i = 0; i < nAtoms; ++i) {
        unsigned Z(geometry.atomicNumber(i));
        qglviewer::Vec position(geometry.position(i));
@@ -295,13 +296,25 @@ List Factory::convert(Data::Geometry& geometry)
        obAtom->SetAtomicNum(Z);
        obAtom->SetVector(position.x, position.y, position.z);
        atomMap.insert(obAtom, atom);
+       obAtomList.append(obAtom);
    }
 
    obMol.SetTotalCharge(geometry.charge());
    obMol.SetTotalSpinMultiplicity(geometry.multiplicity());
    obMol.EndModify();
-   obMol.ConnectTheDots();
-   obMol.PerceiveBondOrders();
+
+   if (geometry.hasBonds()) {
+      for (auto const& b : geometry.bonds()) {
+          if (b.first < obAtomList.size() && b.second < obAtomList.size()) {
+              obMol.AddBond(obAtomList[b.first]->GetIdx(),
+                            obAtomList[b.second]->GetIdx(), 1);
+          }
+      }
+      obMol.PerceiveBondOrders();
+   } else {
+      obMol.ConnectTheDots();
+      obMol.PerceiveBondOrders();
+   }
 
    for (OpenBabel::OBMolBondIter obBond(&obMol); obBond; ++obBond) {
        Atom* begin(atomMap.value(obBond->GetBeginAtom()));
