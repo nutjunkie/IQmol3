@@ -131,6 +131,47 @@
 namespace IQmol {
 namespace Parser {
 
+namespace {
+
+unsigned parseResidueId(QString const& field, bool* ok)
+{
+   QString residueId(field.trimmed().toUpper());
+
+   unsigned id(residueId.toUInt(ok));
+   if (ok && *ok) return id;
+
+   // Deal with non-integer IDs like A000 which occur for large numbers of
+   // residues/waters
+   if (residueId.size() == 4 && residueId[0].isLetter()) {
+      unsigned value(0);
+      bool valid(true);
+
+      for (QChar const& c : residueId) {
+         int digit(-1);
+         if (c.isDigit()) {
+            digit = c.digitValue();
+         }else if (c >= 'A' && c <= 'Z') {
+            digit = c.unicode() - 'A' + 10;
+         }else {
+            valid = false;
+            break;
+         }
+
+         value = 36 * value + digit;
+      }
+
+      if (valid) {
+         if (ok) *ok = true;
+         return value - 10 * 36 * 36 * 36 + 10000;
+      }
+   }
+
+   if (ok) *ok = false;
+   return 0;
+}
+
+}
+
 
 bool Pdb::parse(TextStream& textStream)
 {
@@ -190,7 +231,7 @@ bool Pdb::parse(TextStream& textStream)
          QString chainId(    line.mid(21, 1));              // eg. A
          QString atomSymbol( line.mid(76, 2).trimmed());    // eg. C
 
-         unsigned residueId = line.mid(22, 4).trimmed().toUInt(&ok);  if(!ok) goto error;
+         unsigned residueId = parseResidueId(line.mid(22, 4), &ok);  if(!ok) goto error;
 
          double x = line.mid(30, 8).toFloat(&ok);  if (!ok) goto error;
          double y = line.mid(38, 8).toFloat(&ok);  if (!ok) goto error;
@@ -316,6 +357,7 @@ qDebug() << "!!!Secondary structure order based on Map keys!!!";
    for (auto const& key : m_chains.keys()) {
        Data::ProteinChain* chain(m_chains[key]);
        QList<Data::Group*> groups(chain->groups());
+qDebug() << "Found" << groups.size() << "residues/groups";
 
        QVector<Data::SecondaryStructure> secondaryStructure;
 
@@ -329,7 +371,7 @@ qDebug() << "!!!Secondary structure order based on Map keys!!!";
            }
        }
 
-       chain->setSecondaryStructure(secondaryStructure); 
+       ok = ok && chain->setSecondaryStructure(secondaryStructure); 
    }
 
    return ok;

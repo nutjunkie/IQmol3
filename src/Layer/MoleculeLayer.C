@@ -607,7 +607,7 @@ OBMol* Molecule::toOBMol(AtomMap* atomMap, BondMap* bondMap, GroupMap* groupMap)
        if (residue) {
 #ifdef Q_OS_WIN
           // Windows already defines AddAtom outside OpenBabel
-          residue->InsertAtom(obAtom)
+          residue->InsertAtom(obAtom);
 #else
           residue->AddAtom(obAtom);
 #endif

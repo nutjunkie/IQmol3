@@ -26,6 +26,7 @@
 #include "TextStream.h"
 
 #include "Data/AtomicProperty.h"
+#include "Data/Energy.h"
 #include "Data/Frequencies.h"
 #include "Data/Geometry.h"
 #include "Data/GeometryList.h"
@@ -37,6 +38,9 @@
 
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <cmath>
+#include <fstream>
+#include <sstream>
 #include <vector>
 
 #include "openbabel/mol.h"
@@ -85,14 +89,18 @@ bool OpenBabel::parseFile(QString const& filePath)
       return false;
    }
 
-   ::OpenBabel::OBMol* mol(new ::OpenBabel::OBMol());
-   if (conv.Read(mol, &ifs)) {
-     parse(*mol);
+   Data::GeometryList* geometries(new Data::GeometryList(info.completeBaseName()));
+   m_dataBank.append(geometries);
+   int molecules(readMolecules(conv, ifs, *geometries));
+
+   if (!geometries->isEmpty()) {
+      QLOG_INFO() << molecules << "molecules read and" << geometries->size()
+                  << "geometries found";
    }else {
       m_errors.append("File format error");
+      m_dataBank.removeAll(geometries);
+      delete geometries;
    }
-
-   delete mol;
 
    ifs.close();
    return m_errors.isEmpty();
@@ -125,16 +133,20 @@ bool OpenBabel::parse(TextStream& stream)
       return false;
    }
 
-   ::OpenBabel::OBMol mol;
-   mol.SetSSSRPerceived();
-
    QByteArray byteArray(stream.readAll().toLatin1());
-   std::string s(std::string(byteArray.data()));
    std::istringstream iss(std::string(byteArray.data()));
-   if (conv.Read(&mol, &iss)) {
-      parse(mol);
+
+   Data::GeometryList* geometries(new Data::GeometryList(info.completeBaseName()));
+   m_dataBank.append(geometries);
+   int molecules(readMolecules(conv, iss, *geometries));
+
+   if (!geometries->isEmpty()) {
+      QLOG_INFO() << molecules << "molecules read and" << geometries->size()
+                  << "geometries found";
    }else {
       m_errors.append("File format error");
+      m_dataBank.removeAll(geometries);
+      delete geometries;
    }
 
    // catch?
@@ -163,12 +175,17 @@ bool OpenBabel::parse(QString const& string, QString const& extension)
       return false;
    }
 
-   ::OpenBabel::OBMol mol;
+   Data::GeometryList* geometries(new Data::GeometryList);
+   m_dataBank.append(geometries);
+   int molecules(readMolecules(conv, ss, *geometries));
 
-   if (conv.Read(&mol)) {
-      parse(mol);
+   if (!geometries->isEmpty()) {
+      QLOG_INFO() << molecules << "molecules read and" << geometries->size()
+                  << "geometries found";
    }else {
       m_errors.append("File format error");
+      m_dataBank.removeAll(geometries);
+      delete geometries;
    }
 
    // catch?
@@ -258,23 +275,59 @@ void OpenBabel::buildFrom2D(::OpenBabel::OBMol& obMol)
 
 bool OpenBabel::parse(::OpenBabel::OBMol& obMol)
 {
+   Data::GeometryList* geometries(new Data::GeometryList);
+   if (appendGeometries(obMol, *geometries)) {
+      QLOG_INFO() << geometries->size() << "geometries found";
+      m_dataBank.append(geometries);
+      appendAuxiliaryData(obMol);
+   }else {
+      delete geometries;
+      return false;
+   }
+
+   return m_errors.isEmpty();
+}
+
+
+int OpenBabel::readMolecules(::OpenBabel::OBConversion& conv, std::istream& input,
+   Data::GeometryList& geometries)
+{
+   int molecules(0);
+
+   while (true) {
+      ::OpenBabel::OBMol mol;
+      mol.SetSSSRPerceived();
+
+      if (!conv.Read(&mol, &input)) break;
+
+      ++molecules;
+      appendGeometries(mol, geometries);
+      appendAuxiliaryData(mol);
+   }
+
+   return molecules;
+}
+
+
+bool OpenBabel::appendGeometries(::OpenBabel::OBMol& obMol, Data::GeometryList& geometries)
+{
    qDebug() << "Parsing OBMol";
    int numberOfConformers(obMol.NumConformers());
    if (numberOfConformers < 1) return false;
-
-   QLOG_INFO() << numberOfConformers << "geometries found";
-   Data::GeometryList* geometries(new Data::GeometryList);
-   m_dataBank.append(geometries);
 
    if (!obMol.Has3D()) buildFrom2D(obMol);
 
    int charge(obMol.GetTotalCharge());
    unsigned multiplicity(obMol.GetTotalSpinMultiplicity());
+   double energy(0.0);
+   QString energyLabel;
+   bool haveEnergy(readEnergy(obMol, energy, energyLabel));
+   std::vector<double> conformerEnergies(obMol.GetEnergies());
 
    for (int conformer = 0; conformer < numberOfConformers; ++conformer) {
        obMol.SetConformer(conformer);
        Data::Geometry* geometry(new Data::Geometry());
-       geometries->append(geometry);
+       geometries.append(geometry);
 
        QList<double> charges;
        for (::OpenBabel::OBMolAtomIter obAtom(&obMol); obAtom; ++obAtom) {
@@ -287,9 +340,82 @@ bool OpenBabel::parse(::OpenBabel::OBMol& obMol)
        }
        geometry->setAtomicProperty<Data::AtomicCharge>(charges);
        geometry->setChargeAndMultiplicity(charge, multiplicity);
+
+       double geometryEnergy(energy);
+       QString geometryEnergyLabel(energyLabel);
+       bool haveGeometryEnergy(haveEnergy);
+
+       if ((int)conformerEnergies.size() > conformer &&
+           std::abs(conformerEnergies[conformer]) > 1.0e-12) {
+          geometryEnergy = conformerEnergies[conformer];
+          geometryEnergyLabel = "Conformer Energy";
+          haveGeometryEnergy = true;
+       }else if (!haveGeometryEnergy && std::abs(obMol.GetEnergy()) > 1.0e-12) {
+          geometryEnergy = obMol.GetEnergy();
+          geometryEnergyLabel = "Energy";
+          haveGeometryEnergy = true;
+       }
+
+       qDebug() << "Have Energy:" << haveGeometryEnergy << haveEnergy;
+       if (haveGeometryEnergy) {
+          Data::TotalEnergy& total(geometry->getProperty<Data::TotalEnergy>());
+          total.setValue(geometryEnergy, Data::Energy::Hartree);
+          qDebug() << "(3) setting conformer energy to:" << geometryEnergy;
+          if (!geometryEnergyLabel.isEmpty()) total.setLabel(geometryEnergyLabel);
+       }
    }
 
+   return true;
+}
+
+
+bool OpenBabel::readEnergy(::OpenBabel::OBMol& obMol, double& energy, QString& label)
+{
+   QRegularExpression number("[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?");
+   QStringList preferred;
+   preferred << "energy" << "totalenergy" << "finalenergy" << "scfenergy" << "qmenergy";
+
+   std::vector< ::OpenBabel::OBGenericData* > data(obMol.GetData());
+
+   for (int pass = 0; pass < 2; ++pass) {
+      for (auto genericData : data) {
+         ::OpenBabel::OBPairData* pairData(dynamic_cast< ::OpenBabel::OBPairData* >(genericData));
+         if (!pairData) continue;
+
+         QString attribute(QString::fromStdString(pairData->GetAttribute()));
+         QString normalized(attribute.toLower());
+         normalized.remove(QRegularExpression("[^a-z0-9]"));
+
+         bool possibleEnergy(false);
+         if (pass == 0) {
+            possibleEnergy = preferred.contains(normalized);
+         }else {
+            possibleEnergy = normalized.contains("energy");
+         }
+         if (!possibleEnergy) continue;
+
+         QString value(QString::fromStdString(pairData->GetValue()).trimmed());
+         QRegularExpressionMatch match(number.match(value));
+         if (!match.hasMatch()) continue;
+
+         bool ok(false);
+         double e(match.captured(0).toDouble(&ok));
+         if (ok) {
+            energy = e;
+            label = attribute;
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
+
+void OpenBabel::appendAuxiliaryData(::OpenBabel::OBMol& obMol)
+{
    ::OpenBabel::OBGenericData* data;
+
 
    // Frequencies
    data = obMol.GetData(::OpenBabel::OBGenericDataType::VibrationData);
@@ -311,8 +437,6 @@ bool OpenBabel::parse(::OpenBabel::OBMol& obMol)
          appendGridData(*gridData);
       }
    }
-
-   return m_errors.isEmpty();
 }
 
 

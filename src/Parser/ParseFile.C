@@ -34,6 +34,7 @@
 #include "QChemInputParser.h"
 #include "QChemOutputParser.h"
 #include "QChemPlotParser.h"
+#include "SdfParser.h"
 #include "EfpFragmentParser.h"
 #include "ExternalChargesParser.h"
 #include "FormattedCheckpointParser.h"
@@ -248,6 +249,11 @@ bool ParseFile::parse(QString const& filePath, bool& addToFileList)
    if (extension == "gro"){
       parser = new Gro;
       QLOG_INFO() << "Using gro parser";
+   }
+
+   if (extension == "sdf" || extension == "sd") {
+      parser = new Sdf(m_name);
+      QLOG_INFO() << "Using sdf parser";
    }
 
    if (extension == "ply" || extension == "obj" || 

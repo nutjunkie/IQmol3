@@ -1,0 +1,48 @@
+#pragma once
+/*******************************************************************************
+       
+  Copyright (C) 2026 Andrew Gilbert
+           
+  This file is part of IQmol, a free molecular visualization program. See
+  <http://iqmol.org> for more details.
+       
+  IQmol is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software  
+  Foundation, either version 3 of the License, or (at your option) any later  
+  version.
+
+  IQmol is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+  details.
+      
+  You should have received a copy of the GNU General Public License along
+  with IQmol.  If not, see <http://www.gnu.org/licenses/>.
+   
+********************************************************************************/
+
+#include "Parser.h"
+#include "Data/Geometry.h"
+
+
+namespace IQmol {
+namespace Parser {
+
+   class Sdf : public Base {
+
+      public:
+         Sdf(QString const& label = "Geometries") : m_label(label) { }
+         bool parse(TextStream&);
+
+      private:
+         Data::Geometry* readNextGeometry(TextStream&);
+         bool readCounts(QString const&, int&, int&) const;
+         bool readAtom(QString const&, unsigned&, qglviewer::Vec&) const;
+         bool readEnergy(TextStream&, double&, QString&);
+         bool parseEnergy(QString const&, double&) const;
+         bool isEnergyField(QString const&) const;
+
+         QString m_label;
+   };
+
+} } // end namespace IQmol::Parser

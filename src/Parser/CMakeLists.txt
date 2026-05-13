@@ -26,6 +26,7 @@ set( SOURCES
    QChemOutputParser.C
    QChemPlotParser.C
    ReorderBasis.C
+   SdfParser.C
    VibronicParser.C
    XyzParser.C
    YamlParser.C

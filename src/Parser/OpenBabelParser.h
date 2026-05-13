@@ -23,15 +23,21 @@
 ********************************************************************************/
 
 #include "Parser.h"
+#include <iosfwd>
 
 
 namespace OpenBabel {
+   class OBConversion;
    class OBMol;
    class OBGridData;
    class OBVibrationData;
 }
 
 namespace IQmol {
+namespace Data {
+   class GeometryList;
+}
+
 namespace Parser {
 
    class OpenBabel : public Base {
@@ -49,6 +55,11 @@ namespace Parser {
          static QStringList s_obFormats;
          static bool s_formatsLoaded;
 
+         int readMolecules(::OpenBabel::OBConversion&, std::istream&,
+            Data::GeometryList&);
+         bool appendGeometries(::OpenBabel::OBMol&, Data::GeometryList&);
+         void appendAuxiliaryData(::OpenBabel::OBMol&);
+         bool readEnergy(::OpenBabel::OBMol&, double&, QString&);
          void buildFrom2D(::OpenBabel::OBMol& mol);
          void appendGridData(::OpenBabel::OBGridData const&);
          void appendVibrationData(::OpenBabel::OBVibrationData const&);
