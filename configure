@@ -5,10 +5,17 @@ mkdir -p $TOPDIR/build
 
 CONFIGURE_ARGS="$*"
 WITH_OPENMP=auto
+BUILD_TYPE=Debug
 declare -a CMAKE_ARGS
 
 for arg in "$@"; do
    case "$arg" in
+      --debug)
+         BUILD_TYPE=Debug
+         ;;
+      --release)
+         BUILD_TYPE=Release
+         ;;
       --with-openmp)
          WITH_OPENMP=yes
          ;;
@@ -26,6 +33,7 @@ date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "CXX set to $CXX" >> configure.log
+echo "BUILD_TYPE=$BUILD_TYPE" >> configure.log
 echo "WITH_OPENMP=$WITH_OPENMP" >> configure.log
 echo "" >> configure.log
 
@@ -87,6 +95,7 @@ if [ "$WITH_OPENMP" == "no" ]; then
 fi
 
 DEFINES+=" -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX}"
+DEFINES+=" -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 
 echo "QT root = $QT" >> configure.log
 echo "CMAKE_PREFIX_PATH = $CMAKE_PREFIX" >> configure.log
@@ -133,6 +142,8 @@ elif [ "$OPENMP_FOUND" == "yes" ]; then
 else
    echo "-- OpenMP not detected"
 fi
+
+echo "-- Build type: $BUILD_TYPE"
 
 if [ $ARCH == 'Windoze' ]; then
    echo "-- Ensure release build is activated and static openbabl"
