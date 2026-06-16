@@ -35,24 +35,38 @@ OrbitalEvaluator::OrbitalEvaluator(
    Data::GridDataList& grids, 
    Data::ShellList const& shellList, 
    Matrix const& coefficients, 
-   QList<int> indices) 
+   QList<int> indices,
+   bool coarseGrain) 
     : m_grids(grids), 
       m_shellList(shellList),
       m_coefficients(coefficients), 
       m_indices(indices),
       m_evaluator(0)
 {
-   m_orbitalValues.resize({(size_t)m_indices.size()});
-
    using namespace std::placeholders;
-   m_function = std::bind(&OrbitalEvaluator::orbitalValues, this, _1, _2, _3);
+   m_function = std::bind(&OrbitalEvaluator::orbitalValues, this, _1, _2, _3, _4);
 
    double thresh(0.001);
-   m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
+   m_evaluator = new GridEvaluator(m_grids, m_function, thresh, coarseGrain);
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
    connect(m_evaluator, SIGNAL(finished()), this, SIGNAL(finished()));
 
    m_totalProgress = m_evaluator->totalProgress();
+
+   QList<unsigned> const shellOffsets(m_shellList.shellOffsets());
+   m_shells.reserve(m_shellList.size());
+   m_shellOffsets.reserve(shellOffsets.size());
+   for (int shellIndex = 0; shellIndex < m_shellList.size(); ++shellIndex) {
+      m_shells.push_back(m_shellList[shellIndex]);
+      m_shellOffsets.push_back(shellOffsets[shellIndex]);
+   }
+
+   size_t const nBasis(m_coefficients.shape()[1]);
+   double const* coefficientData(m_coefficients.data());
+   m_coefficientRows.reserve(m_indices.size());
+   for (int orbitalIndex : m_indices) {
+      m_coefficientRows.push_back(coefficientData + size_t(orbitalIndex) * nBasis);
+   }
 }
 
 
@@ -62,29 +76,34 @@ OrbitalEvaluator::~OrbitalEvaluator()
 }
 
 
-Vector const& OrbitalEvaluator::orbitalValues(double const x, double const y, double const z)
+void OrbitalEvaluator::orbitalValues(double const x, double const y, double const z, Vector& values)
 {
-   unsigned norb(m_indices.size());
-   unsigned offset(0);
-   unsigned nbfs;
-   double const* vals;
+   std::vector<double> shellValues;
+   size_t const norb(m_coefficientRows.size());
 
-   m_orbitalValues.zero();
+   if (values.size() != norb) {
+      values.resize({norb});
+   }
+   values.zero();
+   double* const output(values.data());
 
-   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
-       vals = (*shell)->evaluate(x,y,z);
-       nbfs = (*shell)->nBasis();
+   for (size_t shellIndex = 0; shellIndex < m_shells.size(); ++shellIndex) {
+       Data::Shell const* shell(m_shells[shellIndex]);
+       if (!shell->evaluate(x, y, z, shellValues)) continue;
 
-       if (vals) { // only add the significant shells
-          for (unsigned i = 0; i < nbfs; ++i) {
-              for (unsigned k = 0; k < norb; ++k) {
-                  m_orbitalValues(k) += m_coefficients(m_indices[k], offset+i) * vals[i];
-              } 
-          } 
+       unsigned const offset(m_shellOffsets[shellIndex]);
+       unsigned const nbfs(shell->nBasis());
+       double const* const shellData(shellValues.data());
+
+       for (size_t orbital = 0; orbital < norb; ++orbital) {
+           double const* const coefficients(m_coefficientRows[orbital] + offset);
+           double sum(output[orbital]);
+           for (unsigned i = 0; i < nbfs; ++i) {
+               sum += coefficients[i] * shellData[i];
+           }
+           output[orbital] = sum;
        }
-       offset += nbfs;
-   }   
-   return m_orbitalValues;
+   }
 }
 
 

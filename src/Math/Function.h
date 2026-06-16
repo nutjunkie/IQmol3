@@ -28,33 +28,20 @@
 namespace IQmol {
 
 using Function3D = std::function<double (double const, double const, double const)>;
-using MultiFunction3D = std::function<Vector const& (double const, double const, double const)>;
+using MultiFunction3D = std::function<void (double const, double const, double const, Vector&)>;
 using IndexMap = std::function<int (int const)>;
 
 static Function3D NullFunction3D;
 
 
-// Adaptor to convert a Funtion3D into a MultiFunction3D
+// Adaptor to convert a Funtion3D into a fill-style MultiFunction3D
 inline MultiFunction3D MultiFunctionAdaptor(Function3D f)
 {
-    struct Holder {
-        Function3D f;
-        mutable Vector buf; 
-
-        explicit Holder(Function3D g) : f(std::move(g)) {
-            buf.resize({1});
+    return [f = std::move(f)](double x, double y, double z, Vector& values) {
+        if (values.size() != 1) {
+            values.resize({1});
         }
-
-        // const: safe to call through a const lambda capture
-        Vector const& eval(double x, double y, double z) const {
-            buf[0] = f(x,y,z);
-            return buf;
-        }
-    };
-
-    // Capture the holder by value so the buffer lives with the callable
-    return [h = Holder{std::move(f)}](double x, double y, double z) -> Vector const& {
-        return h.eval(x,y,z);
+        values[0] = f(x,y,z);
     };
 }
 

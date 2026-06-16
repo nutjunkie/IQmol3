@@ -63,6 +63,8 @@ namespace IQmol {
       private:
          void checkGrids();
          void runCoarseGrain();
+         void evaluateAndStore(double x, double y, double z, unsigned i, unsigned j,
+            unsigned k, Vector& values);
 
          QList<Data::GridData*> m_grids;
          MultiFunction3D const& m_function;

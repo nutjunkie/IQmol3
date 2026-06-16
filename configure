@@ -3,13 +3,30 @@
 TOPDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 mkdir -p $TOPDIR/build
 
-CONFIGURE_ARGS=$*
+CONFIGURE_ARGS="$*"
+WITH_OPENMP=auto
+declare -a CMAKE_ARGS
+
+for arg in "$@"; do
+   case "$arg" in
+      --with-openmp)
+         WITH_OPENMP=yes
+         ;;
+      --without-openmp)
+         WITH_OPENMP=no
+         ;;
+      *)
+         CMAKE_ARGS+=("$arg")
+         ;;
+   esac
+done
 
 echo "IQmol configured by `whoami`@`hostname`:" > configure.log
 date >> configure.log
 echo "" >> configure.log
 echo "$0 $CONFIGURE_ARGS" >> configure.log
 echo "CXX set to $CXX" >> configure.log
+echo "WITH_OPENMP=$WITH_OPENMP" >> configure.log
 echo "" >> configure.log
 
 ARCH=$(uname)
@@ -54,9 +71,25 @@ if [ -z ${CMAKE_PREFIX_PATH+x} ]; then
 else 
    CMAKE_PREFIX=${CMAKE_PREFIX_PATH}
 fi
+
+if [ "$WITH_OPENMP" != "no" ] && [ $ARCH == 'Darwin' ]; then
+   if [ -d /opt/homebrew/opt/libomp ]; then
+      CMAKE_PREFIX="${CMAKE_PREFIX};/opt/homebrew/opt/libomp"
+      DEFINES+=" -DOpenMP_ROOT=/opt/homebrew/opt/libomp"
+   elif [ -d /usr/local/opt/libomp ]; then
+      CMAKE_PREFIX="${CMAKE_PREFIX};/usr/local/opt/libomp"
+      DEFINES+=" -DOpenMP_ROOT=/usr/local/opt/libomp"
+   fi
+fi
+
+if [ "$WITH_OPENMP" == "no" ]; then
+   DEFINES+=" -DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE"
+fi
+
 DEFINES+=" -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX}"
 
 echo "QT root = $QT" >> configure.log
+echo "CMAKE_PREFIX_PATH = $CMAKE_PREFIX" >> configure.log
 echo "DEFINES = $DEFINES" >> configure.log
 
 cd $TOPDIR/build
@@ -65,7 +98,41 @@ if [ -e CMakeCache.txt ]; then
     rm CMakeCache.txt
 fi
 
-cmake -G "$CMAKE_GENERATOR" $DEFINES $TOPDIR 2>&1 | tee -a ../configure.log
+cmake -G "$CMAKE_GENERATOR" $DEFINES "${CMAKE_ARGS[@]}" $TOPDIR 2>&1 | tee -a ../configure.log
+CMAKE_STATUS=${PIPESTATUS[0]}
+
+if [ $CMAKE_STATUS -ne 0 ]; then
+   exit $CMAKE_STATUS
+fi
+
+OPENMP_FOUND=no
+if [ -e CMakeCache.txt ]; then
+   OPENMP_FLAGS=$(grep '^OpenMP_CXX_FLAGS:STRING=' CMakeCache.txt | cut -d= -f2-)
+   OPENMP_LIBRARY=$(grep '^OpenMP_libomp_LIBRARY:FILEPATH=' CMakeCache.txt | cut -d= -f2-)
+   if [ -n "$OPENMP_FLAGS" ] || [ -n "$OPENMP_LIBRARY" ]; then
+      OPENMP_FOUND=yes
+   fi
+fi
+
+echo "OPENMP_FOUND=$OPENMP_FOUND" >> ../configure.log
+
+if [ "$WITH_OPENMP" == "yes" ] && [ "$OPENMP_FOUND" != "yes" ]; then
+   echo "ERROR: OpenMP was requested with --with-openmp, but CMake could not find it." | tee -a ../configure.log
+   if [ $ARCH == 'Darwin' ]; then
+      echo "       Try installing libomp with: brew install libomp" | tee -a ../configure.log
+   fi
+   exit 1
+fi
+
+if [ "$WITH_OPENMP" == "yes" ]; then
+   echo "-- OpenMP requested and detected"
+elif [ "$WITH_OPENMP" == "no" ]; then
+   echo "-- OpenMP explicitly disabled"
+elif [ "$OPENMP_FOUND" == "yes" ]; then
+   echo "-- OpenMP detected"
+else
+   echo "-- OpenMP not detected"
+fi
 
 if [ $ARCH == 'Windoze' ]; then
    echo "-- Ensure release build is activated and static openbabl"
@@ -78,4 +145,4 @@ if [ $ARCH == 'Linux' ]; then
    echo "   Replace /path/to/libm.a with -lm"
 fi
 
-exit ${PIPESTATUS[0]}
+exit 0

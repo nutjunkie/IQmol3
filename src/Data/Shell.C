@@ -361,10 +361,10 @@ void Shell::boundingBox(Vec& min, Vec& max, double const thresh)
 }
 
 
-// Returns a null pointer if grid point is outside the significant radius
 // Pure forms taken from Appendix A in The Theory of Intermolecular Forces
 // by Anthony Stone
-double const* Shell::evaluate(double const gx, double const gy, double const gz)
+bool Shell::evaluate(double const gx, double const gy, double const gz,
+   std::vector<double>& values) const
 {
    static const double f2     = 0.5;
    static const double f4     = 0.25;
@@ -391,7 +391,11 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
    double r2(x*x + y*y + z*z);
 
    // bail early if the basis function does not reach the grid point.
-   if (r2 > m_significantRadiusSquared) return 0;
+   if (r2 > m_significantRadiusSquared) return false;
+
+   if (values.size() != nBasis()) {
+      values.resize(nBasis());
+   }
 
    double s(0.0);
    for (int i = 0; i < m_exponents.size(); ++i) {
@@ -401,136 +405,144 @@ double const* Shell::evaluate(double const gx, double const gy, double const gz)
    switch (m_angularMomentum) {
 
       case S:
-         m_values[0] = s;
+         values[0] = s;
          break;
 
       case P:
-         m_values[0] = s * x;
-         m_values[1] = s * y;
-         m_values[2] = s * z;
+         values[0] = s * x;
+         values[1] = s * y;
+         values[2] = s * z;
          break;
 
       case SP:
          // These are converted to s and p shells, so should never be called
-         m_values[0] = s;
-         m_values[1] = s * x;
-         m_values[2] = s * y;
-         m_values[3] = s * z;
+         values[0] = s;
+         values[1] = s * x;
+         values[2] = s * y;
+         values[3] = s * z;
          break;
 
       case D5:
-         m_values[0] = s * (3*z*z - r2) * f2    ; // d0
-         m_values[1] = s * (x*z)        * rt3   ; // d+1
-         m_values[2] = s * (y*z)        * rt3   ; // d-1
-         m_values[3] = s * (x*x - y*y)  * rt3*f2; // d+2
-         m_values[4] = s * (x*y)        * rt3   ; // d-2
+         values[0] = s * (3*z*z - r2) * f2    ; // d0
+         values[1] = s * (x*z)        * rt3   ; // d+1
+         values[2] = s * (y*z)        * rt3   ; // d-1
+         values[3] = s * (x*x - y*y)  * rt3*f2; // d+2
+         values[4] = s * (x*y)        * rt3   ; // d-2
          break;
 
       case D6:
-         m_values[0] = s * (x*x)      ; // xx
-         m_values[1] = s * (y*y)      ; // yy
-         m_values[2] = s * (z*z)      ; // zz
-         m_values[3] = s * (x*y) * rt3; // xy
-         m_values[4] = s * (x*z) * rt3; // xz
-         m_values[5] = s * (y*z) * rt3; // yz
+         values[0] = s * (x*x)      ; // xx
+         values[1] = s * (y*y)      ; // yy
+         values[2] = s * (z*z)      ; // zz
+         values[3] = s * (x*y) * rt3; // xy
+         values[4] = s * (x*z) * rt3; // xz
+         values[5] = s * (y*z) * rt3; // yz
          break;
 
       case F7:
-         m_values[0] = s * z * (5*z*z - 3*r2 ) * f2     ; // f0
-         m_values[1] = s * x * (5*z*z -   r2 ) * f4*rt6 ; // f+1
-         m_values[2] = s * y * (5*z*z -   r2 ) * f4*rt6 ; // f-1
-         m_values[3] = s * z * (  x*x -   y*y) * f2*rt15; // f+2
-         m_values[4] = s * x*y*z               * rt15   ; // f-2
-         m_values[5] = s * x * (  x*x - 3*y*y) * f4*rt10; // f+3
-         m_values[6] = s * y * (3*x*x -   y*y) * f4*rt10; // f-3
+         values[0] = s * z * (5*z*z - 3*r2 ) * f2     ; // f0
+         values[1] = s * x * (5*z*z -   r2 ) * f4*rt6 ; // f+1
+         values[2] = s * y * (5*z*z -   r2 ) * f4*rt6 ; // f-1
+         values[3] = s * z * (  x*x -   y*y) * f2*rt15; // f+2
+         values[4] = s * x*y*z               * rt15   ; // f-2
+         values[5] = s * x * (  x*x - 3*y*y) * f4*rt10; // f+3
+         values[6] = s * y * (3*x*x -   y*y) * f4*rt10; // f-3
       break;
 
       case F10:
-         m_values[0] = s * (x*x*x)       ; // xxx
-         m_values[1] = s * (y*y*y)       ; // yyy
-         m_values[2] = s * (z*z*z)       ; // zzz
-         m_values[3] = s * (x*y*y) * rt5 ; // xyy
-         m_values[4] = s * (x*x*y) * rt5 ; // xxy
-         m_values[5] = s * (x*x*z) * rt5 ; // xxz
-         m_values[6] = s * (x*z*z) * rt5 ; // xzz
-         m_values[7] = s * (y*z*z) * rt5 ; // yzz
-         m_values[8] = s * (y*y*z) * rt5 ; // yyz
-         m_values[9] = s * (x*y*z) * rt15; // xyz
+         values[0] = s * (x*x*x)       ; // xxx
+         values[1] = s * (y*y*y)       ; // yyy
+         values[2] = s * (z*z*z)       ; // zzz
+         values[3] = s * (x*y*y) * rt5 ; // xyy
+         values[4] = s * (x*x*y) * rt5 ; // xxy
+         values[5] = s * (x*x*z) * rt5 ; // xxz
+         values[6] = s * (x*z*z) * rt5 ; // xzz
+         values[7] = s * (y*z*z) * rt5 ; // yzz
+         values[8] = s * (y*y*z) * rt5 ; // yyz
+         values[9] = s * (x*y*z) * rt15; // xyz
          break;
 
       case G9: {
          double x2(x*x), y2(y*y), z2(z*z);
-         m_values[0] = s * (35*z2*z2 - 30*z2*r2 + 3*r2*r2) * f8     ; // g0
-         m_values[1] = s *  x*z      * (7*z2 - 3*r2)       * f4*rt10; // g+1
-         m_values[2] = s *  y*z      * (7*z2 - 3*r2)       * f4*rt10; // g-1
-         m_values[3] = s * (x2 - y2) * (7*z2 -   r2)       * f4*rt5 ; // g+2
-         m_values[4] = s *  x*y      * (7*z2 -   r2)       * f2*rt5 ; // g-2
-         m_values[5] = s *  x*z      * (  x2 - 3*y2)       * f4*rt70; // g+3
-         m_values[6] = s *  y*z      * (3*x2 -   y2)       * f4*rt70; // g-3
-         m_values[7] = s * (x2*x2 - 6*x2*y2 + y2*y2)       * f8*rt35; // g+4
-         m_values[8] = s *  x*y      * (  x2 -   y2)       * f2*rt35; // g-4
+         values[0] = s * (35*z2*z2 - 30*z2*r2 + 3*r2*r2) * f8     ; // g0
+         values[1] = s *  x*z      * (7*z2 - 3*r2)       * f4*rt10; // g+1
+         values[2] = s *  y*z      * (7*z2 - 3*r2)       * f4*rt10; // g-1
+         values[3] = s * (x2 - y2) * (7*z2 -   r2)       * f4*rt5 ; // g+2
+         values[4] = s *  x*y      * (7*z2 -   r2)       * f2*rt5 ; // g-2
+         values[5] = s *  x*z      * (  x2 - 3*y2)       * f4*rt70; // g+3
+         values[6] = s *  y*z      * (3*x2 -   y2)       * f4*rt70; // g-3
+         values[7] = s * (x2*x2 - 6*x2*y2 + y2*y2)       * f8*rt35; // g+4
+         values[8] = s *  x*y      * (  x2 -   y2)       * f2*rt35; // g-4
       }  break;
 
       case G15:
-         m_values[ 0] = s * (x*x*x*x)         ; // xxxx
-         m_values[ 1] = s * (y*y*y*y)         ; // yyyy
-         m_values[ 2] = s * (z*z*z*z)         ; // zzzz
-         m_values[ 3] = s * (x*x*x*y) * rt7   ; // xxxy
-         m_values[ 4] = s * (x*x*x*z) * rt7   ; // xxxz
-         m_values[ 5] = s * (x*y*y*y) * rt7   ; // xyyy
-         m_values[ 6] = s * (y*y*y*z) * rt7   ; // yyyz
-         m_values[ 7] = s * (x*z*z*z) * rt7   ; // xzzz
-         m_values[ 8] = s * (y*z*z*z) * rt7   ; // yzzz
-         m_values[ 9] = s * (x*x*y*y) * rt35o3; // xxyy
-         m_values[10] = s * (x*x*z*z) * rt35o3; // xxzz
-         m_values[11] = s * (y*y*z*z) * rt35o3; // yyzz
-         m_values[12] = s * (x*x*y*z) * rt35  ; // xxyz
-         m_values[13] = s * (x*y*y*z) * rt35  ; // xyyz
-         m_values[14] = s * (x*y*z*z) * rt35  ; // xyzz
+         values[ 0] = s * (x*x*x*x)         ; // xxxx
+         values[ 1] = s * (y*y*y*y)         ; // yyyy
+         values[ 2] = s * (z*z*z*z)         ; // zzzz
+         values[ 3] = s * (x*x*x*y) * rt7   ; // xxxy
+         values[ 4] = s * (x*x*x*z) * rt7   ; // xxxz
+         values[ 5] = s * (x*y*y*y) * rt7   ; // xyyy
+         values[ 6] = s * (y*y*y*z) * rt7   ; // yyyz
+         values[ 7] = s * (x*z*z*z) * rt7   ; // xzzz
+         values[ 8] = s * (y*z*z*z) * rt7   ; // yzzz
+         values[ 9] = s * (x*x*y*y) * rt35o3; // xxyy
+         values[10] = s * (x*x*z*z) * rt35o3; // xxzz
+         values[11] = s * (y*y*z*z) * rt35o3; // yyzz
+         values[12] = s * (x*x*y*z) * rt35  ; // xxyz
+         values[13] = s * (x*y*y*z) * rt35  ; // xyyz
+         values[14] = s * (x*y*z*z) * rt35  ; // xyzz
          break;
 
       case H11: {
          double x2(x*x),   y2(y*y),   z2(z*z);
          double x4(x2*x2), y4(y2*y2), z4(z2*z2), r4(r2*r2);
          // Need the ordering of these
-         m_values[ 0] = s * z * (63*z4 - 70*z2*r2 + 15*r4)                * f8        ; // h0
-         m_values[ 1] = s * x * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h+1
-         m_values[ 2] = s * y * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h-1
-         m_values[ 3] = s * z * (3*z2*(x2-y2) - x2*(x2-y2))               * f4*rt105  ; // h+2
-         m_values[ 4] = s * x*y*z * (3*z2-r2)                             * f2*rt105  ; // h-2
-         m_values[ 5] = s * x * ( 9*x2*z2 - 27*y2*z2 -   x2*r2 + 3*y2*r2) * f16*rt70  ; // h+3
-         m_values[ 6] = s * y * (27*x2*z2 -  9*y2*z2 - 3*x2*r2 +   y2*r2) * f16*rt70  ; // h-3
-         m_values[ 7] = s * z * (x4 - 6*x2*y2+ y4)                        * f8*rt35*3 ; // h+4
-         m_values[ 8] = s * x*y*z * (x2-y2)                               * f2*rt35*3 ; // h+4
-         m_values[ 9] = s * x * (  x4 - 10*x2*y2 + 5*y4)                  * f16*rt14*3; // h+5
-         m_values[10] = s * y * (5*x4 - 10*x2*y2 +   y4)                  * f16*rt14*3; // h-5
+         values[ 0] = s * z * (63*z4 - 70*z2*r2 + 15*r4)                * f8        ; // h0
+         values[ 1] = s * x * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h+1
+         values[ 2] = s * y * (21*z4 - 14*z2*r2 +    r4)                * f8*rt15   ; // h-1
+         values[ 3] = s * z * (3*z2*(x2-y2) - x2*(x2-y2))               * f4*rt105  ; // h+2
+         values[ 4] = s * x*y*z * (3*z2-r2)                             * f2*rt105  ; // h-2
+         values[ 5] = s * x * ( 9*x2*z2 - 27*y2*z2 -   x2*r2 + 3*y2*r2) * f16*rt70  ; // h+3
+         values[ 6] = s * y * (27*x2*z2 -  9*y2*z2 - 3*x2*r2 +   y2*r2) * f16*rt70  ; // h-3
+         values[ 7] = s * z * (x4 - 6*x2*y2+ y4)                        * f8*rt35*3 ; // h+4
+         values[ 8] = s * x*y*z * (x2-y2)                               * f2*rt35*3 ; // h+4
+         values[ 9] = s * x * (  x4 - 10*x2*y2 + 5*y4)                  * f16*rt14*3; // h+5
+         values[10] = s * y * (5*x4 - 10*x2*y2 +   y4)                  * f16*rt14*3; // h-5
       }  break;
  
       case H21:
-         m_values[ 0] = s * x*x*x*x*x        ; // xxxxx
-         m_values[ 1] = s * y*y*y*y*y        ; // yyyyy
-         m_values[ 2] = s * z*z*z*z*z        ; // zzzzz
-         m_values[ 3] = s * x*x*x*x*y * 3    ; // xxxxy
-         m_values[ 4] = s * x*x*x*x*z * 3    ; // xxxxz
-         m_values[ 5] = s * x*y*y*y*y * 3    ; // xyyyy
-         m_values[ 6] = s * y*y*y*y*z * 3    ; // yyyyz
-         m_values[ 7] = s * x*z*z*z*z * 3    ; // xzzzz
-         m_values[ 8] = s * y*z*z*z*z * 3    ; // yzzzz
-         m_values[ 9] = s * x*x*x*y*y * rt21 ; // xxxyy
-         m_values[10] = s * x*x*x*z*z * rt21 ; // xxxzz
-         m_values[11] = s * x*x*y*y*y * rt21 ; // xxyyy
-         m_values[12] = s * y*y*y*z*z * rt21 ; // yyyzz
-         m_values[13] = s * x*x*z*z*z * rt21 ; // xxzzz
-         m_values[14] = s * y*y*z*z*z * rt21 ; // yyzzz
-         m_values[15] = s * x*x*x*y*z * rt63 ; // xxxyz
-         m_values[16] = s * x*y*y*y*z * rt63 ; // xyyyz
-         m_values[17] = s * x*y*z*z*z * rt63 ; // xyzzz
-         m_values[18] = s * x*x*y*y*z * rt105; // xxyyz
-         m_values[19] = s * x*x*y*z*z * rt105; // xxyzz
-         m_values[20] = s * x*y*y*z*z * rt105; // xyyzz
+         values[ 0] = s * x*x*x*x*x        ; // xxxxx
+         values[ 1] = s * y*y*y*y*y        ; // yyyyy
+         values[ 2] = s * z*z*z*z*z        ; // zzzzz
+         values[ 3] = s * x*x*x*x*y * 3    ; // xxxxy
+         values[ 4] = s * x*x*x*x*z * 3    ; // xxxxz
+         values[ 5] = s * x*y*y*y*y * 3    ; // xyyyy
+         values[ 6] = s * y*y*y*y*z * 3    ; // yyyyz
+         values[ 7] = s * x*z*z*z*z * 3    ; // xzzzz
+         values[ 8] = s * y*z*z*z*z * 3    ; // yzzzz
+         values[ 9] = s * x*x*x*y*y * rt21 ; // xxxyy
+         values[10] = s * x*x*x*z*z * rt21 ; // xxxzz
+         values[11] = s * x*x*y*y*y * rt21 ; // xxyyy
+         values[12] = s * y*y*y*z*z * rt21 ; // yyyzz
+         values[13] = s * x*x*z*z*z * rt21 ; // xxzzz
+         values[14] = s * y*y*z*z*z * rt21 ; // yyzzz
+         values[15] = s * x*x*x*y*z * rt63 ; // xxxyz
+         values[16] = s * x*y*y*y*z * rt63 ; // xyyyz
+         values[17] = s * x*y*z*z*z * rt63 ; // xyzzz
+         values[18] = s * x*x*y*y*z * rt105; // xxyyz
+         values[19] = s * x*x*y*z*z * rt105; // xxyzz
+         values[20] = s * x*y*y*z*z * rt105; // xyyzz
          break;
    }
 
+   return true;
+}
+
+
+// Returns a null pointer if grid point is outside the significant radius.
+double const* Shell::evaluate(double const gx, double const gy, double const gz)
+{
+   if (!evaluate(gx, gy, gz, m_values)) return 0;
    return &m_values[0];
 }
 

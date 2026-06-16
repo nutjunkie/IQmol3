@@ -81,9 +81,16 @@ namespace Data {
          void boundingBox(qglviewer::Vec& min, qglviewer::Vec& max, 
             double const thresh = 0.001);
 
-		 // Returns a reference to an array containing the values of the basis
-		 // functions evaluated at the given position.  Returns a null pointer
-         // if the position is beyond the significant radius.
+         /// Thread-safe evaluation path.  Returns false when the point is
+         /// outside the shell's significant radius, otherwise fills the
+         /// caller-provided buffer with the basis values in Molden order.
+         bool evaluate(double const x, double const y, double const z,
+            std::vector<double>& values) const;
+
+		 // Legacy evaluation path that uses internal scratch storage and
+         // returns a null pointer when the point is beyond the significant
+         // radius.  Keep this for existing serial callers during the staged
+         // threading refactor.
          double const* evaluate(double const x, double const y, double const z);
 
          unsigned atomIndex() const { return m_atomIndex; }
@@ -92,9 +99,8 @@ namespace Data {
 
 
       private:
-		 /// Shell values are stored in this static array, the length of which
-		 /// is sufficient for up to h angular momentum.  This could cause 
-         /// problems if Shells are ever used in parallel.
+         /// Legacy scratch buffer for the pointer-returning evaluate() API.
+         /// The new fill-style overload avoids this shared mutable state.
          std::vector<double> m_values;
 
 		 /// Computes and saves the significant radius of the shell,

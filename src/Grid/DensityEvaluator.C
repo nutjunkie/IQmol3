@@ -33,24 +33,33 @@ namespace IQmol {
 
 
 DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
-   QList<Vector const*> const& densities) : m_grids(grids), m_shellList(shellList),
+   QList<Vector const*> const& densities, bool coarseGrain) : m_grids(grids), m_shellList(shellList),
    m_densities(densities), m_evaluator(0)
 {
    if (grids.isEmpty()) return;
 
-   m_returnValues.resize({(size_t)m_densities.size()});
-
 //   m_shellList.setDensityVectors(densities);
    using namespace std::placeholders;
 //   m_function = std::bind(&Data::ShellList::densityValues, &m_shellList, _1, _2, _3);
-   m_function = std::bind(&DensityEvaluator::densityValues, this, _1, _2, _3);
+   m_function = std::bind(&DensityEvaluator::densityValues, this, _1, _2, _3, _4);
 
    double thresh(0.001);
-   m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
+   m_evaluator = new GridEvaluator(m_grids, m_function, thresh, coarseGrain);
    
-   size_t nBasis(m_shellList.nBasis());
-   m_sigBasis = new unsigned[nBasis];
-   m_basisValues.resize({nBasis});
+   m_nBasis = m_shellList.nBasis();
+
+   QList<unsigned> const shellOffsets(m_shellList.shellOffsets());
+   m_shells.reserve(m_shellList.size());
+   m_shellOffsets.reserve(shellOffsets.size());
+   for (int shellIndex = 0; shellIndex < m_shellList.size(); ++shellIndex) {
+      m_shells.push_back(m_shellList[shellIndex]);
+      m_shellOffsets.push_back(shellOffsets[shellIndex]);
+   }
+
+   m_densityData.reserve(m_densities.size());
+   for (Vector const* density : m_densities) {
+      m_densityData.push_back(density->data());
+   }
 
    connect(m_evaluator, SIGNAL(progress(int)), this, SIGNAL(progress(int)));
    connect(m_evaluator, SIGNAL(finished()), this, SLOT(evaluatorFinished()));
@@ -61,72 +70,59 @@ DensityEvaluator::DensityEvaluator(Data::GridDataList& grids, Data::ShellList& s
 
 DensityEvaluator::~DensityEvaluator()
 {
-   if (m_sigBasis)  delete [] m_sigBasis;
    if (m_evaluator) delete m_evaluator;
 }
 
 
-Vector const& DensityEvaluator::densityValues(double const x, double const y, double const z)
+void DensityEvaluator::densityValues(double const x, double const y, double const z, Vector& values)
 {
-   unsigned nden(m_densities.size());
-   unsigned offset(0);
+   std::vector<double> shellValues;
+   std::vector<unsigned> sigBasis(m_nBasis);
+   std::vector<double> basisValues(m_nBasis);
+   size_t const nden(m_densityData.size());
    unsigned nSigBas(0);
-   unsigned nbfs;
-   double const* vals;
 
-   m_returnValues.zero();
+   if (values.size() != nden) {
+      values.resize({nden});
+   }
+   values.zero();
+   double* const output(values.data());
 
    // Determine the significant shells, and corresponding basis function indices
-   for (auto shell = m_shellList.begin(); shell != m_shellList.end(); ++shell) {
-       vals = (*shell)->evaluate(x,y,z);
-       nbfs = (*shell)->nBasis(); 
-      
-#if 1
-       if (vals) { // only add the significant shells
-          for (unsigned i = 0; i < nbfs; ++i, ++nSigBas, ++offset) {
-              m_basisValues(nSigBas) = vals[i];
-              m_sigBasis[nSigBas]    = offset;
-          }
-       }else {
-          offset += nbfs;
+   for (size_t shellIndex = 0; shellIndex < m_shells.size(); ++shellIndex) {
+       Data::Shell const* shell(m_shells[shellIndex]);
+       if (!shell->evaluate(x, y, z, shellValues)) continue;
+
+       unsigned const offset(m_shellOffsets[shellIndex]);
+       unsigned const nbfs(shell->nBasis());
+       for (unsigned i = 0; i < nbfs; ++i, ++nSigBas) {
+           basisValues[nSigBas] = shellValues[i];
+           sigBasis[nSigBas] = offset + i;
        }
-#else
-       // This code does not give equivalent results, not sure why
-       if (vals) { // only add the significant shells
-          for (unsigned i = 0; i < nbfs; ++i, ++nSigBas) {
-              m_basisValues(nSigBas) = vals[i];
-              m_sigBasis[nSigBas]    = offset + i;
-          }
-       }
-       offset += nbfs;
-#endif
    }
-  
-   double   xi, xij;
-   unsigned ii, jj, Ti;
-  
   
    // Now compute the basis function pair values on the grid
    for (unsigned i = 0; i < nSigBas; ++i) {
-       xi = m_basisValues(i);
-       ii = m_sigBasis[i];
-       Ti = (ii*(ii+1))/2;
+       double const xi(basisValues[i]);
+       unsigned const ii(sigBasis[i]);
+       unsigned const Ti((ii*(ii+1))/2);
+       double const diagonal(xi*xi);
 
        for (unsigned j = 0; j < i; ++j) {
-           xij = 2.0*xi*m_basisValues(j);
-           jj  = m_sigBasis[j];
+           double const pairWeight(4.0*xi*basisValues[j]);
+           unsigned const jj(sigBasis[j]);
+           unsigned const pairIndex(Ti + jj);
   
-           for (unsigned k = 0; k < nden; ++k) {
-               m_returnValues(k) += 2.0*xij*(*m_densities[k])(Ti+jj);
-            }
+           for (size_t k = 0; k < nden; ++k) {
+               output[k] += pairWeight * m_densityData[k][pairIndex];
+           }
        }
        
-       for (unsigned k = 0; k < nden; ++k) {
-           m_returnValues(k) += xi*xi*(*m_densities[k])(Ti+ii);
+       unsigned const diagonalIndex(Ti + ii);
+       for (size_t k = 0; k < nden; ++k) {
+           output[k] += diagonal * m_densityData[k][diagonalIndex];
        }
    }
-
-   return m_returnValues;
 }
 
 

@@ -25,6 +25,7 @@
 #include "Data/GridData.h"
 #include "Math/Function.h"
 #include "Math/Matrix.h"
+#include <vector>
 
 
 namespace IQmol {
@@ -32,6 +33,7 @@ namespace IQmol {
    class GridEvaluator;
 
    namespace Data {
+      class Shell;
       class ShellList;
    }
 
@@ -44,7 +46,8 @@ namespace IQmol {
             Data::GridDataList& grids, 
             Data::ShellList const& shellList, 
             Matrix const& coefficients, 
-            QList<int> indices);
+            QList<int> indices,
+            bool coarseGrain = true);
 
          ~OrbitalEvaluator();
 
@@ -55,16 +58,17 @@ namespace IQmol {
          void run();
 
       private:
-         Vector const& orbitalValues(double const x, double const y, double const z);
+         void orbitalValues(double const x, double const y, double const z, Vector& values);
 
          MultiFunction3D         m_function;
          Data::GridDataList      m_grids;
          Data::ShellList const&  m_shellList;
          Matrix const&           m_coefficients;
          QList<int>              m_indices;
+         std::vector<Data::Shell const*> m_shells;
+         std::vector<unsigned>   m_shellOffsets;
+         std::vector<double const*> m_coefficientRows;
          GridEvaluator*          m_evaluator;
-
-         Vector                  m_orbitalValues;
    };
 
 } // end namespace IQmol

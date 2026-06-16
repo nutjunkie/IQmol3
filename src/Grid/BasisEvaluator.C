@@ -40,10 +40,8 @@ BasisEvaluator::BasisEvaluator(
       m_indices(indices),
       m_evaluator(0)
 {
-   m_basisValues.resize({(size_t)m_indices.size()});
-
    using namespace std::placeholders;
-   m_function = std::bind(&BasisEvaluator::functionValues, this, _1, _2, _3);
+   m_function = std::bind(&BasisEvaluator::functionValues, this, _1, _2, _3, _4);
 
    double thresh(0.001);
    m_evaluator = new GridEvaluator(m_grids, m_function, thresh);
@@ -70,26 +68,28 @@ BasisEvaluator::~BasisEvaluator()
 }
 
 
-Vector const& BasisEvaluator::functionValues(double const x, double const y, double const z)
+void BasisEvaluator::functionValues(double const x, double const y, double const z, Vector& values)
 {
-   double const* vals;
-   m_basisValues.zero();
+   std::vector<double> shellValues;
+
+   if (values.size() != m_indices.size()) {
+      values.resize({(size_t)m_indices.size()});
+   }
+   values.zero();
 
    for (auto idx : m_shellIndices) {
-       vals = m_shellList[idx]->evaluate(x,y,z);
+       bool const active(m_shellList[idx]->evaluate(x, y, z, shellValues));
 
-       if (vals) { // check if significant on this point
+       if (active) { // check if significant on this point
           unsigned bmin(m_shellOffsets[idx]);
           unsigned bmax = bmin +  m_shellList[idx]->nBasis();
           for (size_t i = 0; i < m_indices.size(); ++i) {
               if (bmin <= m_indices[i] && m_indices[i] < bmax) {
-                 m_basisValues(i) = vals[m_indices[i]-bmin];
+                 values(i) = shellValues[m_indices[i]-bmin];
               }
           }
        }
    }
- 
-   return m_basisValues;
 }
 
 

@@ -47,6 +47,11 @@ add_library(${LIB} STATIC ${SOURCES} ${UI_HEADERS})
 
 target_include_directories(${LIB} PUBLIC "${${LIB}_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 
+if(OpenMP_CXX_FOUND)
+   target_link_libraries(${LIB} PRIVATE OpenMP::OpenMP_CXX)
+   target_compile_definitions(${LIB} PRIVATE IQMOL_USE_OPENMP)
+endif()
+
 target_link_libraries(${LIB} PRIVATE
    Data
    Util

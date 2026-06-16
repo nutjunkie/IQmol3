@@ -196,7 +196,7 @@ qDebug() << "Surface type requested:" << type.toString();
 
           runTask(evaluator);
 
-          QLOG_TRACE() << "Time taken to compute basis function grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Basis grid generation:" << evaluator.timeTaken() << "seconds";
        }
 
        if (!alphaOrbitals.isEmpty() && !m_terminate) {
@@ -209,7 +209,7 @@ qDebug() << "Surface type requested:" << type.toString();
              alphaOrbitals);
 
           runTask(evaluator);
-          QLOG_TRACE() << "Time taken to compute orbital grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Alpha orbital grid generation:" << evaluator.timeTaken() << "seconds";
        }
 
        if (!betaOrbitals.isEmpty() && !m_terminate) {
@@ -221,7 +221,7 @@ qDebug() << "Surface type requested:" << type.toString();
              betaOrbitals);
 
           runTask(evaluator);
-          QLOG_TRACE() << "Time taken to compute orbital grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Beta orbital grid generation:" << evaluator.timeTaken() << "seconds";
        }
 
        if (!densityGrids.isEmpty() && !m_terminate) {
@@ -233,7 +233,7 @@ qDebug() << "Surface type requested:" << type.toString();
           DensityEvaluator evaluator(densityGrids, m_shellList, densityVectors);
 
           runTask(evaluator);
-          QLOG_TRACE() << "Time taken to compute density grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Density grid generation:" << evaluator.timeTaken() << "seconds";
        }
 
 
@@ -246,7 +246,7 @@ qDebug() << "Surface type requested:" << type.toString();
              m_alphaCoefficients, m_alphaImaginaryCoefficients, alphaComplexOrbitals);
 
           runTask(evaluator);
-          QLOG_TRACE() << "Time taken to compute imaginary orbital grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Complex alpha orbital grid generation:" << evaluator.timeTaken() << "seconds";
        }
 
        if (!betaComplexOrbitals.isEmpty() && !m_terminate) {
@@ -258,7 +258,7 @@ qDebug() << "Surface type requested:" << type.toString();
              m_betaCoefficients, m_betaImaginaryCoefficients, betaComplexOrbitals);
 
           runTask(evaluator);
-          QLOG_TRACE() << "Time taken to compute imaginary orbital grids:" << evaluator.timeTaken();
+          QLOG_INFO() << "Complex beta orbital grid generation:" << evaluator.timeTaken() << "seconds";
        }
    }
 }

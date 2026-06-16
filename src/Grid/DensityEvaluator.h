@@ -25,6 +25,7 @@
 #include "Data/GridData.h"
 #include "Math/Function.h"
 #include "Math/Matrix.h"
+#include <vector>
 
 
 namespace IQmol {
@@ -32,6 +33,7 @@ namespace IQmol {
    class GridEvaluator;
 
    namespace Data {
+      class Shell;
       class ShellList;
    }
 
@@ -43,7 +45,7 @@ namespace IQmol {
          // Note the list of densities can be a superset of the requred densities
          // for the grid calcualation.
          DensityEvaluator(Data::GridDataList& grids, Data::ShellList& shellList, 
-            QList<Vector const*> const& densities);
+            QList<Vector const*> const& densities, bool coarseGrain = true);
 
          ~DensityEvaluator();
 
@@ -57,17 +59,17 @@ namespace IQmol {
          void evaluatorFinished();
 
       private:
-         Vector const& densityValues(double const x, double const y, double const z);
+         void densityValues(double const x, double const y, double const z, Vector& values);
 
          MultiFunction3D      m_function;
          Data::GridDataList   m_grids;
          Data::ShellList&     m_shellList;
          QList<Vector const*> m_densities;
+         std::vector<Data::Shell const*> m_shells;
+         std::vector<unsigned> m_shellOffsets;
+         std::vector<double const*> m_densityData;
          GridEvaluator*       m_evaluator;
-
-         Vector               m_returnValues;
-         Vector               m_basisValues;
-         unsigned*            m_sigBasis;
+         unsigned             m_nBasis;
    };
 
 } // end namespace IQmol

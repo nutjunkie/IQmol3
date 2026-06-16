@@ -9,8 +9,8 @@ include(FortranCInterface)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(BUILD_SHARED_LIBS OFF)
@@ -32,6 +32,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 find_package(Qt5 COMPONENTS Core Gui Xml PrintSupport Widgets OpenGL Sql REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenGL  REQUIRED)
+find_package(OpenMP QUIET)
 find_package(OpenSSL REQUIRED)
 
 find_package(ZLIB REQUIRED)
@@ -130,6 +131,7 @@ set(CMAKE_AUTOMOC ON)
 add_subdirectory(src)
 
 enable_testing()
+add_subdirectory(tests)
 
 if (${Qt5Core_VERSION_STRING} VERSION_GREATER_EQUAL 5.15 )
    qt_add_resources(IQmol_RESOURCES_RCC resources/IQmol.qrc)
