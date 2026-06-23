@@ -226,6 +226,8 @@ bool Pdb::parse(TextStream& textStream)
          QString alternateLocation(line.mid(16, 1).trimmed());
          if (!alternateLocation.isEmpty() && alternateLocation != 'A') continue;
 
+         int serial = line.mid(6, 5).trimmed().toInt();    // atom serial number
+
          QString label(      line.mid(12, 4).trimmed());    // eg. CA
          QString residueName(line.mid(17, 3).trimmed());    // eg. HIS
          QString chainId(    line.mid(21, 1));              // eg. A
@@ -291,12 +293,40 @@ bool Pdb::parse(TextStream& textStream)
                }
             }
             
+            if (serial > 0) {
+               m_serialToAtom.insert(serial, qMakePair(geometry, (int)geometry->nAtoms()));
+            }
             geometry->append(atomSymbol, qv, label);
-         }         
+         }
+
+      }else if (key == "CONECT") {
+         bool ok2;
+         int atom1 = line.mid(6, 5).trimmed().toInt(&ok2);
+         if (!ok2 || atom1 == 0) continue;
+
+         int atom2 = line.mid(11, 5).trimmed().toInt(&ok2);
+         if (ok2 && atom2 > 0) m_conectPairs.append(qMakePair(atom1, atom2));
+
+         int atom3 = line.mid(16, 5).trimmed().toInt(&ok2);
+         if (ok2 && atom3 > 0) m_conectPairs.append(qMakePair(atom1, atom3));
+
+         int atom4 = line.mid(21, 5).trimmed().toInt(&ok2);
+         if (ok2 && atom4 > 0) m_conectPairs.append(qMakePair(atom1, atom4));
+
+         int atom5 = line.mid(26, 5).trimmed().toInt(&ok2);
+         if (ok2 && atom5 > 0) m_conectPairs.append(qMakePair(atom1, atom5));
 
       }else if (key == "ENDMDL" || key == "END") {
             break;
-      } 
+      }
+   }
+
+   for (auto const& pair : m_conectPairs) {
+      auto it1 = m_serialToAtom.find(pair.first);
+      auto it2 = m_serialToAtom.find(pair.second);
+      if (it1 == m_serialToAtom.end() || it2 == m_serialToAtom.end()) continue;
+      if (it1->first != it2->first) continue;  // skip cross-geometry bonds
+      it1->first->addBond(it1->second, it2->second);
    }
 
    if (!setSecondaryStructure()) {

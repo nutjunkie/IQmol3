@@ -37,6 +37,15 @@ namespace Data {
 
 Geometry::Geometry() : m_charge(0), m_multiplicity(1), m_nAlpha(0), m_nBeta(0)  { }
 
+
+void Geometry::addBond(int i, int j)
+{
+   if (i == j) return;
+   if (i > j) { int t = i; i = j; j = t; }
+   QPair<int,int> bond(i, j);
+   if (!m_bonds.contains(bond)) m_bonds.append(bond);
+}
+
 Geometry::Geometry(Geometry const& that) : Base()
 {
    unsigned n(that.nAtoms());

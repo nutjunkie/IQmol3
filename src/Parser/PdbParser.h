@@ -28,6 +28,8 @@
 #include "Parser.h"
 #include "Data/PdbData.h"
 #include "Data/Residue.h"
+#include <QMap>
+#include <QPair>
 #include <QVector>
 
 
@@ -67,8 +69,12 @@ namespace Parser {
          // Need these to keep the order of the pdb
          QList<QChar> m_chainOrder;
          QList<QString> m_geometryOrder;
-         
-		 // Scatters the interval-based SS specifications read from the 
+
+         // CONECT record support: maps PDB atom serial → (geometry, 0-based index)
+         QMap<int, QPair<Data::Geometry*, int>> m_serialToAtom;
+         QList<QPair<int,int>> m_conectPairs;
+
+		 // Scatters the interval-based SS specifications read from the
          // PDB to one type per residue
          bool setSecondaryStructure();
          bool saveSecondaryStructure();

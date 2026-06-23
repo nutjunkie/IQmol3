@@ -161,6 +161,13 @@ namespace Data {
          QString const& name() const { return m_name; }
          void name(QString const& name) { m_name = name; }
 
+         // Explicit bond connectivity (0-based atom indices, i < j).
+         // When populated (e.g. from PDB CONECT records) the layer factory
+         // will use these instead of OpenBabel distance-based perception.
+         void addBond(int i, int j);
+         bool hasBonds() const { return !m_bonds.isEmpty(); }
+         QList<QPair<int,int>> const& bonds() const { return m_bonds; }
+
       private:
          unsigned totalNuclearCharge() const;
 
@@ -172,6 +179,7 @@ namespace Data {
          unsigned m_nBeta;
          Bank m_properties;
          QString m_name;
+         QList<QPair<int,int>> m_bonds;
    };
 
 } } // end namespace IQmol::Data
