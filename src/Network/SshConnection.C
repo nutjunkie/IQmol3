@@ -282,11 +282,11 @@ bool SshConnection::checkHost()
       return false;
    }
 
-   int rc = libssh2_knownhost_readfile(knownHosts, getKnownHostsFile().toLatin1().data(), 
+   int rc = libssh2_knownhost_readfile(knownHosts, getKnownHostsFile().toLatin1().data(),
       LIBSSH2_KNOWNHOST_FILE_OPENSSH);
 
-   bool fileExists(rc == 0);
-   if (!fileExists) {
+   bool fileReadable(rc >= 0);
+   if (!fileReadable) {
       // Most likely the file is not there, so we note this but keep going
       m_message = "Unable to read file\n" + getKnownHostsFile() + "\n(" 
         + QString::number(rc) + ") " + lastSessionError();
@@ -295,6 +295,7 @@ bool SshConnection::checkHost()
       
    size_t length;
    int    type, check;
+   int    typemask(LIBSSH2_KNOWNHOST_KEY_UNKNOWN);
    const char* fingerprint = libssh2_session_hostkey(m_session, &length, &type);
 
    if (!fingerprint) {
@@ -302,16 +303,38 @@ bool SshConnection::checkHost()
       goto cleanup;
    }
 
-   int typemask;
-   if (type == LIBSSH2_HOSTKEY_TYPE_RSA) {
-      typemask = LIBSSH2_KNOWNHOST_KEY_SSHRSA;
-   }else {
-      typemask = LIBSSH2_KNOWNHOST_KEY_SSHDSS;
+   switch (type) {
+      case LIBSSH2_HOSTKEY_TYPE_RSA:
+         typemask = LIBSSH2_KNOWNHOST_KEY_SSHRSA;
+         break;
+      case LIBSSH2_HOSTKEY_TYPE_DSS:
+         typemask = LIBSSH2_KNOWNHOST_KEY_SSHDSS;
+         break;
+#ifdef LIBSSH2_HOSTKEY_TYPE_ECDSA_256
+      case LIBSSH2_HOSTKEY_TYPE_ECDSA_256:
+         typemask = LIBSSH2_KNOWNHOST_KEY_ECDSA_256;
+         break;
+#endif
+#ifdef LIBSSH2_HOSTKEY_TYPE_ECDSA_384
+      case LIBSSH2_HOSTKEY_TYPE_ECDSA_384:
+         typemask = LIBSSH2_KNOWNHOST_KEY_ECDSA_384;
+         break;
+#endif
+#ifdef LIBSSH2_HOSTKEY_TYPE_ECDSA_521
+      case LIBSSH2_HOSTKEY_TYPE_ECDSA_521:
+         typemask = LIBSSH2_KNOWNHOST_KEY_ECDSA_521;
+         break;
+#endif
+#ifdef LIBSSH2_HOSTKEY_TYPE_ED25519
+      case LIBSSH2_HOSTKEY_TYPE_ED25519:
+         typemask = LIBSSH2_KNOWNHOST_KEY_ED25519;
+         break;
+#endif
    }
 
    struct libssh2_knownhost *host;
 
-   if (fileExists) {
+   if (fileReadable) {
       check = libssh2_knownhost_checkp(knownHosts, m_hostname.toLatin1().data(), 
           m_port, fingerprint, length, LIBSSH2_KNOWNHOST_TYPE_PLAIN | 
           LIBSSH2_KNOWNHOST_KEYENC_RAW, &host);
@@ -359,8 +382,8 @@ bool SshConnection::checkHost()
                m_message = "Host added to known_hosts file: " + getKnownHostsFile();
                ok = true;
             }else {
-               m_message = "Unable to write to file\n" + getKnownHostsFile();
-                       + "\nError (" + QString::number(rc) + ") " + lastSessionError();
+               m_message = "Unable to write to file\n" + getKnownHostsFile()
+                 + "\nError (" + QString::number(rc) + ") " + lastSessionError();
             }
          }
          break;

@@ -157,7 +157,7 @@ QString TemplateForRunFile(bool const local)
          "# --- Q-Chem environment variable setup\n"
          "# . $HOME/qchem/qcenv.sh\n"
          "\n"
-         "qchem ${JOB_NAME}.inp ${JOB_NAME}.out &\n"
+         "nohup qchem ${JOB_NAME}.inp ${JOB_NAME}.out > ${JOB_NAME}.err 2>&1 < /dev/null &\n"
          "echo 'JobId:' $!\n"
          "sleep 5\n";
 
